@@ -11,7 +11,9 @@
   },
   "dependencies": {
     "@ant-design/icons": "^6.2.5",
+    "@dagrejs/dagre": "^3.0.0",
     "@tanstack/react-query": "^5.101.1",
+    "@xyflow/react": "^12.11.1",
     "antd": "^6.4.5",
     "axios": "^1.18.1",
     "react": "^19.2.7",
@@ -22,6 +24,7 @@
     "@eslint/js": "^10.0.1",
     "@rolldown/plugin-babel": "^0.2.3",
     "@types/babel__core": "^7.20.5",
+    "@types/dagre": "^0.7.54",
     "@types/node": "^24.13.2",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",

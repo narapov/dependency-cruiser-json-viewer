@@ -4,3 +4,9 @@ body,
   height: 100%;
   margin: 0;
 }
+
+#root {
+  display: grid;
+  grid-template-rows: 1fr;
+  min-height: 0;
+}

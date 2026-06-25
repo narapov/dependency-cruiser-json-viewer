@@ -1,0 +1,107 @@
+.container {
+  height: 100%;
+  min-height: 0;
+}
+
+.container :global(.react-flow) {
+  width: 100%;
+  height: 100%;
+}
+
+.empty {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  color: #8c8c8c;
+  font-size: 14px;
+}
+
+.node {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: #fff;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  font-size: 12px;
+  min-width: 120px;
+  box-sizing: border-box;
+}
+
+.highlighted {
+  border-color: blue;
+  box-shadow: 0 0 0 1px blue;
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 10px;
+  color: #595959;
+  flex-shrink: 0;
+}
+
+.toggle:hover {
+  color: #1677ff;
+}
+
+.label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.icon {
+  font-size: 12px;
+  color: #8c8c8c;
+  flex-shrink: 0;
+}
+
+.group {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  border: 2px solid #d9d9d9;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.02);
+  position: relative;
+  pointer-events: none;
+}
+
+.groupHighlighted {
+  border-color: blue;
+  box-shadow: 0 0 0 1px blue;
+}
+
+.groupHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 10px;
+  border-bottom: 1px solid #f0f0f0;
+  background: #fafafa;
+  border-radius: 6px 6px 0 0;
+  font-size: 12px;
+  box-sizing: border-box;
+  pointer-events: auto;
+  cursor: grab;
+}
+
+.groupHeader:active {
+  cursor: grabbing;
+}
+
+.groupHandle {
+  top: 18px;
+  transform: none;
+  pointer-events: auto;
+}

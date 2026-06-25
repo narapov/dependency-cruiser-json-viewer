@@ -1,0 +1,31 @@
+.shell {
+  display: grid;
+  height: 100%;
+  min-height: 0;
+  grid-template:
+    "header header" auto
+    "sider  main"   1fr
+    / 280px         1fr;
+}
+
+.header {
+  grid-area: header;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  background: #001529;
+}
+
+.sider {
+  grid-area: sider;
+  min-height: 0;
+  overflow: hidden;
+  border-right: 1px solid #f0f0f0;
+  background: #fff;
+}
+
+.main {
+  grid-area: main;
+  min-height: 0;
+  overflow: hidden;
+}

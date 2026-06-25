@@ -1,4 +1,6 @@
 .scroll {
+  height: 100%;
+  min-height: 0;
   overflow-x: auto;
   overflow-y: hidden;
 }
@@ -24,6 +26,19 @@
 
 .tree :global(.ant-tree-list-holder-inner) {
   min-width: max-content;
+}
+
+.tree :global(.ant-tree-checkbox) {
+  margin-inline-end: 4px;
+}
+
+.tree :global(.ant-tree-checkbox-inner) {
+  width: 14px;
+  height: 14px;
+}
+
+.tree :global(.ant-tree-checkbox-inner::after) {
+  inset-inline-start: 20%;
 }
 
 .title {

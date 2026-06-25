@@ -1,18 +1,25 @@
-import { Layout, Typography } from 'antd'
+import { useState } from 'react'
+import { Typography } from 'antd'
 import type { TreeDataNode } from 'antd'
+import type { IModule } from 'dependency-cruiser'
+import { getDefaultExpandedKeys, getDefaultSelectedKeys } from '../lib/treeSelection'
+import { DependencyGraph } from './DependencyGraph'
 import { FileTree } from './FileTree'
-
-const { Header, Sider, Content } = Layout
+import styles from './AppLayout/AppLayout.module.css'
 
 interface AppLayoutProps {
   treeData: TreeDataNode[]
+  modules: IModule[]
   moduleCount?: number
 }
 
-export function AppLayout({ treeData, moduleCount }: AppLayoutProps) {
+export function AppLayout({ treeData, modules, moduleCount }: AppLayoutProps) {
+  const [selectedPaths, setSelectedPaths] = useState(() => getDefaultSelectedKeys(treeData))
+  const [expandedKeys, setExpandedKeys] = useState(() => getDefaultExpandedKeys(treeData))
+
   return (
-    <Layout style={{ minHeight: '100vh' }}>
-      <Header style={{ display: 'flex', alignItems: 'center', padding: '0 24px' }}>
+    <div className={styles.shell}>
+      <header className={styles.header}>
         <Typography.Title level={4} style={{ margin: 0, color: '#fff' }}>
           Deps Viewer
           {moduleCount != null && (
@@ -24,21 +31,19 @@ export function AppLayout({ treeData, moduleCount }: AppLayoutProps) {
             </Typography.Text>
           )}
         </Typography.Title>
-      </Header>
-      <Layout>
-        <Sider
-          width={280}
-          theme="light"
-          style={{ borderRight: '1px solid #f0f0f0', overflow: 'hidden' }}
-        >
-          <FileTree treeData={treeData} height={window.innerHeight - 64} />
-        </Sider>
-        <Content style={{ padding: 24 }}>
-          <Typography.Text type="secondary">
-            Select a file to view dependencies
-          </Typography.Text>
-        </Content>
-      </Layout>
-    </Layout>
+      </header>
+      <aside className={styles.sider}>
+        <FileTree
+          treeData={treeData}
+          selectedKeys={selectedPaths}
+          onSelect={setSelectedPaths}
+          expandedKeys={expandedKeys}
+          onExpand={setExpandedKeys}
+        />
+      </aside>
+      <main className={styles.main}>
+        <DependencyGraph modules={modules} selectedPaths={selectedPaths} />
+      </main>
+    </div>
   )
 }
