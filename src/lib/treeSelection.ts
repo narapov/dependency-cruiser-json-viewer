@@ -81,6 +81,12 @@ export function getDefaultExpandedKeys(treeData: TreeDataNode[]): string[] {
   return hasSrc ? ['src'] : []
 }
 
+export function toggleExpandedKey(keys: string[], path: string): string[] {
+  return keys.includes(path)
+    ? keys.filter((k) => k !== path)
+    : [...keys, path]
+}
+
 export function getTopLevelFolderKeys(treeData: TreeDataNode[]): string[] {
   return treeData
     .filter((node) => !node.isLeaf)

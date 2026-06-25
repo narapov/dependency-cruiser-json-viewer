@@ -1,8 +1,12 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { Typography } from 'antd'
 import type { TreeDataNode } from 'antd'
 import type { IModule } from 'dependency-cruiser'
-import { getDefaultExpandedKeys, getDefaultSelectedKeys } from '../lib/treeSelection'
+import {
+  getDefaultExpandedKeys,
+  getDefaultSelectedKeys,
+  toggleExpandedKey,
+} from '../lib/treeSelection'
 import { DependencyGraph } from './DependencyGraph'
 import { FileTree } from './FileTree'
 import styles from './AppLayout/AppLayout.module.css'
@@ -17,6 +21,10 @@ interface AppLayoutProps {
 export function AppLayout({ treeData, modules, moduleCount, folderColors }: AppLayoutProps) {
   const [selectedPaths, setSelectedPaths] = useState(() => getDefaultSelectedKeys(treeData))
   const [expandedKeys, setExpandedKeys] = useState(() => getDefaultExpandedKeys(treeData))
+
+  const onToggleFolder = useCallback((path: string) => {
+    setExpandedKeys((keys) => toggleExpandedKey(keys, path))
+  }, [])
 
   return (
     <div className={styles.shell}>
@@ -47,6 +55,8 @@ export function AppLayout({ treeData, modules, moduleCount, folderColors }: AppL
           modules={modules}
           selectedPaths={selectedPaths}
           folderColors={folderColors}
+          expandedKeys={expandedKeys}
+          onToggleFolder={onToggleFolder}
         />
       </main>
     </div>

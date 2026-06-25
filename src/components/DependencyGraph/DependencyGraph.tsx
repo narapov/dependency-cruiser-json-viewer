@@ -25,24 +25,21 @@ interface DependencyGraphProps {
   modules: IModule[]
   selectedPaths: string[]
   folderColors: ReadonlyMap<string, string>
+  expandedKeys: string[]
+  onToggleFolder: (path: string) => void
 }
 
-function DependencyGraphInner({ modules, selectedPaths, folderColors }: DependencyGraphProps) {
-  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(() => new Set())
+function DependencyGraphInner({
+  modules,
+  selectedPaths,
+  folderColors,
+  expandedKeys,
+  onToggleFolder,
+}: DependencyGraphProps) {
   const [highlightedNodeId, setHighlightedNodeId] = useState<string | null>(null)
   const { fitView } = useReactFlow()
 
-  const onToggleFolder = useCallback((path: string) => {
-    setExpandedFolders((prev) => {
-      const next = new Set(prev)
-      if (next.has(path)) {
-        next.delete(path)
-      } else {
-        next.add(path)
-      }
-      return next
-    })
-  }, [])
+  const expandedFolders = useMemo(() => new Set(expandedKeys), [expandedKeys])
 
   const { nodes, edges } = useMemo(
     () =>
@@ -58,8 +55,8 @@ function DependencyGraphInner({ modules, selectedPaths, folderColors }: Dependen
   )
 
   const structureKey = useMemo(
-    () => `${selectedPaths.length}:${[...expandedFolders].sort().join('|')}`,
-    [selectedPaths, expandedFolders],
+    () => `${selectedPaths.length}:${expandedKeys.slice().sort().join('|')}`,
+    [selectedPaths, expandedKeys],
   )
 
   useEffect(() => {
