@@ -103,3 +103,17 @@ export function getDefaultSelectedKeys(treeData: TreeDataNode[]): string[] {
 
   return selected
 }
+
+export function canShowInGraph(
+  key: string,
+  selectedKeys: string[],
+  index: TreeIndex,
+  isLeaf: boolean,
+): boolean {
+  if (selectedKeys.includes(key)) return true
+  if (isLeaf) return false
+
+  const selectedSet = new Set(selectedKeys)
+  const descendants = index.descendantsByKey.get(key) ?? []
+  return descendants.some((descendant) => selectedSet.has(descendant))
+}

@@ -84,23 +84,39 @@ function hasSelectedDescendants(
   return false
 }
 
-function getRootSelectedPaths(selectedPaths: string[], selectedSet: Set<string>): string[] {
-  const roots: string[] = []
-  for (const path of selectedPaths) {
-    let parent = getParentPath(path)
-    let hasSelectedParent = false
-    while (parent) {
-      if (selectedSet.has(parent)) {
-        hasSelectedParent = true
-        break
-      }
-      parent = getParentPath(parent)
-    }
-    if (!hasSelectedParent) {
-      roots.push(path)
+function getEffectiveRoot(
+  path: string,
+  selectedSet: Set<string>,
+  childrenIndex: Map<string, FolderChildren>,
+): string {
+  let topmost = path
+  let current = path
+
+  while (true) {
+    const parent = getParentPath(current)
+    if (!parent) break
+
+    if (selectedSet.has(parent) || hasSelectedDescendants(parent, selectedSet, childrenIndex)) {
+      topmost = parent
+      current = parent
+    } else {
+      break
     }
   }
-  return [...new Set(roots)].sort()
+
+  return topmost
+}
+
+function getRootSelectedPaths(
+  selectedPaths: string[],
+  selectedSet: Set<string>,
+  childrenIndex: Map<string, FolderChildren>,
+): string[] {
+  const roots = new Set<string>()
+  for (const path of selectedPaths) {
+    roots.add(getEffectiveRoot(path, selectedSet, childrenIndex))
+  }
+  return [...roots].sort()
 }
 
 function collectVisibleNodes(
@@ -316,7 +332,7 @@ export function buildGraph({
   const childrenIndex = buildChildrenIndex(modules.map((m) => m.source))
 
   const visibleNodes = new Map<string, 'folder' | 'file'>()
-  const roots = getRootSelectedPaths(selectedPaths, selectedSet)
+  const roots = getRootSelectedPaths(selectedPaths, selectedSet, childrenIndex)
   collectVisibleNodes(
     roots,
     selectedSet,

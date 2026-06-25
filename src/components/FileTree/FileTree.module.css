@@ -51,3 +51,38 @@
 .title :global(.anticon) {
   font-size: 12px;
 }
+
+.titleText {
+  flex: 0 1 auto;
+}
+
+.showInGraphBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-inline-start: 2px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s, background-color 0.15s;
+}
+
+.tree :global(.ant-tree-node-content-wrapper:hover) .showInGraphBtn {
+  opacity: 1;
+}
+
+.showInGraphBtn:hover {
+  color: rgba(0, 0, 0, 0.88);
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.showInGraphBtn :global(.anticon) {
+  font-size: 12px;
+}

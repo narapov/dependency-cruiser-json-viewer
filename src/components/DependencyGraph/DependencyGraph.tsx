@@ -27,6 +27,8 @@ interface DependencyGraphProps {
   folderColors: ReadonlyMap<string, string>
   expandedKeys: string[]
   onToggleFolder: (path: string) => void
+  focusPath?: string | null
+  onFocusComplete?: () => void
 }
 
 function DependencyGraphInner({
@@ -35,9 +37,11 @@ function DependencyGraphInner({
   folderColors,
   expandedKeys,
   onToggleFolder,
+  focusPath,
+  onFocusComplete,
 }: DependencyGraphProps) {
   const [highlightedNodeId, setHighlightedNodeId] = useState<string | null>(null)
-  const { fitView } = useReactFlow()
+  const { fitView, getNode } = useReactFlow()
 
   const expandedFolders = useMemo(() => new Set(expandedKeys), [expandedKeys])
 
@@ -60,12 +64,28 @@ function DependencyGraphInner({
   )
 
   useEffect(() => {
-    if (nodes.length === 0) return
+    if (nodes.length === 0 || focusPath) return
     const frame = requestAnimationFrame(() => {
       fitView({ padding: 0.2, duration: 200 })
     })
     return () => cancelAnimationFrame(frame)
-  }, [structureKey, nodes.length, fitView])
+  }, [structureKey, nodes.length, fitView, focusPath])
+
+  useEffect(() => {
+    if (!focusPath) return
+    setHighlightedNodeId(focusPath)
+  }, [focusPath])
+
+  useEffect(() => {
+    if (!focusPath) return
+    if (!getNode(focusPath)) return
+
+    const frame = requestAnimationFrame(() => {
+      fitView({ nodes: [{ id: focusPath }], padding: 0.5, duration: 300 })
+      onFocusComplete?.()
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [focusPath, nodes, fitView, getNode, onFocusComplete])
 
   const onNodeClick = useCallback((_: React.MouseEvent, node: Node) => {
     setHighlightedNodeId((current) => (current === node.id ? null : node.id))

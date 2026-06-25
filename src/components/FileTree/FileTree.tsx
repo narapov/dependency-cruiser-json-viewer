@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { FileOutlined, FolderOutlined } from '@ant-design/icons'
+import { EyeOutlined, FileOutlined, FolderOutlined } from '@ant-design/icons'
 import { Tree, type TreeDataNode } from 'antd'
-import { applyCascadeSelection, buildTreeIndex, computeCheckState } from '../../lib/treeSelection'
+import {
+  applyCascadeSelection,
+  buildTreeIndex,
+  canShowInGraph,
+  computeCheckState,
+} from '../../lib/treeSelection'
 import styles from './FileTree.module.css'
 
 interface FileTreeProps {
@@ -10,6 +15,7 @@ interface FileTreeProps {
   onSelect?: (keys: string[]) => void
   expandedKeys: string[]
   onExpand: (keys: string[]) => void
+  onShowInGraph?: (path: string) => void
 }
 
 export function FileTree({
@@ -18,6 +24,7 @@ export function FileTree({
   onSelect,
   expandedKeys,
   onExpand,
+  onShowInGraph,
 }: FileTreeProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [height, setHeight] = useState(0)
@@ -55,19 +62,41 @@ export function FileTree({
           onCheck={(_keys, { node, checked }) => {
             handleToggle(String(node.key), checked)
           }}
-          onSelect={(_keys, { node, selected }) => {
-            handleToggle(String(node.key), selected)
-          }}
+          // onSelect={(_keys, { node, selected }) => {
+          //   handleToggle(String(node.key), selected)
+          // }}
           expandedKeys={expandedKeys}
-          onExpand={(keys) => onExpand(keys.map(String))}
+          onExpand={(keys) => {
+            onExpand(keys.map(String));
+            debugger;
+          }}
           virtual={false}
           height={height}
-          titleRender={(node) => (
-            <span className={styles.title}>
-              {node.isLeaf ? <FileOutlined /> : <FolderOutlined />}
-              {node.title as string}
-            </span>
-          )}
+          titleRender={(node) => {
+            const key = String(node.key)
+            const showable = canShowInGraph(key, selectedKeys, treeIndex, !!node.isLeaf)
+
+            return (
+              <span className={styles.title}>
+                {node.isLeaf ? <FileOutlined /> : <FolderOutlined />}
+                <span className={styles.titleText}>{node.title as string}</span>
+                {showable && (
+                  <button
+                    type="button"
+                    className={styles.showInGraphBtn}
+                    title="Show in graph"
+                    aria-label="Show in graph"
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      onShowInGraph?.(key)
+                    }}
+                  >
+                    <EyeOutlined />
+                  </button>
+                )}
+              </span>
+            )
+          }}
         />
       )}
     </div>
