@@ -11,6 +11,7 @@ export interface BuildGraphInput {
   selectedPaths: string[]
   expandedFolders: Set<string>
   highlightedNodeId: string | null
+  folderColors: ReadonlyMap<string, string>
   onToggleFolder: (path: string) => void
 }
 
@@ -33,6 +34,7 @@ export interface FolderGroupNodeData {
   path: string
   expanded: boolean
   highlighted: boolean
+  backgroundColor: string
   onToggle: (path: string) => void
   [key: string]: unknown
 }

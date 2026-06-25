@@ -11,9 +11,10 @@ interface AppLayoutProps {
   treeData: TreeDataNode[]
   modules: IModule[]
   moduleCount?: number
+  folderColors: ReadonlyMap<string, string>
 }
 
-export function AppLayout({ treeData, modules, moduleCount }: AppLayoutProps) {
+export function AppLayout({ treeData, modules, moduleCount, folderColors }: AppLayoutProps) {
   const [selectedPaths, setSelectedPaths] = useState(() => getDefaultSelectedKeys(treeData))
   const [expandedKeys, setExpandedKeys] = useState(() => getDefaultExpandedKeys(treeData))
 
@@ -42,7 +43,11 @@ export function AppLayout({ treeData, modules, moduleCount }: AppLayoutProps) {
         />
       </aside>
       <main className={styles.main}>
-        <DependencyGraph modules={modules} selectedPaths={selectedPaths} />
+        <DependencyGraph
+          modules={modules}
+          selectedPaths={selectedPaths}
+          folderColors={folderColors}
+        />
       </main>
     </div>
   )

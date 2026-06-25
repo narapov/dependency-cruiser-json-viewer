@@ -308,6 +308,7 @@ export function buildGraph({
   selectedPaths,
   expandedFolders,
   highlightedNodeId,
+  folderColors,
   onToggleFolder,
 }: BuildGraphInput): BuildGraphResult {
   const selectedSet = new Set(selectedPaths)
@@ -348,21 +349,30 @@ export function buildGraph({
       if (edgeKeys.has(edgeKey)) continue
       edgeKeys.add(edgeKey)
 
-      const highlighted =
-        highlightedNodeId != null &&
-        (sourceRep === highlightedNodeId || targetRep === highlightedNodeId)
+      const isIncoming =
+        highlightedNodeId != null && targetRep === highlightedNodeId
+      const isOutgoing =
+        highlightedNodeId != null && sourceRep === highlightedNodeId
 
-      const stroke = highlighted ? 'blue' : '#b1b1b7'
+      let stroke = '#b1b1b7'
+      let strokeWidth = 1
+      if (isIncoming) {
+        stroke = '#1677ff'
+        strokeWidth = 2
+      } else if (isOutgoing) {
+        stroke = '#52c41a'
+        strokeWidth = 2
+      }
 
       edges.push({
         id: edgeKey,
-        source: targetRep,
-        target: sourceRep,
+        source: sourceRep,
+        target: targetRep,
         markerEnd: {
           type: MarkerType.ArrowClosed,
           color: stroke,
         },
-        style: highlighted ? { stroke, strokeWidth: 2 } : { stroke },
+        style: { stroke, strokeWidth },
       })
     }
   }
@@ -383,6 +393,7 @@ export function buildGraph({
           path,
           expanded: true,
           highlighted,
+          backgroundColor: folderColors.get(path) ?? 'rgba(0, 0, 0, 0.02)',
           onToggle: onToggleFolder,
         }
         nodeMap.set(path, {

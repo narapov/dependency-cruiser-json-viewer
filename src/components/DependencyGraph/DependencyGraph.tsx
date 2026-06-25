@@ -24,9 +24,10 @@ const nodeTypes = {
 interface DependencyGraphProps {
   modules: IModule[]
   selectedPaths: string[]
+  folderColors: ReadonlyMap<string, string>
 }
 
-function DependencyGraphInner({ modules, selectedPaths }: DependencyGraphProps) {
+function DependencyGraphInner({ modules, selectedPaths, folderColors }: DependencyGraphProps) {
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(() => new Set())
   const [highlightedNodeId, setHighlightedNodeId] = useState<string | null>(null)
   const { fitView } = useReactFlow()
@@ -50,9 +51,10 @@ function DependencyGraphInner({ modules, selectedPaths }: DependencyGraphProps) 
         selectedPaths,
         expandedFolders,
         highlightedNodeId,
+        folderColors,
         onToggleFolder,
       }),
-    [modules, selectedPaths, expandedFolders, highlightedNodeId, onToggleFolder],
+    [modules, selectedPaths, expandedFolders, highlightedNodeId, folderColors, onToggleFolder],
   )
 
   const structureKey = useMemo(

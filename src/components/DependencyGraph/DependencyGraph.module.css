@@ -71,7 +71,6 @@
   box-sizing: border-box;
   border: 2px solid #d9d9d9;
   border-radius: 8px;
-  background: rgba(0, 0, 0, 0.02);
   position: relative;
   pointer-events: none;
 }

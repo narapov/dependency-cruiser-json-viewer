@@ -4,10 +4,14 @@ import type { FolderGroupNodeData } from '../../lib/dependencyGraph/types'
 import styles from './DependencyGraph.module.css'
 
 export function FolderGroupNode({ data }: NodeProps) {
-  const { label, path, expanded, highlighted, onToggle } = data as FolderGroupNodeData
+  const { label, path, expanded, highlighted, backgroundColor, onToggle } =
+    data as FolderGroupNodeData
 
   return (
-    <div className={`${styles.group} ${highlighted ? styles.groupHighlighted : ''}`}>
+    <div
+      className={`${styles.group} ${highlighted ? styles.groupHighlighted : ''}`}
+      style={{ backgroundColor }}
+    >
       <Handle type="target" position={Position.Left} className={styles.groupHandle} />
       <div className={styles.groupHeader}>
         <button
