@@ -1,7 +1,8 @@
 import { useMemo } from 'react'
-import { AimOutlined } from '@ant-design/icons'
-import { Button, Drawer, Empty, List, Typography } from 'antd'
+import { AimOutlined, CopyOutlined } from '@ant-design/icons'
+import { Button, Drawer, Empty, List, Tooltip, Typography } from 'antd'
 import type { IModule } from 'dependency-cruiser'
+import { copyToClipboard } from '../../lib/copyToClipboard'
 import { getNodeRelations } from '../../lib/dependencyGraph/moduleRelations'
 import styles from './DependencyDrawer.module.css'
 
@@ -28,20 +29,28 @@ function RelationList({
 
   return (
     <List
+      className={styles.list}
       size="small"
       dataSource={items}
       renderItem={(item) => (
         <List.Item
           actions={[
-            <Button
-              key="show"
-              type="link"
-              size="small"
-              icon={<AimOutlined />}
-              onClick={() => onShowInGraph(item.path)}
-            >
-              Show in graph
-            </Button>,
+            <Tooltip key="copy" title="Copy path">
+              <Button
+                type="text"
+                size="small"
+                icon={<CopyOutlined />}
+                onClick={() => void copyToClipboard(item.path)}
+              />
+            </Tooltip>,
+            <Tooltip key="show" title="Show in graph">
+              <Button
+                type="text"
+                size="small"
+                icon={<AimOutlined />}
+                onClick={() => onShowInGraph(item.path)}
+              />
+            </Tooltip>,
           ]}
         >
           <span className={`${styles.path} ${item.circular ? styles.circular : ''}`}>
@@ -83,14 +92,14 @@ export function DependencyDrawer({
       }
       extra={
         path ? (
-          <Button
-            type="primary"
-            size="small"
-            icon={<AimOutlined />}
-            onClick={() => onShowInGraph(path)}
-          >
-            Show in graph
-          </Button>
+          <Tooltip title="Show in graph">
+            <Button
+              type="primary"
+              size="small"
+              icon={<AimOutlined />}
+              onClick={() => onShowInGraph(path)}
+            />
+          </Tooltip>
         ) : null
       }
       placement="right"

@@ -1,7 +1,19 @@
 .path {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 13px;
+  font-size: 11px;
   word-break: break-all;
+}
+
+.list :global(.ant-list-item) {
+  padding: 4px 0;
+}
+
+.list :global(.ant-list-item-action) {
+  margin-inline-start: 8px;
+}
+
+.list :global(.ant-list-item-action > li) {
+  padding: 0;
 }
 
 .circular {
