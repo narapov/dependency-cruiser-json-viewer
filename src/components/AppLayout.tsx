@@ -10,6 +10,7 @@ import {
   toggleExpandedKey,
 } from '../lib/treeSelection'
 import { DependencyGraph } from './DependencyGraph'
+import { DependencyDrawer } from './DependencyDrawer/DependencyDrawer'
 import { FileTree } from './FileTree'
 import styles from './AppLayout/AppLayout.module.css'
 
@@ -25,6 +26,7 @@ export function AppLayout({ treeData, modules, moduleCount, folderColors }: AppL
   const [expandedKeys, setExpandedKeys] = useState(() => getDefaultExpandedKeys(treeData))
   const [activePath, setActivePath] = useState<string | null>(null)
   const [graphFitToken, setGraphFitToken] = useState(0)
+  const [drawerPath, setDrawerPath] = useState<string | null>(null)
 
   const updateExpandedKeys = useCallback(
     (updater: string[] | ((prev: string[]) => string[])) => {
@@ -73,6 +75,14 @@ export function AppLayout({ treeData, modules, moduleCount, folderColors }: AppL
     [activatePath],
   )
 
+  const handleShowDependencies = useCallback((path: string) => {
+    setDrawerPath(path)
+  }, [])
+
+  const handleCloseDrawer = useCallback(() => {
+    setDrawerPath(null)
+  }, [])
+
   return (
     <div className={styles.shell}>
       <header className={styles.header}>
@@ -96,6 +106,7 @@ export function AppLayout({ treeData, modules, moduleCount, folderColors }: AppL
           expandedKeys={expandedKeys}
           onExpand={updateExpandedKeys}
           onShowInGraph={handleShowInGraph}
+          onShowDependencies={handleShowDependencies}
           activePath={activePath}
         />
       </aside>
@@ -107,9 +118,19 @@ export function AppLayout({ treeData, modules, moduleCount, folderColors }: AppL
           expandedKeys={expandedKeys}
           onToggleFolder={onToggleFolder}
           onShowInFileTree={handleShowInFileTree}
+          onShowDependencies={handleShowDependencies}
           onActivePathChange={handleActivePathChange}
           activePath={activePath}
           graphFitToken={graphFitToken}
+        />
+        <DependencyDrawer
+          open={drawerPath != null}
+          path={drawerPath}
+          modules={modules}
+          selectedPaths={selectedPaths}
+          expandedKeys={expandedKeys}
+          onClose={handleCloseDrawer}
+          onShowInGraph={handleShowInGraph}
         />
       </main>
     </div>

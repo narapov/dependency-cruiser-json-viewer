@@ -6,7 +6,7 @@ import styles from './DependencyGraph.module.css'
 import { NodeContextMenu } from './NodeContextMenu'
 
 export function FolderNode({ data }: NodeProps) {
-  const { label, path, expanded, highlighted, circular, backgroundColor, onToggle, onShowInFileTree } =
+  const { label, path, expanded, highlighted, circular, backgroundColor, onToggle, onShowInFileTree, onShowDependencies } =
     data as FolderNodeData
 
   return (
@@ -16,6 +16,7 @@ export function FolderNode({ data }: NodeProps) {
       expanded={expanded}
       onToggle={onToggle}
       onShowInFileTree={onShowInFileTree}
+      onShowDependencies={onShowDependencies}
     >
       <div
         className={`${styles.node} ${highlighted ? styles.highlighted : ''} ${circular ? styles.circular : ''}`}

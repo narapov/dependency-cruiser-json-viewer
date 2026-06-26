@@ -39,6 +39,7 @@ interface DependencyGraphProps {
   expandedKeys: string[]
   onToggleFolder: (path: string) => void
   onShowInFileTree: (path: string) => void
+  onShowDependencies?: (path: string) => void
   onActivePathChange?: (path: string) => void
   activePath?: string | null
   graphFitToken?: number
@@ -51,6 +52,7 @@ function DependencyGraphInner({
   expandedKeys,
   onToggleFolder,
   onShowInFileTree,
+  onShowDependencies,
   onActivePathChange,
   activePath,
   graphFitToken = 0,
@@ -72,8 +74,9 @@ function DependencyGraphInner({
         folderColors,
         onToggleFolder,
         onShowInFileTree,
+        onShowDependencies,
       }),
-    [modules, selectedPaths, expandedFolders, activePath, folderColors, onToggleFolder, onShowInFileTree],
+    [modules, selectedPaths, expandedFolders, activePath, folderColors, onToggleFolder, onShowInFileTree, onShowDependencies],
   )
 
   const displayEdges = useMemo(

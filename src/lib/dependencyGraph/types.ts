@@ -14,6 +14,7 @@ export interface BuildGraphInput {
   folderColors: ReadonlyMap<string, string>
   onToggleFolder: (path: string) => void
   onShowInFileTree: (path: string) => void
+  onShowDependencies?: (path: string) => void
 }
 
 export interface BuildGraphResult {
@@ -30,6 +31,7 @@ export interface FolderNodeData {
   backgroundColor: string
   onToggle: (path: string) => void
   onShowInFileTree: (path: string) => void
+  onShowDependencies?: (path: string) => void
   [key: string]: unknown
 }
 
@@ -41,6 +43,7 @@ export interface FolderGroupNodeData {
   backgroundColor: string
   onToggle: (path: string) => void
   onShowInFileTree: (path: string) => void
+  onShowDependencies?: (path: string) => void
   [key: string]: unknown
 }
 
@@ -50,6 +53,7 @@ export interface FileNodeData {
   highlighted: boolean
   circular?: boolean
   onShowInFileTree: (path: string) => void
+  onShowDependencies?: (path: string) => void
   [key: string]: unknown
 }
 

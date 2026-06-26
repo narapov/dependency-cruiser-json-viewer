@@ -1,0 +1,13 @@
+.path {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13px;
+  word-break: break-all;
+}
+
+.circular {
+  color: #ff4d4f;
+}
+
+.sectionTitle {
+  margin: 0 0 8px;
+}

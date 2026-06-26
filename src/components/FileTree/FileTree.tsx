@@ -9,6 +9,7 @@ import {
   getAllKeys,
 } from '../../lib/treeSelection'
 import { Tree, isTreeLeaf, type TreeHandle, type TreeNodeData } from '../Tree'
+import { FileTreeContextMenu } from './FileTreeContextMenu'
 import styles from './FileTree.module.css'
 
 const CLICK_DELAY_MS = 250
@@ -20,6 +21,7 @@ interface FileTreeProps {
   expandedKeys: string[]
   onExpand: (keys: string[]) => void
   onShowInGraph?: (path: string) => void
+  onShowDependencies?: (path: string) => void
   activePath?: string | null
 }
 
@@ -30,6 +32,7 @@ export function FileTree({
   expandedKeys,
   onExpand,
   onShowInGraph,
+  onShowDependencies,
   activePath,
 }: FileTreeProps) {
   const treeRef = useRef<TreeHandle>(null)
@@ -130,12 +133,22 @@ export function FileTree({
         titleRender={(node) => {
           const navigable = canShowInGraph(node.key, selectedKeys, treeIndex, node)
 
-          return (
+          const title = (
             <span className={`${styles.title} ${navigable ? styles.navigable : ''}`}>
               {isTreeLeaf(node) ? <FileOutlined /> : <FolderOutlined />}
               <span className={styles.titleText}>{node.title}</span>
             </span>
           )
+
+          if (navigable && onShowDependencies) {
+            return (
+              <FileTreeContextMenu path={node.key} onShowDependencies={onShowDependencies}>
+                {title}
+              </FileTreeContextMenu>
+            )
+          }
+
+          return title
         }}
       />
     </div>

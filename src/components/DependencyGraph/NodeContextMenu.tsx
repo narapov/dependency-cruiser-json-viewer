@@ -7,6 +7,7 @@ interface NodeContextMenuProps {
   expanded?: boolean
   onToggle?: (path: string) => void
   onShowInFileTree: (path: string) => void
+  onShowDependencies?: (path: string) => void
   children: ReactNode
 }
 
@@ -16,6 +17,7 @@ export function NodeContextMenu({
   expanded,
   onToggle,
   onShowInFileTree,
+  onShowDependencies,
   children,
 }: NodeContextMenuProps) {
   const items: MenuProps['items'] = []
@@ -32,12 +34,21 @@ export function NodeContextMenu({
     label: 'Show in file tree',
   })
 
+  if (onShowDependencies) {
+    items.push({
+      key: 'show-dependencies',
+      label: 'View dependencies',
+    })
+  }
+
   const onClick: MenuProps['onClick'] = ({ key, domEvent }) => {
     domEvent.stopPropagation()
     if (key === 'toggle') {
       onToggle?.(path)
     } else if (key === 'show-in-tree') {
       onShowInFileTree(path)
+    } else if (key === 'show-dependencies') {
+      onShowDependencies?.(path)
     }
   }
 

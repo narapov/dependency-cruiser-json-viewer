@@ -1,7 +1,7 @@
 import dagre from '@dagrejs/dagre'
 import { MarkerType, type Edge, type Node } from '@xyflow/react'
 import type { IModule } from 'dependency-cruiser'
-import { getBaseName, getParentPath } from './pathUtils'
+import { getBaseName, getParentPath, getRepresentative } from './pathUtils'
 import type {
   BuildGraphInput,
   BuildGraphResult,
@@ -245,20 +245,6 @@ function getDirectChildren(
   return children.sort()
 }
 
-function getRepresentative(
-  path: string,
-  selectedSet: Set<string>,
-  expandedFolders: Set<string>,
-): string {
-  let current = path
-  while (true) {
-    const parent = getParentPath(current)
-    if (!parent || !selectedSet.has(parent) || expandedFolders.has(parent)) break
-    current = parent
-  }
-  return current
-}
-
 function layoutGroup(
   folderId: string | null,
   nodeMap: Map<string, Node>,
@@ -368,6 +354,7 @@ export function buildGraph({
   folderColors,
   onToggleFolder,
   onShowInFileTree,
+  onShowDependencies,
 }: BuildGraphInput): BuildGraphResult {
   const selectedSet = new Set(selectedPaths)
   const moduleSources = new Set(modules.map((m) => m.source))
@@ -461,6 +448,7 @@ export function buildGraph({
           backgroundColor: folderColors.get(path) ?? 'rgba(0, 0, 0, 0.02)',
           onToggle: onToggleFolder,
           onShowInFileTree,
+          onShowDependencies,
         }
         nodeMap.set(path, {
           id: path,
@@ -487,6 +475,7 @@ export function buildGraph({
           backgroundColor: folderColors.get(path) ?? 'rgba(0, 0, 0, 0.02)',
           onToggle: onToggleFolder,
           onShowInFileTree,
+          onShowDependencies,
         }
         nodeMap.set(path, {
           id: path,
@@ -504,6 +493,7 @@ export function buildGraph({
         highlighted,
         circular: circularModules.has(path),
         onShowInFileTree,
+        onShowDependencies,
       }
       nodeMap.set(path, {
         id: path,

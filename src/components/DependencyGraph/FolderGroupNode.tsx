@@ -5,7 +5,7 @@ import styles from './DependencyGraph.module.css'
 import { NodeContextMenu } from './NodeContextMenu'
 
 export function FolderGroupNode({ data }: NodeProps) {
-  const { label, path, expanded, highlighted, backgroundColor, onToggle, onShowInFileTree } =
+  const { label, path, expanded, highlighted, backgroundColor, onToggle, onShowInFileTree, onShowDependencies } =
     data as FolderGroupNodeData
 
   return (
@@ -20,6 +20,7 @@ export function FolderGroupNode({ data }: NodeProps) {
         expanded={expanded}
         onToggle={onToggle}
         onShowInFileTree={onShowInFileTree}
+        onShowDependencies={onShowDependencies}
       >
         <div className={styles.groupHeader}>
           <button
