@@ -26,6 +26,7 @@ export interface FolderNodeData {
   path: string
   expanded: boolean
   highlighted: boolean
+  circular?: boolean
   backgroundColor: string
   onToggle: (path: string) => void
   onShowInFileTree: (path: string) => void
@@ -47,6 +48,7 @@ export interface FileNodeData {
   label: string
   path: string
   highlighted: boolean
+  circular?: boolean
   onShowInFileTree: (path: string) => void
   [key: string]: unknown
 }

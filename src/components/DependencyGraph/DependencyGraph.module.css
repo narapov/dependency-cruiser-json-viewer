@@ -72,6 +72,10 @@
   box-shadow: 0 0 0 1px blue;
 }
 
+.circular {
+  border-color: #ff4d4f;
+}
+
 .toggle {
   display: inline-flex;
   align-items: center;

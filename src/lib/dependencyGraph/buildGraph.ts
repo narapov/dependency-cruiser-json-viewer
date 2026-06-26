@@ -1,5 +1,6 @@
 import dagre from '@dagrejs/dagre'
 import { MarkerType, type Edge, type Node } from '@xyflow/react'
+import type { IModule } from 'dependency-cruiser'
 import { getBaseName, getParentPath } from './pathUtils'
 import type {
   BuildGraphInput,
@@ -12,6 +13,8 @@ import type {
 
 export const INCOMING_EDGE_COLOR = '#1677ff'
 export const OUTGOING_EDGE_COLOR = '#52c41a'
+export const CIRCULAR_EDGE_COLOR = '#ff4d4f'
+export const CIRCULAR_NODE_BACKGROUND = '#fff1f0'
 
 const NODE_WIDTH = 180
 const NODE_HEIGHT = 40
@@ -83,6 +86,39 @@ function hasSelectedDescendants(
   }
   for (const subfolder of children.folders) {
     if (hasSelectedDescendants(subfolder, selectedSet, childrenIndex)) return true
+  }
+  return false
+}
+
+function collectCircularModules(modules: IModule[]): Set<string> {
+  const circularModules = new Set<string>()
+  for (const module of modules) {
+    if (!Array.isArray(module.dependencies)) continue
+    if (module.dependencies.some((dep) => dep.circular === true)) {
+      circularModules.add(module.source)
+    }
+  }
+  return circularModules
+}
+
+function folderHasCircularDescendant(
+  folderPath: string,
+  selectedSet: Set<string>,
+  childrenIndex: Map<string, FolderChildren>,
+  circularModules: Set<string>,
+): boolean {
+  const children = childrenIndex.get(folderPath)
+  if (!children) return false
+
+  for (const file of children.files) {
+    if (selectedSet.has(file) && circularModules.has(file)) return true
+  }
+  for (const subfolder of children.folders) {
+    if (hasSelectedDescendants(subfolder, selectedSet, childrenIndex)) {
+      if (folderHasCircularDescendant(subfolder, selectedSet, childrenIndex, circularModules)) {
+        return true
+      }
+    }
   }
   return false
 }
@@ -334,6 +370,7 @@ export function buildGraph({
   const selectedSet = new Set(selectedPaths)
   const moduleSources = new Set(modules.map((m) => m.source))
   const childrenIndex = buildChildrenIndex(modules.map((m) => m.source))
+  const circularModules = collectCircularModules(modules)
 
   const visibleNodes = new Map<string, 'folder' | 'file'>()
   const roots = getRootSelectedPaths(selectedPaths, selectedSet, childrenIndex)
@@ -376,7 +413,10 @@ export function buildGraph({
 
       let stroke = '#b1b1b7'
       let strokeWidth = 1
-      if (isIncoming) {
+      if (dep.circular === true) {
+        stroke = CIRCULAR_EDGE_COLOR
+        strokeWidth = 2
+      } else if (isIncoming) {
         stroke = INCOMING_EDGE_COLOR
         strokeWidth = 2
       } else if (isOutgoing) {
@@ -427,11 +467,18 @@ export function buildGraph({
           zIndex: -1,
         })
       } else {
+        const circular = folderHasCircularDescendant(
+          path,
+          selectedSet,
+          childrenIndex,
+          circularModules,
+        )
         const data: FolderNodeData = {
           label: getBaseName(path),
           path,
           expanded: false,
           highlighted,
+          circular,
           backgroundColor: folderColors.get(path) ?? 'rgba(0, 0, 0, 0.02)',
           onToggle: onToggleFolder,
           onShowInFileTree,
@@ -450,6 +497,7 @@ export function buildGraph({
         label: getBaseName(path),
         path,
         highlighted,
+        circular: circularModules.has(path),
         onShowInFileTree,
       }
       nodeMap.set(path, {
