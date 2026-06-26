@@ -428,9 +428,11 @@ export function buildGraph({
 
       edges.push({
         id: edgeKey,
+        type: 'dependency',
         source: sourceRep,
         target: targetRep,
         interactionWidth: 3,
+        data: { title: `${sourceRep} -> ${targetRep}` },
         markerEnd: {
           type: MarkerType.ArrowClosed,
           color: stroke,

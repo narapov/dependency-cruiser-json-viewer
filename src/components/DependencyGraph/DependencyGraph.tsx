@@ -15,6 +15,7 @@ import type { IModule } from 'dependency-cruiser'
 import { applySelectedEdgeStyle } from '../../lib/dependencyGraph/applySelectedEdgeStyle'
 import { buildGraph } from '../../lib/dependencyGraph/buildGraph'
 import type { FolderGroupNodeData, FolderNodeData } from '../../lib/dependencyGraph/types'
+import { DependencyEdge } from './DependencyEdge'
 import { FileNode } from './FileNode'
 import { FolderGroupNode } from './FolderGroupNode'
 import { FolderNode } from './FolderNode'
@@ -25,6 +26,10 @@ const nodeTypes = {
   folder: FolderNode,
   folderGroup: FolderGroupNode,
   file: FileNode,
+}
+
+const edgeTypes = {
+  dependency: DependencyEdge,
 }
 
 interface DependencyGraphProps {
@@ -152,6 +157,7 @@ function DependencyGraphInner({
       nodes={nodes}
       edges={displayEdges}
       nodeTypes={nodeTypes}
+      edgeTypes={edgeTypes}
       onNodeClick={onNodeClick}
       onEdgeClick={onEdgeClick}
       onPaneClick={onPaneClick}

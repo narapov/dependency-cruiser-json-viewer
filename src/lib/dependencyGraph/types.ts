@@ -52,3 +52,8 @@ export interface FileNodeData {
   onShowInFileTree: (path: string) => void
   [key: string]: unknown
 }
+
+export interface DependencyEdgeData {
+  title: string
+  [key: string]: unknown
+}
