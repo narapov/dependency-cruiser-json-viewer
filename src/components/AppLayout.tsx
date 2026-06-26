@@ -1,9 +1,12 @@
-import { useCallback, useState, type CSSProperties } from 'react'
+import { useCallback, useMemo, useState, type CSSProperties } from 'react'
 import { Typography } from 'antd'
 import type { TreeNodeData } from './Tree'
 import type { IModule } from 'dependency-cruiser'
 import { getAncestorKeys } from '../lib/dependencyGraph/pathUtils'
+import { findTreeNode } from '../lib/searchTreeNodes'
 import {
+  buildTreeIndex,
+  canShowInGraph,
   getDefaultExpandedKeys,
   getDefaultSelectedKeys,
   getSubtreeFolderKeys,
@@ -14,10 +17,12 @@ import {
   MIN_WIDTH as PANEL_MIN_WIDTH,
   useDependenciesPanelWidth,
 } from '../hooks/useDependenciesPanelWidth'
+import { useQuickOpenShortcut } from '../hooks/useQuickOpenShortcut'
 import { MIN_WIDTH, useSidebarWidth } from '../hooks/useSidebarWidth'
 import { DependencyGraph } from './DependencyGraph'
 import { DependencyPanel } from './DependencyPanel/DependencyPanel'
 import { FileTree } from './FileTree'
+import { QuickOpen } from './QuickOpen'
 import styles from './AppLayout/AppLayout.module.css'
 
 interface AppLayoutProps {
@@ -33,7 +38,10 @@ export function AppLayout({ treeData, modules, moduleCount, folderColors }: AppL
   const [activePath, setActivePath] = useState<string | null>(null)
   const [graphFitToken, setGraphFitToken] = useState(0)
   const [dependenciesPath, setDependenciesPath] = useState<string | null>(null)
+  const [quickOpenOpen, setQuickOpenOpen] = useState(false)
+  const treeIndex = useMemo(() => buildTreeIndex(treeData), [treeData])
   const { sidebarWidth, onResizePointerDown } = useSidebarWidth()
+  useQuickOpenShortcut(quickOpenOpen, setQuickOpenOpen)
   const { width: panelWidth, onResizePointerDown: onPanelResizePointerDown } =
     useDependenciesPanelWidth(sidebarWidth)
 
@@ -102,6 +110,17 @@ export function AppLayout({ treeData, modules, moduleCount, folderColors }: AppL
   const handleClosePanel = useCallback(() => {
     setDependenciesPath(null)
   }, [])
+
+  const handleQuickOpenSelect = useCallback(
+    (path: string) => {
+      activatePath(path)
+      const node = findTreeNode(treeData, path)
+      if (node && canShowInGraph(path, selectedPaths, treeIndex, node)) {
+        setGraphFitToken((token) => token + 1)
+      }
+    },
+    [activatePath, selectedPaths, treeData, treeIndex],
+  )
 
   return (
     <div
@@ -188,6 +207,12 @@ export function AppLayout({ treeData, modules, moduleCount, folderColors }: AppL
           </aside>
         )}
       </div>
+      <QuickOpen
+        open={quickOpenOpen}
+        treeData={treeData}
+        onClose={() => setQuickOpenOpen(false)}
+        onSelect={handleQuickOpenSelect}
+      />
     </div>
   )
 }

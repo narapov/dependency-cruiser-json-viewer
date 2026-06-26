@@ -1,0 +1,65 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  max-height: min(420px, 70vh);
+  overflow: hidden;
+}
+
+.inputWrap {
+  padding: 12px 12px 8px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.input {
+  font-size: 14px;
+}
+
+.list {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 4px 0;
+  list-style: none;
+  overflow-y: auto;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.item:hover,
+.itemHighlighted {
+  background: #e6f4ff;
+}
+
+.icon {
+  flex-shrink: 0;
+  color: rgba(0, 0, 0, 0.45);
+  font-size: 14px;
+}
+
+.name {
+  flex-shrink: 0;
+  color: rgba(0, 0, 0, 0.88);
+}
+
+.path {
+  min-width: 0;
+  overflow: hidden;
+  color: rgba(0, 0, 0, 0.45);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.empty {
+  padding: 16px 12px;
+  color: rgba(0, 0, 0, 0.45);
+  font-size: 13px;
+  text-align: center;
+}
