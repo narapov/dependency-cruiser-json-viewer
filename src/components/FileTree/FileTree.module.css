@@ -1,5 +1,26 @@
-.scroll {
+.container {
+  display: flex;
+  flex-direction: column;
   height: 100%;
+  min-height: 0;
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 8px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 12px;
+}
+
+.controls :global(.ant-checkbox-wrapper) {
+  font-size: 12px;
+}
+
+.scroll {
+  flex: 1;
   min-height: 0;
   overflow-x: auto;
   overflow-y: hidden;
@@ -56,33 +77,12 @@
   flex: 0 1 auto;
 }
 
-.showInGraphBtn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 18px;
-  height: 18px;
-  margin-inline-start: 2px;
-  padding: 0;
-  border: none;
-  border-radius: 4px;
-  background: transparent;
-  color: rgba(0, 0, 0, 0.45);
+.navigable {
   cursor: pointer;
-  opacity: 0;
-  transition: opacity 0.15s, color 0.15s, background-color 0.15s;
 }
 
-.tree :global(.ant-tree-node-content-wrapper:hover) .showInGraphBtn {
-  opacity: 1;
-}
-
-.showInGraphBtn:hover {
-  color: rgba(0, 0, 0, 0.88);
-  background: rgba(0, 0, 0, 0.06);
-}
-
-.showInGraphBtn :global(.anticon) {
-  font-size: 12px;
+.active {
+  background: #e6f4ff;
+  border-radius: 4px;
+  outline: 1px solid #91caff;
 }

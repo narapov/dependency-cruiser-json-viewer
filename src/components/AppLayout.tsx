@@ -23,12 +23,19 @@ interface AppLayoutProps {
 export function AppLayout({ treeData, modules, moduleCount, folderColors }: AppLayoutProps) {
   const [selectedPaths, setSelectedPaths] = useState(() => getDefaultSelectedKeys(treeData))
   const [expandedKeys, setExpandedKeys] = useState(() => getDefaultExpandedKeys(treeData))
-  const [focusPath, setFocusPath] = useState<string | null>(null)
+  const [activePath, setActivePath] = useState<string | null>(null)
+  const [graphFitToken, setGraphFitToken] = useState(0)
 
   const treeIndex = useMemo(() => buildTreeIndex(treeData), [treeData])
 
   const onToggleFolder = useCallback((path: string) => {
     setExpandedKeys((keys) => toggleExpandedKey(keys, path))
+  }, [])
+
+  const activatePath = useCallback((path: string) => {
+    const ancestors = getAncestorKeys(path)
+    setExpandedKeys((keys) => [...new Set([...keys, ...ancestors])])
+    setActivePath(path)
   }, [])
 
   const handleShowInGraph = useCallback(
@@ -38,14 +45,25 @@ export function AppLayout({ treeData, modules, moduleCount, folderColors }: AppL
       const keysToExpand = isFolder ? [...ancestors, path] : ancestors
 
       setExpandedKeys((keys) => [...new Set([...keys, ...keysToExpand])])
-      setFocusPath(path)
+      setActivePath(path)
+      setGraphFitToken((token) => token + 1)
     },
     [treeIndex],
   )
 
-  const handleFocusComplete = useCallback(() => {
-    setFocusPath(null)
-  }, [])
+  const handleShowInFileTree = useCallback(
+    (path: string) => {
+      activatePath(path)
+    },
+    [activatePath],
+  )
+
+  const handleActivePathChange = useCallback(
+    (path: string) => {
+      activatePath(path)
+    },
+    [activatePath],
+  )
 
   return (
     <div className={styles.shell}>
@@ -70,6 +88,7 @@ export function AppLayout({ treeData, modules, moduleCount, folderColors }: AppL
           expandedKeys={expandedKeys}
           onExpand={setExpandedKeys}
           onShowInGraph={handleShowInGraph}
+          activePath={activePath}
         />
       </aside>
       <main className={styles.main}>
@@ -79,8 +98,10 @@ export function AppLayout({ treeData, modules, moduleCount, folderColors }: AppL
           folderColors={folderColors}
           expandedKeys={expandedKeys}
           onToggleFolder={onToggleFolder}
-          focusPath={focusPath}
-          onFocusComplete={handleFocusComplete}
+          onShowInFileTree={handleShowInFileTree}
+          onActivePathChange={handleActivePathChange}
+          activePath={activePath}
+          graphFitToken={graphFitToken}
         />
       </main>
     </div>

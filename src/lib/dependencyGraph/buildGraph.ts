@@ -326,6 +326,7 @@ export function buildGraph({
   highlightedNodeId,
   folderColors,
   onToggleFolder,
+  onShowInFileTree,
 }: BuildGraphInput): BuildGraphResult {
   const selectedSet = new Set(selectedPaths)
   const moduleSources = new Set(modules.map((m) => m.source))
@@ -411,6 +412,7 @@ export function buildGraph({
           highlighted,
           backgroundColor: folderColors.get(path) ?? 'rgba(0, 0, 0, 0.02)',
           onToggle: onToggleFolder,
+          onShowInFileTree,
         }
         nodeMap.set(path, {
           id: path,
@@ -427,7 +429,9 @@ export function buildGraph({
           path,
           expanded: false,
           highlighted,
+          backgroundColor: folderColors.get(path) ?? 'rgba(0, 0, 0, 0.02)',
           onToggle: onToggleFolder,
+          onShowInFileTree,
         }
         nodeMap.set(path, {
           id: path,
@@ -443,6 +447,7 @@ export function buildGraph({
         label: getBaseName(path),
         path,
         highlighted,
+        onShowInFileTree,
       }
       nodeMap.set(path, {
         id: path,

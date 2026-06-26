@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import {
   Background,
   Controls,
+  MiniMap,
   ReactFlow,
   ReactFlowProvider,
   useReactFlow,
@@ -10,6 +11,7 @@ import {
 import '@xyflow/react/dist/style.css'
 import type { IModule } from 'dependency-cruiser'
 import { buildGraph } from '../../lib/dependencyGraph/buildGraph'
+import type { FolderGroupNodeData, FolderNodeData } from '../../lib/dependencyGraph/types'
 import { FileNode } from './FileNode'
 import { FolderGroupNode } from './FolderGroupNode'
 import { FolderNode } from './FolderNode'
@@ -27,8 +29,10 @@ interface DependencyGraphProps {
   folderColors: ReadonlyMap<string, string>
   expandedKeys: string[]
   onToggleFolder: (path: string) => void
-  focusPath?: string | null
-  onFocusComplete?: () => void
+  onShowInFileTree: (path: string) => void
+  onActivePathChange?: (path: string) => void
+  activePath?: string | null
+  graphFitToken?: number
 }
 
 function DependencyGraphInner({
@@ -37,11 +41,13 @@ function DependencyGraphInner({
   folderColors,
   expandedKeys,
   onToggleFolder,
-  focusPath,
-  onFocusComplete,
+  onShowInFileTree,
+  onActivePathChange,
+  activePath,
+  graphFitToken = 0,
 }: DependencyGraphProps) {
-  const [highlightedNodeId, setHighlightedNodeId] = useState<string | null>(null)
   const { fitView, getNode } = useReactFlow()
+  const lastFitToken = useRef(graphFitToken)
 
   const expandedFolders = useMemo(() => new Set(expandedKeys), [expandedKeys])
 
@@ -51,11 +57,12 @@ function DependencyGraphInner({
         modules,
         selectedPaths,
         expandedFolders,
-        highlightedNodeId,
+        highlightedNodeId: activePath ?? null,
         folderColors,
         onToggleFolder,
+        onShowInFileTree,
       }),
-    [modules, selectedPaths, expandedFolders, highlightedNodeId, folderColors, onToggleFolder],
+    [modules, selectedPaths, expandedFolders, activePath, folderColors, onToggleFolder, onShowInFileTree],
   )
 
   const structureKey = useMemo(
@@ -64,31 +71,46 @@ function DependencyGraphInner({
   )
 
   useEffect(() => {
-    if (nodes.length === 0 || focusPath) return
+    if (nodes.length === 0) return
+    if (graphFitToken !== lastFitToken.current) return
+
     const frame = requestAnimationFrame(() => {
       fitView({ padding: 0.2, duration: 200 })
     })
     return () => cancelAnimationFrame(frame)
-  }, [structureKey, nodes.length, fitView, focusPath])
+  }, [structureKey, nodes.length, fitView, graphFitToken])
 
   useEffect(() => {
-    if (!focusPath) return
-    setHighlightedNodeId(focusPath)
-  }, [focusPath])
+    if (graphFitToken === lastFitToken.current) return
+    if (!activePath) return
+    if (!getNode(activePath)) return
 
-  useEffect(() => {
-    if (!focusPath) return
-    if (!getNode(focusPath)) return
+    lastFitToken.current = graphFitToken
 
     const frame = requestAnimationFrame(() => {
-      fitView({ nodes: [{ id: focusPath }], padding: 0.5, duration: 300 })
-      onFocusComplete?.()
+      fitView({ nodes: [{ id: activePath }], padding: 0.5, duration: 300 })
     })
     return () => cancelAnimationFrame(frame)
-  }, [focusPath, nodes, fitView, getNode, onFocusComplete])
+  }, [graphFitToken, activePath, nodes, fitView, getNode])
 
-  const onNodeClick = useCallback((_: React.MouseEvent, node: Node) => {
-    setHighlightedNodeId((current) => (current === node.id ? null : node.id))
+  const onNodeClick = useCallback(
+    (_: React.MouseEvent, node: Node) => {
+      if (activePath === node.id) {
+        return
+      }
+      onActivePathChange?.(node.id)
+    },
+    [activePath, onActivePathChange],
+  )
+
+  const nodeColor = useCallback((node: Node) => {
+    if (node.type === 'folderGroup') {
+      return (node.data as FolderGroupNodeData).backgroundColor
+    }
+    if (node.type === 'folder') {
+      return (node.data as FolderNodeData).backgroundColor
+    }
+    return '#fff'
   }, [])
 
   if (selectedPaths.length === 0) {
@@ -113,7 +135,16 @@ function DependencyGraphInner({
       proOptions={{ hideAttribution: true }}
     >
       <Background />
-      <Controls />
+      <MiniMap
+        position="bottom-left"
+        pannable
+        zoomable
+        nodeColor={nodeColor}
+        nodeStrokeColor="#d9d9d9"
+        maskColor="rgba(240, 240, 240, 0.6)"
+        style={{ width: 160, height: 120 }}
+      />
+      <Controls position="bottom-right" showInteractive={false} />
     </ReactFlow>
   )
 }

@@ -93,6 +93,32 @@ export function getTopLevelFolderKeys(treeData: TreeDataNode[]): string[] {
     .map((node) => String(node.key))
 }
 
+export function getAllKeys(treeData: TreeDataNode[]): string[] {
+  const keys: string[] = []
+
+  function walk(node: TreeDataNode) {
+    keys.push(String(node.key))
+    node.children?.forEach(walk)
+  }
+
+  treeData.forEach(walk)
+  return keys
+}
+
+export function getAllFolderKeys(treeData: TreeDataNode[]): string[] {
+  const keys: string[] = []
+
+  function walk(node: TreeDataNode) {
+    if (!node.isLeaf) {
+      keys.push(String(node.key))
+    }
+    node.children?.forEach(walk)
+  }
+
+  treeData.forEach(walk)
+  return keys
+}
+
 export function getDefaultSelectedKeys(treeData: TreeDataNode[]): string[] {
   const index = buildTreeIndex(treeData)
   let selected: string[] = []

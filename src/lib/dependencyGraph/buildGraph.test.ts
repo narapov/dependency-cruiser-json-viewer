@@ -7,6 +7,7 @@ function moduleAt(source: string): IModule {
 }
 
 const noopToggle = () => {}
+const noopShowInFileTree = () => {}
 
 describe('buildGraph half-checked folders', () => {
   const sources = [
@@ -26,6 +27,7 @@ describe('buildGraph half-checked folders', () => {
       highlightedNodeId: null,
       folderColors: new Map(),
       onToggleFolder: noopToggle,
+      onShowInFileTree: noopShowInFileTree,
     })
 
     const folderIds = nodes
@@ -45,6 +47,7 @@ describe('buildGraph half-checked folders', () => {
       highlightedNodeId: null,
       folderColors: new Map(),
       onToggleFolder: noopToggle,
+      onShowInFileTree: noopShowInFileTree,
     })
 
     expect(nodes.some((node) => node.id === 'src/foo/a.ts' && node.type === 'file')).toBe(true)
@@ -61,6 +64,7 @@ describe('buildGraph half-checked folders', () => {
       highlightedNodeId: null,
       folderColors: new Map(),
       onToggleFolder: noopToggle,
+      onShowInFileTree: noopShowInFileTree,
     })
 
     const nodeIds = nodes.map((node) => node.id)
@@ -79,6 +83,7 @@ describe('buildGraph half-checked folders', () => {
       highlightedNodeId: null,
       folderColors: new Map(),
       onToggleFolder: noopToggle,
+      onShowInFileTree: noopShowInFileTree,
     })
 
     const folderIds = nodes
