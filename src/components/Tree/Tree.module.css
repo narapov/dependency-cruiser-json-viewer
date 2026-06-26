@@ -1,4 +1,7 @@
 .viewport {
+  --tree-row-height: 22px;
+  display: grid;
+  grid-template-columns: 1fr;
   flex: 1;
   min-height: 0;
   overflow-x: auto;
@@ -7,6 +10,8 @@
 }
 
 .row {
+  position: relative;
+  z-index: 0;
   display: flex;
   align-items: center;
   min-height: 22px;
@@ -18,6 +23,17 @@
   background: #e6f4ff;
   border-radius: 4px;
   outline: 1px solid #91caff;
+}
+
+.rowSticky {
+  position: sticky;
+  top: calc(var(--tree-depth) * var(--tree-row-height));
+  z-index: calc(var(--tree-max-depth) - var(--tree-depth) + 1);
+  background: #fff;
+}
+
+.rowSticky.active {
+  background: #e6f4ff;
 }
 
 .switcher {

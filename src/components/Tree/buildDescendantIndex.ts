@@ -41,3 +41,19 @@ export function computeIndeterminateKeys(
 
   return indeterminate
 }
+
+export function getTreeMaxDepth(treeData: TreeNodeData[]): number {
+  let maxDepth = 0
+
+  function walk(nodes: TreeNodeData[], depth: number) {
+    for (const node of nodes) {
+      maxDepth = Math.max(maxDepth, depth)
+      if (node.children) {
+        walk(node.children, depth + 1)
+      }
+    }
+  }
+
+  walk(treeData, 0)
+  return maxDepth
+}

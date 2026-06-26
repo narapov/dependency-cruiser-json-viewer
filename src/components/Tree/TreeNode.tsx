@@ -90,8 +90,11 @@ function TreeNodeComponent({
         ref={(element) => registerElement(node.key, element)}
         id={`tree-node-${encodeURIComponent(node.key)}`}
         data-tree-key={node.key}
-        className={`${styles.row} ${active ? styles.active : ''}`}
-        style={{ paddingLeft: depth * 12 }}
+        className={`${styles.row} ${active ? styles.active : ''} ${branch && expanded ? styles.rowSticky : ''}`}
+        style={{
+          paddingLeft: depth * 12,
+          ['--tree-depth' as string]: depth,
+        }}
       >
         {branch ? (
           <button

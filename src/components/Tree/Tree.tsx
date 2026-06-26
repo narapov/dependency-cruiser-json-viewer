@@ -4,8 +4,9 @@ import {
   useImperativeHandle,
   useMemo,
   useRef,
+  type CSSProperties,
 } from 'react'
-import { buildDescendantIndex, computeIndeterminateKeys } from './buildDescendantIndex'
+import { buildDescendantIndex, computeIndeterminateKeys, getTreeMaxDepth } from './buildDescendantIndex'
 import { TreeNode } from './TreeNode'
 import type { TreeHandle, TreeProps } from './types'
 import styles from './Tree.module.css'
@@ -41,6 +42,8 @@ export const Tree = forwardRef<TreeHandle, TreeProps>(function Tree(
     [checkedKeys, descendantsByKey],
   )
 
+  const maxDepth = useMemo(() => getTreeMaxDepth(treeData), [treeData])
+
   const registerElement = useCallback((key: string, element: HTMLElement | null) => {
     if (element) {
       elementRegistry.current.set(key, element)
@@ -69,7 +72,10 @@ export const Tree = forwardRef<TreeHandle, TreeProps>(function Tree(
     : styles.viewport
 
   return (
-    <div className={viewportClassName}>
+    <div
+      className={viewportClassName}
+      style={{ '--tree-max-depth': maxDepth } as CSSProperties}
+    >
       {treeData.map((node) => (
         <TreeNode
           key={node.key}
