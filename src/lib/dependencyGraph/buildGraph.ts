@@ -10,6 +10,9 @@ import type {
   FolderNodeData,
 } from './types'
 
+export const INCOMING_EDGE_COLOR = '#1677ff'
+export const OUTGOING_EDGE_COLOR = '#52c41a'
+
 const NODE_WIDTH = 180
 const NODE_HEIGHT = 40
 const GROUP_PADDING = 16
@@ -374,10 +377,10 @@ export function buildGraph({
       let stroke = '#b1b1b7'
       let strokeWidth = 1
       if (isIncoming) {
-        stroke = '#1677ff'
+        stroke = INCOMING_EDGE_COLOR
         strokeWidth = 2
       } else if (isOutgoing) {
-        stroke = '#52c41a'
+        stroke = OUTGOING_EDGE_COLOR
         strokeWidth = 2
       }
 

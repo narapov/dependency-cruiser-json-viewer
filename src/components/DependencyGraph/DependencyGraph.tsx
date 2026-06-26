@@ -3,6 +3,7 @@ import {
   Background,
   Controls,
   MiniMap,
+  Panel,
   ReactFlow,
   ReactFlowProvider,
   useReactFlow,
@@ -15,6 +16,7 @@ import type { FolderGroupNodeData, FolderNodeData } from '../../lib/dependencyGr
 import { FileNode } from './FileNode'
 import { FolderGroupNode } from './FolderGroupNode'
 import { FolderNode } from './FolderNode'
+import { GraphLegend } from './GraphLegend'
 import styles from './DependencyGraph.module.css'
 
 const nodeTypes = {
@@ -135,6 +137,9 @@ function DependencyGraphInner({
       proOptions={{ hideAttribution: true }}
     >
       <Background />
+      <Panel position="top-right">
+        <GraphLegend />
+      </Panel>
       <MiniMap
         position="bottom-left"
         pannable
