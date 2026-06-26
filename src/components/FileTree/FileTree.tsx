@@ -144,28 +144,16 @@ export function FileTree({
             </span>
           )
 
-          if (isFolder) {
-            return (
-              <FileTreeContextMenu
-                path={node.key}
-                isFolder
-                onExpandRecursive={onExpandRecursive}
-                onShowDependencies={navigable ? onShowDependencies : undefined}
-              >
-                {title}
-              </FileTreeContextMenu>
-            )
-          }
-
-          if (navigable && onShowDependencies) {
-            return (
-              <FileTreeContextMenu path={node.key} onShowDependencies={onShowDependencies}>
-                {title}
-              </FileTreeContextMenu>
-            )
-          }
-
-          return title
+          return (
+            <FileTreeContextMenu
+              path={node.key}
+              isFolder={isFolder}
+              onExpandRecursive={isFolder ? onExpandRecursive : undefined}
+              onShowDependencies={navigable ? onShowDependencies : undefined}
+            >
+              {title}
+            </FileTreeContextMenu>
+          )
         }}
       />
     </div>

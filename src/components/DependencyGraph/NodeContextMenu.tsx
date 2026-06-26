@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Dropdown, type MenuProps } from 'antd'
+import { copyToClipboard } from '../../lib/copyToClipboard'
 
 interface NodeContextMenuProps {
   path: string
@@ -22,7 +23,12 @@ export function NodeContextMenu({
   onShowDependencies,
   children,
 }: NodeContextMenuProps) {
-  const items: MenuProps['items'] = []
+  const items: MenuProps['items'] = [
+    {
+      key: 'copy',
+      label: 'Copy',
+    },
+  ]
 
   if (isFolder && onToggle) {
     items.push({
@@ -52,14 +58,30 @@ export function NodeContextMenu({
 
   const onClick: MenuProps['onClick'] = ({ key, domEvent }) => {
     domEvent.stopPropagation()
-    if (key === 'toggle') {
-      onToggle?.(path)
-    } else if (key === 'expand-recursive') {
-      onExpandRecursive?.(path)
-    } else if (key === 'show-in-tree') {
-      onShowInFileTree(path)
-    } else if (key === 'show-dependencies') {
-      onShowDependencies?.(path)
+    switch (key) {
+      case 'copy': {
+        void copyToClipboard(path)
+        return
+      }
+      case 'toggle': {
+        onToggle?.(path)
+        return
+      }
+      case 'expand-recursive': {
+        onExpandRecursive?.(path)
+        return
+      }
+      case 'show-in-tree': {
+        onShowInFileTree(path)
+        return
+      }
+      case 'show-dependencies': {
+        onShowDependencies?.(path)
+        return
+      }
+      default: {
+        return
+      }
     }
   }
 

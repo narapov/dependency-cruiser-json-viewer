@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Dropdown, type MenuProps } from 'antd'
+import { copyToClipboard } from '../../lib/copyToClipboard'
 
 interface FileTreeContextMenuProps {
   path: string
@@ -16,7 +17,12 @@ export function FileTreeContextMenu({
   onShowDependencies,
   children,
 }: FileTreeContextMenuProps) {
-  const items: MenuProps['items'] = []
+  const items: MenuProps['items'] = [
+    {
+      key: 'copy',
+      label: 'Copy',
+    },
+  ]
 
   if (isFolder && onExpandRecursive) {
     items.push({
@@ -34,10 +40,16 @@ export function FileTreeContextMenu({
 
   const onClick: MenuProps['onClick'] = ({ key, domEvent }) => {
     domEvent.stopPropagation()
-    if (key === 'expand-recursive') {
-      onExpandRecursive?.(path)
-    } else if (key === 'show-dependencies') {
-      onShowDependencies?.(path)
+    switch (key) {
+      case 'copy':
+        void copyToClipboard(path)
+        break
+      case 'expand-recursive':
+        onExpandRecursive?.(path)
+        break
+      case 'show-dependencies':
+        onShowDependencies?.(path)
+        break
     }
   }
 
