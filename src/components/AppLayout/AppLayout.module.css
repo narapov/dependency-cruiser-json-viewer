@@ -5,7 +5,7 @@
   grid-template:
     "header header" auto
     "sider  main"   1fr
-    / 280px         1fr;
+    / var(--sider-width, 280px) 1fr;
 }
 
 .header {
@@ -16,12 +16,40 @@
   background: #001529;
 }
 
-.sider {
+.siderContainer {
   grid-area: sider;
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.sider {
+  height: 100%;
   min-height: 0;
   overflow: hidden;
   border-right: 1px solid #f0f0f0;
   background: #fff;
+}
+
+.resizeHandle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  width: 6px;
+  transform: translateX(50%);
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.resizeHandle:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+:global(body.resizingSidebar) {
+  cursor: col-resize;
+  user-select: none;
 }
 
 .main {

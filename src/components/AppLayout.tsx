@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useState, type CSSProperties } from 'react'
 import { Typography } from 'antd'
 import type { TreeNodeData } from './Tree'
 import type { IModule } from 'dependency-cruiser'
@@ -9,6 +9,7 @@ import {
   resolveActivePathAfterCollapse,
   toggleExpandedKey,
 } from '../lib/treeSelection'
+import { MIN_WIDTH, useSidebarWidth } from '../hooks/useSidebarWidth'
 import { DependencyGraph } from './DependencyGraph'
 import { DependencyDrawer } from './DependencyDrawer/DependencyDrawer'
 import { FileTree } from './FileTree'
@@ -27,6 +28,7 @@ export function AppLayout({ treeData, modules, moduleCount, folderColors }: AppL
   const [activePath, setActivePath] = useState<string | null>(null)
   const [graphFitToken, setGraphFitToken] = useState(0)
   const [drawerPath, setDrawerPath] = useState<string | null>(null)
+  const { sidebarWidth, onResizePointerDown } = useSidebarWidth()
 
   const updateExpandedKeys = useCallback(
     (updater: string[] | ((prev: string[]) => string[])) => {
@@ -84,7 +86,10 @@ export function AppLayout({ treeData, modules, moduleCount, folderColors }: AppL
   }, [])
 
   return (
-    <div className={styles.shell}>
+    <div
+      className={styles.shell}
+      style={{ '--sider-width': `${sidebarWidth}px` } as CSSProperties}
+    >
       <header className={styles.header}>
         <Typography.Title level={4} style={{ margin: 0, color: '#fff' }}>
           Deps Viewer
@@ -98,18 +103,28 @@ export function AppLayout({ treeData, modules, moduleCount, folderColors }: AppL
           )}
         </Typography.Title>
       </header>
-      <aside className={styles.sider}>
-        <FileTree
-          treeData={treeData}
-          selectedKeys={selectedPaths}
-          onSelect={setSelectedPaths}
-          expandedKeys={expandedKeys}
-          onExpand={updateExpandedKeys}
-          onShowInGraph={handleShowInGraph}
-          onShowDependencies={handleShowDependencies}
-          activePath={activePath}
+      <div className={styles.siderContainer}>
+        <aside className={styles.sider}>
+          <FileTree
+            treeData={treeData}
+            selectedKeys={selectedPaths}
+            onSelect={setSelectedPaths}
+            expandedKeys={expandedKeys}
+            onExpand={updateExpandedKeys}
+            onShowInGraph={handleShowInGraph}
+            onShowDependencies={handleShowDependencies}
+            activePath={activePath}
+          />
+        </aside>
+        <div
+          className={styles.resizeHandle}
+          role="separator"
+          aria-orientation="vertical"
+          aria-valuenow={sidebarWidth}
+          aria-valuemin={MIN_WIDTH}
+          onPointerDown={onResizePointerDown}
         />
-      </aside>
+      </div>
       <main className={styles.main}>
         <DependencyGraph
           modules={modules}
