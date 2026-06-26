@@ -1,4 +1,4 @@
-import type { TreeDataNode } from 'antd'
+import type { TreeNodeData } from '../components/Tree'
 
 interface TreeNode {
   name: string
@@ -7,7 +7,7 @@ interface TreeNode {
   isFile: boolean
 }
 
-export function buildFileTree(sources: string[]): TreeDataNode[] {
+export function buildFileTree(sources: string[]): TreeNodeData[] {
   const root = new Map<string, TreeNode>()
 
   for (const source of sources) {
@@ -36,7 +36,7 @@ export function buildFileTree(sources: string[]): TreeDataNode[] {
   return mapToTreeData(root)
 }
 
-function mapToTreeData(nodes: Map<string, TreeNode>): TreeDataNode[] {
+function mapToTreeData(nodes: Map<string, TreeNode>): TreeNodeData[] {
   return [...nodes.values()]
     .sort((a, b) => {
       const aIsDir = !a.isFile
@@ -44,11 +44,18 @@ function mapToTreeData(nodes: Map<string, TreeNode>): TreeDataNode[] {
       if (aIsDir !== bIsDir) return aIsDir ? -1 : 1
       return a.name.localeCompare(b.name)
     })
-    .map((node) => ({
-      key: node.path,
-      title: node.name,
-      isLeaf: node.isFile,
-      children:
-        node.children.size > 0 ? mapToTreeData(node.children) : undefined,
-    }))
+    .map((node) => {
+      if (node.isFile) {
+        return {
+          key: node.path,
+          title: node.name,
+        }
+      }
+
+      return {
+        key: node.path,
+        title: node.name,
+        children: mapToTreeData(node.children),
+      }
+    })
 }

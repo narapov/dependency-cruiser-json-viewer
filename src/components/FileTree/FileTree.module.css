@@ -19,49 +19,6 @@
   font-size: 12px;
 }
 
-.scroll {
-  flex: 1;
-  min-height: 0;
-  overflow-x: auto;
-  overflow-y: hidden;
-}
-
-.tree:global(.ant-tree) {
-  font-size: 12px;
-}
-
-.tree :global(.ant-tree-node-content-wrapper) {
-  min-height: 22px;
-  line-height: 22px;
-  padding-inline: 4px;
-}
-
-.tree :global(.ant-tree-switcher) {
-  width: 16px;
-  margin-inline-end: 2px;
-}
-
-.tree :global(.ant-tree-indent-unit) {
-  width: 12px;
-}
-
-.tree :global(.ant-tree-list-holder-inner) {
-  min-width: max-content;
-}
-
-.tree :global(.ant-tree-checkbox) {
-  margin-inline-end: 4px;
-}
-
-.tree :global(.ant-tree-checkbox-inner) {
-  width: 14px;
-  height: 14px;
-}
-
-.tree :global(.ant-tree-checkbox-inner::after) {
-  inset-inline-start: 20%;
-}
-
 .title {
   display: inline-flex;
   align-items: center;
@@ -79,10 +36,4 @@
 
 .navigable {
   cursor: pointer;
-}
-
-.active {
-  background: #e6f4ff;
-  border-radius: 4px;
-  outline: 1px solid #91caff;
 }

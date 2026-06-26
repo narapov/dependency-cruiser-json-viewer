@@ -1,0 +1,66 @@
+.viewport {
+  flex: 1;
+  min-height: 0;
+  overflow-x: auto;
+  overflow-y: auto;
+  font-size: 12px;
+  min-width: max-content;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  min-height: 22px;
+  line-height: 22px;
+  white-space: nowrap;
+}
+
+.row.active {
+  background: #e6f4ff;
+  border-radius: 4px;
+  outline: 1px solid #91caff;
+}
+
+.switcher {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 16px;
+  height: 22px;
+  margin-inline-end: 2px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 10px;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.switcher:hover {
+  color: rgba(0, 0, 0, 0.88);
+}
+
+.switcherPlaceholder {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 16px;
+  margin-inline-end: 2px;
+}
+
+.checkbox {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  margin: 0 4px 0 0;
+  cursor: pointer;
+}
+
+.content {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.children {
+  display: block;
+}

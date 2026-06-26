@@ -1,18 +1,20 @@
-import { useEffect, useMemo, useRef, useState, type ComponentRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { FileOutlined, FolderOutlined } from '@ant-design/icons'
-import { Checkbox, Tree, type TreeDataNode } from 'antd'
+import { Checkbox } from 'antd'
 import {
   applyCascadeSelection,
   buildTreeIndex,
   canShowInGraph,
-  computeCheckState,
   getAllFolderKeys,
   getAllKeys,
 } from '../../lib/treeSelection'
+import { Tree, isTreeLeaf, type TreeHandle, type TreeNodeData } from '../Tree'
 import styles from './FileTree.module.css'
 
+const CLICK_DELAY_MS = 250
+
 interface FileTreeProps {
-  treeData: TreeDataNode[]
+  treeData: TreeNodeData[]
   selectedKeys?: string[]
   onSelect?: (keys: string[]) => void
   expandedKeys: string[]
@@ -30,17 +32,12 @@ export function FileTree({
   onShowInGraph,
   activePath,
 }: FileTreeProps) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const treeRef = useRef<ComponentRef<typeof Tree>>(null)
-  const [height, setHeight] = useState(0)
+  const treeRef = useRef<TreeHandle>(null)
+  const clickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const treeIndex = useMemo(() => buildTreeIndex(treeData), [treeData])
   const allKeys = useMemo(() => getAllKeys(treeData), [treeData])
   const allFolderKeys = useMemo(() => getAllFolderKeys(treeData), [treeData])
-  const checkedKeys = useMemo(
-    () => computeCheckState(selectedKeys, treeIndex),
-    [selectedKeys, treeIndex],
-  )
 
   const allSelected = allKeys.length > 0 && allKeys.every((key) => selectedKeys.includes(key))
   const someSelected = selectedKeys.length > 0 && !allSelected
@@ -48,36 +45,34 @@ export function FileTree({
     allFolderKeys.length > 0 && allFolderKeys.every((key) => expandedKeys.includes(key))
   const someExpanded = expandedKeys.length > 0 && !allExpanded
 
-  useEffect(() => {
-    const element = containerRef.current
-    if (!element) return
-
-    const observer = new ResizeObserver(([entry]) => {
-      setHeight(entry.contentRect.height)
-    })
-    observer.observe(element)
-    return () => observer.disconnect()
-  }, [])
+  const toggleExpand = useCallback(
+    (key: string) => {
+      onExpand(
+        expandedKeys.includes(key)
+          ? expandedKeys.filter((expandedKey) => expandedKey !== key)
+          : [...expandedKeys, key],
+      )
+    },
+    [expandedKeys, onExpand],
+  )
 
   useEffect(() => {
     if (!activePath) return
 
-    let innerFrame: number
-    const outerFrame = requestAnimationFrame(() => {
-      innerFrame = requestAnimationFrame(() => {
-        treeRef.current?.scrollTo({ key: activePath, align: 'auto' })
-      })
+    const frame = requestAnimationFrame(() => {
+      treeRef.current?.scrollIntoView(activePath)
     })
 
-    return () => {
-      cancelAnimationFrame(outerFrame)
-      cancelAnimationFrame(innerFrame)
-    }
+    return () => cancelAnimationFrame(frame)
   }, [activePath, expandedKeys])
 
-  const handleToggle = (key: string, checked: boolean) => {
-    onSelect?.(applyCascadeSelection(selectedKeys, key, checked, treeIndex))
-  }
+  useEffect(() => {
+    return () => {
+      if (clickTimerRef.current) {
+        clearTimeout(clickTimerRef.current)
+      }
+    }
+  }, [])
 
   return (
     <div className={styles.container}>
@@ -97,47 +92,52 @@ export function FileTree({
           Expand all
         </Checkbox>
       </div>
-      <div ref={containerRef} className={styles.scroll}>
-        {height > 0 && (
-          <Tree
-          ref={treeRef}
-          className={styles.tree}
-          treeData={treeData}
-          checkable
-          checkStrictly
-          checkedKeys={checkedKeys}
-          onCheck={(_keys, { node, checked }) => {
-            handleToggle(String(node.key), checked)
-          }}
-          onSelect={(_keys, { node }) => {
-            const key = String(node.key)
-            if (canShowInGraph(key, selectedKeys, treeIndex, !!node.isLeaf)) {
-              onShowInGraph?.(key)
-            }
-          }}
-          selectedKeys={activePath ? [activePath] : []}
-          expandedKeys={expandedKeys}
-          onExpand={(keys) => {
-            onExpand(keys.map(String))
-          }}
-          virtual={false}
-          height={height}
-          titleRender={(node) => {
-            const key = String(node.key)
-            const navigable = canShowInGraph(key, selectedKeys, treeIndex, !!node.isLeaf)
+      <Tree
+        ref={treeRef}
+        treeData={treeData}
+        checkable
+        checkedKeys={selectedKeys}
+        expandedKeys={expandedKeys}
+        activeKey={activePath}
+        onCheck={(key, checked) => {
+          onSelect?.(applyCascadeSelection(selectedKeys, key, checked, treeIndex))
+        }}
+        onClick={({ key, node }) => {
+          if (!canShowInGraph(key, selectedKeys, treeIndex, node)) return
 
-            return (
-              <span
-                className={`${styles.title} ${key === activePath ? styles.active : ''} ${navigable ? styles.navigable : ''}`}
-              >
-                {node.isLeaf ? <FileOutlined /> : <FolderOutlined />}
-                <span className={styles.titleText}>{node.title as string}</span>
-              </span>
-            )
-          }}
-          />
-        )}
-      </div>
+          if (clickTimerRef.current) clearTimeout(clickTimerRef.current)
+          clickTimerRef.current = setTimeout(() => {
+            clickTimerRef.current = null
+            onShowInGraph?.(key)
+          }, CLICK_DELAY_MS)
+        }}
+        onDoubleClick={({ key, node }) => {
+          if (clickTimerRef.current) {
+            clearTimeout(clickTimerRef.current)
+            clickTimerRef.current = null
+          }
+          if (!isTreeLeaf(node)) {
+            toggleExpand(key)
+          }
+        }}
+        onExpand={(key, expanded) => {
+          onExpand(
+            expanded
+              ? [...expandedKeys, key]
+              : expandedKeys.filter((expandedKey) => expandedKey !== key),
+          )
+        }}
+        titleRender={(node) => {
+          const navigable = canShowInGraph(node.key, selectedKeys, treeIndex, node)
+
+          return (
+            <span className={`${styles.title} ${navigable ? styles.navigable : ''}`}>
+              {isTreeLeaf(node) ? <FileOutlined /> : <FolderOutlined />}
+              <span className={styles.titleText}>{node.title}</span>
+            </span>
+          )
+        }}
+      />
     </div>
   )
 }

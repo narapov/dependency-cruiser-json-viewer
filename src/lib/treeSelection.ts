@@ -1,22 +1,22 @@
-import type { TreeDataNode } from 'antd'
+import { isTreeBranch, type TreeNodeData } from '../components/Tree'
 
 export interface TreeIndex {
   descendantsByKey: Map<string, string[]>
 }
 
-export function buildTreeIndex(treeData: TreeDataNode[]): TreeIndex {
+export function buildTreeIndex(treeData: TreeNodeData[]): TreeIndex {
   const descendantsByKey = new Map<string, string[]>()
 
-  function indexNode(node: TreeDataNode): string[] {
+  function indexNode(node: TreeNodeData): string[] {
     const descendantKeys: string[] = []
 
     if (node.children) {
       for (const child of node.children) {
-        descendantKeys.push(String(child.key), ...indexNode(child))
+        descendantKeys.push(child.key, ...indexNode(child))
       }
     }
 
-    descendantsByKey.set(String(node.key), descendantKeys)
+    descendantsByKey.set(node.key, descendantKeys)
     return descendantKeys
   }
 
@@ -76,8 +76,8 @@ export function computeCheckState(
   return { checked: selectedKeys, halfChecked }
 }
 
-export function getDefaultExpandedKeys(treeData: TreeDataNode[]): string[] {
-  const hasSrc = treeData.some((node) => String(node.key) === 'src' && !node.isLeaf)
+export function getDefaultExpandedKeys(treeData: TreeNodeData[]): string[] {
+  const hasSrc = treeData.some((node) => node.key === 'src' && isTreeBranch(node))
   return hasSrc ? ['src'] : []
 }
 
@@ -87,17 +87,15 @@ export function toggleExpandedKey(keys: string[], path: string): string[] {
     : [...keys, path]
 }
 
-export function getTopLevelFolderKeys(treeData: TreeDataNode[]): string[] {
-  return treeData
-    .filter((node) => !node.isLeaf)
-    .map((node) => String(node.key))
+export function getTopLevelFolderKeys(treeData: TreeNodeData[]): string[] {
+  return treeData.filter(isTreeBranch).map((node) => node.key)
 }
 
-export function getAllKeys(treeData: TreeDataNode[]): string[] {
+export function getAllKeys(treeData: TreeNodeData[]): string[] {
   const keys: string[] = []
 
-  function walk(node: TreeDataNode) {
-    keys.push(String(node.key))
+  function walk(node: TreeNodeData) {
+    keys.push(node.key)
     node.children?.forEach(walk)
   }
 
@@ -105,12 +103,12 @@ export function getAllKeys(treeData: TreeDataNode[]): string[] {
   return keys
 }
 
-export function getAllFolderKeys(treeData: TreeDataNode[]): string[] {
+export function getAllFolderKeys(treeData: TreeNodeData[]): string[] {
   const keys: string[] = []
 
-  function walk(node: TreeDataNode) {
-    if (!node.isLeaf) {
-      keys.push(String(node.key))
+  function walk(node: TreeNodeData) {
+    if (isTreeBranch(node)) {
+      keys.push(node.key)
     }
     node.children?.forEach(walk)
   }
@@ -119,7 +117,7 @@ export function getAllFolderKeys(treeData: TreeDataNode[]): string[] {
   return keys
 }
 
-export function getDefaultSelectedKeys(treeData: TreeDataNode[]): string[] {
+export function getDefaultSelectedKeys(treeData: TreeNodeData[]): string[] {
   const index = buildTreeIndex(treeData)
   let selected: string[] = []
 
@@ -134,10 +132,10 @@ export function canShowInGraph(
   key: string,
   selectedKeys: string[],
   index: TreeIndex,
-  isLeaf: boolean,
+  node: TreeNodeData,
 ): boolean {
   if (selectedKeys.includes(key)) return true
-  if (isLeaf) return false
+  if (!isTreeBranch(node)) return false
 
   const selectedSet = new Set(selectedKeys)
   const descendants = index.descendantsByKey.get(key) ?? []

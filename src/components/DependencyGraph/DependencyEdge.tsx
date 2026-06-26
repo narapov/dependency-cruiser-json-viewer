@@ -4,6 +4,9 @@ import type { DependencyEdgeData } from '../../lib/dependencyGraph/types'
 export function DependencyEdge({
   id,
   data,
+  style,
+  markerStart,
+  markerEnd,
   interactionWidth = 3,
   sourceX,
   sourceY,
@@ -11,7 +14,6 @@ export function DependencyEdge({
   targetY,
   sourcePosition,
   targetPosition,
-  ...rest
 }: EdgeProps) {
   const [path] = getBezierPath({
     sourceX,
@@ -26,7 +28,14 @@ export function DependencyEdge({
 
   return (
     <>
-      <BaseEdge id={id} path={path} {...rest} />
+      <BaseEdge
+        id={id}
+        path={path}
+        style={style}
+        markerStart={markerStart}
+        markerEnd={markerEnd}
+        interactionWidth={interactionWidth}
+      />
       <path d={path} fill="none" stroke="transparent" strokeWidth={interactionWidth}>
         {!!title && <title>{title}</title>}
       </path>
