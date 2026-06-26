@@ -10,9 +10,13 @@ import {
   resolveActivePathAfterCollapse,
   toggleExpandedKey,
 } from '../lib/treeSelection'
+import {
+  MIN_WIDTH as PANEL_MIN_WIDTH,
+  useDependenciesPanelWidth,
+} from '../hooks/useDependenciesPanelWidth'
 import { MIN_WIDTH, useSidebarWidth } from '../hooks/useSidebarWidth'
 import { DependencyGraph } from './DependencyGraph'
-import { DependencyDrawer } from './DependencyDrawer/DependencyDrawer'
+import { DependencyPanel } from './DependencyPanel/DependencyPanel'
 import { FileTree } from './FileTree'
 import styles from './AppLayout/AppLayout.module.css'
 
@@ -28,8 +32,12 @@ export function AppLayout({ treeData, modules, moduleCount, folderColors }: AppL
   const [expandedKeys, setExpandedKeys] = useState(() => getDefaultExpandedKeys(treeData))
   const [activePath, setActivePath] = useState<string | null>(null)
   const [graphFitToken, setGraphFitToken] = useState(0)
-  const [drawerPath, setDrawerPath] = useState<string | null>(null)
+  const [dependenciesPath, setDependenciesPath] = useState<string | null>(null)
   const { sidebarWidth, onResizePointerDown } = useSidebarWidth()
+  const { width: panelWidth, onResizePointerDown: onPanelResizePointerDown } =
+    useDependenciesPanelWidth(sidebarWidth)
+
+  const panelOpen = dependenciesPath != null
 
   const updateExpandedKeys = useCallback(
     (updater: string[] | ((prev: string[]) => string[])) => {
@@ -88,17 +96,22 @@ export function AppLayout({ treeData, modules, moduleCount, folderColors }: AppL
   )
 
   const handleShowDependencies = useCallback((path: string) => {
-    setDrawerPath(path)
+    setDependenciesPath(path)
   }, [])
 
-  const handleCloseDrawer = useCallback(() => {
-    setDrawerPath(null)
+  const handleClosePanel = useCallback(() => {
+    setDependenciesPath(null)
   }, [])
 
   return (
     <div
       className={styles.shell}
-      style={{ '--sider-width': `${sidebarWidth}px` } as CSSProperties}
+      style={
+        {
+          '--sider-width': `${sidebarWidth}px`,
+          '--panel-width': panelOpen ? `${panelWidth}px` : '0px',
+        } as CSSProperties
+      }
     >
       <header className={styles.header}>
         <Typography.Title level={4} style={{ margin: 0, color: '#fff' }}>
@@ -150,16 +163,31 @@ export function AppLayout({ treeData, modules, moduleCount, folderColors }: AppL
           activePath={activePath}
           graphFitToken={graphFitToken}
         />
-        <DependencyDrawer
-          open={drawerPath != null}
-          path={drawerPath}
-          modules={modules}
-          selectedPaths={selectedPaths}
-          expandedKeys={expandedKeys}
-          onClose={handleCloseDrawer}
-          onShowInGraph={handleShowInGraph}
-        />
       </main>
+      <div className={styles.panelContainer}>
+        {panelOpen && (
+          <div
+            className={styles.panelResizeHandle}
+            role="separator"
+            aria-orientation="vertical"
+            aria-valuenow={panelWidth}
+            aria-valuemin={PANEL_MIN_WIDTH}
+            onPointerDown={onPanelResizePointerDown}
+          />
+        )}
+        {panelOpen && dependenciesPath && (
+          <aside className={styles.panel}>
+            <DependencyPanel
+              path={dependenciesPath}
+              modules={modules}
+              selectedPaths={selectedPaths}
+              expandedKeys={expandedKeys}
+              onClose={handleClosePanel}
+              onShowInGraph={handleShowInGraph}
+            />
+          </aside>
+        )}
+      </div>
     </div>
   )
 }

@@ -1,14 +1,13 @@
 import { useMemo } from 'react'
-import { AimOutlined, CopyOutlined } from '@ant-design/icons'
-import { Button, Drawer, Empty, List, Tooltip, Typography } from 'antd'
+import { AimOutlined, CloseOutlined, CopyOutlined } from '@ant-design/icons'
+import { Button, Empty, List, Tooltip, Typography } from 'antd'
 import type { IModule } from 'dependency-cruiser'
 import { copyToClipboard } from '../../lib/copyToClipboard'
 import { getNodeRelations } from '../../lib/dependencyGraph/moduleRelations'
-import styles from './DependencyDrawer.module.css'
+import styles from './DependencyPanel.module.css'
 
-interface DependencyDrawerProps {
-  open: boolean
-  path: string | null
+interface DependencyPanelProps {
+  path: string
   modules: IModule[]
   selectedPaths: string[]
   expandedKeys: string[]
@@ -62,36 +61,26 @@ function RelationList({
   )
 }
 
-export function DependencyDrawer({
-  open,
+export function DependencyPanel({
   path,
   modules,
   selectedPaths,
   expandedKeys,
   onClose,
   onShowInGraph,
-}: DependencyDrawerProps) {
+}: DependencyPanelProps) {
   const expandedFolders = useMemo(() => new Set(expandedKeys), [expandedKeys])
 
   const relations = useMemo(
-    () =>
-      path
-        ? getNodeRelations(path, modules, selectedPaths, expandedFolders)
-        : { dependencies: [], dependents: [] },
+    () => getNodeRelations(path, modules, selectedPaths, expandedFolders),
     [path, modules, selectedPaths, expandedFolders],
   )
 
   return (
-    <Drawer
-      title={
-        path ? (
-          <div className={styles.path}>{path}</div>
-        ) : (
-          'Dependencies'
-        )
-      }
-      extra={
-        path ? (
+    <div className={styles.panel}>
+      <header className={styles.header}>
+        <div className={styles.path}>{path}</div>
+        <div className={styles.headerActions}>
           <Tooltip title="Show in graph">
             <Button
               type="primary"
@@ -100,23 +89,22 @@ export function DependencyDrawer({
               onClick={() => onShowInGraph(path)}
             />
           </Tooltip>
-        ) : null
-      }
-      placement="right"
-      width={440}
-      open={open}
-      onClose={onClose}
-      destroyOnHidden
-    >
-      <Typography.Title level={5} className={styles.sectionTitle}>
-        Dependencies
-      </Typography.Title>
-      <RelationList items={relations.dependencies} onShowInGraph={onShowInGraph} />
+          <Tooltip title="Close">
+            <Button type="text" size="small" icon={<CloseOutlined />} onClick={onClose} />
+          </Tooltip>
+        </div>
+      </header>
+      <div className={styles.body}>
+        <Typography.Title level={5} className={styles.sectionTitle}>
+          Dependencies
+        </Typography.Title>
+        <RelationList items={relations.dependencies} onShowInGraph={onShowInGraph} />
 
-      <Typography.Title level={5} className={styles.sectionTitle} style={{ marginTop: 24 }}>
-        Dependents
-      </Typography.Title>
-      <RelationList items={relations.dependents} onShowInGraph={onShowInGraph} />
-    </Drawer>
+        <Typography.Title level={5} className={styles.sectionTitle} style={{ marginTop: 24 }}>
+          Dependents
+        </Typography.Title>
+        <RelationList items={relations.dependents} onShowInGraph={onShowInGraph} />
+      </div>
+    </div>
   )
 }
