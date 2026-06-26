@@ -6,6 +6,7 @@ import { getAncestorKeys } from '../lib/dependencyGraph/pathUtils'
 import {
   getDefaultExpandedKeys,
   getDefaultSelectedKeys,
+  resolveActivePathAfterCollapse,
   toggleExpandedKey,
 } from '../lib/treeSelection'
 import { DependencyGraph } from './DependencyGraph'
@@ -25,9 +26,24 @@ export function AppLayout({ treeData, modules, moduleCount, folderColors }: AppL
   const [activePath, setActivePath] = useState<string | null>(null)
   const [graphFitToken, setGraphFitToken] = useState(0)
 
-  const onToggleFolder = useCallback((path: string) => {
-    setExpandedKeys((keys) => toggleExpandedKey(keys, path))
-  }, [])
+  const updateExpandedKeys = useCallback(
+    (updater: string[] | ((prev: string[]) => string[])) => {
+      setExpandedKeys((prev) => {
+        const next = typeof updater === 'function' ? updater(prev) : updater
+        const collapsed = prev.filter((key) => !next.includes(key))
+        if (collapsed.length > 0) {
+          setActivePath((current) => resolveActivePathAfterCollapse(current, collapsed))
+        }
+        return next
+      })
+    },
+    [],
+  )
+
+  const onToggleFolder = useCallback(
+    (path: string) => updateExpandedKeys((keys) => toggleExpandedKey(keys, path)),
+    [updateExpandedKeys],
+  )
 
   const activatePath = useCallback((path: string) => {
     const ancestors = getAncestorKeys(path)
@@ -78,7 +94,7 @@ export function AppLayout({ treeData, modules, moduleCount, folderColors }: AppL
           selectedKeys={selectedPaths}
           onSelect={setSelectedPaths}
           expandedKeys={expandedKeys}
-          onExpand={setExpandedKeys}
+          onExpand={updateExpandedKeys}
           onShowInGraph={handleShowInGraph}
           activePath={activePath}
         />

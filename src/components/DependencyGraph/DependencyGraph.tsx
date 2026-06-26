@@ -55,8 +55,9 @@ function DependencyGraphInner({
   activePath,
   graphFitToken = 0,
 }: DependencyGraphProps) {
-  const { fitView, getNode } = useReactFlow()
+  const { fitView, getNode, getZoom } = useReactFlow()
   const lastFitToken = useRef(graphFitToken)
+  const prevExpandedKey = useRef<string | null>(null)
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null)
 
   const expandedFolders = useMemo(() => new Set(expandedKeys), [expandedKeys])
@@ -80,9 +81,14 @@ function DependencyGraphInner({
     [edges, selectedEdgeId],
   )
 
-  const structureKey = useMemo(
-    () => `${selectedPaths.length}:${expandedKeys.slice().sort().join('|')}`,
-    [selectedPaths, expandedKeys],
+  const selectionKey = useMemo(
+    () => selectedPaths.slice().sort().join('|'),
+    [selectedPaths],
+  )
+
+  const expandedStructureKey = useMemo(
+    () => expandedKeys.slice().sort().join('|'),
+    [expandedKeys],
   )
 
   useEffect(() => {
@@ -93,7 +99,31 @@ function DependencyGraphInner({
       fitView({ padding: 0.2, duration: 200 })
     })
     return () => cancelAnimationFrame(frame)
-  }, [structureKey, nodes.length, fitView, graphFitToken])
+  }, [selectionKey, nodes.length, fitView, graphFitToken])
+
+  useEffect(() => {
+    if (prevExpandedKey.current === null) {
+      prevExpandedKey.current = expandedStructureKey
+      return
+    }
+    if (prevExpandedKey.current === expandedStructureKey) return
+    prevExpandedKey.current = expandedStructureKey
+
+    if (!activePath || !getNode(activePath)) return
+    if (graphFitToken !== lastFitToken.current) return
+
+    const zoom = getZoom()
+    const frame = requestAnimationFrame(() => {
+      fitView({
+        nodes: [{ id: activePath }],
+        minZoom: zoom,
+        maxZoom: zoom,
+        padding: 0.5,
+        duration: 200,
+      })
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [expandedStructureKey, activePath, nodes, fitView, getNode, getZoom, graphFitToken])
 
   useEffect(() => {
     if (graphFitToken === lastFitToken.current) return
@@ -113,7 +143,7 @@ function DependencyGraphInner({
     if (!edges.some((edge) => edge.id === selectedEdgeId)) {
       setSelectedEdgeId(null)
     }
-  }, [edges, selectedEdgeId, structureKey])
+  }, [edges, selectedEdgeId, selectionKey, expandedStructureKey])
 
   const onEdgeClick = useCallback((_: React.MouseEvent, edge: Edge) => {
     setSelectedEdgeId(edge.id)
