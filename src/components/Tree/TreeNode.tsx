@@ -81,7 +81,8 @@ function TreeNodeComponent({
   }
 
   const handleContentContextMenu = (event: React.MouseEvent) => {
-    onContextMenu?.(makeEventInfo(event))
+    onContextMenu?.(makeEventInfo(event));
+    event.preventDefault();
   }
 
   return (
