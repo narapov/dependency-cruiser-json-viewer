@@ -1,5 +1,45 @@
 import { describe, expect, it } from 'vitest'
-import { resolveActivePathAfterCollapse } from './treeSelection'
+import type { TreeNodeData } from '../components/Tree'
+import { getSubtreeFolderKeys, resolveActivePathAfterCollapse } from './treeSelection'
+
+const treeData: TreeNodeData[] = [
+  {
+    key: 'src',
+    title: 'src',
+    children: [
+      {
+        key: 'src/foo',
+        title: 'foo',
+        children: [
+          {
+            key: 'src/foo/bar',
+            title: 'bar',
+            children: [{ key: 'src/foo/bar/baz.ts', title: 'baz.ts' }],
+          },
+          { key: 'src/foo/file.ts', title: 'file.ts' },
+        ],
+      },
+      { key: 'src/other.ts', title: 'other.ts' },
+    ],
+  },
+]
+
+describe('getSubtreeFolderKeys', () => {
+  it('returns folder keys in subtree including root folder', () => {
+    expect(getSubtreeFolderKeys('src/foo', treeData)).toEqual([
+      'src/foo',
+      'src/foo/bar',
+    ])
+  })
+
+  it('returns only the folder itself when it has no nested folders', () => {
+    expect(getSubtreeFolderKeys('src/foo/bar', treeData)).toEqual(['src/foo/bar'])
+  })
+
+  it('returns empty array when folder key is not found', () => {
+    expect(getSubtreeFolderKeys('missing', treeData)).toEqual([])
+  })
+})
 
 describe('resolveActivePathAfterCollapse', () => {
   it('returns activePath unchanged when nothing collapsed', () => {

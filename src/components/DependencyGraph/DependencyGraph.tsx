@@ -38,6 +38,7 @@ interface DependencyGraphProps {
   folderColors: ReadonlyMap<string, string>
   expandedKeys: string[]
   onToggleFolder: (path: string) => void
+  onExpandRecursive: (path: string) => void
   onShowInFileTree: (path: string) => void
   onShowDependencies?: (path: string) => void
   onActivePathChange?: (path: string) => void
@@ -51,6 +52,7 @@ function DependencyGraphInner({
   folderColors,
   expandedKeys,
   onToggleFolder,
+  onExpandRecursive,
   onShowInFileTree,
   onShowDependencies,
   onActivePathChange,
@@ -73,10 +75,11 @@ function DependencyGraphInner({
         highlightedNodeId: activePath ?? null,
         folderColors,
         onToggleFolder,
+        onExpandRecursive,
         onShowInFileTree,
         onShowDependencies,
       }),
-    [modules, selectedPaths, expandedFolders, activePath, folderColors, onToggleFolder, onShowInFileTree, onShowDependencies],
+    [modules, selectedPaths, expandedFolders, activePath, folderColors, onToggleFolder, onExpandRecursive, onShowInFileTree, onShowDependencies],
   )
 
   const displayEdges = useMemo(

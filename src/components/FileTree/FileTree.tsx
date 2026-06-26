@@ -20,6 +20,7 @@ interface FileTreeProps {
   onSelect?: (keys: string[]) => void
   expandedKeys: string[]
   onExpand: (keys: string[]) => void
+  onExpandRecursive?: (path: string) => void
   onShowInGraph?: (path: string) => void
   onShowDependencies?: (path: string) => void
   activePath?: string | null
@@ -31,6 +32,7 @@ export function FileTree({
   onSelect,
   expandedKeys,
   onExpand,
+  onExpandRecursive,
   onShowInGraph,
   onShowDependencies,
   activePath,
@@ -132,14 +134,28 @@ export function FileTree({
           )
         }}
         titleRender={(node) => {
+          const isFolder = !isTreeLeaf(node)
           const navigable = canShowInGraph(node.key, selectedKeys, treeIndex, node)
 
           const title = (
             <span className={`${styles.title} ${navigable ? styles.navigable : ''}`}>
-              {isTreeLeaf(node) ? <FileOutlined /> : <FolderOutlined />}
+              {isFolder ? <FolderOutlined /> : <FileOutlined />}
               <span className={styles.titleText}>{node.title}</span>
             </span>
           )
+
+          if (isFolder) {
+            return (
+              <FileTreeContextMenu
+                path={node.key}
+                isFolder
+                onExpandRecursive={onExpandRecursive}
+                onShowDependencies={navigable ? onShowDependencies : undefined}
+              >
+                {title}
+              </FileTreeContextMenu>
+            )
+          }
 
           if (navigable && onShowDependencies) {
             return (

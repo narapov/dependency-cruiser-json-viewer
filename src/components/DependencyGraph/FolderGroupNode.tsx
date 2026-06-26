@@ -5,7 +5,7 @@ import styles from './DependencyGraph.module.css'
 import { NodeContextMenu } from './NodeContextMenu'
 
 export function FolderGroupNode({ data }: NodeProps) {
-  const { label, path, expanded, highlighted, backgroundColor, onToggle, onShowInFileTree, onShowDependencies } =
+  const { label, path, expanded, highlighted, backgroundColor, onToggle, onExpandRecursive, onShowInFileTree, onShowDependencies } =
     data as FolderGroupNodeData
 
   return (
@@ -19,6 +19,7 @@ export function FolderGroupNode({ data }: NodeProps) {
         isFolder
         expanded={expanded}
         onToggle={onToggle}
+        onExpandRecursive={onExpandRecursive}
         onShowInFileTree={onShowInFileTree}
         onShowDependencies={onShowDependencies}
       >

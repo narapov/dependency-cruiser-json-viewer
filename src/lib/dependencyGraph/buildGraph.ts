@@ -353,6 +353,7 @@ export function buildGraph({
   highlightedNodeId,
   folderColors,
   onToggleFolder,
+  onExpandRecursive,
   onShowInFileTree,
   onShowDependencies,
 }: BuildGraphInput): BuildGraphResult {
@@ -447,6 +448,7 @@ export function buildGraph({
           highlighted,
           backgroundColor: folderColors.get(path) ?? 'rgba(0, 0, 0, 0.02)',
           onToggle: onToggleFolder,
+          onExpandRecursive,
           onShowInFileTree,
           onShowDependencies,
         }
@@ -474,6 +476,7 @@ export function buildGraph({
           circular,
           backgroundColor: folderColors.get(path) ?? 'rgba(0, 0, 0, 0.02)',
           onToggle: onToggleFolder,
+          onExpandRecursive,
           onShowInFileTree,
           onShowDependencies,
         }

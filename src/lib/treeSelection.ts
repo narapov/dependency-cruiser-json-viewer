@@ -134,6 +134,36 @@ export function getAllFolderKeys(treeData: TreeNodeData[]): string[] {
   return keys
 }
 
+export function getSubtreeFolderKeys(
+  folderKey: string,
+  treeData: TreeNodeData[],
+): string[] {
+  const keys: string[] = []
+
+  function collectFolders(node: TreeNodeData) {
+    if (isTreeBranch(node)) {
+      keys.push(node.key)
+      node.children?.forEach(collectFolders)
+    }
+  }
+
+  function findAndCollect(nodes: TreeNodeData[]): boolean {
+    for (const node of nodes) {
+      if (node.key === folderKey) {
+        collectFolders(node)
+        return true
+      }
+      if (node.children && findAndCollect(node.children)) {
+        return true
+      }
+    }
+    return false
+  }
+
+  findAndCollect(treeData)
+  return keys
+}
+
 export function getDefaultSelectedKeys(treeData: TreeNodeData[]): string[] {
   const index = buildTreeIndex(treeData)
   let selected: string[] = []

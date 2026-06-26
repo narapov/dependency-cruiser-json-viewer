@@ -8,6 +8,7 @@ function moduleAt(source: string, dependencies: IModule['dependencies'] = []): I
 
 const noopToggle = () => {}
 const noopShowInFileTree = () => {}
+const noopExpandRecursive = () => {}
 
 describe('buildGraph half-checked folders', () => {
   const sources = [
@@ -27,6 +28,7 @@ describe('buildGraph half-checked folders', () => {
       highlightedNodeId: null,
       folderColors: new Map(),
       onToggleFolder: noopToggle,
+      onExpandRecursive: noopExpandRecursive,
       onShowInFileTree: noopShowInFileTree,
     })
 
@@ -47,6 +49,7 @@ describe('buildGraph half-checked folders', () => {
       highlightedNodeId: null,
       folderColors: new Map(),
       onToggleFolder: noopToggle,
+      onExpandRecursive: noopExpandRecursive,
       onShowInFileTree: noopShowInFileTree,
     })
 
@@ -64,6 +67,7 @@ describe('buildGraph half-checked folders', () => {
       highlightedNodeId: null,
       folderColors: new Map(),
       onToggleFolder: noopToggle,
+      onExpandRecursive: noopExpandRecursive,
       onShowInFileTree: noopShowInFileTree,
     })
 
@@ -83,6 +87,7 @@ describe('buildGraph half-checked folders', () => {
       highlightedNodeId: null,
       folderColors: new Map(),
       onToggleFolder: noopToggle,
+      onExpandRecursive: noopExpandRecursive,
       onShowInFileTree: noopShowInFileTree,
     })
 
@@ -116,6 +121,7 @@ describe('buildGraph circular dependencies', () => {
       highlightedNodeId: null,
       folderColors: new Map(),
       onToggleFolder: noopToggle,
+      onExpandRecursive: noopExpandRecursive,
       onShowInFileTree: noopShowInFileTree,
     })
 
@@ -131,6 +137,7 @@ describe('buildGraph circular dependencies', () => {
       highlightedNodeId: null,
       folderColors: new Map(),
       onToggleFolder: noopToggle,
+      onExpandRecursive: noopExpandRecursive,
       onShowInFileTree: noopShowInFileTree,
     })
 
@@ -146,6 +153,7 @@ describe('buildGraph circular dependencies', () => {
       highlightedNodeId: null,
       folderColors: new Map(),
       onToggleFolder: noopToggle,
+      onExpandRecursive: noopExpandRecursive,
       onShowInFileTree: noopShowInFileTree,
     })
 
@@ -161,6 +169,7 @@ describe('buildGraph circular dependencies', () => {
       highlightedNodeId: null,
       folderColors: new Map(),
       onToggleFolder: noopToggle,
+      onExpandRecursive: noopExpandRecursive,
       onShowInFileTree: noopShowInFileTree,
     })
 
@@ -176,6 +185,7 @@ describe('buildGraph circular dependencies', () => {
       highlightedNodeId: 'src/foo/a.ts',
       folderColors: new Map(),
       onToggleFolder: noopToggle,
+      onExpandRecursive: noopExpandRecursive,
       onShowInFileTree: noopShowInFileTree,
     })
 

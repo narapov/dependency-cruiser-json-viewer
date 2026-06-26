@@ -6,6 +6,7 @@ interface NodeContextMenuProps {
   isFolder: boolean
   expanded?: boolean
   onToggle?: (path: string) => void
+  onExpandRecursive?: (path: string) => void
   onShowInFileTree: (path: string) => void
   onShowDependencies?: (path: string) => void
   children: ReactNode
@@ -16,6 +17,7 @@ export function NodeContextMenu({
   isFolder,
   expanded,
   onToggle,
+  onExpandRecursive,
   onShowInFileTree,
   onShowDependencies,
   children,
@@ -26,6 +28,13 @@ export function NodeContextMenu({
     items.push({
       key: 'toggle',
       label: expanded ? 'Collapse' : 'Expand',
+    })
+  }
+
+  if (isFolder && onExpandRecursive) {
+    items.push({
+      key: 'expand-recursive',
+      label: 'Expand recursive',
     })
   }
 
@@ -45,6 +54,8 @@ export function NodeContextMenu({
     domEvent.stopPropagation()
     if (key === 'toggle') {
       onToggle?.(path)
+    } else if (key === 'expand-recursive') {
+      onExpandRecursive?.(path)
     } else if (key === 'show-in-tree') {
       onShowInFileTree(path)
     } else if (key === 'show-dependencies') {
