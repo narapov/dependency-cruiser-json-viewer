@@ -15,6 +15,8 @@ export const INCOMING_EDGE_COLOR = '#1677ff'
 export const OUTGOING_EDGE_COLOR = '#52c41a'
 export const CIRCULAR_EDGE_COLOR = '#ff4d4f'
 export const CIRCULAR_NODE_BACKGROUND = '#fff1f0'
+export const SELECTED_EDGE_COLOR = '#fa8c16'
+export const SELECTED_EDGE_Z_INDEX = 1000
 
 const NODE_WIDTH = 180
 const NODE_HEIGHT = 40
@@ -428,6 +430,7 @@ export function buildGraph({
         id: edgeKey,
         source: sourceRep,
         target: targetRep,
+        interactionWidth: 3,
         markerEnd: {
           type: MarkerType.ArrowClosed,
           color: stroke,

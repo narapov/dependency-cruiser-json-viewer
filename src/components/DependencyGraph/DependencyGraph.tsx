@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   Background,
   Controls,
@@ -7,10 +7,12 @@ import {
   ReactFlow,
   ReactFlowProvider,
   useReactFlow,
+  type Edge,
   type Node,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import type { IModule } from 'dependency-cruiser'
+import { applySelectedEdgeStyle } from '../../lib/dependencyGraph/applySelectedEdgeStyle'
 import { buildGraph } from '../../lib/dependencyGraph/buildGraph'
 import type { FolderGroupNodeData, FolderNodeData } from '../../lib/dependencyGraph/types'
 import { FileNode } from './FileNode'
@@ -50,6 +52,7 @@ function DependencyGraphInner({
 }: DependencyGraphProps) {
   const { fitView, getNode } = useReactFlow()
   const lastFitToken = useRef(graphFitToken)
+  const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null)
 
   const expandedFolders = useMemo(() => new Set(expandedKeys), [expandedKeys])
 
@@ -65,6 +68,11 @@ function DependencyGraphInner({
         onShowInFileTree,
       }),
     [modules, selectedPaths, expandedFolders, activePath, folderColors, onToggleFolder, onShowInFileTree],
+  )
+
+  const displayEdges = useMemo(
+    () => applySelectedEdgeStyle(edges, selectedEdgeId),
+    [edges, selectedEdgeId],
   )
 
   const structureKey = useMemo(
@@ -95,8 +103,24 @@ function DependencyGraphInner({
     return () => cancelAnimationFrame(frame)
   }, [graphFitToken, activePath, nodes, fitView, getNode])
 
+  useEffect(() => {
+    if (selectedEdgeId == null) return
+    if (!edges.some((edge) => edge.id === selectedEdgeId)) {
+      setSelectedEdgeId(null)
+    }
+  }, [edges, selectedEdgeId, structureKey])
+
+  const onEdgeClick = useCallback((_: React.MouseEvent, edge: Edge) => {
+    setSelectedEdgeId(edge.id)
+  }, [])
+
+  const onPaneClick = useCallback(() => {
+    setSelectedEdgeId(null)
+  }, [])
+
   const onNodeClick = useCallback(
     (_: React.MouseEvent, node: Node) => {
+      setSelectedEdgeId(null)
       if (activePath === node.id) {
         return
       }
@@ -126,9 +150,11 @@ function DependencyGraphInner({
   return (
     <ReactFlow
       nodes={nodes}
-      edges={edges}
+      edges={displayEdges}
       nodeTypes={nodeTypes}
       onNodeClick={onNodeClick}
+      onEdgeClick={onEdgeClick}
+      onPaneClick={onPaneClick}
       nodesDraggable={false}
       minZoom={0.01}
       maxZoom={20}
