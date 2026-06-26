@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type ComponentRef } from 'react'
 import { FileOutlined, FolderOutlined } from '@ant-design/icons'
 import { Checkbox, Tree, type TreeDataNode } from 'antd'
 import {
@@ -31,6 +31,7 @@ export function FileTree({
   activePath,
 }: FileTreeProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const treeRef = useRef<ComponentRef<typeof Tree>>(null)
   const [height, setHeight] = useState(0)
 
   const treeIndex = useMemo(() => buildTreeIndex(treeData), [treeData])
@@ -61,14 +62,17 @@ export function FileTree({
   useEffect(() => {
     if (!activePath) return
 
-    const frame = requestAnimationFrame(() => {
-      const node = containerRef.current?.querySelector(
-        `.ant-tree-treenode[data-key="${CSS.escape(activePath)}"]`,
-      )
-      node?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+    let innerFrame: number
+    const outerFrame = requestAnimationFrame(() => {
+      innerFrame = requestAnimationFrame(() => {
+        treeRef.current?.scrollTo({ key: activePath, align: 'auto' })
+      })
     })
 
-    return () => cancelAnimationFrame(frame)
+    return () => {
+      cancelAnimationFrame(outerFrame)
+      cancelAnimationFrame(innerFrame)
+    }
   }, [activePath, expandedKeys])
 
   const handleToggle = (key: string, checked: boolean) => {
@@ -96,6 +100,7 @@ export function FileTree({
       <div ref={containerRef} className={styles.scroll}>
         {height > 0 && (
           <Tree
+          ref={treeRef}
           className={styles.tree}
           treeData={treeData}
           checkable
