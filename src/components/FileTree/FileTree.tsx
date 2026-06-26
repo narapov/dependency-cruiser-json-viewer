@@ -97,6 +97,7 @@ export function FileTree({
       </div>
       <Tree
         ref={treeRef}
+        className={styles.tree}
         treeData={treeData}
         checkable
         checkedKeys={selectedKeys}
