@@ -1,6 +1,5 @@
-import InsertDriveFileOutlined from '@mui/icons-material/InsertDriveFileOutlined'
 import { Handle, Position, type NodeProps } from '@xyflow/react'
-import { CIRCULAR_NODE_BACKGROUND } from '../../../../Shared'
+import { CIRCULAR_NODE_BACKGROUND, MaterialFileSystemIcon } from '../../../../Shared'
 import type { FileNodeData } from '../../DependencyGraph.types'
 import styles from '../../DependencyGraph.module.css'
 import { NodeContextMenu } from '../NodeContextMenu'
@@ -21,7 +20,7 @@ export function FileNode({ data }: NodeProps) {
         style={circular ? { backgroundColor: CIRCULAR_NODE_BACKGROUND } : undefined}
       >
         <Handle type="target" position={Position.Left} />
-        <InsertDriveFileOutlined className={styles.icon} fontSize="inherit" />
+        <MaterialFileSystemIcon name={label} className={styles.icon} />
         <span className={styles.label}>{label}</span>
         <Handle type="source" position={Position.Right} />
       </div>

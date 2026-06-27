@@ -1,5 +1,4 @@
-import InsertDriveFileOutlined from '@mui/icons-material/InsertDriveFileOutlined'
-import FolderOutlined from '@mui/icons-material/FolderOutlined'
+import { MaterialFileSystemIcon } from '../../../../../../Shared'
 import { useMemo, type ReactNode } from 'react'
 import type { QuickOpenResultItem } from '../../../../QuickOpen.types'
 import styles from '../../../../QuickOpen.module.css'
@@ -77,11 +76,7 @@ export function QuickOpenResultsListItem({
       onClick={onClick}
     >
       <span className={styles.icon}>
-        {item.isFolder ? (
-          <FolderOutlined fontSize="inherit" />
-        ) : (
-          <InsertDriveFileOutlined fontSize="inherit" />
-        )}
+        <MaterialFileSystemIcon name={item.name} isFolder={item.isFolder} />
       </span>
       <span className={styles.name}>
         {renderHighlighted(item.name, nameIndexes, styles.match)}

@@ -1,4 +1,4 @@
-import FolderOutlined from '@mui/icons-material/FolderOutlined'
+import { MaterialFileSystemIcon } from '../../../../Shared'
 import { Handle, Position, type NodeProps } from '@xyflow/react'
 import type { FolderGroupNodeData } from '../../DependencyGraph.types'
 import styles from '../../DependencyGraph.module.css'
@@ -35,7 +35,12 @@ export function FolderGroupNode({ data }: NodeProps) {
           >
             {expanded ? '▼' : '▶'}
           </button>
-          <FolderOutlined className={styles.icon} fontSize="inherit" />
+          <MaterialFileSystemIcon
+            name={label}
+            isFolder
+            isOpen={expanded}
+            className={styles.icon}
+          />
           <span className={styles.label}>{label}</span>
         </div>
       </NodeContextMenu>

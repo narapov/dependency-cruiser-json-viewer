@@ -1,6 +1,6 @@
 import { forwardRef, type KeyboardEvent } from 'react'
-import InsertDriveFileOutlined from '@mui/icons-material/InsertDriveFileOutlined'
-import FolderOutlined from '@mui/icons-material/FolderOutlined'
+import { getBaseName } from '../../../../domain'
+import { MaterialFileSystemIcon } from '../../../../Shared'
 import { useTreeItemModel } from '@mui/x-tree-view/hooks'
 import type { TreeViewCancellableEvent } from '@mui/x-tree-view/models'
 import { TreeItem, type TreeItemProps } from '@mui/x-tree-view/TreeItem'
@@ -57,11 +57,11 @@ export const FileTreeItem = forwardRef<HTMLLIElement, TreeItemProps>(function Fi
                     cursor: navigable ? 'pointer' : undefined,
                   }}
                 >
-                  {isFolder ? (
-                    <FolderOutlined fontSize="inherit" />
-                  ) : (
-                    <InsertDriveFileOutlined fontSize="inherit" />
-                  )}
+                  <MaterialFileSystemIcon
+                    name={getBaseName(item.key)}
+                    isFolder={isFolder}
+                    isOpen={isFolder ? ctx.expandedKeys.includes(itemId) : undefined}
+                  />
                   <span>{item.title}</span>
                 </span>
               ) : (
