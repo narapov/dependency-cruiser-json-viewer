@@ -7,6 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "depcruise": "depcruise src",
+    "depcruise:json": "depcruise src -T json -f public/cruise-result.json",
     "test": "vitest run",
     "preview": "vite preview"
   },

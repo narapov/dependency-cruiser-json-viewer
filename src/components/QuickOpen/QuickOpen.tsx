@@ -1,43 +1,41 @@
 import { Input, Modal, type InputRef } from 'antd'
-import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
-import type { TreeNodeData } from '../Tree'
-import { flattenTreeNodes, searchTreeNodes } from '../../lib/searchTreeNodes'
-import { QuickOpenResultsList } from './components/QuickOpenResultsList'
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react'
+import { QuickOpenResultsList } from './partials/QuickOpenResultsList'
+import type { QuickOpenResultItem } from './QuickOpen.types'
 import styles from './QuickOpen.module.css'
+
+export type { QuickOpenResultItem } from './QuickOpen.types'
 
 interface QuickOpenProps {
   open: boolean
-  treeData: TreeNodeData[]
+  query: string
+  deferredQuery: string
+  results: QuickOpenResultItem[]
+  onQueryChange: (query: string) => void
   onClose: () => void
   onSelect: (path: string) => void
 }
 
-export function QuickOpen({ open, treeData, onClose, onSelect }: QuickOpenProps) {
-  const [query, setQuery] = useState('')
-  const deferredQuery = useDeferredValue(query)
+export function QuickOpen({
+  open,
+  query,
+  deferredQuery,
+  results,
+  onQueryChange,
+  onClose,
+  onSelect,
+}: QuickOpenProps) {
   const [highlightedIndex, setHighlightedIndex] = useState(0)
   const inputRef = useRef<InputRef>(null)
   const listRef = useRef<HTMLUListElement>(null)
 
-  const allItems = useMemo(() => flattenTreeNodes(treeData), [treeData])
-  const results = useMemo(
-    () => searchTreeNodes(allItems, deferredQuery),
-    [allItems, deferredQuery],
+  const handleQueryChange = useCallback(
+    (value: string) => {
+      setHighlightedIndex(0)
+      onQueryChange(value)
+    },
+    [onQueryChange],
   )
-
-  const reset = useCallback(() => {
-    setQuery('')
-    setHighlightedIndex(0)
-  }, [])
-
-  useEffect(() => {
-    if (!open) return
-    reset()
-  }, [open, reset])
-
-  useEffect(() => {
-    setHighlightedIndex(0)
-  }, [deferredQuery])
 
   useEffect(() => {
     if (!open) return
@@ -114,7 +112,7 @@ export function QuickOpen({ open, treeData, onClose, onSelect }: QuickOpenProps)
             className={styles.input}
             placeholder="Search files and folders..."
             value={query}
-            onChange={(event) => setQuery(event.target.value)}
+            onChange={(event) => handleQueryChange(event.target.value)}
             variant="borderless"
             autoComplete="off"
             spellCheck={false}

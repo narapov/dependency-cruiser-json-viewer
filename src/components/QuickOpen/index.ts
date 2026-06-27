@@ -1,1 +1,1 @@
-export { QuickOpen } from './QuickOpen'
+export { QuickOpen, type QuickOpenResultItem } from './QuickOpen'

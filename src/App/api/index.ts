@@ -1,0 +1,1 @@
+export { fetchCruiseResult } from './cruiseResult'

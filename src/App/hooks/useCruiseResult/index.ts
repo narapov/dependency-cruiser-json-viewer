@@ -1,0 +1,1 @@
+export { useCruiseResult } from './useCruiseResult'

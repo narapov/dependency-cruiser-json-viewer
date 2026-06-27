@@ -12,14 +12,13 @@ import {
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import type { IModule } from 'dependency-cruiser'
-import { applySelectedEdgeStyle } from '../../lib/dependencyGraph/applySelectedEdgeStyle'
-import { buildGraph } from '../../lib/dependencyGraph/buildGraph'
-import type { FolderGroupNodeData, FolderNodeData } from '../../lib/dependencyGraph/types'
-import { DependencyEdge } from './DependencyEdge'
-import { FileNode } from './FileNode'
-import { FolderGroupNode } from './FolderGroupNode'
-import { FolderNode } from './FolderNode'
-import { GraphLegend } from './GraphLegend'
+import { applySelectedEdgeStyle, buildGraph } from './helpers'
+import type { FolderGroupNodeData, FolderNodeData } from './DependencyGraph.types'
+import { DependencyEdge } from './partials/DependencyEdge'
+import { FileNode } from './partials/FileNode'
+import { FolderGroupNode } from './partials/FolderGroupNode'
+import { FolderNode } from './partials/FolderNode'
+import { GraphLegend } from './partials/GraphLegend'
 import styles from './DependencyGraph.module.css'
 
 const nodeTypes = {
@@ -82,9 +81,14 @@ function DependencyGraphInner({
     [modules, selectedPaths, expandedFolders, activePath, folderColors, onToggleFolder, onExpandRecursive, onShowInFileTree, onShowDependencies],
   )
 
+  const activeEdgeId =
+    selectedEdgeId != null && edges.some((edge) => edge.id === selectedEdgeId)
+      ? selectedEdgeId
+      : null
+
   const displayEdges = useMemo(
-    () => applySelectedEdgeStyle(edges, selectedEdgeId),
-    [edges, selectedEdgeId],
+    () => applySelectedEdgeStyle(edges, activeEdgeId),
+    [edges, activeEdgeId],
   )
 
   const selectionKey = useMemo(
@@ -143,13 +147,6 @@ function DependencyGraphInner({
     })
     return () => cancelAnimationFrame(frame)
   }, [graphFitToken, activePath, nodes, fitView, getNode])
-
-  useEffect(() => {
-    if (selectedEdgeId == null) return
-    if (!edges.some((edge) => edge.id === selectedEdgeId)) {
-      setSelectedEdgeId(null)
-    }
-  }, [edges, selectedEdgeId, selectionKey, expandedStructureKey])
 
   const onEdgeClick = useCallback((_: React.MouseEvent, edge: Edge) => {
     setSelectedEdgeId(edge.id)

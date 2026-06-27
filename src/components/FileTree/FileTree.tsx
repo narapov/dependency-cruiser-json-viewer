@@ -2,14 +2,19 @@ import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { FileOutlined, FolderOutlined } from '@ant-design/icons'
 import { Checkbox } from 'antd'
 import {
+  Tree,
+  isTreeLeaf,
+  type TreeHandle,
+  type TreeNodeData,
+} from '../../Shared'
+import {
   applyCascadeSelection,
   buildTreeIndex,
   canShowInGraph,
   getAllFolderKeys,
   getAllKeys,
-} from '../../lib/treeSelection'
-import { Tree, isTreeLeaf, type TreeHandle, type TreeNodeData } from '../Tree'
-import { FileTreeContextMenu } from './FileTreeContextMenu'
+} from './helpers'
+import { FileTreeContextMenu } from './partials/FileTreeContextMenu'
 import styles from './FileTree.module.css'
 
 const CLICK_DELAY_MS = 250

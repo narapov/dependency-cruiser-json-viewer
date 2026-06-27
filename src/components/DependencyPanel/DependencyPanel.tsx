@@ -2,8 +2,8 @@ import { useMemo } from 'react'
 import { AimOutlined, CloseOutlined, CopyOutlined } from '@ant-design/icons'
 import { Button, Empty, List, Tooltip, Typography } from 'antd'
 import type { IModule } from 'dependency-cruiser'
-import { copyToClipboard } from '../../lib/copyToClipboard'
-import { getNodeRelations } from '../../lib/dependencyGraph/moduleRelations'
+import { copyToClipboard } from '../../Shared'
+import { getNodeRelations } from '../DependencyGraph'
 import styles from './DependencyPanel.module.css'
 
 interface DependencyPanelProps {
