@@ -1,7 +1,8 @@
-import { forwardRef } from 'react'
+import { forwardRef, type KeyboardEvent } from 'react'
 import InsertDriveFileOutlined from '@mui/icons-material/InsertDriveFileOutlined'
 import FolderOutlined from '@mui/icons-material/FolderOutlined'
 import { useTreeItemModel } from '@mui/x-tree-view/hooks'
+import type { TreeViewCancellableEvent } from '@mui/x-tree-view/models'
 import { TreeItem, type TreeItemProps } from '@mui/x-tree-view/TreeItem'
 import { isTreeLeaf } from '../../helpers'
 import type { TreeNodeData } from '../../types'
@@ -21,7 +22,10 @@ export const FileTreeItem = forwardRef<HTMLLIElement, TreeItemProps>(function Fi
   const { onContextMenu, contextMenu } = useFileTreeContextMenu({
     path: item?.key ?? itemId,
     isFolder,
+    expanded: isFolder ? ctx.expandedKeys.includes(itemId) : undefined,
+    onToggleExpand: isFolder ? ctx.onToggleExpand : undefined,
     onExpandRecursive: isFolder ? ctx.onExpandRecursive : undefined,
+    onShowInGraph: navigable ? ctx.onShowInGraph : undefined,
     onShowDependencies: navigable ? ctx.onShowDependencies : undefined,
   })
 
@@ -67,7 +71,21 @@ export const FileTreeItem = forwardRef<HTMLLIElement, TreeItemProps>(function Fi
           ),
         }}
         slotProps={{
-          content: { onContextMenu, title: item?.key ?? itemId },
+          root: {
+            onKeyDown: (event: KeyboardEvent<HTMLLIElement> & TreeViewCancellableEvent) => {
+              if (event.key !== 'Enter') return
+              event.defaultMuiPrevented = true
+              event.preventDefault();
+              event.stopPropagation();
+              if (navigable) {
+                ctx.onShowInGraph?.(itemId)
+              }
+            },
+          },
+          content: {
+            onContextMenu,
+            title: item?.key ?? itemId,
+          },
         }}
       >
         {children}

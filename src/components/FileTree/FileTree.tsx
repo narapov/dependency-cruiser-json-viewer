@@ -92,23 +92,30 @@ export function FileTree({
     }
   }
 
+  const handleShowInGraph = (itemId: string) => {
+    if (!canShowNodeInGraph(itemId)) return
+    onShowInGraph?.(itemId)
+  }
+
   const handleItemClick = (_event: SyntheticEvent, itemId: string) => {
     if (!canShowNodeInGraph(itemId)) return
 
     if (clickTimerRef.current) clearTimeout(clickTimerRef.current)
     clickTimerRef.current = setTimeout(() => {
       clickTimerRef.current = null
-      onShowInGraph?.(itemId)
+      handleShowInGraph(itemId)
     }, CLICK_DELAY_MS)
   }
 
   const fileTreeContext = {
     activePath,
     selectedKeys,
+    expandedKeys,
     treeIndex,
     canShowInGraph: canShowNodeInGraph,
     onExpandRecursive,
     onShowDependencies,
+    onShowInGraph: handleShowInGraph,
     onToggleExpand: toggleExpand,
   }
 

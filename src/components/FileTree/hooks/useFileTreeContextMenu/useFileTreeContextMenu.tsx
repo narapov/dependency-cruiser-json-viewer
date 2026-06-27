@@ -6,14 +6,20 @@ import { copyToClipboard } from '../../../../Shared'
 export interface FileTreeContextMenuOptions {
   path: string
   isFolder?: boolean
+  expanded?: boolean
+  onToggleExpand?: (path: string) => void
   onExpandRecursive?: (path: string) => void
+  onShowInGraph?: (path: string) => void
   onShowDependencies?: (path: string) => void
 }
 
 export function useFileTreeContextMenu({
   path,
   isFolder = false,
+  expanded,
+  onToggleExpand,
   onExpandRecursive,
+  onShowInGraph,
   onShowDependencies,
 }: FileTreeContextMenuOptions) {
   const [anchorPosition, setAnchorPosition] = useState<{ top: number; left: number } | null>(
@@ -46,6 +52,14 @@ export function useFileTreeContextMenu({
       anchorPosition={anchorPosition ?? undefined}
     >
       <MenuItem onClick={handleAction(() => void copyToClipboard(path))}>Copy</MenuItem>
+      {onShowInGraph && (
+        <MenuItem onClick={handleAction(() => onShowInGraph(path))}>Show in graph</MenuItem>
+      )}
+      {isFolder && onToggleExpand && (
+        <MenuItem onClick={handleAction(() => onToggleExpand(path))}>
+          {expanded ? 'Collapse' : 'Expand'}
+        </MenuItem>
+      )}
       {isFolder && onExpandRecursive && (
         <MenuItem onClick={handleAction(() => onExpandRecursive(path))}>
           Expand recursive

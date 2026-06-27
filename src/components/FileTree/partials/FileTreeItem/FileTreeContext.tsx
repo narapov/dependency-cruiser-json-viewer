@@ -4,10 +4,12 @@ import type { TreeIndex } from '../../helpers'
 export interface FileTreeContextValue {
   activePath: string | null
   selectedKeys: string[]
+  expandedKeys: string[]
   treeIndex: TreeIndex
   canShowInGraph: (key: string) => boolean
   onExpandRecursive?: (path: string) => void
   onShowDependencies?: (path: string) => void
+  onShowInGraph?: (path: string) => void
   onToggleExpand: (key: string) => void
 }
 
