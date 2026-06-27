@@ -1,4 +1,4 @@
-import { FolderOutlined } from '@ant-design/icons'
+import FolderOutlined from '@mui/icons-material/FolderOutlined'
 import { Handle, Position, type NodeProps } from '@xyflow/react'
 import { CIRCULAR_NODE_BACKGROUND } from '../../../../Shared'
 import type { FolderNodeData } from '../../DependencyGraph.types'
@@ -35,7 +35,7 @@ export function FolderNode({ data }: NodeProps) {
         >
           {expanded ? '▼' : '▶'}
         </button>
-        <FolderOutlined className={styles.icon} />
+        <FolderOutlined className={styles.icon} fontSize="inherit" />
         <span className={styles.label}>{label}</span>
         <Handle type="source" position={Position.Right} />
       </div>

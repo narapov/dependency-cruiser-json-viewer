@@ -1,4 +1,6 @@
-import { Input, Modal, type InputRef } from 'antd'
+import Dialog from '@mui/material/Dialog'
+import DialogContent from '@mui/material/DialogContent'
+import TextField from '@mui/material/TextField'
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { QuickOpenResultsList } from './partials/QuickOpenResultsList'
 import type { QuickOpenResultItem } from './QuickOpen.types'
@@ -26,7 +28,7 @@ export function QuickOpen({
   onSelect,
 }: QuickOpenProps) {
   const [highlightedIndex, setHighlightedIndex] = useState(0)
-  const inputRef = useRef<InputRef>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLUListElement>(null)
 
   const handleQueryChange = useCallback(
@@ -84,55 +86,53 @@ export function QuickOpen({
     [handleSelect, highlightedIndex, results],
   )
 
+  const focusInput = useCallback(() => {
+    requestAnimationFrame(() => {
+      inputRef.current?.focus()
+      inputRef.current?.select()
+    })
+  }, [])
+
   return (
-    <Modal
+    <Dialog
       open={open}
-      onCancel={onClose}
-      footer={null}
-      title={null}
-      closable={false}
-      centered={false}
-      width={600}
-      style={{ top: '12vh', paddingBottom: 0 }}
-      styles={{ body: { padding: 0 }, container: { padding: 0, overflow: 'hidden' } }}
-      mask={{ closable: true }}
-      destroyOnHidden
-      afterOpenChange={(visible) => {
-        if (!visible) return
-        requestAnimationFrame(() => {
-          inputRef.current?.focus()
-          inputRef.current?.select()
-        })
-      }}
+      onClose={onClose}
+      maxWidth="sm"
+      fullWidth
+      sx={{ '& .MuiDialog-container': { alignItems: 'flex-start', pt: '12vh' } }}
+      slotProps={{ transition: { onEntered: focusInput } }}
     >
-      <div className={styles.panel} onKeyDown={handleKeyDown}>
-        <div className={styles.inputWrap}>
-          <Input
-            ref={inputRef}
-            className={styles.input}
-            placeholder="Search files and folders..."
-            value={query}
-            onChange={(event) => handleQueryChange(event.target.value)}
-            variant="borderless"
-            autoComplete="off"
-            spellCheck={false}
-          />
-        </div>
-        {results.length === 0 ? (
-          <div className={styles.empty}>
-            {query.trim() ? 'No matching files or folders' : 'Start typing to search'}
+      <DialogContent sx={{ p: 0 }}>
+        <div className={styles.panel} onKeyDown={handleKeyDown}>
+          <div className={styles.inputWrap}>
+            <TextField
+              inputRef={inputRef}
+              className={styles.input}
+              placeholder="Search files and folders..."
+              value={query}
+              onChange={(event) => handleQueryChange(event.target.value)}
+              variant="standard"
+              fullWidth
+              autoComplete="off"
+              slotProps={{ htmlInput: { spellCheck: 'false' } }}
+            />
           </div>
-        ) : (
-          <QuickOpenResultsList
-            results={results}
-            query={deferredQuery}
-            highlightedIndex={highlightedIndex}
-            listRef={listRef}
-            onHighlightIndex={setHighlightedIndex}
-            onSelect={handleSelect}
-          />
-        )}
-      </div>
-    </Modal>
+          {results.length === 0 ? (
+            <div className={styles.empty}>
+              {query.trim() ? 'No matching files or folders' : 'Start typing to search'}
+            </div>
+          ) : (
+            <QuickOpenResultsList
+              results={results}
+              query={deferredQuery}
+              highlightedIndex={highlightedIndex}
+              listRef={listRef}
+              onHighlightIndex={setHighlightedIndex}
+              onSelect={handleSelect}
+            />
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
   )
 }

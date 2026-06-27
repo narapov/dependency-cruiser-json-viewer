@@ -1,5 +1,8 @@
 import { useMemo } from 'react'
-import { Alert, Spin, Typography } from 'antd'
+import Alert from '@mui/material/Alert'
+import AlertTitle from '@mui/material/AlertTitle'
+import CircularProgress from '@mui/material/CircularProgress'
+import Typography from '@mui/material/Typography'
 import type { IModule } from 'dependency-cruiser'
 import { AppLayout } from '../components/AppLayout'
 import { DependencyGraph } from '../components/DependencyGraph'
@@ -13,17 +16,19 @@ import styles from './App.module.css'
 
 function AppHeader({ moduleCount }: { moduleCount?: number }) {
   return (
-    <Typography.Title level={4} style={{ margin: 0, color: '#fff' }}>
+    <Typography variant="subtitle1" component="h1" sx={{ margin: 0, color: '#fff', fontWeight: 600 }}>
       Deps Viewer
       {moduleCount != null && (
-        <Typography.Text
-          type="secondary"
-          style={{ marginLeft: 12, fontSize: 14, fontWeight: 400 }}
+        <Typography
+          component="span"
+          variant="body2"
+          color="text.secondary"
+          sx={{ marginLeft: 1.5, fontWeight: 400 }}
         >
           {moduleCount} modules
-        </Typography.Text>
+        </Typography>
       )}
-    </Typography.Title>
+    </Typography>
   )
 }
 
@@ -44,7 +49,7 @@ function App() {
   if (isPending) {
     return (
       <div className={styles.centered}>
-        <Spin size="large" />
+        <CircularProgress size={32} />
       </div>
     )
   }
@@ -52,12 +57,10 @@ function App() {
   if (isError) {
     return (
       <div className={styles.centered}>
-        <Alert
-          type="error"
-          message="Failed to load cruise result"
-          description={error.message}
-          showIcon
-        />
+        <Alert severity="error">
+          <AlertTitle>Failed to load cruise result</AlertTitle>
+          {error.message}
+        </Alert>
       </div>
     )
   }

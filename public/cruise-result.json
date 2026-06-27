@@ -254,11 +254,11 @@
         "src/components/DependencyGraph/DependencyGraph.tsx",
         "src/components/DependencyGraph/types/BuildGraph/BuildGraph.ts",
         "src/components/DependencyGraph/helpers/buildGraph/buildGraph.ts",
-        "src/components/DependencyGraph/helpers/moduleRelations/moduleRelations.ts",
+        "src/domain/moduleRelations/moduleRelations.ts",
         "src/components/DependencyPanel/DependencyPanel.tsx",
         "src/App/api/cruiseResult/cruiseResult.ts",
         "src/components/DependencyGraph/helpers/buildGraph/buildGraph.test.ts",
-        "src/components/DependencyGraph/helpers/moduleRelations/moduleRelations.test.ts"
+        "src/domain/moduleRelations/moduleRelations.test.ts"
       ],
       "orphan": false,
       "valid": true
@@ -559,6 +559,23 @@
         },
         {
           "dynamic": false,
+          "module": "./helpers/graphTheme",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "export"
+          ],
+          "resolved": "src/Shared/helpers/graphTheme/index.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
           "module": "./hooks",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
@@ -578,7 +595,12 @@
       "dependents": [
         "src/components/AppLayout/hooks/useDependenciesPanelWidth/useDependenciesPanelWidth.ts",
         "src/components/AppLayout/hooks/useSidebarWidth/useSidebarWidth.ts",
+        "src/components/DependencyGraph/helpers/applySelectedEdgeStyle/applySelectedEdgeStyle.ts",
+        "src/components/DependencyGraph/helpers/buildGraph/buildGraph.ts",
+        "src/components/DependencyGraph/partials/FileNode/FileNode.tsx",
         "src/components/DependencyGraph/partials/NodeContextMenu/NodeContextMenu.tsx",
+        "src/components/DependencyGraph/partials/FolderNode/FolderNode.tsx",
+        "src/components/DependencyGraph/partials/GraphLegend/GraphLegend.tsx",
         "src/components/DependencyPanel/DependencyPanel.tsx",
         "src/components/FileTree/FileTree.tsx",
         "src/components/FileTree/helpers/treeSelection/treeSelection.ts",
@@ -589,6 +611,8 @@
         "src/App/hooks/useAppOrchestration/useAppOrchestration.ts",
         "src/App/helpers/searchTreeNodes/searchTreeNodes.test.ts",
         "src/App/helpers/treeSelection/treeSelection.test.ts",
+        "src/components/DependencyGraph/helpers/applySelectedEdgeStyle/applySelectedEdgeStyle.test.ts",
+        "src/components/DependencyGraph/helpers/buildGraph/buildGraph.test.ts",
         "src/main.tsx"
       ],
       "orphan": false,
@@ -1469,6 +1493,23 @@
         },
         {
           "dynamic": false,
+          "module": "./graphTheme",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "export"
+          ],
+          "resolved": "src/Shared/helpers/graphTheme/index.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
           "module": "./queryClient",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
@@ -1523,6 +1564,43 @@
       "dependencies": [],
       "dependents": [
         "src/Shared/helpers/copyToClipboard/index.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/Shared/helpers/graphTheme/index.ts",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./graphTheme",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "export"
+          ],
+          "resolved": "src/Shared/helpers/graphTheme/graphTheme.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/Shared/index.ts",
+        "src/Shared/helpers/index.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/Shared/helpers/graphTheme/graphTheme.ts",
+      "dependencies": [],
+      "dependents": [
+        "src/Shared/helpers/graphTheme/index.ts"
       ],
       "orphan": false,
       "valid": true
@@ -1789,28 +1867,10 @@
           "matchesDoNotFollow": false,
           "circular": false,
           "valid": true
-        },
-        {
-          "dynamic": false,
-          "module": "./helpers",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "export"
-          ],
-          "resolved": "src/components/DependencyGraph/helpers/index.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
         }
       ],
       "dependents": [
-        "src/App/App.tsx",
-        "src/components/DependencyPanel/DependencyPanel.tsx"
+        "src/App/App.tsx"
       ],
       "orphan": false,
       "valid": true
@@ -2485,48 +2545,10 @@
           "matchesDoNotFollow": false,
           "circular": false,
           "valid": true
-        },
-        {
-          "dynamic": false,
-          "module": "./moduleRelations",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "export"
-          ],
-          "resolved": "src/components/DependencyGraph/helpers/moduleRelations/index.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
-        {
-          "dynamic": false,
-          "module": "./pathUtils",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "export"
-          ],
-          "resolved": "src/components/DependencyGraph/helpers/pathUtils/index.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
         }
       ],
       "dependents": [
-        "src/components/DependencyGraph/index.ts",
-        "src/components/DependencyGraph/DependencyGraph.tsx",
-        "src/components/DependencyGraph/partials/FileNode/FileNode.tsx",
-        "src/components/DependencyGraph/partials/FolderNode/FolderNode.tsx",
-        "src/components/DependencyGraph/partials/GraphLegend/GraphLegend.tsx"
+        "src/components/DependencyGraph/DependencyGraph.tsx"
       ],
       "orphan": false,
       "valid": true
@@ -2563,14 +2585,14 @@
       "dependencies": [
         {
           "dynamic": false,
-          "module": "../buildGraph",
+          "module": "../../../../Shared",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
           "dependencyTypes": [
             "local",
             "import"
           ],
-          "resolved": "src/components/DependencyGraph/helpers/buildGraph/index.ts",
+          "resolved": "src/Shared/index.ts",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -2625,10 +2647,7 @@
         }
       ],
       "dependents": [
-        "src/components/DependencyGraph/helpers/index.ts",
-        "src/components/DependencyGraph/helpers/applySelectedEdgeStyle/applySelectedEdgeStyle.ts",
-        "src/components/DependencyGraph/helpers/moduleRelations/moduleRelations.ts",
-        "src/components/DependencyGraph/helpers/applySelectedEdgeStyle/applySelectedEdgeStyle.test.ts"
+        "src/components/DependencyGraph/helpers/index.ts"
       ],
       "orphan": false,
       "valid": true
@@ -2636,6 +2655,40 @@
     {
       "source": "src/components/DependencyGraph/helpers/buildGraph/buildGraph.ts",
       "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../../../../domain",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/domain/index.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "../../../../Shared",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/Shared/index.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
         {
           "dynamic": false,
           "module": "../../DependencyGraph.types",
@@ -2647,23 +2700,6 @@
             "import"
           ],
           "resolved": "src/components/DependencyGraph/DependencyGraph.types.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
-        {
-          "dynamic": false,
-          "module": "../pathUtils",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/components/DependencyGraph/helpers/pathUtils/index.ts",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -2749,45 +2785,7 @@
       "valid": true
     },
     {
-      "source": "src/components/DependencyGraph/helpers/pathUtils/index.ts",
-      "dependencies": [
-        {
-          "dynamic": false,
-          "module": "./pathUtils",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "export"
-          ],
-          "resolved": "src/components/DependencyGraph/helpers/pathUtils/pathUtils.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        }
-      ],
-      "dependents": [
-        "src/components/DependencyGraph/helpers/index.ts",
-        "src/components/DependencyGraph/helpers/buildGraph/buildGraph.ts",
-        "src/components/DependencyGraph/helpers/moduleRelations/moduleRelations.ts"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/DependencyGraph/helpers/pathUtils/pathUtils.ts",
-      "dependencies": [],
-      "dependents": [
-        "src/components/DependencyGraph/helpers/pathUtils/index.ts"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/DependencyGraph/helpers/moduleRelations/index.ts",
+      "source": "src/domain/index.ts",
       "dependencies": [
         {
           "dynamic": false,
@@ -2798,34 +2796,7 @@
             "local",
             "export"
           ],
-          "resolved": "src/components/DependencyGraph/helpers/moduleRelations/moduleRelations.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        }
-      ],
-      "dependents": [
-        "src/components/DependencyGraph/helpers/index.ts"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/DependencyGraph/helpers/moduleRelations/moduleRelations.ts",
-      "dependencies": [
-        {
-          "dynamic": false,
-          "module": "../buildGraph",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/components/DependencyGraph/helpers/buildGraph/index.ts",
+          "resolved": "src/domain/moduleRelations/index.ts",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -2835,6 +2806,98 @@
         },
         {
           "dynamic": false,
+          "module": "./moduleRelations",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "export"
+          ],
+          "resolved": "src/domain/moduleRelations/index.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./pathUtils",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "export"
+          ],
+          "resolved": "src/domain/pathUtils/index.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/components/DependencyGraph/helpers/buildGraph/buildGraph.ts",
+        "src/components/DependencyPanel/DependencyPanel.tsx",
+        "src/App/helpers/treeSelection/treeSelection.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/domain/moduleRelations/index.ts",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./moduleRelations",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "export"
+          ],
+          "resolved": "src/domain/moduleRelations/moduleRelations.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./moduleRelations",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "export"
+          ],
+          "resolved": "src/domain/moduleRelations/moduleRelations.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/domain/index.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/domain/moduleRelations/moduleRelations.ts",
+      "dependencies": [
+        {
+          "dynamic": false,
           "module": "../pathUtils",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
@@ -2842,7 +2905,25 @@
             "local",
             "import"
           ],
-          "resolved": "src/components/DependencyGraph/helpers/pathUtils/index.ts",
+          "resolved": "src/domain/pathUtils/index.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./types/ModuleRelations",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "import"
+          ],
+          "resolved": "src/domain/moduleRelations/types/ModuleRelations/index.ts",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -2870,8 +2951,82 @@
         }
       ],
       "dependents": [
-        "src/components/DependencyGraph/helpers/moduleRelations/index.ts",
-        "src/components/DependencyGraph/helpers/moduleRelations/moduleRelations.test.ts"
+        "src/domain/moduleRelations/index.ts",
+        "src/domain/moduleRelations/moduleRelations.test.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/domain/pathUtils/index.ts",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./pathUtils",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "export"
+          ],
+          "resolved": "src/domain/pathUtils/pathUtils.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/domain/index.ts",
+        "src/domain/moduleRelations/moduleRelations.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/domain/pathUtils/pathUtils.ts",
+      "dependencies": [],
+      "dependents": [
+        "src/domain/pathUtils/index.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/domain/moduleRelations/types/ModuleRelations/index.ts",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./ModuleRelations",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "type-only",
+            "export"
+          ],
+          "resolved": "src/domain/moduleRelations/types/ModuleRelations/ModuleRelations.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/domain/moduleRelations/moduleRelations.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/domain/moduleRelations/types/ModuleRelations/ModuleRelations.ts",
+      "dependencies": [],
+      "dependents": [
+        "src/domain/moduleRelations/types/ModuleRelations/index.ts"
       ],
       "orphan": false,
       "valid": true
@@ -2980,6 +3135,23 @@
       "dependencies": [
         {
           "dynamic": false,
+          "module": "../../../../Shared",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/Shared/index.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
           "module": "../../DependencyGraph.module.css",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
@@ -3006,23 +3178,6 @@
             "import"
           ],
           "resolved": "src/components/DependencyGraph/DependencyGraph.types.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
-        {
-          "dynamic": false,
-          "module": "../../helpers",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/components/DependencyGraph/helpers/index.ts",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -3334,6 +3489,23 @@
       "dependencies": [
         {
           "dynamic": false,
+          "module": "../../../../Shared",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/Shared/index.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
           "module": "../../DependencyGraph.module.css",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
@@ -3360,23 +3532,6 @@
             "import"
           ],
           "resolved": "src/components/DependencyGraph/DependencyGraph.types.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
-        {
-          "dynamic": false,
-          "module": "../../helpers",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/components/DependencyGraph/helpers/index.ts",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -3474,6 +3629,23 @@
       "dependencies": [
         {
           "dynamic": false,
+          "module": "../../../../Shared",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/Shared/index.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
           "module": "../../DependencyGraph.module.css",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
@@ -3484,23 +3656,6 @@
           "resolved": "src/components/DependencyGraph/DependencyGraph.module.css",
           "coreModule": false,
           "followable": false,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
-        {
-          "dynamic": false,
-          "module": "../../helpers",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/components/DependencyGraph/helpers/index.ts",
-          "coreModule": false,
-          "followable": true,
           "couldNotResolve": false,
           "matchesDoNotFollow": false,
           "circular": false,
@@ -3545,14 +3700,14 @@
       "dependencies": [
         {
           "dynamic": false,
-          "module": "../../Shared",
+          "module": "../../domain",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
           "dependencyTypes": [
             "local",
             "import"
           ],
-          "resolved": "src/Shared/index.ts",
+          "resolved": "src/domain/index.ts",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -3562,14 +3717,14 @@
         },
         {
           "dynamic": false,
-          "module": "../DependencyGraph",
+          "module": "../../Shared",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
           "dependencyTypes": [
             "local",
             "import"
           ],
-          "resolved": "src/components/DependencyGraph/index.ts",
+          "resolved": "src/Shared/index.ts",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -4845,6 +5000,23 @@
       "dependencies": [
         {
           "dynamic": false,
+          "module": "../../../domain",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/domain/index.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
           "module": "../../../Shared",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
@@ -5336,8 +5508,8 @@
         "src/components/AppLayout/hooks/useSidebarWidth/useSidebarWidth.test.ts",
         "src/components/DependencyGraph/helpers/applySelectedEdgeStyle/applySelectedEdgeStyle.test.ts",
         "src/components/DependencyGraph/helpers/buildGraph/buildGraph.test.ts",
-        "src/components/DependencyGraph/helpers/moduleRelations/moduleRelations.test.ts",
-        "src/components/QuickOpen/partials/QuickOpenResultsList/partials/QuickOpenResultsListItem/helpers/computeQuickOpenHighlight/computeQuickOpenHighlight.test.ts"
+        "src/components/QuickOpen/partials/QuickOpenResultsList/partials/QuickOpenResultsListItem/helpers/computeQuickOpenHighlight/computeQuickOpenHighlight.test.ts",
+        "src/domain/moduleRelations/moduleRelations.test.ts"
       ],
       "orphan": false,
       "valid": true
@@ -5550,14 +5722,14 @@
       "dependencies": [
         {
           "dynamic": false,
-          "module": "../buildGraph",
+          "module": "../../../../Shared",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
           "dependencyTypes": [
             "local",
             "import"
           ],
-          "resolved": "src/components/DependencyGraph/helpers/buildGraph/index.ts",
+          "resolved": "src/Shared/index.ts",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -5626,14 +5798,14 @@
       "dependencies": [
         {
           "dynamic": false,
-          "module": "./buildGraph",
+          "module": "../../../../Shared",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
           "dependencyTypes": [
             "local",
             "import"
           ],
-          "resolved": "src/components/DependencyGraph/helpers/buildGraph/buildGraph.ts",
+          "resolved": "src/Shared/index.ts",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -5643,57 +5815,14 @@
         },
         {
           "dynamic": false,
-          "module": "dependency-cruiser",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "npm-dev",
-            "type-only",
-            "import"
-          ],
-          "resolved": "node_modules/dependency-cruiser/src/main/index.mjs",
-          "coreModule": false,
-          "followable": false,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": true,
-          "circular": false,
-          "valid": true
-        },
-        {
-          "dynamic": false,
-          "module": "vitest",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "npm-dev",
-            "import"
-          ],
-          "resolved": "node_modules/vitest/dist/index.js",
-          "coreModule": false,
-          "followable": false,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": true,
-          "circular": false,
-          "valid": true
-        }
-      ],
-      "dependents": [],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/components/DependencyGraph/helpers/moduleRelations/moduleRelations.test.ts",
-      "dependencies": [
-        {
-          "dynamic": false,
-          "module": "./moduleRelations",
+          "module": "./buildGraph",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
           "dependencyTypes": [
             "local",
             "import"
           ],
-          "resolved": "src/components/DependencyGraph/helpers/moduleRelations/moduleRelations.ts",
+          "resolved": "src/components/DependencyGraph/helpers/buildGraph/buildGraph.ts",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -5784,6 +5913,66 @@
       "valid": true
     },
     {
+      "source": "src/domain/moduleRelations/moduleRelations.test.ts",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./moduleRelations",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/domain/moduleRelations/moduleRelations.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "dependency-cruiser",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "npm-dev",
+            "type-only",
+            "import"
+          ],
+          "resolved": "node_modules/dependency-cruiser/src/main/index.mjs",
+          "coreModule": false,
+          "followable": false,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": true,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "vitest",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "npm-dev",
+            "import"
+          ],
+          "resolved": "node_modules/vitest/dist/index.js",
+          "coreModule": false,
+          "followable": false,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": true,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
       "source": "src/main.tsx",
       "dependencies": [
         {
@@ -5832,6 +6021,23 @@
           "resolved": "src/Shared/index.ts",
           "coreModule": false,
           "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./Shared/styles/graphTheme.css",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/Shared/styles/graphTheme.css",
+          "coreModule": false,
+          "followable": false,
           "couldNotResolve": false,
           "matchesDoNotFollow": false,
           "circular": false,
@@ -5928,6 +6134,23 @@
       "valid": true
     },
     {
+      "source": "src/Shared/styles/graphTheme.css",
+      "followable": false,
+      "coreModule": false,
+      "couldNotResolve": false,
+      "matchesDoNotFollow": false,
+      "dependencyTypes": [
+        "local",
+        "import"
+      ],
+      "dependencies": [],
+      "dependents": [
+        "src/main.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
       "source": "node_modules/antd/dist/reset.css",
       "followable": false,
       "coreModule": false,
@@ -5968,8 +6191,8 @@
     "warn": 0,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 145,
-    "totalDependenciesCruised": 248,
+    "totalCruised": 151,
+    "totalDependenciesCruised": 257,
     "optionsUsed": {
       "baseDir": "/Users/nikolayarapov/repo/deps-viewer",
       "combinedDependencies": false,
@@ -6019,6 +6242,28 @@
           },
           "to": {
             "path": "^src/(App|components)/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "no-domain-from-upper-layers",
+          "severity": "error",
+          "from": {
+            "path": "^src/domain/"
+          },
+          "to": {
+            "path": "^src/(App|components)/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "no-shared-from-domain",
+          "severity": "error",
+          "from": {
+            "path": "^src/Shared/"
+          },
+          "to": {
+            "path": "^src/domain/"
           },
           "scope": "module"
         }

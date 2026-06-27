@@ -1,10 +1,20 @@
 import { useMemo } from 'react'
-import { AimOutlined, CloseOutlined, CopyOutlined } from '@ant-design/icons'
-import { Button, Empty, List, Tooltip, Typography } from 'antd'
+import CloseOutlined from '@mui/icons-material/CloseOutlined'
+import ContentCopyOutlined from '@mui/icons-material/ContentCopyOutlined'
+import MyLocationOutlined from '@mui/icons-material/MyLocationOutlined'
+import Box from '@mui/material/Box'
+import Divider from '@mui/material/Divider'
+import IconButton from '@mui/material/IconButton'
+import List from '@mui/material/List'
+import ListItem from '@mui/material/ListItem'
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction'
+import ListItemText from '@mui/material/ListItemText'
+import Stack from '@mui/material/Stack'
+import Tooltip from '@mui/material/Tooltip'
+import Typography from '@mui/material/Typography'
 import type { IModule } from 'dependency-cruiser'
-import { copyToClipboard } from '../../Shared'
+import { CIRCULAR_EDGE_COLOR, copyToClipboard } from '../../Shared'
 import { getNodeRelations } from '../../domain'
-import styles from './DependencyPanel.module.css'
 
 interface DependencyPanelProps {
   path: string
@@ -23,41 +33,53 @@ function RelationList({
   onShowInGraph: (path: string) => void
 }) {
   if (items.length === 0) {
-    return <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No dependencies" />
+    return (
+      <Typography color="text.secondary" align="center" sx={{ py: 2 }}>
+        No dependencies
+      </Typography>
+    )
   }
 
   return (
-    <List
-      className={styles.list}
-      size="small"
-      dataSource={items}
-      renderItem={(item) => (
-        <List.Item
-          actions={[
-            <Tooltip key="copy" title="Copy path">
-              <Button
-                type="text"
-                size="small"
-                icon={<CopyOutlined />}
+    <List dense disablePadding>
+      {items.map((item) => (
+        <ListItem key={item.path} disableGutters>
+          <ListItemText
+            primary={item.path}
+            slotProps={{
+              primary: {
+                sx: {
+                  fontFamily: 'monospace',
+                  fontSize: 11,
+                  wordBreak: 'break-all',
+                  color: item.circular ? CIRCULAR_EDGE_COLOR : undefined,
+                },
+              },
+            }}
+          />
+          <ListItemSecondaryAction>
+            <Tooltip title="Copy path">
+              <IconButton
+                edge="end"
+                aria-label="Copy path"
                 onClick={() => void copyToClipboard(item.path)}
-              />
-            </Tooltip>,
-            <Tooltip key="show" title="Show in graph">
-              <Button
-                type="text"
-                size="small"
-                icon={<AimOutlined />}
+              >
+                <ContentCopyOutlined fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Show in graph">
+              <IconButton
+                edge="end"
+                aria-label="Show in graph"
                 onClick={() => onShowInGraph(item.path)}
-              />
-            </Tooltip>,
-          ]}
-        >
-          <span className={`${styles.path} ${item.circular ? styles.circular : ''}`}>
-            {item.path}
-          </span>
-        </List.Item>
-      )}
-    />
+              >
+                <MyLocationOutlined fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </ListItemSecondaryAction>
+        </ListItem>
+      ))}
+    </List>
   )
 }
 
@@ -77,34 +99,48 @@ export function DependencyPanel({
   )
 
   return (
-    <div className={styles.panel}>
-      <header className={styles.header}>
-        <div className={styles.path}>{path}</div>
-        <div className={styles.headerActions}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
+      <Stack
+        direction="row"
+        spacing={1}
+        sx={{ px: 2, py: 1.5, flexShrink: 0, alignItems: 'flex-start' }}
+      >
+        <Typography
+          component="div"
+          sx={{
+            flex: 1,
+            minWidth: 0,
+            fontFamily: 'monospace',
+            wordBreak: 'break-all',
+          }}
+        >
+          {path}
+        </Typography>
+        <Stack direction="row" spacing={0.5} sx={{ flexShrink: 0 }}>
           <Tooltip title="Show in graph">
-            <Button
-              type="primary"
-              size="small"
-              icon={<AimOutlined />}
-              onClick={() => onShowInGraph(path)}
-            />
+            <IconButton color="primary" aria-label="Show in graph" onClick={() => onShowInGraph(path)}>
+              <MyLocationOutlined fontSize="small" />
+            </IconButton>
           </Tooltip>
           <Tooltip title="Close">
-            <Button type="text" size="small" icon={<CloseOutlined />} onClick={onClose} />
+            <IconButton aria-label="Close" onClick={onClose}>
+              <CloseOutlined fontSize="small" />
+            </IconButton>
           </Tooltip>
-        </div>
-      </header>
-      <div className={styles.body}>
-        <Typography.Title level={5} className={styles.sectionTitle}>
+        </Stack>
+      </Stack>
+      <Divider />
+      <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto', px: 2, py: 1.5 }}>
+        <Typography variant="subtitle1" gutterBottom>
           Dependencies
-        </Typography.Title>
+        </Typography>
         <RelationList items={relations.dependencies} onShowInGraph={onShowInGraph} />
 
-        <Typography.Title level={5} className={styles.sectionTitle} style={{ marginTop: 24 }}>
+        <Typography variant="subtitle1" gutterBottom sx={{ mt: 3 }}>
           Dependents
-        </Typography.Title>
+        </Typography>
         <RelationList items={relations.dependents} onShowInGraph={onShowInGraph} />
-      </div>
-    </div>
+      </Box>
+    </Box>
   )
 }

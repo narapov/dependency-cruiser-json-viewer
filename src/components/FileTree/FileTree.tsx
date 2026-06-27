@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
-import { FileOutlined, FolderOutlined } from '@ant-design/icons'
-import { Checkbox } from 'antd'
+import InsertDriveFileOutlined from '@mui/icons-material/InsertDriveFileOutlined'
+import FolderOutlined from '@mui/icons-material/FolderOutlined'
+import Box from '@mui/material/Box'
+import Checkbox from '@mui/material/Checkbox'
+import Divider from '@mui/material/Divider'
+import FormControlLabel from '@mui/material/FormControlLabel'
+import FormGroup from '@mui/material/FormGroup'
+import { styled } from '@mui/material/styles'
 import {
   Tree,
   isTreeLeaf,
@@ -15,9 +21,22 @@ import {
   getAllKeys,
 } from './helpers'
 import { FileTreeContextMenu } from './partials/FileTreeContextMenu'
-import styles from './FileTree.module.css'
 
 const CLICK_DELAY_MS = 250
+
+const TreeNodeTitle = styled('span', {
+  shouldForwardProp: (prop) => prop !== 'navigable',
+})<{ navigable?: boolean }>(({ navigable }) => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 4,
+  whiteSpace: 'nowrap',
+  cursor: navigable ? 'pointer' : undefined,
+}))
+
+const TreeNodeTitleText = styled('span')({
+  flex: '0 1 auto',
+})
 
 interface FileTreeProps {
   treeData: TreeNodeData[]
@@ -85,26 +104,32 @@ export function FileTree({
   }, [])
 
   return (
-    <div className={styles.container}>
-      <div className={styles.controls}>
-        <Checkbox
-          checked={allSelected}
-          indeterminate={someSelected}
-          onChange={(event) => onSelect?.(event.target.checked ? allKeys : [])}
-        >
-          Select all
-        </Checkbox>
-        <Checkbox
-          checked={allExpanded}
-          indeterminate={someExpanded}
-          onChange={(event) => onExpand(event.target.checked ? allFolderKeys : [])}
-        >
-          Expand all
-        </Checkbox>
-      </div>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
+      <FormGroup sx={{ flexShrink: 0, px: 1.5, py: 1 }}>
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={allSelected}
+              indeterminate={someSelected}
+              onChange={(_, checked) => onSelect?.(checked ? allKeys : [])}
+            />
+          }
+          label="Select all"
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={allExpanded}
+              indeterminate={someExpanded}
+              onChange={(_, checked) => onExpand(checked ? allFolderKeys : [])}
+            />
+          }
+          label="Expand all"
+        />
+      </FormGroup>
+      <Divider />
       <Tree
         ref={treeRef}
-        className={styles.tree}
         treeData={treeData}
         checkable
         checkedKeys={selectedKeys}
@@ -143,10 +168,14 @@ export function FileTree({
           const navigable = canShowInGraph(node.key, selectedKeys, treeIndex, node)
 
           const title = (
-            <span className={`${styles.title} ${navigable ? styles.navigable : ''}`}>
-              {isFolder ? <FolderOutlined /> : <FileOutlined />}
-              <span className={styles.titleText}>{node.title}</span>
-            </span>
+            <TreeNodeTitle navigable={navigable}>
+              {isFolder ? (
+                <FolderOutlined fontSize="inherit" />
+              ) : (
+                <InsertDriveFileOutlined fontSize="inherit" />
+              )}
+              <TreeNodeTitleText>{node.title}</TreeNodeTitleText>
+            </TreeNodeTitle>
           )
 
           return (
@@ -161,6 +190,6 @@ export function FileTree({
           )
         }}
       />
-    </div>
+    </Box>
   )
 }

@@ -1,5 +1,6 @@
 import { memo, useEffect, useRef } from 'react'
-import { CaretDownOutlined, CaretRightOutlined } from '@ant-design/icons'
+import ArrowDropDown from '@mui/icons-material/ArrowDropDown'
+import ChevronRight from '@mui/icons-material/ChevronRight'
 import { isTreeBranch } from '../../helpers/treeGuards'
 import type { TreeNodeData, TreeNodeEventInfo } from '../../types'
 import styles from '../../Tree.module.css'
@@ -105,7 +106,7 @@ function TreeNodeComponent({
             aria-label={expanded ? 'Collapse' : 'Expand'}
             onClick={handleExpandClick}
           >
-            {expanded ? <CaretDownOutlined /> : <CaretRightOutlined />}
+            {expanded ? <ArrowDropDown fontSize="inherit" /> : <ChevronRight fontSize="inherit" />}
           </button>
         ) : (
           <span className={styles.switcherPlaceholder} />

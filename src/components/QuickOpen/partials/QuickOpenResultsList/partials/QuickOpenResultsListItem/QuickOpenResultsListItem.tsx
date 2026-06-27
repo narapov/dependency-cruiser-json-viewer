@@ -1,4 +1,5 @@
-import { FileOutlined, FolderOutlined } from '@ant-design/icons'
+import InsertDriveFileOutlined from '@mui/icons-material/InsertDriveFileOutlined'
+import FolderOutlined from '@mui/icons-material/FolderOutlined'
 import { useMemo, type ReactNode } from 'react'
 import type { QuickOpenResultItem } from '../../../../QuickOpen.types'
 import styles from '../../../../QuickOpen.module.css'
@@ -76,7 +77,11 @@ export function QuickOpenResultsListItem({
       onClick={onClick}
     >
       <span className={styles.icon}>
-        {item.isFolder ? <FolderOutlined /> : <FileOutlined />}
+        {item.isFolder ? (
+          <FolderOutlined fontSize="inherit" />
+        ) : (
+          <InsertDriveFileOutlined fontSize="inherit" />
+        )}
       </span>
       <span className={styles.name}>
         {renderHighlighted(item.name, nameIndexes, styles.match)}

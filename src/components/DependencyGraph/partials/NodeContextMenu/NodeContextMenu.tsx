@@ -1,5 +1,6 @@
-import type { ReactNode } from 'react'
-import { Dropdown, type MenuProps } from 'antd'
+import { useCallback, useState, type MouseEvent, type ReactNode } from 'react'
+import Menu from '@mui/material/Menu'
+import MenuItem from '@mui/material/MenuItem'
 import { copyToClipboard } from '../../../../Shared'
 
 interface NodeContextMenuProps {
@@ -23,71 +24,57 @@ export function NodeContextMenu({
   onShowDependencies,
   children,
 }: NodeContextMenuProps) {
-  const items: MenuProps['items'] = [
-    {
-      key: 'copy',
-      label: 'Copy',
+  const [anchorPosition, setAnchorPosition] = useState<{ top: number; left: number } | null>(
+    null,
+  )
+
+  const handleContextMenu = useCallback((event: MouseEvent) => {
+    event.preventDefault()
+    setAnchorPosition({ top: event.clientY, left: event.clientX })
+  }, [])
+
+  const handleClose = useCallback(() => {
+    setAnchorPosition(null)
+  }, [])
+
+  const handleAction = useCallback(
+    (action: () => void) => (event: MouseEvent) => {
+      event.stopPropagation()
+      handleClose()
+      action()
     },
-  ]
-
-  if (isFolder && onToggle) {
-    items.push({
-      key: 'toggle',
-      label: expanded ? 'Collapse' : 'Expand',
-    })
-  }
-
-  if (isFolder && onExpandRecursive) {
-    items.push({
-      key: 'expand-recursive',
-      label: 'Expand recursive',
-    })
-  }
-
-  items.push({
-    key: 'show-in-tree',
-    label: 'Show in file tree',
-  })
-
-  if (onShowDependencies) {
-    items.push({
-      key: 'show-dependencies',
-      label: 'View dependencies',
-    })
-  }
-
-  const onClick: MenuProps['onClick'] = ({ key, domEvent }) => {
-    domEvent.stopPropagation()
-    switch (key) {
-      case 'copy': {
-        void copyToClipboard(path)
-        return
-      }
-      case 'toggle': {
-        onToggle?.(path)
-        return
-      }
-      case 'expand-recursive': {
-        onExpandRecursive?.(path)
-        return
-      }
-      case 'show-in-tree': {
-        onShowInFileTree(path)
-        return
-      }
-      case 'show-dependencies': {
-        onShowDependencies?.(path)
-        return
-      }
-      default: {
-        return
-      }
-    }
-  }
+    [handleClose],
+  )
 
   return (
-    <Dropdown menu={{ items, onClick }} trigger={['contextMenu']}>
-      {children}
-    </Dropdown>
+    <>
+      <span onContextMenu={handleContextMenu}>{children}</span>
+      <Menu
+        open={anchorPosition !== null}
+        onClose={handleClose}
+        anchorReference="anchorPosition"
+        anchorPosition={anchorPosition ?? undefined}
+      >
+        <MenuItem onClick={handleAction(() => void copyToClipboard(path))}>Copy</MenuItem>
+        {isFolder && onToggle && (
+          <MenuItem onClick={handleAction(() => onToggle(path))}>
+            {expanded ? 'Collapse' : 'Expand'}
+          </MenuItem>
+        )}
+        {isFolder && onExpandRecursive && (
+          <MenuItem onClick={handleAction(() => onExpandRecursive(path))}>
+            Expand recursive
+          </MenuItem>
+        )}
+        <MenuItem onClick={handleAction(() => onShowInFileTree(path))}>
+          Show in file tree
+        </MenuItem>
+        {onShowDependencies && (
+          <MenuItem onClick={handleAction(() => onShowDependencies(path))}>
+            View dependencies
+          </MenuItem>
+        )}
+      </Menu>
+    </>
   )
 }

@@ -1,4 +1,4 @@
-import { FolderOutlined } from '@ant-design/icons'
+import FolderOutlined from '@mui/icons-material/FolderOutlined'
 import { Handle, Position, type NodeProps } from '@xyflow/react'
 import type { FolderGroupNodeData } from '../../DependencyGraph.types'
 import styles from '../../DependencyGraph.module.css'
@@ -35,7 +35,7 @@ export function FolderGroupNode({ data }: NodeProps) {
           >
             {expanded ? '▼' : '▶'}
           </button>
-          <FolderOutlined className={styles.icon} />
+          <FolderOutlined className={styles.icon} fontSize="inherit" />
           <span className={styles.label}>{label}</span>
         </div>
       </NodeContextMenu>
