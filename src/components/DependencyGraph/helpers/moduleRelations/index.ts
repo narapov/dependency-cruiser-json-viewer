@@ -1,1 +1,0 @@
-export { getNodeRelations } from './moduleRelations'

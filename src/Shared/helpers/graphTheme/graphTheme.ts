@@ -1,0 +1,6 @@
+export const INCOMING_EDGE_COLOR = 'var(--graph-incoming)'
+export const OUTGOING_EDGE_COLOR = 'var(--graph-outgoing)'
+export const CIRCULAR_EDGE_COLOR = 'var(--graph-circular)'
+export const CIRCULAR_NODE_BACKGROUND = 'var(--graph-circular-background)'
+export const SELECTED_EDGE_COLOR = 'var(--graph-selected)'
+export const DEFAULT_EDGE_COLOR = 'var(--graph-default-edge)'

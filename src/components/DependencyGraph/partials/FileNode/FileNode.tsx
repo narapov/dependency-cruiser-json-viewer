@@ -1,6 +1,6 @@
 import { FileOutlined } from '@ant-design/icons'
 import { Handle, Position, type NodeProps } from '@xyflow/react'
-import { CIRCULAR_NODE_BACKGROUND } from '../../helpers'
+import { CIRCULAR_NODE_BACKGROUND } from '../../../../Shared'
 import type { FileNodeData } from '../../DependencyGraph.types'
 import styles from '../../DependencyGraph.module.css'
 import { NodeContextMenu } from '../NodeContextMenu'

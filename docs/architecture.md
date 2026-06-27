@@ -3,9 +3,10 @@
 ## Layers
 
 ```
-main → App → components/* → Shared
+main → App → components/* → domain → Shared
 ```
 
+- **`src/domain/`** — cruise data logic (`IModule[]`, path utils, module relations). Import via `from '../../domain'` (root barrel only).
 - **`src/Shared/`** — reusable code without app logic. Import **only** via `from '../../Shared'` (root barrel).
 - **`src/App/`** — root orchestrator: data loading, app state, feature coordination.
 - **`src/components/*`** — feature modules (FileTree, DependencyGraph, QuickOpen, DependencyPanel, AppLayout).
@@ -50,6 +51,7 @@ Do not re-export helper-local types from module barrels unless they are part of 
 | From | Import |
 |------|--------|
 | Anywhere outside Shared | `from '../../Shared'` only |
+| App, components | `from '../../domain'` only |
 | App internals | `from './helpers'`, `from './hooks'` |
 | Between features | `from '../FileTree'` (barrel) |
 | Inside a module | `from './partials/X'`, `from './helpers/X'` (via their index.ts) |
@@ -61,6 +63,18 @@ Forbidden:
 - `from '../FileTree/partials/...'`
 - `from '../DependencyGraph/helpers/...'` (use feature barrel)
 - `from '../DependencyGraph/types/...'` (use `ComponentName.types.ts` or feature barrel)
+- `from '../../domain/pathUtils'` (use domain root barrel)
+
+## Domain structure
+
+```
+domain/
+├── pathUtils/        # getParentPath, getRepresentative, …
+├── moduleRelations/  # getModuleRelations, getNodeRelations, …
+└── index.ts
+```
+
+Pure logic over `dependency-cruiser` data. No React, no xyflow, no Shared imports.
 
 ## Shared categories
 
@@ -68,7 +82,8 @@ Forbidden:
 Shared/
 ├── components/   # Tree, …
 ├── hooks/        # useResizableWidth
-├── helpers/      # copyToClipboard, queryClient
+├── helpers/      # copyToClipboard, queryClient, graphTheme
+├── styles/       # graphTheme.css (CSS variables for graph colors)
 ├── types/        # cross-shared types (placeholder)
 └── contexts/     # placeholder
 ```

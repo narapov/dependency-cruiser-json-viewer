@@ -73,7 +73,7 @@
 }
 
 .circular {
-  border-color: #ff4d4f;
+  border-color: var(--graph-circular);
 }
 
 .toggle {
@@ -92,7 +92,7 @@
 }
 
 .toggle:hover {
-  color: #1677ff;
+  color: var(--graph-incoming);
 }
 
 .label {

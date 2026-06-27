@@ -3,7 +3,7 @@ import {
   INCOMING_EDGE_COLOR,
   OUTGOING_EDGE_COLOR,
   SELECTED_EDGE_COLOR,
-} from '../../helpers'
+} from '../../../../Shared'
 import styles from '../../DependencyGraph.module.css'
 
 const items = [

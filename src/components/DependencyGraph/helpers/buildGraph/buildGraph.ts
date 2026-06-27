@@ -1,7 +1,13 @@
 import dagre from '@dagrejs/dagre'
 import { MarkerType, type Edge, type Node } from '@xyflow/react'
 import type { IModule } from 'dependency-cruiser'
-import { getBaseName, getParentPath, getRepresentative } from '../pathUtils'
+import {
+  CIRCULAR_EDGE_COLOR,
+  DEFAULT_EDGE_COLOR,
+  INCOMING_EDGE_COLOR,
+  OUTGOING_EDGE_COLOR,
+} from '../../../../Shared'
+import { getBaseName, getParentPath, getRepresentative } from '../../../../domain'
 import type {
   BuildGraphInput,
   BuildGraphResult,
@@ -10,13 +16,6 @@ import type {
   FolderGroupNodeData,
   FolderNodeData,
 } from '../../DependencyGraph.types'
-
-export const INCOMING_EDGE_COLOR = '#1677ff'
-export const OUTGOING_EDGE_COLOR = '#52c41a'
-export const CIRCULAR_EDGE_COLOR = '#ff4d4f'
-export const CIRCULAR_NODE_BACKGROUND = '#fff1f0'
-export const SELECTED_EDGE_COLOR = '#fa8c16'
-export const SELECTED_EDGE_Z_INDEX = 1000
 
 const NODE_WIDTH = 180
 const NODE_HEIGHT = 40
@@ -401,7 +400,7 @@ export function buildGraph({
       const isOutgoing =
         highlightedNodeId != null && sourceRep === highlightedNodeId
 
-      let stroke = '#b1b1b7'
+      let stroke = DEFAULT_EDGE_COLOR
       let strokeWidth = 1
       if (dep.circular === true) {
         stroke = CIRCULAR_EDGE_COLOR

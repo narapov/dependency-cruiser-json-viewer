@@ -1,6 +1,7 @@
 import type { IModule } from 'dependency-cruiser'
 import { describe, expect, it } from 'vitest'
-import { buildGraph, CIRCULAR_EDGE_COLOR } from './buildGraph'
+import { CIRCULAR_EDGE_COLOR } from '../../../../Shared'
+import { buildGraph } from './buildGraph'
 
 function moduleAt(source: string, dependencies: IModule['dependencies'] = []): IModule {
   return { source, dependencies, dependents: [], valid: true } as IModule

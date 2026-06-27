@@ -24,6 +24,10 @@ const sharedImportRestrictions = {
       message: 'App helpers are private to App/',
     },
     {
+      group: ['**/domain/*', '**/domain/*/*'],
+      message: 'Import from the domain root barrel only: from "../../domain"',
+    },
+    {
       group: ['../**/partials/*', '../../**/partials/*', '../../../**/partials/*'],
       message: 'Import feature modules through their public index.ts barrel',
     },

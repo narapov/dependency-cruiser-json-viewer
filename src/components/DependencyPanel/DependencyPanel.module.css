@@ -48,7 +48,7 @@
 }
 
 .circular {
-  color: #ff4d4f;
+  color: var(--graph-circular);
 }
 
 .sectionTitle {

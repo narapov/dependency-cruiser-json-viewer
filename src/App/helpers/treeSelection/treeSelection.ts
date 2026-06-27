@@ -1,4 +1,5 @@
 import { isTreeBranch, type TreeNodeData } from '../../../Shared'
+import { getAncestorKeys } from '../../../domain'
 
 export interface TreeIndex {
   descendantsByKey: Map<string, string[]>
@@ -27,16 +28,7 @@ export function buildTreeIndex(treeData: TreeNodeData[]): TreeIndex {
   return { descendantsByKey }
 }
 
-export function getAncestorKeys(key: string): string[] {
-  const parts = key.split('/')
-  const ancestors: string[] = []
-
-  for (let i = 1; i < parts.length; i++) {
-    ancestors.push(parts.slice(0, i).join('/'))
-  }
-
-  return ancestors
-}
+export { getAncestorKeys } from '../../../domain'
 
 export function applyCascadeSelection(
   currentSelectedKeys: string[],

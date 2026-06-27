@@ -1,18 +1,8 @@
 import type { IModule } from 'dependency-cruiser'
-import { CIRCULAR_EDGE_COLOR } from '../buildGraph'
 import { getRepresentative, isUnderFolder } from '../pathUtils'
+import type { ModuleRelation, ModuleRelations } from './types/ModuleRelations'
 
-export { CIRCULAR_EDGE_COLOR as CIRCULAR_COLOR }
-
-export interface ModuleRelation {
-  path: string
-  circular: boolean
-}
-
-export interface ModuleRelations {
-  dependencies: ModuleRelation[]
-  dependents: ModuleRelation[]
-}
+export type { ModuleRelation, ModuleRelations } from './types/ModuleRelations'
 
 function mergeRelation(map: Map<string, boolean>, path: string, circular: boolean): void {
   map.set(path, (map.get(path) ?? false) || circular)

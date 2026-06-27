@@ -1,5 +1,7 @@
 import { MarkerType, type Edge } from '@xyflow/react'
-import { SELECTED_EDGE_COLOR, SELECTED_EDGE_Z_INDEX } from '../buildGraph'
+import { SELECTED_EDGE_COLOR } from '../../../../Shared'
+
+const SELECTED_EDGE_Z_INDEX = 1000
 
 export function applySelectedEdgeStyle(edges: Edge[], selectedEdgeId: string | null): Edge[] {
   if (selectedEdgeId == null) return edges

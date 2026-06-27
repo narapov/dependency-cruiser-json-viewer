@@ -1,15 +1,17 @@
 import { MarkerType, type Edge } from '@xyflow/react'
 import { describe, expect, it } from 'vitest'
-import { SELECTED_EDGE_COLOR, SELECTED_EDGE_Z_INDEX } from '../buildGraph'
+import { DEFAULT_EDGE_COLOR, SELECTED_EDGE_COLOR } from '../../../../Shared'
 import { applySelectedEdgeStyle } from './applySelectedEdgeStyle'
+
+const SELECTED_EDGE_Z_INDEX = 1000
 
 function edgeAt(id: string): Edge {
   return {
     id,
     source: 'a',
     target: 'b',
-    markerEnd: { type: MarkerType.ArrowClosed, color: '#b1b1b7' },
-    style: { stroke: '#b1b1b7', strokeWidth: 1 },
+    markerEnd: { type: MarkerType.ArrowClosed, color: DEFAULT_EDGE_COLOR },
+    style: { stroke: DEFAULT_EDGE_COLOR, strokeWidth: 1 },
   }
 }
 

@@ -3,7 +3,7 @@ import { AimOutlined, CloseOutlined, CopyOutlined } from '@ant-design/icons'
 import { Button, Empty, List, Tooltip, Typography } from 'antd'
 import type { IModule } from 'dependency-cruiser'
 import { copyToClipboard } from '../../Shared'
-import { getNodeRelations } from '../DependencyGraph'
+import { getNodeRelations } from '../../domain'
 import styles from './DependencyPanel.module.css'
 
 interface DependencyPanelProps {
