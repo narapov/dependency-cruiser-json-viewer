@@ -194,3 +194,85 @@ describe('buildGraph circular dependencies', () => {
     expect(circularEdge?.style?.stroke).toBe(CIRCULAR_EDGE_COLOR)
   })
 })
+
+describe('buildGraph layout', () => {
+  const noopArgs = {
+    highlightedNodeId: null,
+    folderColors: new Map(),
+    onToggleFolder: noopToggle,
+    onExpandRecursive: noopExpandRecursive,
+    onShowInFileTree: noopShowInFileTree,
+  }
+
+  function manySiblingSources(count: number) {
+    return Array.from({ length: count }, (_, index) => `src/foo/f${index}.ts`)
+  }
+
+  it('many siblings without edges use grid layout', () => {
+    const sources = manySiblingSources(8)
+    const modules = sources.map((source) => moduleAt(source))
+
+    const { nodes } = buildGraph({
+      modules,
+      selectedPaths: sources,
+      expandedFolders: new Set(['src', 'src/foo']),
+      ...noopArgs,
+    })
+
+    const fileNodes = nodes.filter((node) => node.type === 'file')
+    const xValues = new Set(fileNodes.map((node) => node.position.x))
+    expect(fileNodes).toHaveLength(8)
+    expect(xValues.size).toBeGreaterThan(1)
+  })
+
+  it('connected siblings keep dagre layout', () => {
+    const depB = { resolved: 'src/foo/b.ts' } as IModule['dependencies'][0]
+    const depC = { resolved: 'src/foo/c.ts' } as IModule['dependencies'][0]
+    const modules = [
+      moduleAt('src/foo/a.ts', [depB]),
+      moduleAt('src/foo/b.ts', [depC]),
+      moduleAt('src/foo/c.ts'),
+    ]
+
+    const { nodes } = buildGraph({
+      modules,
+      selectedPaths: ['src/foo/a.ts', 'src/foo/b.ts', 'src/foo/c.ts'],
+      expandedFolders: new Set(['src', 'src/foo']),
+      ...noopArgs,
+    })
+
+    const pos = (id: string) => nodes.find((node) => node.id === id)!.position
+    expect(pos('src/foo/a.ts').x).toBeLessThan(pos('src/foo/b.ts').x)
+    expect(pos('src/foo/b.ts').x).toBeLessThan(pos('src/foo/c.ts').x)
+  })
+
+  it('group size grows with child count', () => {
+    const mediumSources = manySiblingSources(6)
+    const largeSources = manySiblingSources(12)
+    const mediumModules = mediumSources.map((source) => moduleAt(source))
+    const largeModules = largeSources.map((source) => moduleAt(source))
+
+    const mediumGraph = buildGraph({
+      modules: mediumModules,
+      selectedPaths: mediumSources,
+      expandedFolders: new Set(['src', 'src/foo']),
+      ...noopArgs,
+    })
+    const largeGraph = buildGraph({
+      modules: largeModules,
+      selectedPaths: largeSources,
+      expandedFolders: new Set(['src', 'src/foo']),
+      ...noopArgs,
+    })
+
+    const mediumGroup = mediumGraph.nodes.find(
+      (node) => node.id === 'src/foo' && node.type === 'folderGroup',
+    )
+    const largeGroup = largeGraph.nodes.find(
+      (node) => node.id === 'src/foo' && node.type === 'folderGroup',
+    )
+
+    expect(largeGroup?.style?.width).toBeGreaterThan(mediumGroup?.style?.width as number)
+    expect(largeGroup?.style?.height).toBeGreaterThan(mediumGroup?.style?.height as number)
+  })
+})

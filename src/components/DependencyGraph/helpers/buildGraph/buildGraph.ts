@@ -21,6 +21,10 @@ const NODE_WIDTH = 180
 const NODE_HEIGHT = 40
 const GROUP_PADDING = 16
 const GROUP_HEADER = 36
+const GRID_MIN_CHILDREN = 6
+const GRID_MAX_EDGE_RATIO = 0.4
+const GRID_GAP_X = 60
+const GRID_GAP_Y = 24
 
 interface NodeSize {
   width: number
@@ -244,6 +248,174 @@ function getDirectChildren(
   return children.sort()
 }
 
+function getLayoutSpacing(childCount: number) {
+  return {
+    nodesep: Math.min(80, 24 + childCount * 2),
+    ranksep: Math.min(160, 60 + childCount * 4),
+  }
+}
+
+function getSiblingEdges(childIds: string[], edges: Edge[]): Edge[] {
+  const childSet = new Set(childIds)
+  return edges.filter(
+    (edge) => childSet.has(edge.source) && childSet.has(edge.target),
+  )
+}
+
+// Dense groups with few sibling dependencies get a grid instead of dagre.
+function shouldUseGridLayout(childIds: string[], edges: Edge[]): boolean {
+  if (childIds.length < GRID_MIN_CHILDREN) return false
+  const siblingEdges = getSiblingEdges(childIds, edges)
+  return siblingEdges.length / childIds.length < GRID_MAX_EDGE_RATIO
+}
+
+function orderChildrenForGrid(childIds: string[], edges: Edge[]): string[] {
+  const childSet = new Set(childIds)
+  const withOutgoing = new Set<string>()
+  for (const edge of edges) {
+    if (childSet.has(edge.source) && childSet.has(edge.target)) {
+      withOutgoing.add(edge.source)
+    }
+  }
+  return [
+    ...childIds.filter((id) => withOutgoing.has(id)),
+    ...childIds.filter((id) => !withOutgoing.has(id)),
+  ]
+}
+
+function layoutChildrenWithDagre(
+  childIds: string[],
+  childSizes: Map<string, NodeSize>,
+  edges: Edge[],
+): Map<string, { x: number; y: number }> {
+  const spacing = getLayoutSpacing(childIds.length)
+  const graph = new dagre.graphlib.Graph()
+  graph.setDefaultEdgeLabel(() => ({}))
+  graph.setGraph({ rankdir: 'LR', ...spacing })
+
+  for (const childId of childIds) {
+    const size = childSizes.get(childId)!
+    graph.setNode(childId, { width: size.width, height: size.height })
+  }
+
+  const childSet = new Set(childIds)
+  for (const edge of edges) {
+    if (childSet.has(edge.source) && childSet.has(edge.target)) {
+      graph.setEdge(edge.source, edge.target)
+    }
+  }
+
+  dagre.layout(graph)
+
+  const positions = new Map<string, { x: number; y: number }>()
+  for (const childId of childIds) {
+    const dagreNode = graph.node(childId)
+    const size = childSizes.get(childId)!
+    positions.set(childId, {
+      x: dagreNode.x - size.width / 2 + GROUP_PADDING,
+      y: dagreNode.y - size.height / 2 + GROUP_HEADER + GROUP_PADDING,
+    })
+  }
+  return positions
+}
+
+// Square-ish grid for groups where dagre would stack unrelated nodes vertically.
+function layoutChildrenAsGrid(
+  childIds: string[],
+  childSizes: Map<string, NodeSize>,
+  edges: Edge[],
+): Map<string, { x: number; y: number }> {
+  const columns = Math.ceil(Math.sqrt(childIds.length))
+  const orderedIds = orderChildrenForGrid(childIds, edges)
+  const positions = new Map<string, { x: number; y: number }>()
+
+  let currentX = GROUP_PADDING
+  let currentY = GROUP_HEADER + GROUP_PADDING
+  let rowHeight = 0
+  let col = 0
+
+  for (const childId of orderedIds) {
+    const size = childSizes.get(childId)!
+
+    if (col >= columns) {
+      currentX = GROUP_PADDING
+      currentY += rowHeight + GRID_GAP_Y
+      rowHeight = 0
+      col = 0
+    }
+
+    positions.set(childId, { x: currentX, y: currentY })
+    rowHeight = Math.max(rowHeight, size.height)
+    currentX += size.width + GRID_GAP_X
+    col++
+  }
+
+  return positions
+}
+
+function applyChildPositions(
+  childIds: string[],
+  childSizes: Map<string, NodeSize>,
+  positions: Map<string, { x: number; y: number }>,
+  folderId: string | null,
+  nodeMap: Map<string, Node>,
+  groupSizes: Map<string, NodeSize>,
+): NodeSize {
+  let maxX = 0
+  let maxY = 0
+
+  for (const childId of childIds) {
+    const size = childSizes.get(childId)!
+    const position = positions.get(childId)!
+    const node = nodeMap.get(childId)!
+    node.position = position
+    if (folderId !== null) {
+      node.parentId = folderId
+      node.extent = 'parent'
+    }
+
+    maxX = Math.max(maxX, position.x + size.width)
+    maxY = Math.max(maxY, position.y + size.height)
+  }
+
+  const groupSize = {
+    width: Math.max(maxX + GROUP_PADDING, NODE_WIDTH + GROUP_PADDING * 2),
+    height: Math.max(maxY + GROUP_PADDING, GROUP_HEADER + NODE_HEIGHT + GROUP_PADDING),
+  }
+
+  if (folderId !== null) {
+    groupSizes.set(folderId, groupSize)
+    const groupNode = nodeMap.get(folderId)
+    if (groupNode) {
+      groupNode.style = {
+        ...groupNode.style,
+        width: groupSize.width,
+        height: groupSize.height,
+      }
+      groupNode.zIndex = -1
+    }
+  }
+
+  return groupSize
+}
+
+/*
+ * Layout algorithm (recursive, per folder level):
+ *
+ * 1. Collect direct children of the current folder (or root when folderId is null).
+ * 2. Recurse into expanded subfolders first to compute their sizes.
+ * 3. Place direct children using one of two strategies:
+ *    - dagre (LR): when the group is small or sibling dependencies are dense enough
+ *      to form a meaningful left-to-right flow. Spacing scales with child count.
+ *    - grid: when there are many children (>= GRID_MIN_CHILDREN) but few sibling
+ *      edges (< GRID_MAX_EDGE_RATIO per node). Dagre with rankdir LR would stack
+ *      unrelated nodes in a single vertical column; a sqrt-based grid spreads them
+ *      into multiple columns instead.
+ *
+ * Only edges between direct siblings at the current level influence layout.
+ * Cross-group dependencies (e.g. file in src/foo -> file in src/bar) do not
+ * affect positions — React Flow draws those edges after layout.
+ */
 function layoutGroup(
   folderId: string | null,
   nodeMap: Map<string, Node>,
@@ -287,62 +459,18 @@ function layoutGroup(
     }
   }
 
-  const graph = new dagre.graphlib.Graph()
-  graph.setDefaultEdgeLabel(() => ({}))
-  graph.setGraph({ rankdir: 'LR', nodesep: 40, ranksep: 80 })
+  const positions = shouldUseGridLayout(childIds, edges)
+    ? layoutChildrenAsGrid(childIds, childSizes, edges)
+    : layoutChildrenWithDagre(childIds, childSizes, edges)
 
-  for (const childId of childIds) {
-    const size = childSizes.get(childId)!
-    graph.setNode(childId, { width: size.width, height: size.height })
-  }
-
-  for (const edge of edges) {
-    if (childIds.includes(edge.source) && childIds.includes(edge.target)) {
-      graph.setEdge(edge.source, edge.target)
-    }
-  }
-
-  dagre.layout(graph)
-
-  let maxX = 0
-  let maxY = 0
-
-  for (const childId of childIds) {
-    const dagreNode = graph.node(childId)
-    const size = childSizes.get(childId)!
-    const x = dagreNode.x - size.width / 2 + GROUP_PADDING
-    const y = dagreNode.y - size.height / 2 + GROUP_HEADER + GROUP_PADDING
-
-    const node = nodeMap.get(childId)!
-    node.position = { x, y }
-    if (folderId !== null) {
-      node.parentId = folderId
-      node.extent = 'parent'
-    }
-
-    maxX = Math.max(maxX, x + size.width)
-    maxY = Math.max(maxY, y + size.height)
-  }
-
-  const groupSize = {
-    width: Math.max(maxX + GROUP_PADDING, NODE_WIDTH + GROUP_PADDING * 2),
-    height: Math.max(maxY + GROUP_PADDING, GROUP_HEADER + NODE_HEIGHT + GROUP_PADDING),
-  }
-
-  if (folderId !== null) {
-    groupSizes.set(folderId, groupSize)
-    const groupNode = nodeMap.get(folderId)
-    if (groupNode) {
-      groupNode.style = {
-        ...groupNode.style,
-        width: groupSize.width,
-        height: groupSize.height,
-      }
-      groupNode.zIndex = -1
-    }
-  }
-
-  return groupSize
+  return applyChildPositions(
+    childIds,
+    childSizes,
+    positions,
+    folderId,
+    nodeMap,
+    groupSizes,
+  )
 }
 
 export function buildGraph({
