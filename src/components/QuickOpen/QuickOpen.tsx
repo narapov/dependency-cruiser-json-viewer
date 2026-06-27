@@ -1,8 +1,8 @@
-import { FileOutlined, FolderOutlined } from '@ant-design/icons'
 import { Input, Modal, type InputRef } from 'antd'
-import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import type { TreeNodeData } from '../Tree'
 import { flattenTreeNodes, searchTreeNodes } from '../../lib/searchTreeNodes'
+import { QuickOpenResultsList } from './components/QuickOpenResultsList'
 import styles from './QuickOpen.module.css'
 
 interface QuickOpenProps {
@@ -12,20 +12,18 @@ interface QuickOpenProps {
   onSelect: (path: string) => void
 }
 
-function getParentPath(key: string): string | null {
-  const lastSlash = key.lastIndexOf('/')
-  if (lastSlash === -1) return null
-  return key.slice(0, lastSlash)
-}
-
 export function QuickOpen({ open, treeData, onClose, onSelect }: QuickOpenProps) {
   const [query, setQuery] = useState('')
+  const deferredQuery = useDeferredValue(query)
   const [highlightedIndex, setHighlightedIndex] = useState(0)
   const inputRef = useRef<InputRef>(null)
   const listRef = useRef<HTMLUListElement>(null)
 
   const allItems = useMemo(() => flattenTreeNodes(treeData), [treeData])
-  const results = useMemo(() => searchTreeNodes(allItems, query), [allItems, query])
+  const results = useMemo(
+    () => searchTreeNodes(allItems, deferredQuery),
+    [allItems, deferredQuery],
+  )
 
   const reset = useCallback(() => {
     setQuery('')
@@ -39,7 +37,7 @@ export function QuickOpen({ open, treeData, onClose, onSelect }: QuickOpenProps)
 
   useEffect(() => {
     setHighlightedIndex(0)
-  }, [query])
+  }, [deferredQuery])
 
   useEffect(() => {
     if (!open) return
@@ -123,32 +121,18 @@ export function QuickOpen({ open, treeData, onClose, onSelect }: QuickOpenProps)
           />
         </div>
         {results.length === 0 ? (
-          <div className={styles.empty}>No matching files or folders</div>
+          <div className={styles.empty}>
+            {query.trim() ? 'No matching files or folders' : 'Start typing to search'}
+          </div>
         ) : (
-          <ul ref={listRef} className={styles.list} role="listbox">
-            {results.map((item, index) => {
-              const parentPath = getParentPath(item.key)
-              const highlighted = index === highlightedIndex
-
-              return (
-                <li
-                  key={item.key}
-                  className={`${styles.item} ${highlighted ? styles.itemHighlighted : ''}`}
-                  role="option"
-                  aria-selected={highlighted}
-                  onMouseEnter={() => setHighlightedIndex(index)}
-                  onMouseDown={(event) => event.preventDefault()}
-                  onClick={() => handleSelect(item.key)}
-                >
-                  <span className={styles.icon}>
-                    {item.isFolder ? <FolderOutlined /> : <FileOutlined />}
-                  </span>
-                  <span className={styles.name}>{item.name}</span>
-                  {parentPath && <span className={styles.path}>{parentPath}</span>}
-                </li>
-              )
-            })}
-          </ul>
+          <QuickOpenResultsList
+            results={results}
+            query={deferredQuery}
+            highlightedIndex={highlightedIndex}
+            listRef={listRef}
+            onHighlightIndex={setHighlightedIndex}
+            onSelect={handleSelect}
+          />
         )}
       </div>
     </Modal>

@@ -17,6 +17,7 @@
     "@xyflow/react": "^12.11.1",
     "antd": "^6.4.5",
     "axios": "^1.18.1",
+    "fuzzysort": "^3.1.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-use": "^17.6.1"
