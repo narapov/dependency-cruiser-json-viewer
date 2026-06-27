@@ -1,1 +1,1 @@
-export { useCruiseResult } from './useCruiseResult'
+export * from './useCruiseResult'

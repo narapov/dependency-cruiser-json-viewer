@@ -1,1 +1,1 @@
-export { FileNode } from './FileNode'
+export * from './FileNode'

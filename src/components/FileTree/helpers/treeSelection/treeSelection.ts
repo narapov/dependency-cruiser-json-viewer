@@ -1,31 +1,7 @@
-import { isTreeBranch, type TreeNodeData } from '../../../../Shared'
-
-export interface TreeIndex {
-  descendantsByKey: Map<string, string[]>
-}
-
-export function buildTreeIndex(treeData: TreeNodeData[]): TreeIndex {
-  const descendantsByKey = new Map<string, string[]>()
-
-  function indexNode(node: TreeNodeData): string[] {
-    const descendantKeys: string[] = []
-
-    if (node.children) {
-      for (const child of node.children) {
-        descendantKeys.push(child.key, ...indexNode(child))
-      }
-    }
-
-    descendantsByKey.set(node.key, descendantKeys)
-    return descendantKeys
-  }
-
-  for (const node of treeData) {
-    indexNode(node)
-  }
-
-  return { descendantsByKey }
-}
+import { getAncestorKeys } from '../../../../domain'
+import { isTreeBranch } from '../treeGuards'
+import type { TreeIndex } from '../treeIndex'
+import type { TreeNodeData } from '../../types'
 
 export function applyCascadeSelection(
   currentSelectedKeys: string[],
@@ -39,46 +15,28 @@ export function applyCascadeSelection(
     return [...new Set([...currentSelectedKeys, toggledKey, ...descendants])]
   }
 
-  const toRemove = new Set([toggledKey, ...descendants])
+  const toRemove = new Set([toggledKey, ...descendants, ...getAncestorKeys(toggledKey)])
+
   return currentSelectedKeys.filter((key) => !toRemove.has(key))
 }
 
-export function canShowInGraph(
-  key: string,
+export function computeCheckState(
   selectedKeys: string[],
   index: TreeIndex,
-  node: TreeNodeData,
-): boolean {
-  if (selectedKeys.includes(key)) return true
-  if (!isTreeBranch(node)) return false
-
+): { checked: string[]; halfChecked: string[] } {
   const selectedSet = new Set(selectedKeys)
-  const descendants = index.descendantsByKey.get(key) ?? []
-  return descendants.some((descendant) => selectedSet.has(descendant))
-}
+  const halfChecked: string[] = []
 
-export function getAllKeys(treeData: TreeNodeData[]): string[] {
-  const keys: string[] = []
-
-  function walk(node: TreeNodeData) {
-    keys.push(node.key)
-    node.children?.forEach(walk)
-  }
-
-  treeData.forEach(walk)
-  return keys
-}
-
-export function getAllFolderKeys(treeData: TreeNodeData[]): string[] {
-  const keys: string[] = []
-
-  function walk(node: TreeNodeData) {
-    if (isTreeBranch(node)) {
-      keys.push(node.key)
+  for (const [key, descendants] of index.descendantsByKey) {
+    if (selectedSet.has(key)) continue
+    if (descendants.some((descendant) => selectedSet.has(descendant))) {
+      halfChecked.push(key)
     }
-    node.children?.forEach(walk)
   }
 
-  treeData.forEach(walk)
-  return keys
+  return { checked: selectedKeys, halfChecked }
+}
+
+export function getTopLevelFolderKeys(treeData: TreeNodeData[]): string[] {
+  return treeData.filter(isTreeBranch).map((node) => node.key)
 }

@@ -1,2 +1,3 @@
-export { applySelectedEdgeStyle } from './applySelectedEdgeStyle'
-export { buildGraph } from './buildGraph'
+export * from './applySelectedEdgeStyle'
+export * from './buildGraph'
+export { assignFolderColors } from './assignFolderColors'

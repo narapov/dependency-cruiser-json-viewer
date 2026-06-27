@@ -1,50 +1,28 @@
-import { useMemo } from 'react'
 import Alert from '@mui/material/Alert'
 import AlertTitle from '@mui/material/AlertTitle'
 import CircularProgress from '@mui/material/CircularProgress'
-import Typography from '@mui/material/Typography'
 import type { IModule } from 'dependency-cruiser'
+import { useMemo, useRef } from 'react'
 import { AppLayout } from '../components/AppLayout'
-import { DependencyGraph } from '../components/DependencyGraph'
+import { DependencyGraph, type DependencyGraphHandle } from '../components/DependencyGraph'
 import { DependencyPanel } from '../components/DependencyPanel'
-import { FileTree } from '../components/FileTree'
+import { FileTree, type FileTreeHandle } from '../components/FileTree'
 import { QuickOpen } from '../components/QuickOpen'
-import { assignFolderColors } from './helpers'
-import { buildFileTree } from './helpers'
-import { useAppOrchestration, useCruiseResult } from './hooks'
+import { useAppOrchestration, useCruiseResult, useInitialDependencyCruiserState } from './hooks'
+import { AppHeader } from './partials/AppHeader'
 import styles from './App.module.css'
-
-function AppHeader({ moduleCount }: { moduleCount?: number }) {
-  return (
-    <Typography variant="subtitle1" component="h1" sx={{ margin: 0, color: '#fff', fontWeight: 600 }}>
-      Deps Viewer
-      {moduleCount != null && (
-        <Typography
-          component="span"
-          variant="body2"
-          color="text.secondary"
-          sx={{ marginLeft: 1.5, fontWeight: 400 }}
-        >
-          {moduleCount} modules
-        </Typography>
-      )}
-    </Typography>
-  )
-}
 
 function App() {
   const { data, isPending, isError, error } = useCruiseResult()
+  const fileTreeRef = useRef<FileTreeHandle>(null)
+  const graphRef = useRef<DependencyGraphHandle>(null)
 
   const sources = useMemo(
-    () => (data ? data.modules.map((m) => m.source) : []),
-    [data],
+    () => data?.modules.map((module) => module.source) ?? [],
+    [data?.modules],
   )
-
-  const treeData = useMemo(() => (data ? buildFileTree(sources) : []), [data, sources])
-
-  const folderColors = useMemo(() => assignFolderColors(sources), [sources])
-
-  const orch = useAppOrchestration(treeData)
+  const initialDependencyCruiserState = useInitialDependencyCruiserState(sources)
+  const orch = useAppOrchestration({ sources, fileTreeRef, graphRef, initialDependencyCruiserState })
 
   if (isPending) {
     return (
@@ -70,21 +48,48 @@ function App() {
   return (
     <AppLayout
       header={<AppHeader moduleCount={data.summary.totalCruised} />}
-      sidebar={<FileTree {...orch.fileTreeProps} />}
+      sidebar={
+        <FileTree
+          ref={fileTreeRef}
+          sources={sources}
+          selectedKeys={orch.selectedPaths}
+          onSelect={orch.setSelectedPaths}
+          expandedKeys={orch.expandedKeys}
+          onExpand={orch.updateExpandedKeys}
+          onExpandRecursive={orch.expandRecursive}
+          onShowInGraph={orch.showInGraph}
+          onShowDependencies={orch.handleShowDependencies}
+          activePath={orch.activePath}
+        />
+      }
       main={
         <DependencyGraph
-          {...orch.graphProps}
+          ref={graphRef}
           modules={modules}
-          folderColors={folderColors}
+          selectedPaths={orch.selectedPaths}
+          expandedKeys={orch.expandedKeys}
+          onToggleFolder={orch.toggleFolder}
+          onExpandRecursive={orch.expandRecursive}
+          onShowInFileTree={orch.showInFileTree}
+          onShowDependencies={orch.handleShowDependencies}
+          onActivePathChange={orch.activatePath}
+          activePath={orch.activePath}
         />
       }
       panel={
-        orch.layoutProps.panelOpen ? (
-          <DependencyPanel {...orch.panelProps} modules={modules} />
+        orch.panelOpen ? (
+          <DependencyPanel
+            path={orch.dependenciesPath!}
+            modules={modules}
+            selectedPaths={orch.selectedPaths}
+            expandedKeys={orch.expandedKeys}
+            onClose={orch.handleClosePanel}
+            onShowInGraph={orch.showInGraph}
+          />
         ) : null
       }
-      overlay={<QuickOpen {...orch.quickOpenProps} />}
-      panelOpen={orch.layoutProps.panelOpen}
+      overlay={<QuickOpen sources={sources} onSelect={orch.handleQuickOpenSelect} />}
+      panelOpen={orch.panelOpen}
     />
   )
 }

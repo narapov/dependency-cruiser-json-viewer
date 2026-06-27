@@ -1,1 +1,1 @@
-export { computeQuickOpenHighlight } from './computeQuickOpenHighlight'
+export * from './computeQuickOpenHighlight'

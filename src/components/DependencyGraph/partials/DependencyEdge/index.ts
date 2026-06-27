@@ -1,1 +1,1 @@
-export { DependencyEdge } from './DependencyEdge'
+export * from './DependencyEdge'

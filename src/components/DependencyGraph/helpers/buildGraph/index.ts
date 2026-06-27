@@ -1,1 +1,1 @@
-export { buildGraph } from './buildGraph'
+export * from './buildGraph'

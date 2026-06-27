@@ -1,1 +1,1 @@
-export { fetchCruiseResult } from './cruiseResult'
+export * from './cruiseResult'

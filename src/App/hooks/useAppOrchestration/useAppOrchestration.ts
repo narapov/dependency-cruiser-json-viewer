@@ -1,161 +1,112 @@
-import { useCallback, useDeferredValue, useMemo, useState } from 'react'
-import type { TreeNodeData } from '../../../Shared'
+import { useEffect, useState, type RefObject } from 'react'
+import type { DependencyGraphHandle } from '../../../components/DependencyGraph'
+import type { FileTreeHandle } from '../../../components/FileTree'
+import type { DependencyCruiserState } from '../../../domain'
 import {
-  buildTreeIndex,
-  canShowInGraph,
-  findTreeNode,
-  flattenTreeNodes,
   getAncestorKeys,
-  getDefaultExpandedKeys,
-  getDefaultSelectedKeys,
   getSubtreeFolderKeys,
+  isPathVisibleInSelection,
   resolveActivePathAfterCollapse,
-  searchTreeNodes,
   toggleExpandedKey,
-} from '../../helpers'
-import { useQuickOpenShortcut } from '../useQuickOpenShortcut'
+} from '../../../domain'
 
-export function useAppOrchestration(treeData: TreeNodeData[]) {
-  const [selectedPaths, setSelectedPaths] = useState(() => getDefaultSelectedKeys(treeData))
-  const [expandedKeys, setExpandedKeys] = useState(() => getDefaultExpandedKeys(treeData))
+interface UseAppOrchestrationOptions {
+  sources: string[]
+  fileTreeRef: RefObject<FileTreeHandle | null>
+  graphRef: RefObject<DependencyGraphHandle | null>
+  initialDependencyCruiserState: DependencyCruiserState
+}
+
+export function useAppOrchestration({
+  sources,
+  fileTreeRef,
+  graphRef,
+  initialDependencyCruiserState,
+}: UseAppOrchestrationOptions) {
+  const [selectedPaths, setSelectedPaths] = useState(initialDependencyCruiserState.selectedKeys)
+  const [expandedKeys, setExpandedKeys] = useState(initialDependencyCruiserState.expandedKeys)
   const [activePath, setActivePath] = useState<string | null>(null)
-  const [graphFitToken, setGraphFitToken] = useState(0)
   const [dependenciesPath, setDependenciesPath] = useState<string | null>(null)
-  const [quickOpenOpen, setQuickOpenOpen] = useState(false)
-  const [quickOpenQuery, setQuickOpenQuery] = useState('')
 
-  const treeIndex = useMemo(() => buildTreeIndex(treeData), [treeData])
-  const deferredQuickOpenQuery = useDeferredValue(quickOpenQuery)
-  const allQuickOpenItems = useMemo(() => flattenTreeNodes(treeData), [treeData])
-  const quickOpenResults = useMemo(
-    () => searchTreeNodes(allQuickOpenItems, deferredQuickOpenQuery),
-    [allQuickOpenItems, deferredQuickOpenQuery],
-  )
+  useEffect(() => {
+    setSelectedPaths(initialDependencyCruiserState.selectedKeys)
+  }, [initialDependencyCruiserState.selectedKeys])
 
-  useQuickOpenShortcut(quickOpenOpen, setQuickOpenOpen)
+  useEffect(() => {
+    setExpandedKeys(initialDependencyCruiserState.expandedKeys)
+  }, [initialDependencyCruiserState.expandedKeys])
 
   const panelOpen = dependenciesPath != null
 
-  const updateExpandedKeys = useCallback(
-    (updater: string[] | ((prev: string[]) => string[])) => {
-      setExpandedKeys((prev) => {
-        const next = typeof updater === 'function' ? updater(prev) : updater
-        const collapsed = prev.filter((key) => !next.includes(key))
-        if (collapsed.length > 0) {
-          setActivePath((current) => resolveActivePathAfterCollapse(current, collapsed))
-        }
-        return next
-      })
-    },
-    [],
-  )
-
-  const onToggleFolder = useCallback(
-    (path: string) => updateExpandedKeys((keys) => toggleExpandedKey(keys, path)),
-    [updateExpandedKeys],
-  )
-
-  const onExpandRecursive = useCallback(
-    (path: string) => {
-      updateExpandedKeys((keys) => [
-        ...new Set([...keys, ...getSubtreeFolderKeys(path, treeData)]),
-      ])
-    },
-    [treeData, updateExpandedKeys],
-  )
-
-  const activatePath = useCallback((path: string) => {
-    const ancestors = getAncestorKeys(path)
-    setExpandedKeys((keys) => [...new Set([...keys, ...ancestors])])
-    setActivePath(path)
-  }, [])
-
-  const handleShowInGraph = useCallback((path: string) => {
-    const ancestors = getAncestorKeys(path)
-    setExpandedKeys((keys) => [...new Set([...keys, ...ancestors])])
-    setActivePath(path)
-    setGraphFitToken((token) => token + 1)
-  }, [])
-
-  const handleShowInFileTree = useCallback(
-    (path: string) => {
-      activatePath(path)
-    },
-    [activatePath],
-  )
-
-  const handleActivePathChange = useCallback(
-    (path: string) => {
-      activatePath(path)
-    },
-    [activatePath],
-  )
-
-  const handleShowDependencies = useCallback((path: string) => {
-    setDependenciesPath(path)
-  }, [])
-
-  const handleClosePanel = useCallback(() => {
-    setDependenciesPath(null)
-  }, [])
-
-  const handleQuickOpenSelect = useCallback(
-    (path: string) => {
-      activatePath(path)
-      const node = findTreeNode(treeData, path)
-      if (node && canShowInGraph(path, selectedPaths, treeIndex, node)) {
-        setGraphFitToken((token) => token + 1)
+  const updateExpandedKeys = (updater: string[] | ((prev: string[]) => string[])) => {
+    setExpandedKeys((prev) => {
+      const next = typeof updater === 'function' ? updater(prev) : updater
+      const collapsed = prev.filter((key) => !next.includes(key))
+      if (collapsed.length > 0) {
+        setActivePath((current) => resolveActivePathAfterCollapse(current, collapsed))
       }
-    },
-    [activatePath, selectedPaths, treeData, treeIndex],
-  )
+      return next
+    })
+  }
 
-  const handleQuickOpenClose = useCallback(() => {
-    setQuickOpenOpen(false)
-    setQuickOpenQuery('')
-  }, [])
+  const activatePath = (path: string) => {
+    const ancestors = getAncestorKeys(path)
+    setExpandedKeys((keys) => [...new Set([...keys, ...ancestors])])
+    setActivePath(path)
+  }
+
+  const showInGraph = (path: string) => {
+    activatePath(path)
+    graphRef.current?.focusNode(path)
+  }
+
+  const showInFileTree = (path: string) => {
+    activatePath(path)
+    fileTreeRef.current?.focusPath(path)
+  }
+
+  const toggleFolder = (path: string) => {
+    updateExpandedKeys((keys) => toggleExpandedKey(keys, path))
+  }
+
+  const expandRecursive = (path: string) => {
+    updateExpandedKeys((keys) => [
+      ...new Set([...keys, ...getSubtreeFolderKeys(path, sources)]),
+    ])
+  }
+
+  const handleShowDependencies = (path: string) => {
+    setDependenciesPath(path)
+  }
+
+  const handleClosePanel = () => {
+    setDependenciesPath(null)
+  }
+
+  const handleQuickOpenSelect = (path: string) => {
+    if (isPathVisibleInSelection(path, selectedPaths)) {
+      showInGraph(path)
+      return
+    }
+    activatePath(path)
+    fileTreeRef.current?.focusPath(path)
+  }
 
   return {
-    layoutProps: {
-      panelOpen,
-    },
-    fileTreeProps: {
-      treeData,
-      selectedKeys: selectedPaths,
-      onSelect: setSelectedPaths,
-      expandedKeys,
-      onExpand: updateExpandedKeys,
-      onExpandRecursive,
-      onShowInGraph: handleShowInGraph,
-      onShowDependencies: handleShowDependencies,
-      activePath,
-    },
-    graphProps: {
-      selectedPaths,
-      expandedKeys,
-      onToggleFolder,
-      onExpandRecursive,
-      onShowInFileTree: handleShowInFileTree,
-      onShowDependencies: handleShowDependencies,
-      onActivePathChange: handleActivePathChange,
-      activePath,
-      graphFitToken,
-    },
-    panelProps: {
-      path: dependenciesPath!,
-      selectedPaths,
-      expandedKeys,
-      onClose: handleClosePanel,
-      onShowInGraph: handleShowInGraph,
-    },
-    quickOpenProps: {
-      open: quickOpenOpen,
-      query: quickOpenQuery,
-      deferredQuery: deferredQuickOpenQuery,
-      results: quickOpenResults,
-      onQueryChange: setQuickOpenQuery,
-      onClose: handleQuickOpenClose,
-      onSelect: handleQuickOpenSelect,
-    },
+    panelOpen,
+    selectedPaths,
+    expandedKeys,
+    activePath,
+    dependenciesPath,
+    setSelectedPaths,
+    updateExpandedKeys,
+    activatePath,
+    showInGraph,
+    showInFileTree,
+    toggleFolder,
+    expandRecursive,
+    handleShowDependencies,
+    handleClosePanel,
+    handleQuickOpenSelect,
   }
 }

@@ -1,1 +1,0 @@
-export { useQuickOpenShortcut } from './useQuickOpenShortcut'

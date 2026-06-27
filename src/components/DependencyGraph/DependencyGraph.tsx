@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useImperativeHandle, useRef, useState, type Ref } from 'react'
 import {
   Background,
   Controls,
@@ -12,8 +12,9 @@ import {
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import type { IModule } from 'dependency-cruiser'
-import { applySelectedEdgeStyle, buildGraph } from './helpers'
+import { applySelectedEdgeStyle, assignFolderColors, buildGraph } from './helpers'
 import type { FolderGroupNodeData, FolderNodeData } from './DependencyGraph.types'
+import type { DependencyGraphHandle } from './types'
 import { DependencyEdge } from './partials/DependencyEdge'
 import { FileNode } from './partials/FileNode'
 import { FolderGroupNode } from './partials/FolderGroupNode'
@@ -31,10 +32,10 @@ const edgeTypes = {
   dependency: DependencyEdge,
 }
 
-interface DependencyGraphProps {
+interface DependencyGraphInnerProps {
+  imperativeRef?: Ref<DependencyGraphHandle>
   modules: IModule[]
   selectedPaths: string[]
-  folderColors: ReadonlyMap<string, string>
   expandedKeys: string[]
   onToggleFolder: (path: string) => void
   onExpandRecursive: (path: string) => void
@@ -42,13 +43,12 @@ interface DependencyGraphProps {
   onShowDependencies?: (path: string) => void
   onActivePathChange?: (path: string) => void
   activePath?: string | null
-  graphFitToken?: number
 }
 
 function DependencyGraphInner({
+  imperativeRef,
   modules,
   selectedPaths,
-  folderColors,
   expandedKeys,
   onToggleFolder,
   onExpandRecursive,
@@ -56,60 +56,72 @@ function DependencyGraphInner({
   onShowDependencies,
   onActivePathChange,
   activePath,
-  graphFitToken = 0,
-}: DependencyGraphProps) {
+}: DependencyGraphInnerProps) {
   const { fitView, getNode, getZoom } = useReactFlow()
-  const lastFitToken = useRef(graphFitToken)
   const prevExpandedKey = useRef<string | null>(null)
+  const pendingFocusPath = useRef<string | null>(null)
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null)
 
-  const expandedFolders = useMemo(() => new Set(expandedKeys), [expandedKeys])
+  const sources = modules.map((module) => module.source)
+  const folderColors = assignFolderColors(sources)
+  const expandedFolders = new Set(expandedKeys)
 
-  const { nodes, edges } = useMemo(
-    () =>
-      buildGraph({
-        modules,
-        selectedPaths,
-        expandedFolders,
-        highlightedNodeId: activePath ?? null,
-        folderColors,
-        onToggleFolder,
-        onExpandRecursive,
-        onShowInFileTree,
-        onShowDependencies,
-      }),
-    [modules, selectedPaths, expandedFolders, activePath, folderColors, onToggleFolder, onExpandRecursive, onShowInFileTree, onShowDependencies],
-  )
+  const { nodes, edges } = buildGraph({
+    modules,
+    selectedPaths,
+    expandedFolders,
+    highlightedNodeId: activePath ?? null,
+    folderColors,
+    onToggleFolder,
+    onExpandRecursive,
+    onShowInFileTree,
+    onShowDependencies,
+  })
 
   const activeEdgeId =
     selectedEdgeId != null && edges.some((edge) => edge.id === selectedEdgeId)
       ? selectedEdgeId
       : null
 
-  const displayEdges = useMemo(
-    () => applySelectedEdgeStyle(edges, activeEdgeId),
-    [edges, activeEdgeId],
-  )
+  const displayEdges = applySelectedEdgeStyle(edges, activeEdgeId)
 
-  const selectionKey = useMemo(
-    () => selectedPaths.slice().sort().join('|'),
-    [selectedPaths],
-  )
+  const selectionKey = selectedPaths.slice().sort().join('|')
+  const expandedStructureKey = expandedKeys.slice().sort().join('|')
 
-  const expandedStructureKey = useMemo(
-    () => expandedKeys.slice().sort().join('|'),
-    [expandedKeys],
-  )
+  const runFocusNode = (path: string) => {
+    if (!getNode(path)) {
+      pendingFocusPath.current = path
+      return
+    }
+    pendingFocusPath.current = null
+    fitView({ nodes: [{ id: path }], padding: 0.5, duration: 300 })
+  }
+
+  useImperativeHandle(imperativeRef, () => ({
+    focusNode(path: string) {
+      requestAnimationFrame(() => runFocusNode(path))
+    },
+  }))
+
+  useEffect(() => {
+    const path = pendingFocusPath.current
+    if (!path || !getNode(path)) return
+
+    pendingFocusPath.current = null
+    const frame = requestAnimationFrame(() => {
+      fitView({ nodes: [{ id: path }], padding: 0.5, duration: 300 })
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [nodes, fitView, getNode])
 
   useEffect(() => {
     if (nodes.length === 0) return
-    if (graphFitToken !== lastFitToken.current) return
 
     const frame = requestAnimationFrame(() => {
       fitView({ padding: 0.2, duration: 200 })
     })
     return () => cancelAnimationFrame(frame)
-  }, [selectionKey, nodes.length, fitView, graphFitToken])
+  }, [selectionKey, nodes.length, fitView])
 
   useEffect(() => {
     if (prevExpandedKey.current === null) {
@@ -120,7 +132,6 @@ function DependencyGraphInner({
     prevExpandedKey.current = expandedStructureKey
 
     if (!activePath || !getNode(activePath)) return
-    if (graphFitToken !== lastFitToken.current) return
 
     const zoom = getZoom()
     const frame = requestAnimationFrame(() => {
@@ -133,41 +144,25 @@ function DependencyGraphInner({
       })
     })
     return () => cancelAnimationFrame(frame)
-  }, [expandedStructureKey, activePath, nodes, fitView, getNode, getZoom, graphFitToken])
+  }, [expandedStructureKey, activePath, nodes, fitView, getNode, getZoom])
 
-  useEffect(() => {
-    if (graphFitToken === lastFitToken.current) return
-    if (!activePath) return
-    if (!getNode(activePath)) return
-
-    lastFitToken.current = graphFitToken
-
-    const frame = requestAnimationFrame(() => {
-      fitView({ nodes: [{ id: activePath }], padding: 0.5, duration: 300 })
-    })
-    return () => cancelAnimationFrame(frame)
-  }, [graphFitToken, activePath, nodes, fitView, getNode])
-
-  const onEdgeClick = useCallback((_: React.MouseEvent, edge: Edge) => {
+  const onEdgeClick = (_: React.MouseEvent, edge: Edge) => {
     setSelectedEdgeId(edge.id)
-  }, [])
+  }
 
-  const onPaneClick = useCallback(() => {
+  const onPaneClick = () => {
     setSelectedEdgeId(null)
-  }, [])
+  }
 
-  const onNodeClick = useCallback(
-    (_: React.MouseEvent, node: Node) => {
-      setSelectedEdgeId(null)
-      if (activePath === node.id) {
-        return
-      }
-      onActivePathChange?.(node.id)
-    },
-    [activePath, onActivePathChange],
-  )
+  const onNodeClick = (_: React.MouseEvent, node: Node) => {
+    setSelectedEdgeId(null)
+    if (activePath === node.id) {
+      return
+    }
+    onActivePathChange?.(node.id)
+  }
 
-  const nodeColor = useCallback((node: Node) => {
+  const nodeColor = (node: Node) => {
     if (node.type === 'folderGroup') {
       return (node.data as FolderGroupNodeData).backgroundColor
     }
@@ -175,7 +170,7 @@ function DependencyGraphInner({
       return (node.data as FolderNodeData).backgroundColor
     }
     return '#fff'
-  }, [])
+  }
 
   if (selectedPaths.length === 0) {
     return (
@@ -219,11 +214,15 @@ function DependencyGraphInner({
   )
 }
 
-export function DependencyGraph(props: DependencyGraphProps) {
+interface DependencyGraphProps extends Omit<DependencyGraphInnerProps, 'imperativeRef'> {
+  ref?: Ref<DependencyGraphHandle>
+}
+
+export function DependencyGraph({ ref, ...props }: DependencyGraphProps) {
   return (
     <div className={styles.container}>
       <ReactFlowProvider>
-        <DependencyGraphInner {...props} />
+        <DependencyGraphInner imperativeRef={ref} {...props} />
       </ReactFlowProvider>
     </div>
   )

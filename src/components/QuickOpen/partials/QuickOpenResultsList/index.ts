@@ -1,1 +1,1 @@
-export { QuickOpenResultsList } from './QuickOpenResultsList'
+export * from './QuickOpenResultsList'

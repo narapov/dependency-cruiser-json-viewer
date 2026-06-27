@@ -1,45 +1,28 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react'
-import InsertDriveFileOutlined from '@mui/icons-material/InsertDriveFileOutlined'
-import FolderOutlined from '@mui/icons-material/FolderOutlined'
+import { useEffect, useImperativeHandle, useRef, type Ref, type SyntheticEvent } from 'react'
 import Box from '@mui/material/Box'
 import Checkbox from '@mui/material/Checkbox'
 import Divider from '@mui/material/Divider'
 import FormControlLabel from '@mui/material/FormControlLabel'
 import FormGroup from '@mui/material/FormGroup'
-import { styled } from '@mui/material/styles'
+import { useRichTreeViewApiRef } from '@mui/x-tree-view/hooks'
+import { RichTreeView } from '@mui/x-tree-view/RichTreeView'
+import { isPathVisibleInSelection } from '../../domain'
 import {
-  Tree,
-  isTreeLeaf,
-  type TreeHandle,
-  type TreeNodeData,
-} from '../../Shared'
-import {
-  applyCascadeSelection,
+  buildFileTree,
   buildTreeIndex,
-  canShowInGraph,
   getAllFolderKeys,
   getAllKeys,
 } from './helpers'
-import { FileTreeContextMenu } from './partials/FileTreeContextMenu'
+import { FileTreeItem, FileTreeProvider } from './partials/FileTreeItem'
+import type { FileTreeHandle } from './types'
 
 const CLICK_DELAY_MS = 250
 
-const TreeNodeTitle = styled('span', {
-  shouldForwardProp: (prop) => prop !== 'navigable',
-})<{ navigable?: boolean }>(({ navigable }) => ({
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: 4,
-  whiteSpace: 'nowrap',
-  cursor: navigable ? 'pointer' : undefined,
-}))
-
-const TreeNodeTitleText = styled('span')({
-  flex: '0 1 auto',
-})
+const SELECTION_PROPAGATION = { descendants: true, parents: true } as const
 
 interface FileTreeProps {
-  treeData: TreeNodeData[]
+  ref?: Ref<FileTreeHandle>
+  sources: string[]
   selectedKeys?: string[]
   onSelect?: (keys: string[]) => void
   expandedKeys: string[]
@@ -51,7 +34,8 @@ interface FileTreeProps {
 }
 
 export function FileTree({
-  treeData,
+  ref,
+  sources,
   selectedKeys = [],
   onSelect,
   expandedKeys,
@@ -59,14 +43,15 @@ export function FileTree({
   onExpandRecursive,
   onShowInGraph,
   onShowDependencies,
-  activePath,
+  activePath = null,
 }: FileTreeProps) {
-  const treeRef = useRef<TreeHandle>(null)
+  const apiRef = useRichTreeViewApiRef()
   const clickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const treeIndex = useMemo(() => buildTreeIndex(treeData), [treeData])
-  const allKeys = useMemo(() => getAllKeys(treeData), [treeData])
-  const allFolderKeys = useMemo(() => getAllFolderKeys(treeData), [treeData])
+  const treeData = buildFileTree(sources)
+  const treeIndex = buildTreeIndex(treeData)
+  const allKeys = getAllKeys(treeData)
+  const allFolderKeys = getAllFolderKeys(treeData)
 
   const allSelected = allKeys.length > 0 && allKeys.every((key) => selectedKeys.includes(key))
   const someSelected = selectedKeys.length > 0 && !allSelected
@@ -74,26 +59,68 @@ export function FileTree({
     allFolderKeys.length > 0 && allFolderKeys.every((key) => expandedKeys.includes(key))
   const someExpanded = expandedKeys.length > 0 && !allExpanded
 
-  const toggleExpand = useCallback(
-    (key: string) => {
-      onExpand(
-        expandedKeys.includes(key)
-          ? expandedKeys.filter((expandedKey) => expandedKey !== key)
-          : [...expandedKeys, key],
-      )
+  const canShowNodeInGraph = (key: string) => isPathVisibleInSelection(key, selectedKeys)
+
+  const toggleExpand = (key: string) => {
+    onExpand(
+      expandedKeys.includes(key)
+        ? expandedKeys.filter((expandedKey) => expandedKey !== key)
+        : [...expandedKeys, key],
+    )
+  }
+
+  useImperativeHandle(ref, () => ({
+    focusPath(path: string) {
+      requestAnimationFrame(() => {
+        apiRef.current?.getItemDOMElement(path)?.scrollIntoView({ block: 'nearest' })
+        apiRef.current?.focusItem?.(null, path)
+      })
     },
-    [expandedKeys, onExpand],
-  )
+  }))
+
+  const handleSelectedItemsChange = (_event: unknown, itemIds?: string[]) => {
+    const keys = Array.isArray(_event) ? _event : itemIds
+    if (keys) {
+      onSelect?.(keys)
+    }
+  }
+
+  const handleExpandedItemsChange = (_event: unknown, itemIds?: string[]) => {
+    const keys = Array.isArray(_event) ? _event : itemIds
+    if (keys) {
+      onExpand(keys)
+    }
+  }
+
+  const handleItemClick = (_event: SyntheticEvent, itemId: string) => {
+    if (!canShowNodeInGraph(itemId)) return
+
+    if (clickTimerRef.current) clearTimeout(clickTimerRef.current)
+    clickTimerRef.current = setTimeout(() => {
+      clickTimerRef.current = null
+      onShowInGraph?.(itemId)
+    }, CLICK_DELAY_MS)
+  }
+
+  const fileTreeContext = {
+    activePath,
+    selectedKeys,
+    treeIndex,
+    canShowInGraph: canShowNodeInGraph,
+    onExpandRecursive,
+    onShowDependencies,
+    onToggleExpand: toggleExpand,
+  }
 
   useEffect(() => {
     if (!activePath) return
 
     const frame = requestAnimationFrame(() => {
-      treeRef.current?.scrollIntoView(activePath)
+      apiRef.current?.getItemDOMElement(activePath)?.scrollIntoView({ block: 'nearest' })
     })
 
     return () => cancelAnimationFrame(frame)
-  }, [activePath, expandedKeys])
+  }, [activePath, expandedKeys, apiRef])
 
   useEffect(() => {
     return () => {
@@ -104,7 +131,7 @@ export function FileTree({
   }, [])
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, minWidth: 0 }}>
       <FormGroup sx={{ flexShrink: 0, px: 1.5, py: 1 }}>
         <FormControlLabel
           control={
@@ -128,68 +155,29 @@ export function FileTree({
         />
       </FormGroup>
       <Divider />
-      <Tree
-        ref={treeRef}
-        treeData={treeData}
-        checkable
-        checkedKeys={selectedKeys}
-        expandedKeys={expandedKeys}
-        activeKey={activePath}
-        onCheck={(key, checked) => {
-          onSelect?.(applyCascadeSelection(selectedKeys, key, checked, treeIndex))
-        }}
-        onClick={({ key, node }) => {
-          if (!canShowInGraph(key, selectedKeys, treeIndex, node)) return
-
-          if (clickTimerRef.current) clearTimeout(clickTimerRef.current)
-          clickTimerRef.current = setTimeout(() => {
-            clickTimerRef.current = null
-            onShowInGraph?.(key)
-          }, CLICK_DELAY_MS)
-        }}
-        onDoubleClick={({ key, node }) => {
-          if (clickTimerRef.current) {
-            clearTimeout(clickTimerRef.current)
-            clickTimerRef.current = null
-          }
-          if (!isTreeLeaf(node)) {
-            toggleExpand(key)
-          }
-        }}
-        onExpand={(key, expanded) => {
-          onExpand(
-            expanded
-              ? [...expandedKeys, key]
-              : expandedKeys.filter((expandedKey) => expandedKey !== key),
-          )
-        }}
-        titleRender={(node) => {
-          const isFolder = !isTreeLeaf(node)
-          const navigable = canShowInGraph(node.key, selectedKeys, treeIndex, node)
-
-          const title = (
-            <TreeNodeTitle navigable={navigable}>
-              {isFolder ? (
-                <FolderOutlined fontSize="inherit" />
-              ) : (
-                <InsertDriveFileOutlined fontSize="inherit" />
-              )}
-              <TreeNodeTitleText>{node.title}</TreeNodeTitleText>
-            </TreeNodeTitle>
-          )
-
-          return (
-            <FileTreeContextMenu
-              path={node.key}
-              isFolder={isFolder}
-              onExpandRecursive={isFolder ? onExpandRecursive : undefined}
-              onShowDependencies={navigable ? onShowDependencies : undefined}
-            >
-              {title}
-            </FileTreeContextMenu>
-          )
-        }}
-      />
+      <Box sx={{ flex: 1, minHeight: 0, minWidth: 0, overflowX: 'auto', overflowY: 'auto' }}>
+        <FileTreeProvider value={fileTreeContext}>
+          <RichTreeView
+            sx={{ minWidth: 'max-content', width: '100%' }}
+            apiRef={apiRef}
+            items={treeData}
+            getItemId={(item) => item.key}
+            getItemLabel={(item) =>
+              typeof item.title === 'string' ? item.title : item.key
+            }
+            expandedItems={expandedKeys}
+            onExpandedItemsChange={handleExpandedItemsChange}
+            selectedItems={selectedKeys}
+            onSelectedItemsChange={handleSelectedItemsChange}
+            checkboxSelection
+            multiSelect
+            selectionPropagation={SELECTION_PROPAGATION}
+            expansionTrigger="iconContainer"
+            onItemClick={handleItemClick}
+            slots={{ item: FileTreeItem }}
+          />
+        </FileTreeProvider>
+      </Box>
     </Box>
   )
 }

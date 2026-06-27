@@ -1,1 +1,1 @@
-export { NodeContextMenu } from './NodeContextMenu'
+export * from './NodeContextMenu'

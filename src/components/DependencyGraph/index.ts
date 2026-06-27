@@ -1,1 +1,2 @@
-export { DependencyGraph } from './DependencyGraph'
+export * from './DependencyGraph'
+export * from './types'

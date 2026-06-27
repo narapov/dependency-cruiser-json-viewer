@@ -1,7 +1,4 @@
-export {
-  applyCascadeSelection,
-  buildTreeIndex,
-  canShowInGraph,
-  getAllFolderKeys,
-  getAllKeys,
-} from './treeSelection'
+export * from './buildFileTree'
+export * from './treeGuards'
+export * from './treeIndex'
+export * from './treeSelection'
