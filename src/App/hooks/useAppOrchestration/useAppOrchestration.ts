@@ -84,11 +84,10 @@ export function useAppOrchestration({
   }
 
   const handleQuickOpenSelect = (path: string) => {
-    if (isPathVisibleInSelection(path, selectedPaths)) {
-      showInGraph(path)
-      return
-    }
     activatePath(path)
+    if (isPathVisibleInSelection(path, selectedPaths)) {
+      graphRef.current?.focusNode(path)
+    }
     fileTreeRef.current?.focusPath(path)
   }
 
