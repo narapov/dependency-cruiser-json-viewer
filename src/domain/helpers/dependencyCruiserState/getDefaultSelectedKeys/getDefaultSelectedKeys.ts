@@ -1,4 +1,4 @@
-import { getParentPath } from '../../pathUtils'
+import { getParentPath, isNodeModulesPath } from '../../pathUtils'
 
 function collectAllPaths(sources: string[]): Set<string> {
   const paths = new Set<string>()
@@ -34,8 +34,11 @@ export function getDefaultSelectedKeys(sources: string[]): string[] {
   const selected = new Set<string>()
 
   for (const folder of getTopLevelFolderKeys(sources)) {
+    if (isNodeModulesPath(folder)) continue
+
     selected.add(folder)
     for (const path of allPaths) {
+      if (isNodeModulesPath(path)) continue
       if (path === folder || path.startsWith(`${folder}/`)) {
         selected.add(path)
       }
