@@ -2,8 +2,6 @@ import { useCallback, useState, type MouseEvent } from 'react'
 import Box from '@mui/material/Box'
 import CheckIcon from '@mui/icons-material/Check'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
-import Divider from '@mui/material/Divider'
-import ListItemIcon from '@mui/material/ListItemIcon'
 import ListItemText from '@mui/material/ListItemText'
 import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
@@ -54,37 +52,49 @@ export function EdgeHighlightSubmenu({
         slotProps={{
           list: {
             onMouseLeave: handleSubmenuClose,
+            sx: {
+              display: 'grid',
+              gridTemplateColumns: 'repeat(4, 1fr)',
+              gap: 0.5,
+              p: 1,
+            },
           },
         }}
       >
-        <MenuItem
-          disabled={currentHighlight == null}
-          onClick={handleAction(() => onSetHighlight(null))}
-        >
-          Clear highlight
-        </MenuItem>
-        <Divider />
         {USER_EDGE_HIGHLIGHT_COLORS.map((color) => (
-          <MenuItem key={color} onClick={handleAction(() => onSetHighlight(color))}>
-            <ListItemIcon sx={{ minWidth: 28 }}>
-              {currentHighlight === color ? (
-                <CheckIcon fontSize="small" />
-              ) : (
-                <Box sx={{ width: 20 }} />
-              )}
-            </ListItemIcon>
+          <MenuItem
+            key={color}
+            onClick={handleAction(() => onSetHighlight(color))}
+            sx={{ p: 0.5, minHeight: 0, justifyContent: 'center' }}
+          >
             <Box
               sx={{
+                position: 'relative',
                 width: 16,
                 height: 16,
                 borderRadius: '2px',
                 backgroundColor: color,
                 border: '1px solid rgba(0, 0, 0, 0.2)',
                 flexShrink: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
               }}
-            />
+            >
+              {currentHighlight === color && (
+                <CheckIcon sx={{ fontSize: 14, color: 'common.white', filter: 'drop-shadow(0 0 1px rgba(0,0,0,0.8))' }} />
+              )}
+            </Box>
           </MenuItem>
         ))}
+        {currentHighlight != null && (
+          <MenuItem
+            onClick={handleAction(() => onSetHighlight(null))}
+            sx={{ gridColumn: '1 / -1', justifyContent: 'center', mt: 0.5 }}
+          >
+            Clear
+          </MenuItem>
+        )}
       </Menu>
     </>
   )
