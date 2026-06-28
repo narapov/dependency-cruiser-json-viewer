@@ -165,7 +165,11 @@ export function FileTree({
       <Box sx={{ flex: 1, minHeight: 0, minWidth: 0, overflowX: 'auto', overflowY: 'auto' }}>
         <FileTreeProvider value={fileTreeContext}>
           <RichTreeView
-            sx={{ minWidth: 'max-content', width: '100%' }}
+            sx={{
+              minWidth: 'max-content',
+              width: '100%',
+              '& .MuiTreeItem-content': { borderRadius: 0 },
+            }}
             apiRef={apiRef}
             items={treeData}
             getItemId={(item) => item.key}
