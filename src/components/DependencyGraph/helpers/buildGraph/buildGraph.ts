@@ -595,7 +595,7 @@ export function buildGraph({
       target: targetRep,
       interactionWidth: 3,
       data: {
-        title: `${sourceRep} -> ${targetRep}${titleSuffix}`,
+        title: `${sourceRep} → ${targetRep}${titleSuffix}`,
         typeOnly,
       },
       markerEnd: {

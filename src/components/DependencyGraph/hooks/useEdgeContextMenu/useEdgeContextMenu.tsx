@@ -1,20 +1,8 @@
 import { useCallback, useState, type MouseEvent } from 'react'
 import type { Edge, EdgeMouseHandler } from '@xyflow/react'
-import Box from '@mui/material/Box'
 import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
-
-const pathSx = {
-  display: 'block',
-  maxWidth: '100%',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  whiteSpace: 'nowrap',
-  direction: 'rtl',
-  textAlign: 'left',
-  fontFamily: 'monospace',
-  fontSize: 12,
-} as const
+import { EdgeContextMenuHeader } from '../../partials/EdgeContextMenuHeader'
 
 export interface UseEdgeContextMenuOptions {
   onFocusNode: (path: string) => void
@@ -57,37 +45,10 @@ export function useEdgeContextMenu({ onFocusNode }: UseEdgeContextMenuOptions) {
     >
       {menuState && (
         <>
-          <Box
-            role="presentation"
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: 'auto auto auto',
-              alignItems: 'center',
-              columnGap: 0.5,
-              px: 2,
-              pt: 1,
-              pb: 0.5,
-              whiteSpace: 'nowrap',
-            }}
-          >
-            <Box component="span" sx={{ ...pathSx, minWidth: 0 }} title={menuState.edge.source}>
-              {menuState.edge.source}
-            </Box>
-            <Box
-              aria-hidden
-              sx={{
-                color: 'text.secondary',
-                fontSize: 12,
-                lineHeight: 1,
-                flexShrink: 0,
-              }}
-            >
-              →
-            </Box>
-            <Box component="span" sx={{ ...pathSx, minWidth: 0 }} title={menuState.edge.target}>
-              {menuState.edge.target}
-            </Box>
-          </Box>
+          <EdgeContextMenuHeader
+            source={menuState.edge.source}
+            target={menuState.edge.target}
+          />
           <MenuItem onClick={handleAction(() => onFocusNode(menuState.edge.source))}>
             View source
           </MenuItem>
