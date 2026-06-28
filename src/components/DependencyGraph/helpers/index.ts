@@ -1,3 +1,5 @@
 export * from './applySelectedEdgeStyle'
+export * from './applyUserEdgeHighlightStyle'
+export * from './getEdgeDependencyKeys'
 export * from './buildGraph'
 export { assignFolderColors } from './assignFolderColors'

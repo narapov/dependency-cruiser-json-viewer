@@ -1,4 +1,4 @@
-import { useEffect, useImperativeHandle, useRef, useState, type Ref } from 'react'
+import { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState, type Ref } from 'react'
 import {
   Background,
   Controls,
@@ -12,7 +12,15 @@ import {
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import type { IModule } from 'dependency-cruiser'
-import { applySelectedEdgeStyle, assignFolderColors, buildGraph } from './helpers'
+import {
+  applySelectedEdgeStyle,
+  applyUserEdgeHighlightStyle,
+  assignFolderColors,
+  buildEdgeDependencyKeyMap,
+  buildGraph,
+  collectValidDependencyKeys,
+  getEdgeHighlightColor,
+} from './helpers'
 import type { FolderGroupNodeData, FolderNodeData } from './DependencyGraph.types'
 import type { DependencyGraphHandle } from './types'
 import { DependencyEdge } from './partials/DependencyEdge'
@@ -62,6 +70,9 @@ function DependencyGraphInner({
   const prevExpandedKey = useRef<string | null>(null)
   const pendingFocusPath = useRef<string | null>(null)
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null)
+  const [userEdgeHighlights, setUserEdgeHighlights] = useState<ReadonlyMap<string, string>>(
+    () => new Map(),
+  )
 
   const sources = modules.map((module) => module.source)
   const folderColors = assignFolderColors(sources)
@@ -84,7 +95,60 @@ function DependencyGraphInner({
       ? selectedEdgeId
       : null
 
-  const displayEdges = applySelectedEdgeStyle(edges, activeEdgeId)
+  const edgeDependencyKeyMap = useMemo(
+    () => buildEdgeDependencyKeyMap(modules, selectedPaths, expandedFolders, edges),
+    [modules, selectedPaths, expandedFolders, edges],
+  )
+
+  const displayEdges = applyUserEdgeHighlightStyle(
+    applySelectedEdgeStyle(edges, activeEdgeId),
+    userEdgeHighlights,
+    edgeDependencyKeyMap,
+  )
+
+  const setUserEdgeHighlight = useCallback(
+    (edgeId: string, color: string | null) => {
+      const dependencyKeys = edgeDependencyKeyMap.get(edgeId) ?? []
+      if (dependencyKeys.length === 0) return
+
+      setUserEdgeHighlights((prev) => {
+        const next = new Map(prev)
+        for (const key of dependencyKeys) {
+          if (color == null) {
+            next.delete(key)
+          } else {
+            next.set(key, color)
+          }
+        }
+        return next
+      })
+    },
+    [edgeDependencyKeyMap],
+  )
+
+  const getEdgeHighlight = useCallback(
+    (edgeId: string) => {
+      const dependencyKeys = edgeDependencyKeyMap.get(edgeId) ?? []
+      return getEdgeHighlightColor(dependencyKeys, userEdgeHighlights)
+    },
+    [edgeDependencyKeyMap, userEdgeHighlights],
+  )
+
+  useEffect(() => {
+    const validKeys = collectValidDependencyKeys(modules, selectedPaths)
+    setUserEdgeHighlights((prev) => {
+      let changed = false
+      const next = new Map<string, string>()
+      for (const [key, color] of prev) {
+        if (validKeys.has(key)) {
+          next.set(key, color)
+        } else {
+          changed = true
+        }
+      }
+      return changed ? next : prev
+    })
+  }, [modules, selectedPaths])
 
   const selectionKey = selectedPaths.slice().sort().join('|')
   const expandedStructureKey = expandedKeys.slice().sort().join('|')
@@ -100,6 +164,8 @@ function DependencyGraphInner({
 
   const { onEdgeContextMenu, edgeContextMenu } = useEdgeContextMenu({
     onFocusNode: runFocusNode,
+    getEdgeHighlight,
+    onSetUserEdgeHighlight: setUserEdgeHighlight,
   })
 
   useImperativeHandle(imperativeRef, () => ({

@@ -3,12 +3,19 @@ import type { Edge, EdgeMouseHandler } from '@xyflow/react'
 import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
 import { EdgeContextMenuHeader } from '../../partials/EdgeContextMenuHeader'
+import { EdgeHighlightSubmenu } from '../../partials/EdgeHighlightSubmenu'
 
 export interface UseEdgeContextMenuOptions {
   onFocusNode: (path: string) => void
+  getEdgeHighlight: (edgeId: string) => string | undefined
+  onSetUserEdgeHighlight: (edgeId: string, color: string | null) => void
 }
 
-export function useEdgeContextMenu({ onFocusNode }: UseEdgeContextMenuOptions) {
+export function useEdgeContextMenu({
+  onFocusNode,
+  getEdgeHighlight,
+  onSetUserEdgeHighlight,
+}: UseEdgeContextMenuOptions) {
   const [menuState, setMenuState] = useState<{
     anchorPosition: { top: number; left: number }
     edge: Edge
@@ -55,6 +62,11 @@ export function useEdgeContextMenu({ onFocusNode }: UseEdgeContextMenuOptions) {
           <MenuItem onClick={handleAction(() => onFocusNode(menuState.edge.target))}>
             View target
           </MenuItem>
+          <EdgeHighlightSubmenu
+            currentHighlight={getEdgeHighlight(menuState.edge.id)}
+            onSetHighlight={(color) => onSetUserEdgeHighlight(menuState.edge.id, color)}
+            onClose={handleClose}
+          />
         </>
       )}
     </Menu>
