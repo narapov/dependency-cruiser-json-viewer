@@ -36,7 +36,14 @@ export const FileTreeItem = forwardRef<HTMLLIElement, TreeItemProps>(function Fi
         ref={ref}
         itemId={itemId}
         slots={{
-          label: ({ onDoubleClick, children: labelChildren, style, ...labelProps }) => (
+          label: ({
+            onDoubleClick,
+            children: labelChildren,
+            style,
+            editable: _editable,
+            ownerState: _ownerState,
+            ...labelProps
+          }) => (
             <div
               {...labelProps}
               style={{ ...style, overflow: 'visible', minWidth: 'auto' }}
