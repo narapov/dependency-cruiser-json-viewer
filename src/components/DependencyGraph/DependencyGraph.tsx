@@ -181,6 +181,9 @@ function DependencyGraphInner({
     focusNode(path: string) {
       requestAnimationFrame(() => runFocusNode(path))
     },
+    clearAllHighlights() {
+      setUserEdgeHighlights(new Map())
+    },
   }))
 
   useEffect(() => {

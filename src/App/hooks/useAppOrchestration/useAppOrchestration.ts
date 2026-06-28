@@ -1,20 +1,35 @@
-import { useEffect, useState, type RefObject } from 'react'
+import { useEffect, useMemo, useState, type RefObject } from 'react'
 import type { DependencyGraphHandle } from '../../../components/DependencyGraph'
+import { buildFileTree } from '../../../components/FileTree/helpers'
+import { getAllFolderKeys, getAllKeys } from '../../../components/FileTree/helpers/treeIndex'
 import type { FileTreeHandle } from '../../../components/FileTree'
 import type { DependencyCruiserState } from '../../../domain'
 import {
   getAncestorKeys,
+  getParentPath,
   getSubtreeFolderKeys,
   isPathVisibleInSelection,
+  removeSubtreeFolderKeys,
   resolveActivePathAfterCollapse,
   toggleExpandedKey,
 } from '../../../domain'
+import { copyToClipboard } from '../../../Shared'
 
 interface UseAppOrchestrationOptions {
   sources: string[]
   fileTreeRef: RefObject<FileTreeHandle | null>
   graphRef: RefObject<DependencyGraphHandle | null>
   initialDependencyCruiserState: DependencyCruiserState
+}
+
+function isFolderPath(path: string, sources: string[]): boolean {
+  return sources.some((source) => source.startsWith(`${path}/`))
+}
+
+function resolveActiveFolderPath(activePath: string | null, sources: string[]): string | null {
+  if (activePath == null) return null
+  if (isFolderPath(activePath, sources)) return activePath
+  return getParentPath(activePath)
 }
 
 export function useAppOrchestration({
@@ -27,6 +42,10 @@ export function useAppOrchestration({
   const [expandedKeys, setExpandedKeys] = useState(initialDependencyCruiserState.expandedKeys)
   const [activePath, setActivePath] = useState<string | null>(null)
   const [dependenciesPath, setDependenciesPath] = useState<string | null>(null)
+
+  const treeData = useMemo(() => buildFileTree(sources), [sources])
+  const allKeys = useMemo(() => getAllKeys(treeData), [treeData])
+  const allFolderKeys = useMemo(() => getAllFolderKeys(treeData), [treeData])
 
   useEffect(() => {
     setSelectedPaths(initialDependencyCruiserState.selectedKeys)
@@ -90,15 +109,87 @@ export function useAppOrchestration({
     fileTreeRef.current?.focusPath(path)
   }
 
-  const handleQuickOpenSelect = (path: string) => {
-    activatePath(path);
-    focusPath(path);
+  const handleQuickPickSelect = (path: string) => {
+    activatePath(path)
+    focusPath(path)
   }
 
   const focusActivePath = () => {
     if (activePath == null) return
     activatePath(activePath)
-    focusPath(activePath);
+    focusPath(activePath)
+  }
+
+  const clearLocalStorage = () => {
+    const keysToRemove: string[] = []
+    for (let index = 0; index < localStorage.length; index++) {
+      const key = localStorage.key(index)
+      if (key?.startsWith('deps-viewer.')) {
+        keysToRemove.push(key)
+      }
+    }
+    for (const key of keysToRemove) {
+      localStorage.removeItem(key)
+    }
+    window.location.reload()
+  }
+
+  const copyActive = () => {
+    if (activePath == null) return
+    void copyToClipboard(activePath)
+  }
+
+  const viewActiveDependencies = () => {
+    if (activePath == null) return
+    handleShowDependencies(activePath)
+  }
+
+  const expandActive = () => {
+    const folderPath = resolveActiveFolderPath(activePath, sources)
+    if (folderPath == null) return
+    updateExpandedKeys((keys) =>
+      keys.includes(folderPath) ? keys : [...keys, folderPath],
+    )
+  }
+
+  const expandActiveRecursive = () => {
+    const folderPath = resolveActiveFolderPath(activePath, sources)
+    if (folderPath == null) return
+    expandRecursive(folderPath)
+  }
+
+  const collapseActive = () => {
+    const folderPath = resolveActiveFolderPath(activePath, sources)
+    if (folderPath == null) return
+    updateExpandedKeys((keys) =>
+      keys.includes(folderPath) ? keys.filter((key) => key !== folderPath) : keys,
+    )
+  }
+
+  const collapseActiveRecursive = () => {
+    const folderPath = resolveActiveFolderPath(activePath, sources)
+    if (folderPath == null) return
+    updateExpandedKeys((keys) => removeSubtreeFolderKeys(keys, folderPath, sources))
+  }
+
+  const clearAllHighlights = () => {
+    graphRef.current?.clearAllHighlights()
+  }
+
+  const expandAllRecursive = () => {
+    updateExpandedKeys(allFolderKeys)
+  }
+
+  const collapseAllRecursive = () => {
+    updateExpandedKeys([])
+  }
+
+  const selectAll = () => {
+    setSelectedPaths(allKeys)
+  }
+
+  const unselectAll = () => {
+    setSelectedPaths([])
   }
 
   return {
@@ -116,7 +207,19 @@ export function useAppOrchestration({
     expandRecursive,
     handleShowDependencies,
     handleClosePanel,
-    handleQuickOpenSelect,
+    handleQuickPickSelect,
     focusActivePath,
+    clearLocalStorage,
+    copyActive,
+    viewActiveDependencies,
+    expandActive,
+    expandActiveRecursive,
+    collapseActive,
+    collapseActiveRecursive,
+    clearAllHighlights,
+    expandAllRecursive,
+    collapseAllRecursive,
+    selectAll,
+    unselectAll,
   }
 }

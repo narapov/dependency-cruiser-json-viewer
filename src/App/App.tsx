@@ -7,8 +7,8 @@ import { AppLayout } from '../components/AppLayout'
 import { DependencyGraph, type DependencyGraphHandle } from '../components/DependencyGraph'
 import { DependencyPanel } from '../components/DependencyPanel'
 import { FileTree, type FileTreeHandle } from '../components/FileTree'
-import { QuickOpen } from '../components/QuickOpen'
-import { useAppOrchestration, useCruiseResult, useInitialDependencyCruiserState } from './hooks'
+import { QuickPick } from '../components/QuickPick'
+import { useAppCommands, useAppOrchestration, useCruiseResult, useInitialDependencyCruiserState } from './hooks'
 import { AppHeader } from './partials/AppHeader'
 import { AppStatusBar } from './partials/AppStatusBar'
 import styles from './App.module.css'
@@ -24,6 +24,7 @@ function App() {
   )
   const initialDependencyCruiserState = useInitialDependencyCruiserState(sources)
   const orch = useAppOrchestration({ sources, fileTreeRef, graphRef, initialDependencyCruiserState })
+  const commands = useAppCommands({ orch })
 
   if (isPending) {
     return (
@@ -89,7 +90,13 @@ function App() {
           />
         ) : null
       }
-      overlay={<QuickOpen sources={sources} onSelect={orch.handleQuickOpenSelect} />}
+      overlay={
+        <QuickPick
+          sources={sources}
+          commands={commands}
+          onSelectPath={orch.handleQuickPickSelect}
+        />
+      }
       footer={
         <AppStatusBar
           activePath={orch.activePath}
