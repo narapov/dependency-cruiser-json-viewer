@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import type { QuickPickCommand } from '../../../components/QuickPick'
 
 export interface AppCommandsOrchestration {
@@ -19,9 +20,11 @@ export interface AppCommandsOrchestration {
 interface UseAppCommandsOptions {
   orch: AppCommandsOrchestration
   openThemePicker: () => void
+  openLanguagePicker: () => void
 }
 
-export function useAppCommands({ orch, openThemePicker }: UseAppCommandsOptions): QuickPickCommand[] {
+export function useAppCommands({ orch, openThemePicker, openLanguagePicker }: UseAppCommandsOptions): QuickPickCommand[] {
+  const { t } = useTranslation()
   const {
     clearLocalStorage,
     focusActivePath,
@@ -39,43 +42,44 @@ export function useAppCommands({ orch, openThemePicker }: UseAppCommandsOptions)
   } = orch
 
   return [
-    { id: 'clearLocalStorage', label: 'Clear Local Storage', onExecute: clearLocalStorage },
-    { id: 'showActive', label: 'Show Active', onExecute: focusActivePath },
-    { id: 'copyActive', label: 'Copy Active', onExecute: copyActive },
+    { id: 'clearLocalStorage', label: t('commands.clearLocalStorage'), onExecute: clearLocalStorage },
+    { id: 'showActive', label: t('commands.showActive'), onExecute: focusActivePath },
+    { id: 'copyActive', label: t('commands.copyActive'), onExecute: copyActive },
     {
       id: 'viewActiveDependencies',
-      label: 'View Active Dependencies',
+      label: t('commands.viewActiveDependencies'),
       onExecute: viewActiveDependencies,
     },
-    { id: 'expandActive', label: 'Expand Active', onExecute: expandActive },
+    { id: 'expandActive', label: t('commands.expandActive'), onExecute: expandActive },
     {
       id: 'expandActiveRecursive',
-      label: 'Expand Active Recursive',
+      label: t('commands.expandActiveRecursive'),
       onExecute: expandActiveRecursive,
     },
-    { id: 'collapseActive', label: 'Collapse Active', onExecute: collapseActive },
+    { id: 'collapseActive', label: t('commands.collapseActive'), onExecute: collapseActive },
     {
       id: 'collapseActiveRecursive',
-      label: 'Collapse Active Recursive',
+      label: t('commands.collapseActiveRecursive'),
       onExecute: collapseActiveRecursive,
     },
     {
       id: 'clearAllHighlights',
-      label: 'Clear All Highlights',
+      label: t('commands.clearAllHighlights'),
       onExecute: clearAllHighlights,
     },
     {
       id: 'expandAllRecursive',
-      label: 'Expand All Recursive',
+      label: t('commands.expandAllRecursive'),
       onExecute: expandAllRecursive,
     },
     {
       id: 'collapseAllRecursive',
-      label: 'Collapse All Recursive',
+      label: t('commands.collapseAllRecursive'),
       onExecute: collapseAllRecursive,
     },
-    { id: 'selectAll', label: 'Select All', onExecute: selectAll },
-    { id: 'setTheme', label: 'Set Theme', onExecute: openThemePicker },
-    { id: 'unselectAll', label: 'Unselect All', onExecute: unselectAll },
-  ].sort((a, b) => a.label.localeCompare(b.label))
+    { id: 'selectAll', label: t('commands.selectAll'), onExecute: selectAll },
+    { id: 'setTheme', label: t('commands.setTheme'), onExecute: openThemePicker },
+    { id: 'setLanguage', label: t('commands.setLanguage'), onExecute: openLanguagePicker },
+    { id: 'unselectAll', label: t('commands.unselectAll'), onExecute: unselectAll },
+  ].sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: 'base' }))
 }

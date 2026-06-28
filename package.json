@@ -24,8 +24,10 @@
     "@xyflow/react": "^12.11.1",
     "axios": "^1.18.1",
     "fuzzysort": "^3.1.0",
+    "i18next": "^26.3.3",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
+    "react-i18next": "^17.0.8",
     "react-use": "^17.6.1"
   },
   "devDependencies": {

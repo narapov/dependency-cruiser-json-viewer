@@ -1,7 +1,7 @@
 export const THEME_OPTIONS = [
-  { value: 'light', label: 'Light' },
-  { value: 'dark', label: 'Dark' },
-  { value: 'system', label: 'System' },
+  { value: 'light', labelKey: 'theme.light' },
+  { value: 'dark', labelKey: 'theme.dark' },
+  { value: 'system', labelKey: 'theme.system' },
 ] as const
 
 export type ThemeOptionValue = (typeof THEME_OPTIONS)[number]['value']

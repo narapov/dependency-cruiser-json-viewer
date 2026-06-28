@@ -7,6 +7,7 @@ import IconButton from '@mui/material/IconButton'
 import Stack from '@mui/material/Stack'
 import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
+import { useTranslation } from 'react-i18next'
 import { copyToClipboard } from '../../../Shared'
 
 interface AppStatusBarProps {
@@ -20,8 +21,9 @@ export function AppStatusBar({
   onFocusActivePath,
   onShowDependencies,
 }: AppStatusBarProps) {
+  const { t } = useTranslation()
   const hasSelection = activePath != null
-  const label = activePath ?? 'No selection'
+  const label = activePath ?? t('statusBar.noSelection')
 
   return (
     <Box
@@ -41,30 +43,30 @@ export function AppStatusBar({
       {hasSelection && (
         <>
           <Stack direction="row" spacing={0.25} sx={{ flexShrink: 0 }}>
-            <Tooltip title="Show in graph and file tree">
+            <Tooltip title={t('actions.showInGraphAndFileTree')}>
               <IconButton
                 size="small"
-                aria-label="Show in graph and file tree"
+                aria-label={t('actions.showInGraphAndFileTree')}
                 onClick={onFocusActivePath}
                 sx={{ p: 0.5 }}
               >
                 <MyLocationOutlined sx={{ fontSize: 16 }} />
               </IconButton>
             </Tooltip>
-            <Tooltip title="View dependencies">
+            <Tooltip title={t('actions.viewDependencies')}>
               <IconButton
                 size="small"
-                aria-label="View dependencies"
+                aria-label={t('actions.viewDependencies')}
                 onClick={() => onShowDependencies(activePath)}
                 sx={{ p: 0.5 }}
               >
                 <AccountTreeOutlined sx={{ fontSize: 16 }} />
               </IconButton>
             </Tooltip>
-            <Tooltip title="Copy path">
+            <Tooltip title={t('actions.copyPath')}>
               <IconButton
                 size="small"
-                aria-label="Copy path"
+                aria-label={t('actions.copyPath')}
                 onClick={() => void copyToClipboard(activePath)}
                 sx={{ p: 0.5 }}
               >

@@ -5,6 +5,7 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import ListItemText from '@mui/material/ListItemText'
 import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
+import { useTranslation } from 'react-i18next'
 import { USER_EDGE_HIGHLIGHT_COLORS } from '../../../../Shared'
 
 interface EdgeHighlightSubmenuProps {
@@ -18,6 +19,7 @@ export function EdgeHighlightSubmenu({
   onSetHighlight,
   onClose,
 }: EdgeHighlightSubmenuProps) {
+  const { t } = useTranslation()
   const [submenuAnchor, setSubmenuAnchor] = useState<HTMLElement | null>(null)
 
   const handleSubmenuClose = useCallback(() => {
@@ -40,7 +42,7 @@ export function EdgeHighlightSubmenu({
         onMouseEnter={(event) => setSubmenuAnchor(event.currentTarget)}
         aria-haspopup="true"
       >
-        <ListItemText>Highlight</ListItemText>
+        <ListItemText>{t('actions.highlight')}</ListItemText>
         <ChevronRightIcon fontSize="small" sx={{ ml: 2, color: 'text.secondary' }} />
       </MenuItem>
       <Menu
@@ -92,7 +94,7 @@ export function EdgeHighlightSubmenu({
             onClick={handleAction(() => onSetHighlight(null))}
             sx={{ gridColumn: '1 / -1', justifyContent: 'center', mt: 0.5 }}
           >
-            Clear
+            {t('actions.clear')}
           </MenuItem>
         )}
       </Menu>

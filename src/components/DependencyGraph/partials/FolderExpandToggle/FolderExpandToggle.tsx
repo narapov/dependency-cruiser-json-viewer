@@ -2,6 +2,7 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import IconButton from '@mui/material/IconButton'
 import type { MouseEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 
 interface FolderExpandToggleProps {
   expanded: boolean
@@ -9,10 +10,12 @@ interface FolderExpandToggleProps {
 }
 
 export function FolderExpandToggle({ expanded, onClick }: FolderExpandToggleProps) {
+  const { t } = useTranslation()
+
   return (
     <IconButton
       size="small"
-      aria-label={expanded ? 'Collapse folder' : 'Expand folder'}
+      aria-label={expanded ? t('actions.collapseFolder') : t('actions.expandFolder')}
       onClick={onClick}
       sx={{
         width: 16,

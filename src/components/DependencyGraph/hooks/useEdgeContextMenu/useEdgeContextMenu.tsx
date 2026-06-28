@@ -2,6 +2,7 @@ import { useCallback, useState, type MouseEvent } from 'react'
 import type { Edge, EdgeMouseHandler } from '@xyflow/react'
 import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
+import { useTranslation } from 'react-i18next'
 import { EdgeContextMenuHeader } from '../../partials/EdgeContextMenuHeader'
 import { EdgeHighlightSubmenu } from '../../partials/EdgeHighlightSubmenu'
 
@@ -16,6 +17,7 @@ export function useEdgeContextMenu({
   getEdgeHighlight,
   onSetUserEdgeHighlight,
 }: UseEdgeContextMenuOptions) {
+  const { t } = useTranslation()
   const [menuState, setMenuState] = useState<{
     anchorPosition: { top: number; left: number }
     edge: Edge
@@ -57,10 +59,10 @@ export function useEdgeContextMenu({
             target={menuState.edge.target}
           />
           <MenuItem onClick={handleAction(() => onFocusNode(menuState.edge.source))}>
-            View source
+            {t('graph.edgeMenu.viewSource')}
           </MenuItem>
           <MenuItem onClick={handleAction(() => onFocusNode(menuState.edge.target))}>
-            View target
+            {t('graph.edgeMenu.viewTarget')}
           </MenuItem>
           <EdgeHighlightSubmenu
             currentHighlight={getEdgeHighlight(menuState.edge.id)}

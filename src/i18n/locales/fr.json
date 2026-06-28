@@ -1,0 +1,91 @@
+{
+  "app": {
+    "title": "Deps Viewer",
+    "modulesCount_one": "{{count}} module",
+    "modulesCount_other": "{{count}} modules",
+    "loadErrorTitle": "Échec du chargement du résultat cruise",
+    "searchFiles": "Rechercher des fichiers ({{shortcut}})",
+    "commandPalette": "Palette de commandes (F1)"
+  },
+  "actions": {
+    "copyPath": "Copier le chemin",
+    "showInGraph": "Afficher dans le graphe",
+    "showInGraphAndFileTree": "Afficher dans le graphe et l'arborescence",
+    "showInFileTree": "Afficher dans l'arborescence",
+    "viewDependencies": "Voir les dépendances",
+    "expand": "Développer",
+    "collapse": "Réduire",
+    "expandFolder": "Développer le dossier",
+    "collapseFolder": "Réduire le dossier",
+    "expandRecursive": "Développer récursivement",
+    "close": "Fermer",
+    "highlight": "Surligner",
+    "clear": "Effacer"
+  },
+  "commands": {
+    "clearLocalStorage": "Effacer le stockage local",
+    "showActive": "Afficher l'élément actif",
+    "copyActive": "Copier l'élément actif",
+    "viewActiveDependencies": "Voir les dépendances de l'élément actif",
+    "expandActive": "Développer l'élément actif",
+    "expandActiveRecursive": "Développer récursivement l'élément actif",
+    "collapseActive": "Réduire l'élément actif",
+    "collapseActiveRecursive": "Réduire récursivement l'élément actif",
+    "clearAllHighlights": "Effacer tous les surlignages",
+    "expandAllRecursive": "Tout développer récursivement",
+    "collapseAllRecursive": "Tout réduire récursivement",
+    "selectAll": "Tout sélectionner",
+    "setTheme": "Choisir le thème",
+    "setLanguage": "Choisir la langue",
+    "unselectAll": "Tout désélectionner"
+  },
+  "quickPick": {
+    "commandPlaceholder": "Tapez le nom d'une commande à exécuter...",
+    "filePlaceholder": "Rechercher des fichiers et dossiers...",
+    "noMatchingCommands": "Aucune commande correspondante",
+    "typeToFilterCommands": "Tapez pour filtrer les commandes",
+    "noMatchingFiles": "Aucun fichier ou dossier correspondant",
+    "startTyping": "Commencez à taper pour rechercher"
+  },
+  "theme": {
+    "label": "Thème",
+    "light": "Clair",
+    "dark": "Sombre",
+    "system": "Système",
+    "setTheme": "Choisir le thème",
+    "themeOptions": "Options de thème",
+    "active": "(actif)"
+  },
+  "language": {
+    "label": "Langue",
+    "setLanguage": "Choisir la langue",
+    "languageOptions": "Options de langue",
+    "en": "English",
+    "fr": "Français",
+    "de": "Deutsch",
+    "ru": "Русский",
+    "active": "(actif)"
+  },
+  "graph": {
+    "legend": {
+      "incoming": "Entrant",
+      "outgoing": "Sortant",
+      "circular": "Circulaire",
+      "selected": "Sélectionné",
+      "typeOnly": "Type uniquement",
+      "typeOnlyCircular": "Type uniquement circulaire"
+    },
+    "edgeMenu": {
+      "viewSource": "Voir la source",
+      "viewTarget": "Voir la cible"
+    }
+  },
+  "dependencyPanel": {
+    "dependencies": "Dépendances",
+    "dependents": "Dépendants",
+    "noDependencies": "Aucune dépendance"
+  },
+  "statusBar": {
+    "noSelection": "Aucune sélection"
+  }
+}

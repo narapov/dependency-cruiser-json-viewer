@@ -5,6 +5,7 @@ import ToggleButton from '@mui/material/ToggleButton'
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
 import Tooltip from '@mui/material/Tooltip'
 import { useColorScheme } from '@mui/material/styles'
+import { useTranslation } from 'react-i18next'
 import { THEME_OPTIONS } from './themeOptions'
 
 const THEME_ICONS = {
@@ -15,6 +16,7 @@ const THEME_ICONS = {
 
 export function ThemeSelector() {
   const { mode, setMode } = useColorScheme()
+  const { t } = useTranslation()
 
   if (!mode) {
     return null
@@ -30,7 +32,7 @@ export function ThemeSelector() {
           setMode(value)
         }
       }}
-      aria-label="Theme"
+      aria-label={t('theme.label')}
       sx={{
         '& .MuiToggleButton-root': {
           color: 'rgba(255, 255, 255, 0.75)',
@@ -50,7 +52,8 @@ export function ThemeSelector() {
         },
       }}
     >
-      {THEME_OPTIONS.map(({ value, label }) => {
+      {THEME_OPTIONS.map(({ value, labelKey }) => {
+        const label = t(labelKey)
         const Icon = THEME_ICONS[value]
         return (
           <Tooltip key={value} title={label}>

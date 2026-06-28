@@ -5,7 +5,9 @@ import IconButton from '@mui/material/IconButton'
 import Stack from '@mui/material/Stack'
 import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
+import { useTranslation } from 'react-i18next'
 import { formatShortcut } from '../../../Shared'
+import { LanguageSelector } from '../LanguageSelector'
 import { ThemeSelector } from '../ThemeSelector'
 
 const headerIconButtonSx = {
@@ -27,8 +29,9 @@ export function AppHeader({
   onOpenFileSearch,
   onOpenCommandPalette,
 }: AppHeaderProps) {
-  const searchFilesLabel = `Search Files (${formatShortcut('P')})`
-  const commandPaletteLabel = 'Command Palette (F1)'
+  const { t } = useTranslation()
+  const searchFilesLabel = t('app.searchFiles', { shortcut: formatShortcut('P') })
+  const commandPaletteLabel = t('app.commandPalette')
 
   return (
     <Box
@@ -44,14 +47,14 @@ export function AppHeader({
         component="h1"
         sx={{ margin: 0, color: 'common.white', fontWeight: 600 }}
       >
-        Deps Viewer
+        {t('app.title')}
         {moduleCount != null && (
           <Typography
             component="span"
             variant="body2"
             sx={{ marginLeft: 1.5, fontWeight: 400, color: 'rgba(255, 255, 255, 0.65)' }}
           >
-            {moduleCount} modules
+            {t('app.modulesCount', { count: moduleCount })}
           </Typography>
         )}
       </Typography>
@@ -76,6 +79,7 @@ export function AppHeader({
             <TerminalOutlined sx={{ fontSize: 18 }} />
           </IconButton>
         </Tooltip>
+        <LanguageSelector />
         <ThemeSelector />
       </Stack>
     </Box>

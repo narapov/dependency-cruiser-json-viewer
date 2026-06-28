@@ -1,0 +1,91 @@
+{
+  "app": {
+    "title": "Deps Viewer",
+    "modulesCount_one": "{{count}} module",
+    "modulesCount_other": "{{count}} modules",
+    "loadErrorTitle": "Failed to load cruise result",
+    "searchFiles": "Search Files ({{shortcut}})",
+    "commandPalette": "Command Palette (F1)"
+  },
+  "actions": {
+    "copyPath": "Copy path",
+    "showInGraph": "Show in graph",
+    "showInGraphAndFileTree": "Show in graph and file tree",
+    "showInFileTree": "Show in file tree",
+    "viewDependencies": "View dependencies",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "expandFolder": "Expand folder",
+    "collapseFolder": "Collapse folder",
+    "expandRecursive": "Expand recursive",
+    "close": "Close",
+    "highlight": "Highlight",
+    "clear": "Clear"
+  },
+  "commands": {
+    "clearLocalStorage": "Clear Local Storage",
+    "showActive": "Show Active Item",
+    "copyActive": "Copy Active Item",
+    "viewActiveDependencies": "View Active Item Dependencies",
+    "expandActive": "Expand Active Item",
+    "expandActiveRecursive": "Expand Active Item Recursive",
+    "collapseActive": "Collapse Active Item",
+    "collapseActiveRecursive": "Collapse Active Item Recursive",
+    "clearAllHighlights": "Clear All Highlights",
+    "expandAllRecursive": "Expand All Recursive",
+    "collapseAllRecursive": "Collapse All Recursive",
+    "selectAll": "Select All",
+    "setTheme": "Set Theme",
+    "setLanguage": "Set Language",
+    "unselectAll": "Unselect All"
+  },
+  "quickPick": {
+    "commandPlaceholder": "Type the name of a command to run...",
+    "filePlaceholder": "Search files and folders...",
+    "noMatchingCommands": "No matching commands",
+    "typeToFilterCommands": "Type to filter commands",
+    "noMatchingFiles": "No matching files or folders",
+    "startTyping": "Start typing to search"
+  },
+  "theme": {
+    "label": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "setTheme": "Set Theme",
+    "themeOptions": "Theme options",
+    "active": "(active)"
+  },
+  "language": {
+    "label": "Language",
+    "setLanguage": "Set Language",
+    "languageOptions": "Language options",
+    "en": "English",
+    "fr": "Français",
+    "de": "Deutsch",
+    "ru": "Русский",
+    "active": "(active)"
+  },
+  "graph": {
+    "legend": {
+      "incoming": "Incoming",
+      "outgoing": "Outgoing",
+      "circular": "Circular",
+      "selected": "Selected",
+      "typeOnly": "Type-only",
+      "typeOnlyCircular": "Type-only circular"
+    },
+    "edgeMenu": {
+      "viewSource": "View source",
+      "viewTarget": "View target"
+    }
+  },
+  "dependencyPanel": {
+    "dependencies": "Dependencies",
+    "dependents": "Dependents",
+    "noDependencies": "No dependencies"
+  },
+  "statusBar": {
+    "noSelection": "No selection"
+  }
+}

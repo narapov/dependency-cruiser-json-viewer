@@ -11,6 +11,7 @@ import ListItemText from '@mui/material/ListItemText'
 import Stack from '@mui/material/Stack'
 import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
+import { useTranslation } from 'react-i18next'
 import type { IModule } from 'dependency-cruiser'
 import type { ModuleRelation } from '../../domain'
 import { CIRCULAR_EDGE_COLOR, TYPE_ONLY_CIRCULAR_EDGE_COLOR, copyToClipboard } from '../../Shared'
@@ -45,10 +46,12 @@ function RelationList({
   items: ModuleRelation[]
   onShowInGraph: (path: string) => void
 }) {
+  const { t } = useTranslation()
+
   if (items.length === 0) {
     return (
       <Typography color="text.secondary" align="center" sx={{ py: 2 }}>
-        No dependencies
+        {t('dependencyPanel.noDependencies')}
       </Typography>
     )
   }
@@ -76,19 +79,19 @@ function RelationList({
             }}
           />
           <Stack direction="row" sx={{ flexShrink: 0 }}>
-            <Tooltip title="Copy path">
+            <Tooltip title={t('actions.copyPath')}>
               <IconButton
                 edge="end"
-                aria-label="Copy path"
+                aria-label={t('actions.copyPath')}
                 onClick={() => void copyToClipboard(item.path)}
               >
                 <ContentCopyOutlined fontSize="small" />
               </IconButton>
             </Tooltip>
-            <Tooltip title="Show in graph">
+            <Tooltip title={t('actions.showInGraph')}>
               <IconButton
                 edge="end"
-                aria-label="Show in graph"
+                aria-label={t('actions.showInGraph')}
                 onClick={() => onShowInGraph(item.path)}
               >
                 <MyLocationOutlined fontSize="small" />
@@ -109,6 +112,7 @@ export function DependencyPanel({
   onClose,
   onShowInGraph,
 }: DependencyPanelProps) {
+  const { t } = useTranslation()
   const expandedFolders = useMemo(() => new Set(expandedKeys), [expandedKeys])
 
   const relations = useMemo(
@@ -135,13 +139,13 @@ export function DependencyPanel({
           {path}
         </Typography>
         <Stack direction="row" spacing={0.5} sx={{ flexShrink: 0 }}>
-          <Tooltip title="Show in graph">
-            <IconButton color="primary" aria-label="Show in graph" onClick={() => onShowInGraph(path)}>
+          <Tooltip title={t('actions.showInGraph')}>
+            <IconButton color="primary" aria-label={t('actions.showInGraph')} onClick={() => onShowInGraph(path)}>
               <MyLocationOutlined fontSize="small" />
             </IconButton>
           </Tooltip>
-          <Tooltip title="Close">
-            <IconButton aria-label="Close" onClick={onClose}>
+          <Tooltip title={t('actions.close')}>
+            <IconButton aria-label={t('actions.close')} onClick={onClose}>
               <CloseOutlined fontSize="small" />
             </IconButton>
           </Tooltip>
@@ -150,12 +154,12 @@ export function DependencyPanel({
       <Divider />
       <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto', px: 2, py: 1.5 }}>
         <Typography variant="subtitle1" gutterBottom>
-          Dependencies
+          {t('dependencyPanel.dependencies')}
         </Typography>
         <RelationList items={relations.dependencies} onShowInGraph={onShowInGraph} />
 
         <Typography variant="subtitle1" gutterBottom sx={{ mt: 3 }}>
-          Dependents
+          {t('dependencyPanel.dependents')}
         </Typography>
         <RelationList items={relations.dependents} onShowInGraph={onShowInGraph} />
       </Box>

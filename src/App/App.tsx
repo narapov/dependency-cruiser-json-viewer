@@ -3,6 +3,7 @@ import AlertTitle from '@mui/material/AlertTitle'
 import CircularProgress from '@mui/material/CircularProgress'
 import type { IModule } from 'dependency-cruiser'
 import { useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { AppLayout } from '../components/AppLayout'
 import { DependencyGraph, type DependencyGraphHandle } from '../components/DependencyGraph'
 import { DependencyPanel } from '../components/DependencyPanel'
@@ -11,15 +12,18 @@ import { QuickPick, type QuickPickHandle } from '../components/QuickPick'
 import { useAppCommands, useAppOrchestration, useCruiseResult, useInitialDependencyCruiserState } from './hooks'
 import { AppHeader } from './partials/AppHeader'
 import { AppStatusBar } from './partials/AppStatusBar'
+import { LanguagePickerDialog } from './partials/LanguagePickerDialog'
 import { ThemePickerDialog } from './partials/ThemePickerDialog'
 import styles from './App.module.css'
 
 function App() {
+  const { t } = useTranslation()
   const { data, isPending, isError, error } = useCruiseResult()
   const fileTreeRef = useRef<FileTreeHandle>(null)
   const graphRef = useRef<DependencyGraphHandle>(null)
   const quickPickRef = useRef<QuickPickHandle>(null)
   const [themePickerOpen, setThemePickerOpen] = useState(false)
+  const [languagePickerOpen, setLanguagePickerOpen] = useState(false)
 
   const sources = useMemo(
     () => data?.modules.map((module) => module.source) ?? [],
@@ -30,6 +34,7 @@ function App() {
   const commands = useAppCommands({
     orch,
     openThemePicker: () => setThemePickerOpen(true),
+    openLanguagePicker: () => setLanguagePickerOpen(true),
   })
 
   if (isPending) {
@@ -44,7 +49,7 @@ function App() {
     return (
       <div className={styles.centered}>
         <Alert severity="error">
-          <AlertTitle>Failed to load cruise result</AlertTitle>
+          <AlertTitle>{t('app.loadErrorTitle')}</AlertTitle>
           {error.message}
         </Alert>
       </div>
@@ -113,6 +118,10 @@ function App() {
           <ThemePickerDialog
             open={themePickerOpen}
             onClose={() => setThemePickerOpen(false)}
+          />
+          <LanguagePickerDialog
+            open={languagePickerOpen}
+            onClose={() => setLanguagePickerOpen(false)}
           />
         </>
       }

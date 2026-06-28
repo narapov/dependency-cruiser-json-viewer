@@ -4,6 +4,7 @@ import DialogContent from '@mui/material/DialogContent'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 import { useEffect, useImperativeHandle, useRef, useState, type KeyboardEvent, type Ref } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useQuickPickShortcut, useQuickPickState } from './hooks'
 import { QuickPickCommandResultsList } from './partials/QuickPickCommandResultsList'
 import { QuickPickFileResultsList } from './partials/QuickPickFileResultsList'
@@ -19,6 +20,7 @@ interface QuickPickProps {
 }
 
 export function QuickPick({ ref, sources, commands, onSelectPath }: QuickPickProps) {
+  const { t } = useTranslation()
   const {
     open,
     query,
@@ -113,16 +115,16 @@ export function QuickPick({ ref, sources, commands, onSelectPath }: QuickPickPro
   }
 
   const placeholder = isCommandMode
-    ? 'Type the name of a command to run...'
-    : 'Search files and folders...'
+    ? t('quickPick.commandPlaceholder')
+    : t('quickPick.filePlaceholder')
 
   const emptyMessage = isCommandMode
     ? deferredCommandQuery.trim()
-      ? 'No matching commands'
-      : 'Type to filter commands'
+      ? t('quickPick.noMatchingCommands')
+      : t('quickPick.typeToFilterCommands')
     : query.trim()
-      ? 'No matching files or folders'
-      : 'Start typing to search'
+      ? t('quickPick.noMatchingFiles')
+      : t('quickPick.startTyping')
 
   return (
     <Dialog

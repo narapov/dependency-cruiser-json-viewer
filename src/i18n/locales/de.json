@@ -1,0 +1,91 @@
+{
+  "app": {
+    "title": "Deps Viewer",
+    "modulesCount_one": "{{count}} Modul",
+    "modulesCount_other": "{{count}} Module",
+    "loadErrorTitle": "Cruise-Ergebnis konnte nicht geladen werden",
+    "searchFiles": "Dateien suchen ({{shortcut}})",
+    "commandPalette": "Befehlspalette (F1)"
+  },
+  "actions": {
+    "copyPath": "Pfad kopieren",
+    "showInGraph": "Im Graphen anzeigen",
+    "showInGraphAndFileTree": "Im Graphen und Dateibaum anzeigen",
+    "showInFileTree": "Im Dateibaum anzeigen",
+    "viewDependencies": "Abhängigkeiten anzeigen",
+    "expand": "Erweitern",
+    "collapse": "Einklappen",
+    "expandFolder": "Ordner erweitern",
+    "collapseFolder": "Ordner einklappen",
+    "expandRecursive": "Rekursiv erweitern",
+    "close": "Schließen",
+    "highlight": "Hervorheben",
+    "clear": "Löschen"
+  },
+  "commands": {
+    "clearLocalStorage": "Lokalen Speicher leeren",
+    "showActive": "Aktives Element anzeigen",
+    "copyActive": "Aktives Element kopieren",
+    "viewActiveDependencies": "Abhängigkeiten des aktiven Elements anzeigen",
+    "expandActive": "Aktives Element erweitern",
+    "expandActiveRecursive": "Aktives Element rekursiv erweitern",
+    "collapseActive": "Aktives Element einklappen",
+    "collapseActiveRecursive": "Aktives Element rekursiv einklappen",
+    "clearAllHighlights": "Alle Hervorhebungen löschen",
+    "expandAllRecursive": "Alles rekursiv erweitern",
+    "collapseAllRecursive": "Alles rekursiv einklappen",
+    "selectAll": "Alles auswählen",
+    "setTheme": "Design festlegen",
+    "setLanguage": "Sprache festlegen",
+    "unselectAll": "Auswahl aufheben"
+  },
+  "quickPick": {
+    "commandPlaceholder": "Geben Sie den Namen eines Befehls ein...",
+    "filePlaceholder": "Dateien und Ordner suchen...",
+    "noMatchingCommands": "Keine passenden Befehle",
+    "typeToFilterCommands": "Tippen, um Befehle zu filtern",
+    "noMatchingFiles": "Keine passenden Dateien oder Ordner",
+    "startTyping": "Tippen, um zu suchen"
+  },
+  "theme": {
+    "label": "Design",
+    "light": "Hell",
+    "dark": "Dunkel",
+    "system": "System",
+    "setTheme": "Design festlegen",
+    "themeOptions": "Designoptionen",
+    "active": "(aktiv)"
+  },
+  "language": {
+    "label": "Sprache",
+    "setLanguage": "Sprache festlegen",
+    "languageOptions": "Sprachoptionen",
+    "en": "English",
+    "fr": "Français",
+    "de": "Deutsch",
+    "ru": "Русский",
+    "active": "(aktiv)"
+  },
+  "graph": {
+    "legend": {
+      "incoming": "Eingehend",
+      "outgoing": "Ausgehend",
+      "circular": "Zirkulär",
+      "selected": "Ausgewählt",
+      "typeOnly": "Nur Typ",
+      "typeOnlyCircular": "Nur Typ zirkulär"
+    },
+    "edgeMenu": {
+      "viewSource": "Quelle anzeigen",
+      "viewTarget": "Ziel anzeigen"
+    }
+  },
+  "dependencyPanel": {
+    "dependencies": "Abhängigkeiten",
+    "dependents": "Abhängige",
+    "noDependencies": "Keine Abhängigkeiten"
+  },
+  "statusBar": {
+    "noSelection": "Keine Auswahl"
+  }
+}

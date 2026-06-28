@@ -1,6 +1,7 @@
 import { useCallback, useState, type MouseEvent } from 'react'
 import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
+import { useTranslation } from 'react-i18next'
 import { copyToClipboard } from '../../../../Shared'
 
 export interface FileTreeContextMenuOptions {
@@ -22,6 +23,7 @@ export function useFileTreeContextMenu({
   onShowInGraph,
   onShowDependencies,
 }: FileTreeContextMenuOptions) {
+  const { t } = useTranslation()
   const [anchorPosition, setAnchorPosition] = useState<{ top: number; left: number } | null>(
     null,
   )
@@ -51,23 +53,23 @@ export function useFileTreeContextMenu({
       anchorReference="anchorPosition"
       anchorPosition={anchorPosition ?? undefined}
     >
-      <MenuItem onClick={handleAction(() => void copyToClipboard(path))}>Copy path</MenuItem>
+      <MenuItem onClick={handleAction(() => void copyToClipboard(path))}>{t('actions.copyPath')}</MenuItem>
       {onShowInGraph && (
-        <MenuItem onClick={handleAction(() => onShowInGraph(path))}>Show in graph</MenuItem>
+        <MenuItem onClick={handleAction(() => onShowInGraph(path))}>{t('actions.showInGraph')}</MenuItem>
       )}
       {isFolder && onToggleExpand && (
         <MenuItem onClick={handleAction(() => onToggleExpand(path))}>
-          {expanded ? 'Collapse' : 'Expand'}
+          {expanded ? t('actions.collapse') : t('actions.expand')}
         </MenuItem>
       )}
       {isFolder && onExpandRecursive && (
         <MenuItem onClick={handleAction(() => onExpandRecursive(path))}>
-          Expand recursive
+          {t('actions.expandRecursive')}
         </MenuItem>
       )}
       {onShowDependencies && (
         <MenuItem onClick={handleAction(() => onShowDependencies(path))}>
-          View dependencies
+          {t('actions.viewDependencies')}
         </MenuItem>
       )}
     </Menu>

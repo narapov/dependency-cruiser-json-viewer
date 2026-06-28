@@ -1,0 +1,93 @@
+{
+  "app": {
+    "title": "Deps Viewer",
+    "modulesCount_one": "{{count}} модуль",
+    "modulesCount_few": "{{count}} модуля",
+    "modulesCount_many": "{{count}} модулей",
+    "modulesCount_other": "{{count}} модулей",
+    "loadErrorTitle": "Не удалось загрузить результат cruise",
+    "searchFiles": "Поиск файлов ({{shortcut}})",
+    "commandPalette": "Палитра команд (F1)"
+  },
+  "actions": {
+    "copyPath": "Копировать путь",
+    "showInGraph": "Показать на графе",
+    "showInGraphAndFileTree": "Показать на графе и в дереве",
+    "showInFileTree": "Показать в дереве файлов",
+    "viewDependencies": "Просмотр зависимостей",
+    "expand": "Развернуть",
+    "collapse": "Свернуть",
+    "expandFolder": "Развернуть папку",
+    "collapseFolder": "Свернуть папку",
+    "expandRecursive": "Развернуть рекурсивно",
+    "close": "Закрыть",
+    "highlight": "Подсветить",
+    "clear": "Очистить"
+  },
+  "commands": {
+    "clearLocalStorage": "Очистить локальное хранилище",
+    "showActive": "Показать активный элемент",
+    "copyActive": "Копировать активный элемент",
+    "viewActiveDependencies": "Зависимости активного элемента",
+    "expandActive": "Развернуть активный элемент",
+    "expandActiveRecursive": "Развернуть активный элемент рекурсивно",
+    "collapseActive": "Свернуть активный элемент",
+    "collapseActiveRecursive": "Свернуть активный элемент рекурсивно",
+    "clearAllHighlights": "Сбросить все подсветки",
+    "expandAllRecursive": "Развернуть всё рекурсивно",
+    "collapseAllRecursive": "Свернуть всё рекурсивно",
+    "selectAll": "Выбрать всё",
+    "setTheme": "Выбрать тему",
+    "setLanguage": "Выбрать язык",
+    "unselectAll": "Снять выделение"
+  },
+  "quickPick": {
+    "commandPlaceholder": "Введите название команды...",
+    "filePlaceholder": "Поиск файлов и папок...",
+    "noMatchingCommands": "Нет подходящих команд",
+    "typeToFilterCommands": "Введите текст для фильтрации команд",
+    "noMatchingFiles": "Нет подходящих файлов или папок",
+    "startTyping": "Начните ввод для поиска"
+  },
+  "theme": {
+    "label": "Тема",
+    "light": "Светлая",
+    "dark": "Тёмная",
+    "system": "Системная",
+    "setTheme": "Выбрать тему",
+    "themeOptions": "Варианты темы",
+    "active": "(активна)"
+  },
+  "language": {
+    "label": "Язык",
+    "setLanguage": "Выбрать язык",
+    "languageOptions": "Варианты языка",
+    "en": "English",
+    "fr": "Français",
+    "de": "Deutsch",
+    "ru": "Русский",
+    "active": "(активен)"
+  },
+  "graph": {
+    "legend": {
+      "incoming": "Входящие",
+      "outgoing": "Исходящие",
+      "circular": "Циклические",
+      "selected": "Выбранные",
+      "typeOnly": "Только тип",
+      "typeOnlyCircular": "Только тип, циклические"
+    },
+    "edgeMenu": {
+      "viewSource": "Показать источник",
+      "viewTarget": "Показать цель"
+    }
+  },
+  "dependencyPanel": {
+    "dependencies": "Зависимости",
+    "dependents": "Зависимые",
+    "noDependencies": "Нет зависимостей"
+  },
+  "statusBar": {
+    "noSelection": "Ничего не выбрано"
+  }
+}
