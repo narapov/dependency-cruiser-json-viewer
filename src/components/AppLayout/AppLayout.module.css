@@ -5,6 +5,7 @@
   grid-template:
     "header header header" auto
     "sider  main   panel"  1fr
+    "footer footer footer" auto
     / var(--sider-width, 280px) 1fr var(--panel-width, 0px);
 }
 
@@ -89,4 +90,10 @@
 
 .panelResizeHandle:hover {
   background: rgba(0, 0, 0, 0.06);
+}
+
+.footer {
+  grid-area: footer;
+  min-height: 0;
+  overflow: hidden;
 }

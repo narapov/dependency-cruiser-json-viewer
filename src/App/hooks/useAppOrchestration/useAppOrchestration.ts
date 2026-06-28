@@ -83,12 +83,22 @@ export function useAppOrchestration({
     setDependenciesPath(null)
   }
 
-  const handleQuickOpenSelect = (path: string) => {
-    activatePath(path)
+  const focusPath = (path: string) => {
     if (isPathVisibleInSelection(path, selectedPaths)) {
       graphRef.current?.focusNode(path)
     }
     fileTreeRef.current?.focusPath(path)
+  }
+
+  const handleQuickOpenSelect = (path: string) => {
+    activatePath(path);
+    focusPath(path);
+  }
+
+  const focusActivePath = () => {
+    if (activePath == null) return
+    activatePath(activePath)
+    focusPath(activePath);
   }
 
   return {
@@ -107,5 +117,6 @@ export function useAppOrchestration({
     handleShowDependencies,
     handleClosePanel,
     handleQuickOpenSelect,
+    focusActivePath,
   }
 }

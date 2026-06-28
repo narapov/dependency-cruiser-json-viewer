@@ -10,6 +10,7 @@ import { FileTree, type FileTreeHandle } from '../components/FileTree'
 import { QuickOpen } from '../components/QuickOpen'
 import { useAppOrchestration, useCruiseResult, useInitialDependencyCruiserState } from './hooks'
 import { AppHeader } from './partials/AppHeader'
+import { AppStatusBar } from './partials/AppStatusBar'
 import styles from './App.module.css'
 
 function App() {
@@ -89,6 +90,13 @@ function App() {
         ) : null
       }
       overlay={<QuickOpen sources={sources} onSelect={orch.handleQuickOpenSelect} />}
+      footer={
+        <AppStatusBar
+          activePath={orch.activePath}
+          onFocusActivePath={orch.focusActivePath}
+          onShowDependencies={orch.handleShowDependencies}
+        />
+      }
       panelOpen={orch.panelOpen}
     />
   )

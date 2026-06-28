@@ -14,6 +14,7 @@ export interface AppLayoutProps {
   main: ReactNode
   panel: ReactNode | null
   overlay: ReactNode | null
+  footer: ReactNode
   panelOpen: boolean
 }
 
@@ -23,6 +24,7 @@ export function AppLayout({
   main,
   panel,
   overlay,
+  footer,
   panelOpen,
 }: AppLayoutProps) {
   const { sidebarWidth, onResizePointerDown } = useSidebarWidth()
@@ -66,6 +68,7 @@ export function AppLayout({
         {panelOpen && panel && <aside className={styles.panel}>{panel}</aside>}
       </div>
       {overlay}
+      <footer className={styles.footer}>{footer}</footer>
     </div>
   )
 }
