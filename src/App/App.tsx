@@ -2,7 +2,7 @@ import Alert from '@mui/material/Alert'
 import AlertTitle from '@mui/material/AlertTitle'
 import CircularProgress from '@mui/material/CircularProgress'
 import type { IModule } from 'dependency-cruiser'
-import { useMemo, useRef } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { AppLayout } from '../components/AppLayout'
 import { DependencyGraph, type DependencyGraphHandle } from '../components/DependencyGraph'
 import { DependencyPanel } from '../components/DependencyPanel'
@@ -11,12 +11,14 @@ import { QuickPick } from '../components/QuickPick'
 import { useAppCommands, useAppOrchestration, useCruiseResult, useInitialDependencyCruiserState } from './hooks'
 import { AppHeader } from './partials/AppHeader'
 import { AppStatusBar } from './partials/AppStatusBar'
+import { ThemePickerDialog } from './partials/ThemePickerDialog'
 import styles from './App.module.css'
 
 function App() {
   const { data, isPending, isError, error } = useCruiseResult()
   const fileTreeRef = useRef<FileTreeHandle>(null)
   const graphRef = useRef<DependencyGraphHandle>(null)
+  const [themePickerOpen, setThemePickerOpen] = useState(false)
 
   const sources = useMemo(
     () => data?.modules.map((module) => module.source) ?? [],
@@ -24,7 +26,10 @@ function App() {
   )
   const initialDependencyCruiserState = useInitialDependencyCruiserState(sources)
   const orch = useAppOrchestration({ sources, fileTreeRef, graphRef, initialDependencyCruiserState })
-  const commands = useAppCommands({ orch })
+  const commands = useAppCommands({
+    orch,
+    openThemePicker: () => setThemePickerOpen(true),
+  })
 
   if (isPending) {
     return (
@@ -91,11 +96,17 @@ function App() {
         ) : null
       }
       overlay={
-        <QuickPick
-          sources={sources}
-          commands={commands}
-          onSelectPath={orch.handleQuickPickSelect}
-        />
+        <>
+          <QuickPick
+            sources={sources}
+            commands={commands}
+            onSelectPath={orch.handleQuickPickSelect}
+          />
+          <ThemePickerDialog
+            open={themePickerOpen}
+            onClose={() => setThemePickerOpen(false)}
+          />
+        </>
       }
       footer={
         <AppStatusBar

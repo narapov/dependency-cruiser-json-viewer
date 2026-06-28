@@ -18,9 +18,10 @@ export interface AppCommandsOrchestration {
 
 interface UseAppCommandsOptions {
   orch: AppCommandsOrchestration
+  openThemePicker: () => void
 }
 
-export function useAppCommands({ orch }: UseAppCommandsOptions): QuickPickCommand[] {
+export function useAppCommands({ orch, openThemePicker }: UseAppCommandsOptions): QuickPickCommand[] {
   const {
     clearLocalStorage,
     focusActivePath,
@@ -74,6 +75,7 @@ export function useAppCommands({ orch }: UseAppCommandsOptions): QuickPickComman
       onExecute: collapseAllRecursive,
     },
     { id: 'selectAll', label: 'Select All', onExecute: selectAll },
+    { id: 'setTheme', label: 'Set Theme', onExecute: openThemePicker },
     { id: 'unselectAll', label: 'Unselect All', onExecute: unselectAll },
   ].sort((a, b) => a.label.localeCompare(b.label))
 }

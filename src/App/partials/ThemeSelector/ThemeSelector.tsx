@@ -5,12 +5,13 @@ import ToggleButton from '@mui/material/ToggleButton'
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
 import Tooltip from '@mui/material/Tooltip'
 import { useColorScheme } from '@mui/material/styles'
+import { THEME_OPTIONS } from './themeOptions'
 
-const options = [
-  { value: 'light' as const, label: 'Light', Icon: LightModeOutlined },
-  { value: 'dark' as const, label: 'Dark', Icon: DarkModeOutlined },
-  { value: 'system' as const, label: 'System', Icon: Brightness4Outlined },
-]
+const THEME_ICONS = {
+  light: LightModeOutlined,
+  dark: DarkModeOutlined,
+  system: Brightness4Outlined,
+} as const
 
 export function ThemeSelector() {
   const { mode, setMode } = useColorScheme()
@@ -49,15 +50,18 @@ export function ThemeSelector() {
         },
       }}
     >
-      {options.map(({ value, label, Icon }) => (
-        <Tooltip key={value} title={label}>
-          <span>
-            <ToggleButton value={value} aria-label={label}>
-              <Icon sx={{ fontSize: 18 }} />
-            </ToggleButton>
-          </span>
-        </Tooltip>
-      ))}
+      {THEME_OPTIONS.map(({ value, label }) => {
+        const Icon = THEME_ICONS[value]
+        return (
+          <Tooltip key={value} title={label}>
+            <span>
+              <ToggleButton value={value} aria-label={label}>
+                <Icon sx={{ fontSize: 18 }} />
+              </ToggleButton>
+            </span>
+          </Tooltip>
+        )
+      })}
     </ToggleButtonGroup>
   )
 }
