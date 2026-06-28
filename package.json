@@ -12,14 +12,24 @@
   "license": "MIT",
   "version": "0.0.0",
   "type": "module",
+  "bin": {
+    "dependency-cruiser-json-viewer": "bin/dependency-cruiser-json-viewer.mjs"
+  },
+  "files": [
+    "dist",
+    "bin"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "depcruise": "depcruise src",
     "depcruise:json": "depcruise src -T json -f public/cruise-result.json",
+    "depcruise:json-for-cli": "depcruise src -T json -f test-data/cruise-result.json",
+    "cli:verify": "npm run build && npm run depcruise:json-for-cli && node bin/dependency-cruiser-json-viewer.mjs test-data/cruise-result.json",
     "test": "vitest run",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "@baybreezy/file-extension-icon": "^0.0.5",
@@ -38,7 +48,8 @@
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-i18next": "^17.0.8",
-    "react-use": "^17.6.1"
+    "react-use": "^17.6.1",
+    "serve-handler": "^6.1.6"
   },
   "devDependencies": {
     "@babel/core": "^7.29.7",

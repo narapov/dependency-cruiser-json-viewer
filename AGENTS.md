@@ -21,6 +21,8 @@ Interactive browser viewer for [dependency-cruiser](https://github.com/sverweij/
 | `npm run lint` | Run ESLint | After any TS/TSX changes |
 | `npm run depcruise` | Validate layer rules on `src` | After import/layer changes |
 | `npm run depcruise:json` | Export cruise result to `public/cruise-result.json` | When sample data needs refresh |
+| `npm run depcruise:json-for-cli` | Export cruise result to `test-data/cruise-result.json` | When CLI test data needs refresh |
+| `npm run cli:verify` | Build, refresh `test-data/cruise-result.json`, start CLI server | Local CLI verification |
 
 **Verification checklist before finishing:**
 
