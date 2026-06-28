@@ -1,6 +1,6 @@
 {
   "app": {
-    "title": "Deps Viewer",
+    "title": "Dependency Cruiser JSON Viewer",
     "modulesCountFiltered": "{{filtered}}/{{total}} modules",
     "loadErrorTitle": "Échec du chargement du résultat cruise",
     "searchFiles": "Rechercher des fichiers ({{shortcut}})",

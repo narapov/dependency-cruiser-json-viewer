@@ -1,5 +1,13 @@
 {
-  "name": "deps-viewer",
+  "name": "dependency-cruiser-json-viewer",
+  "description": "Interactive browser viewer for dependency-cruiser JSON cruise results — explore file trees, dependency graphs, and module relations.",
+  "keywords": [
+    "dependency-cruiser",
+    "depcruise",
+    "dependency-graph",
+    "visualization",
+    "dependency-visualization"
+  ],
   "private": true,
   "version": "0.0.0",
   "type": "module",

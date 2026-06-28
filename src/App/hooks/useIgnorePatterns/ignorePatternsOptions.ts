@@ -1,4 +1,6 @@
-export const IGNORE_PATTERNS_STORAGE_KEY = 'deps-viewer.ignore-patterns'
+import { appStorageKey } from '../../../Shared'
+
+export const IGNORE_PATTERNS_STORAGE_KEY = appStorageKey('ignore-patterns')
 
 export const GLOB_PATTERNS_DOCS_URL =
   'https://github.com/micromatch/picomatch#globbing-features'

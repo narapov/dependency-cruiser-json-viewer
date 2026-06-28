@@ -13,7 +13,7 @@ import {
   resolveActivePathAfterCollapse,
   toggleExpandedKey,
 } from '../../../domain'
-import { copyToClipboard } from '../../../Shared'
+import { APP_STORAGE_PREFIX, copyToClipboard } from '../../../Shared'
 
 interface UseAppOrchestrationOptions {
   sources: string[]
@@ -138,7 +138,7 @@ export function useAppOrchestration({
     const keysToRemove: string[] = []
     for (let index = 0; index < localStorage.length; index++) {
       const key = localStorage.key(index)
-      if (key?.startsWith('deps-viewer.')) {
+      if (key?.startsWith(`${APP_STORAGE_PREFIX}.`)) {
         keysToRemove.push(key)
       }
     }
