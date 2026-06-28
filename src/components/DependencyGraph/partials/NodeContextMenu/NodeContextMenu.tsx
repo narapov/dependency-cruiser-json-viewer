@@ -55,7 +55,7 @@ export function NodeContextMenu({
         anchorReference="anchorPosition"
         anchorPosition={anchorPosition ?? undefined}
       >
-        <MenuItem onClick={handleAction(() => void copyToClipboard(path))}>Copy</MenuItem>
+        <MenuItem onClick={handleAction(() => void copyToClipboard(path))}>Copy path</MenuItem>
         {isFolder && onToggle && (
           <MenuItem onClick={handleAction(() => onToggle(path))}>
             {expanded ? 'Collapse' : 'Expand'}

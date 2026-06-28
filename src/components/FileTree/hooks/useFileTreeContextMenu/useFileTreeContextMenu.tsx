@@ -51,7 +51,7 @@ export function useFileTreeContextMenu({
       anchorReference="anchorPosition"
       anchorPosition={anchorPosition ?? undefined}
     >
-      <MenuItem onClick={handleAction(() => void copyToClipboard(path))}>Copy</MenuItem>
+      <MenuItem onClick={handleAction(() => void copyToClipboard(path))}>Copy path</MenuItem>
       {onShowInGraph && (
         <MenuItem onClick={handleAction(() => onShowInGraph(path))}>Show in graph</MenuItem>
       )}
