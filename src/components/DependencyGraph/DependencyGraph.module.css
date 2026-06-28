@@ -45,6 +45,18 @@
   flex-shrink: 0;
 }
 
+.legendLineDashed {
+  width: 24px;
+  height: 0;
+  background: none;
+  border-top: 3px dashed var(--graph-default-edge);
+  flex-shrink: 0;
+}
+
+.legendLineDashedTypeOnlyCircular {
+  border-top-color: var(--graph-circular-type-only);
+}
+
 .empty {
   display: grid;
   place-items: center;

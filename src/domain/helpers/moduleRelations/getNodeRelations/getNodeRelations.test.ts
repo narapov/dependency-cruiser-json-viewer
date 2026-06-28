@@ -20,7 +20,9 @@ describe('getNodeRelations', () => {
       new Set(),
     )
 
-    expect(relations.dependencies).toEqual([{ path: 'src/bar/c.ts', circular: false }])
+    expect(relations.dependencies).toEqual([
+      { path: 'src/bar/c.ts', circular: false, typeOnly: false, typeOnlyCircular: false },
+    ])
   })
 
   it('uses folder relations for folders', () => {
@@ -31,6 +33,8 @@ describe('getNodeRelations', () => {
       new Set(),
     )
 
-    expect(relations.dependencies).toEqual([{ path: 'src/bar/c.ts', circular: false }])
+    expect(relations.dependencies).toEqual([
+      { path: 'src/bar/c.ts', circular: false, typeOnly: false, typeOnlyCircular: false },
+    ])
   })
 })

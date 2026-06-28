@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, type CSSProperties } from 'react'
 import CloseOutlined from '@mui/icons-material/CloseOutlined'
 import ContentCopyOutlined from '@mui/icons-material/ContentCopyOutlined'
 import MyLocationOutlined from '@mui/icons-material/MyLocationOutlined'
@@ -7,13 +7,13 @@ import Divider from '@mui/material/Divider'
 import IconButton from '@mui/material/IconButton'
 import List from '@mui/material/List'
 import ListItem from '@mui/material/ListItem'
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction'
 import ListItemText from '@mui/material/ListItemText'
 import Stack from '@mui/material/Stack'
 import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
 import type { IModule } from 'dependency-cruiser'
-import { CIRCULAR_EDGE_COLOR, copyToClipboard } from '../../Shared'
+import type { ModuleRelation } from '../../domain'
+import { CIRCULAR_EDGE_COLOR, TYPE_ONLY_CIRCULAR_EDGE_COLOR, copyToClipboard } from '../../Shared'
 import { getNodeRelations } from '../../domain'
 
 interface DependencyPanelProps {
@@ -25,11 +25,24 @@ interface DependencyPanelProps {
   onShowInGraph: (path: string) => void
 }
 
+function getRelationPathStyle(item: ModuleRelation): CSSProperties {
+  if (item.circular) {
+    return { color: CIRCULAR_EDGE_COLOR }
+  }
+  if (item.typeOnlyCircular) {
+    return { color: TYPE_ONLY_CIRCULAR_EDGE_COLOR }
+  }
+  if (item.typeOnly) {
+    return { textDecoration: 'underline dashed' }
+  }
+  return {}
+}
+
 function RelationList({
   items,
   onShowInGraph,
 }: {
-  items: { path: string; circular: boolean }[]
+  items: ModuleRelation[]
   onShowInGraph: (path: string) => void
 }) {
   if (items.length === 0) {
@@ -43,21 +56,26 @@ function RelationList({
   return (
     <List dense disablePadding>
       {items.map((item) => (
-        <ListItem key={item.path} disableGutters>
+        <ListItem
+          key={item.path}
+          disableGutters
+          sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.5, py: 0.5 }}
+        >
           <ListItemText
             primary={item.path}
+            sx={{ flex: 1, minWidth: 0, m: 0 }}
             slotProps={{
               primary: {
                 sx: {
                   fontFamily: 'monospace',
                   fontSize: 11,
                   wordBreak: 'break-all',
-                  color: item.circular ? CIRCULAR_EDGE_COLOR : undefined,
+                  ...getRelationPathStyle(item),
                 },
               },
             }}
           />
-          <ListItemSecondaryAction>
+          <Stack direction="row" sx={{ flexShrink: 0 }}>
             <Tooltip title="Copy path">
               <IconButton
                 edge="end"
@@ -76,7 +94,7 @@ function RelationList({
                 <MyLocationOutlined fontSize="small" />
               </IconButton>
             </Tooltip>
-          </ListItemSecondaryAction>
+          </Stack>
         </ListItem>
       ))}
     </List>

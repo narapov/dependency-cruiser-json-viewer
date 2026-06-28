@@ -2,6 +2,7 @@
   --graph-incoming: #1677ff;
   --graph-outgoing: #52c41a;
   --graph-circular: #ff4d4f;
+  --graph-circular-type-only: #ffa39e;
   --graph-circular-background: #fff1f0;
   --graph-selected: #fa8c16;
   --graph-default-edge: #b1b1b7;

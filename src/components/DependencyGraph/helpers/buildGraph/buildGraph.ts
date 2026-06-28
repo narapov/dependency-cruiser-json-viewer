@@ -6,8 +6,17 @@ import {
   DEFAULT_EDGE_COLOR,
   INCOMING_EDGE_COLOR,
   OUTGOING_EDGE_COLOR,
+  TYPE_ONLY_CIRCULAR_EDGE_COLOR,
 } from '../../../../Shared'
-import { getBaseName, getParentPath, getRepresentative } from '../../../../domain'
+import {
+  createDependencyRelationFlags,
+  finalizeDependencyRelationFlags,
+  getBaseName,
+  getParentPath,
+  getRepresentative,
+  isTypeOnlyDependency,
+  mergeDependencyRelationFlags,
+} from '../../../../domain'
 import type {
   BuildGraphInput,
   BuildGraphResult,
@@ -25,6 +34,15 @@ const GRID_MIN_CHILDREN = 6
 const GRID_MAX_EDGE_RATIO = 0.4
 const GRID_GAP_X = 60
 const GRID_GAP_Y = 24
+const TYPE_ONLY_EDGE_DASH = '6 4'
+
+interface EdgeBuildInfo {
+  sourceRep: string
+  targetRep: string
+  typeOnly: boolean
+  valueCircular: boolean
+  typeOnlyCircular: boolean
+}
 
 interface NodeSize {
   width: number
@@ -99,7 +117,7 @@ function collectCircularModules(modules: IModule[]): Set<string> {
   const circularModules = new Set<string>()
   for (const module of modules) {
     if (!Array.isArray(module.dependencies)) continue
-    if (module.dependencies.some((dep) => dep.circular === true)) {
+    if (module.dependencies.some((dep) => dep.circular === true && !isTypeOnlyDependency(dep))) {
       circularModules.add(module.source)
     }
   }
@@ -503,8 +521,7 @@ export function buildGraph({
   const visibleNodeIds = new Set(visibleNodes.keys())
   const parentByNode = buildParentByNode(visibleNodes, expandedFolders)
 
-  const edgeKeys = new Set<string>()
-  const edges: Edge[] = []
+  const edgeBuildMap = new Map<string, EdgeBuildInfo>()
 
   for (const module of modules) {
     if (!selectedSet.has(module.source)) continue
@@ -520,41 +537,73 @@ export function buildGraph({
       if (!visibleNodeIds.has(sourceRep) || !visibleNodeIds.has(targetRep)) continue
 
       const edgeKey = `${sourceRep}->${targetRep}`
-      if (edgeKeys.has(edgeKey)) continue
-      edgeKeys.add(edgeKey)
+      const isTypeOnly = isTypeOnlyDependency(dep)
+      const isCircular = dep.circular === true
+      const existing = edgeBuildMap.get(edgeKey)
 
-      const isIncoming =
-        highlightedNodeId != null && targetRep === highlightedNodeId
-      const isOutgoing =
-        highlightedNodeId != null && sourceRep === highlightedNodeId
-
-      let stroke = DEFAULT_EDGE_COLOR
-      let strokeWidth = 1
-      if (dep.circular === true) {
-        stroke = CIRCULAR_EDGE_COLOR
-        strokeWidth = 2
-      } else if (isIncoming) {
-        stroke = INCOMING_EDGE_COLOR
-        strokeWidth = 2
-      } else if (isOutgoing) {
-        stroke = OUTGOING_EDGE_COLOR
-        strokeWidth = 2
+      if (!existing) {
+        edgeBuildMap.set(edgeKey, {
+          sourceRep,
+          targetRep,
+          ...createDependencyRelationFlags(isTypeOnly, isCircular),
+        })
+      } else {
+        mergeDependencyRelationFlags(existing, isTypeOnly, isCircular)
       }
-
-      edges.push({
-        id: edgeKey,
-        type: 'dependency',
-        source: sourceRep,
-        target: targetRep,
-        interactionWidth: 3,
-        data: { title: `${sourceRep} -> ${targetRep}` },
-        markerEnd: {
-          type: MarkerType.ArrowClosed,
-          color: stroke,
-        },
-        style: { stroke, strokeWidth },
-      })
     }
+  }
+
+  const edges: Edge[] = []
+
+  for (const [edgeKey, info] of edgeBuildMap) {
+    finalizeDependencyRelationFlags(info)
+
+    const { sourceRep, targetRep, typeOnly, valueCircular, typeOnlyCircular } = info
+
+    const isIncoming =
+      highlightedNodeId != null && targetRep === highlightedNodeId
+    const isOutgoing =
+      highlightedNodeId != null && sourceRep === highlightedNodeId
+
+    let stroke = DEFAULT_EDGE_COLOR
+    let strokeWidth = 1
+    if (valueCircular) {
+      stroke = CIRCULAR_EDGE_COLOR
+      strokeWidth = 2
+    } else if (typeOnlyCircular) {
+      stroke = TYPE_ONLY_CIRCULAR_EDGE_COLOR
+      strokeWidth = 2
+    } else if (isIncoming) {
+      stroke = INCOMING_EDGE_COLOR
+      strokeWidth = 2
+    } else if (isOutgoing) {
+      stroke = OUTGOING_EDGE_COLOR
+      strokeWidth = 2
+    }
+
+    const style: Edge['style'] = { stroke, strokeWidth }
+    if (typeOnly) {
+      style.strokeDasharray = TYPE_ONLY_EDGE_DASH
+    }
+
+    const titleSuffix = typeOnly ? ' (type-only)' : ''
+
+    edges.push({
+      id: edgeKey,
+      type: 'dependency',
+      source: sourceRep,
+      target: targetRep,
+      interactionWidth: 3,
+      data: {
+        title: `${sourceRep} -> ${targetRep}${titleSuffix}`,
+        typeOnly,
+      },
+      markerEnd: {
+        type: MarkerType.ArrowClosed,
+        color: stroke,
+      },
+      style,
+    })
   }
 
   const nodeMap = new Map<string, Node>()

@@ -6,6 +6,11 @@ function moduleAt(source: string, dependencies: IModule['dependencies'] = []): I
   return { source, dependencies, dependents: [], valid: true } as IModule
 }
 
+const emptyFlags = {
+  typeOnly: false,
+  typeOnlyCircular: false,
+}
+
 describe('getFolderRelations', () => {
   const circularDep = {
     resolved: 'src/foo/b.ts',
@@ -35,7 +40,7 @@ describe('getFolderRelations', () => {
       new Set(),
     )
 
-    expect(dependencies).toEqual([{ path: 'src/bar/c.ts', circular: false }])
+    expect(dependencies).toEqual([{ path: 'src/bar/c.ts', circular: false, ...emptyFlags }])
   })
 
   it('aggregates incoming dependents for collapsed folder via representative', () => {
@@ -46,7 +51,7 @@ describe('getFolderRelations', () => {
       new Set(),
     )
 
-    expect(dependents).toEqual([{ path: 'lib/y.ts', circular: false }])
+    expect(dependents).toEqual([{ path: 'lib/y.ts', circular: false, ...emptyFlags }])
   })
 
   it('includes external relations from descendant files when folder is expanded', () => {
@@ -59,7 +64,25 @@ describe('getFolderRelations', () => {
       new Set(['src/foo']),
     )
 
-    expect(dependencies).toEqual([{ path: 'src/bar/c.ts', circular: false }])
-    expect(dependents).toEqual([{ path: 'lib/y.ts', circular: false }])
+    expect(dependencies).toEqual([{ path: 'src/bar/c.ts', circular: false, ...emptyFlags }])
+    expect(dependents).toEqual([{ path: 'lib/y.ts', circular: false, ...emptyFlags }])
+  })
+
+  it('marks type-only dependencies aggregated at folder level', () => {
+    const typeOnlyDep = {
+      resolved: 'src/bar/c.ts',
+      dependencyTypes: ['local', 'type-only', 'import'],
+    } as IModule['dependencies'][0]
+
+    const { dependencies } = getFolderRelations(
+      'src/foo',
+      [moduleAt('src/foo/a.ts', [typeOnlyDep])],
+      ['src/foo', 'src/foo/a.ts', 'src/bar/c.ts'],
+      new Set(),
+    )
+
+    expect(dependencies).toEqual([
+      { path: 'src/bar/c.ts', circular: false, typeOnly: true, typeOnlyCircular: false },
+    ])
   })
 })

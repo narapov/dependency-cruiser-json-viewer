@@ -1,6 +1,6 @@
 import type { IModule } from 'dependency-cruiser'
 import { describe, expect, it } from 'vitest'
-import { CIRCULAR_EDGE_COLOR } from '../../../../Shared'
+import { CIRCULAR_EDGE_COLOR, TYPE_ONLY_CIRCULAR_EDGE_COLOR } from '../../../../Shared'
 import { buildGraph } from './buildGraph'
 
 function moduleAt(source: string, dependencies: IModule['dependencies'] = []): IModule {
@@ -192,6 +192,110 @@ describe('buildGraph circular dependencies', () => {
 
     const circularEdge = edges.find((edge) => edge.source === 'src/foo/a.ts')
     expect(circularEdge?.style?.stroke).toBe(CIRCULAR_EDGE_COLOR)
+  })
+})
+
+describe('buildGraph type-only dependencies', () => {
+  const noopArgs = {
+    highlightedNodeId: null,
+    folderColors: new Map(),
+    onToggleFolder: noopToggle,
+    onExpandRecursive: noopExpandRecursive,
+    onShowInFileTree: noopShowInFileTree,
+  }
+
+  const typeOnlyDep = (resolved: string, circular = false) =>
+    ({
+      resolved,
+      circular,
+      dependencyTypes: ['local', 'type-only', 'import'],
+    }) as IModule['dependencies'][0]
+
+  const valueDep = (resolved: string, circular = false) =>
+    ({
+      resolved,
+      circular,
+      dependencyTypes: ['local', 'import'],
+    }) as IModule['dependencies'][0]
+
+  it('renders type-only edges as dashed', () => {
+    const modules = [
+      moduleAt('src/foo/a.ts', [typeOnlyDep('src/foo/b.ts')]),
+      moduleAt('src/foo/b.ts'),
+    ]
+
+    const { edges } = buildGraph({
+      modules,
+      selectedPaths: ['src/foo/a.ts', 'src/foo/b.ts'],
+      expandedFolders: new Set(['src', 'src/foo']),
+      ...noopArgs,
+    })
+
+    const edge = edges.find((item) => item.source === 'src/foo/a.ts')
+    expect(edge?.style?.strokeDasharray).toBe('6 4')
+    expect(edge?.data?.typeOnly).toBe(true)
+  })
+
+  it('renders mixed type-only and value imports as solid', () => {
+    const modules = [
+      moduleAt('src/foo/a.ts', [
+        typeOnlyDep('src/foo/b.ts'),
+        valueDep('src/foo/b.ts'),
+      ]),
+      moduleAt('src/foo/b.ts'),
+    ]
+
+    const { edges } = buildGraph({
+      modules,
+      selectedPaths: ['src/foo/a.ts', 'src/foo/b.ts'],
+      expandedFolders: new Set(['src', 'src/foo']),
+      ...noopArgs,
+    })
+
+    const edge = edges.find((item) => item.source === 'src/foo/a.ts')
+    expect(edge?.style?.strokeDasharray).toBeUndefined()
+    expect(edge?.data?.typeOnly).toBe(false)
+  })
+
+  it('does not mark nodes red for type-only circular dependencies', () => {
+    const modules = [
+      moduleAt('src/foo/a.ts', [typeOnlyDep('src/foo/b.ts', true)]),
+      moduleAt('src/foo/b.ts', [typeOnlyDep('src/foo/a.ts', true)]),
+    ]
+
+    const { nodes, edges } = buildGraph({
+      modules,
+      selectedPaths: ['src/foo/a.ts', 'src/foo/b.ts'],
+      expandedFolders: new Set(['src', 'src/foo']),
+      ...noopArgs,
+    })
+
+    const fileNode = nodes.find((node) => node.id === 'src/foo/a.ts')
+    expect(fileNode?.data.circular).toBeFalsy()
+
+    const edge = edges.find((item) => item.source === 'src/foo/a.ts')
+    expect(edge?.style?.stroke).toBe(TYPE_ONLY_CIRCULAR_EDGE_COLOR)
+    expect(edge?.style?.strokeDasharray).toBe('6 4')
+  })
+
+  it('uses bright red for value circular and dashed light red for type-only circular', () => {
+    const modules = [
+      moduleAt('src/foo/a.ts', [valueDep('src/foo/b.ts', true)]),
+      moduleAt('src/foo/b.ts'),
+    ]
+
+    const { nodes, edges } = buildGraph({
+      modules,
+      selectedPaths: ['src/foo/a.ts', 'src/foo/b.ts'],
+      expandedFolders: new Set(['src', 'src/foo']),
+      ...noopArgs,
+    })
+
+    expect(nodes.find((node) => node.id === 'src/foo/a.ts')?.data.circular).toBe(true)
+    expect(edges.find((item) => item.source === 'src/foo/a.ts')?.style?.stroke).toBe(
+      CIRCULAR_EDGE_COLOR,
+    )
+    expect(edges.find((item) => item.source === 'src/foo/a.ts')?.style?.strokeDasharray).toBeUndefined()
   })
 })
 

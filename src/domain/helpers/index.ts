@@ -1,4 +1,5 @@
 export * from './pathUtils'
 export * from './folderExpansion'
 export * from './dependencyCruiserState'
+export * from './dependencyUtils'
 export * from './moduleRelations'
