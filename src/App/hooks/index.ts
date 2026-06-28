@@ -1,4 +1,5 @@
 export * from './useAppCommands'
 export * from './useAppOrchestration'
 export * from './useCruiseResult'
+export * from './useIgnorePatterns'
 export * from './useInitialDependencyCruiserState'

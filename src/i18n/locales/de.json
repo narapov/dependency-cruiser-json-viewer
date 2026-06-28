@@ -1,8 +1,7 @@
 {
   "app": {
     "title": "Deps Viewer",
-    "modulesCount_one": "{{count}} Modul",
-    "modulesCount_other": "{{count}} Module",
+    "modulesCountFiltered": "{{filtered}}/{{total}} module",
     "loadErrorTitle": "Cruise-Ergebnis konnte nicht geladen werden",
     "searchFiles": "Dateien suchen ({{shortcut}})",
     "commandPalette": "Befehlspalette (F1)"
@@ -37,6 +36,7 @@
     "selectAll": "Alles auswählen",
     "setTheme": "Design festlegen",
     "setLanguage": "Sprache festlegen",
+    "setIgnorePatterns": "Ignorier-Muster festlegen",
     "unselectAll": "Auswahl aufheben"
   },
   "quickPick": {
@@ -87,5 +87,14 @@
   },
   "statusBar": {
     "noSelection": "Keine Auswahl"
+  },
+  "ignorePatterns": {
+    "setIgnorePatterns": "Ignorier-Muster festlegen",
+    "description": "Ein Glob-Muster pro Zeile. Übereinstimmende Module werden aus Graphen und Dateibaum ausgeschlossen.",
+    "docsLink": "Dokumentation zu Glob-Mustern",
+    "placeholder": "**/*.test.ts\n**/*.stories.tsx",
+    "examples": "Beispiele",
+    "save": "Speichern",
+    "cancel": "Abbrechen"
   }
 }

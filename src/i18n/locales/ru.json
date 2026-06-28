@@ -1,10 +1,7 @@
 {
   "app": {
     "title": "Deps Viewer",
-    "modulesCount_one": "{{count}} модуль",
-    "modulesCount_few": "{{count}} модуля",
-    "modulesCount_many": "{{count}} модулей",
-    "modulesCount_other": "{{count}} модулей",
+    "modulesCountFiltered": "{{filtered}}/{{total}} модулей",
     "loadErrorTitle": "Не удалось загрузить результат cruise",
     "searchFiles": "Поиск файлов ({{shortcut}})",
     "commandPalette": "Палитра команд (F1)"
@@ -39,6 +36,7 @@
     "selectAll": "Выбрать всё",
     "setTheme": "Выбрать тему",
     "setLanguage": "Выбрать язык",
+    "setIgnorePatterns": "Настроить игнорируемые паттерны",
     "unselectAll": "Снять выделение"
   },
   "quickPick": {
@@ -89,5 +87,14 @@
   },
   "statusBar": {
     "noSelection": "Ничего не выбрано"
+  },
+  "ignorePatterns": {
+    "setIgnorePatterns": "Игнорируемые паттерны",
+    "description": "Один glob-паттерн на строку. Совпадающие модули исключаются из графа и дерева файлов.",
+    "docsLink": "Документация по glob-паттернам",
+    "placeholder": "**/*.test.ts\n**/*.stories.tsx",
+    "examples": "Примеры",
+    "save": "Сохранить",
+    "cancel": "Отмена"
   }
 }

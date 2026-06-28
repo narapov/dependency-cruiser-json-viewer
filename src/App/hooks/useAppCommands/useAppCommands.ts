@@ -21,9 +21,15 @@ interface UseAppCommandsOptions {
   orch: AppCommandsOrchestration
   openThemePicker: () => void
   openLanguagePicker: () => void
+  openIgnorePatterns: () => void
 }
 
-export function useAppCommands({ orch, openThemePicker, openLanguagePicker }: UseAppCommandsOptions): QuickPickCommand[] {
+export function useAppCommands({
+  orch,
+  openThemePicker,
+  openLanguagePicker,
+  openIgnorePatterns,
+}: UseAppCommandsOptions): QuickPickCommand[] {
   const { t } = useTranslation()
   const {
     clearLocalStorage,
@@ -80,6 +86,11 @@ export function useAppCommands({ orch, openThemePicker, openLanguagePicker }: Us
     { id: 'selectAll', label: t('commands.selectAll'), onExecute: selectAll },
     { id: 'setTheme', label: t('commands.setTheme'), onExecute: openThemePicker },
     { id: 'setLanguage', label: t('commands.setLanguage'), onExecute: openLanguagePicker },
+    {
+      id: 'setIgnorePatterns',
+      label: t('commands.setIgnorePatterns'),
+      onExecute: openIgnorePatterns,
+    },
     { id: 'unselectAll', label: t('commands.unselectAll'), onExecute: unselectAll },
   ].sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: 'base' }))
 }

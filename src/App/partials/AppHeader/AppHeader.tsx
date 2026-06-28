@@ -1,3 +1,4 @@
+import FilterAltOutlined from '@mui/icons-material/FilterAltOutlined'
 import TerminalOutlined from '@mui/icons-material/TerminalOutlined'
 import SearchOutlined from '@mui/icons-material/SearchOutlined'
 import Box from '@mui/material/Box'
@@ -10,6 +11,12 @@ import { formatShortcut } from '../../../Shared'
 import { LanguageSelector } from '../LanguageSelector'
 import { ThemeSelector } from '../ThemeSelector'
 
+const headerSecondaryTextSx = {
+  marginLeft: 1.5,
+  fontWeight: 400,
+  color: 'rgba(255, 255, 255, 0.65)',
+} as const
+
 const headerIconButtonSx = {
   color: 'rgba(255, 255, 255, 0.75)',
   p: 0.5,
@@ -19,19 +26,26 @@ const headerIconButtonSx = {
 } as const
 
 interface AppHeaderProps {
-  moduleCount?: number
+  filteredModulesCount?: number
+  totalModulesCount?: number
+  hasIgnoredModules?: boolean
   onOpenFileSearch: () => void
   onOpenCommandPalette: () => void
+  onOpenIgnorePatterns: () => void
 }
 
 export function AppHeader({
-  moduleCount,
+  filteredModulesCount,
+  totalModulesCount,
+  hasIgnoredModules = false,
   onOpenFileSearch,
   onOpenCommandPalette,
+  onOpenIgnorePatterns,
 }: AppHeaderProps) {
   const { t } = useTranslation()
   const searchFilesLabel = t('app.searchFiles', { shortcut: formatShortcut('P') })
   const commandPaletteLabel = t('app.commandPalette')
+  const ignorePatternsLabel = t('ignorePatterns.setIgnorePatterns')
 
   return (
     <Box
@@ -42,22 +56,40 @@ export function AppHeader({
         width: '100%',
       }}
     >
-      <Typography
-        variant="subtitle1"
-        component="h1"
-        sx={{ margin: 0, color: 'common.white', fontWeight: 600 }}
-      >
-        {t('app.title')}
-        {moduleCount != null && (
-          <Typography
-            component="span"
-            variant="body2"
-            sx={{ marginLeft: 1.5, fontWeight: 400, color: 'rgba(255, 255, 255, 0.65)' }}
-          >
-            {t('app.modulesCount', { count: moduleCount })}
+      <Stack direction="row" spacing={0} sx={{ alignItems: 'center' }}>
+        <Typography
+          variant="subtitle1"
+          component="h1"
+          sx={{ margin: 0, color: 'common.white', fontWeight: 600 }}
+        >
+          {t('app.title')}
+        </Typography>
+        {filteredModulesCount != null && totalModulesCount != null && (
+          <Typography component="span" variant="body2" sx={headerSecondaryTextSx}>
+            {t('app.modulesCountFiltered', {
+              filtered: filteredModulesCount,
+              total: totalModulesCount,
+            })}
           </Typography>
         )}
-      </Typography>
+        <Tooltip title={ignorePatternsLabel}>
+          <IconButton
+            size="small"
+            onClick={onOpenIgnorePatterns}
+            aria-label={ignorePatternsLabel}
+            sx={{
+              ...headerIconButtonSx,
+              ml: 0.25,
+              color: hasIgnoredModules ? 'warning.light' : headerIconButtonSx.color,
+              '&:hover': hasIgnoredModules
+                ? { bgcolor: 'rgba(255, 183, 77, 0.16)' }
+                : headerIconButtonSx['&:hover'],
+            }}
+          >
+            <FilterAltOutlined sx={{ fontSize: 16 }} />
+          </IconButton>
+        </Tooltip>
+      </Stack>
       <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
         <Tooltip title={searchFilesLabel}>
           <IconButton

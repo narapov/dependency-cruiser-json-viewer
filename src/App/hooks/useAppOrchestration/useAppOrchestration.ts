@@ -26,6 +26,13 @@ function isFolderPath(path: string, sources: string[]): boolean {
   return sources.some((source) => source.startsWith(`${path}/`))
 }
 
+function isPathInSources(path: string, sources: string[]): boolean {
+  if (sources.includes(path)) {
+    return true
+  }
+  return isFolderPath(path, sources)
+}
+
 function resolveActiveFolderPath(activePath: string | null, sources: string[]): string | null {
   if (activePath == null) return null
   if (isFolderPath(activePath, sources)) return activePath
@@ -43,6 +50,13 @@ export function useAppOrchestration({
   const [activePath, setActivePath] = useState<string | null>(null)
   const [dependenciesPath, setDependenciesPath] = useState<string | null>(null)
 
+  const resolvedActivePath =
+    activePath != null && isPathInSources(activePath, sources) ? activePath : null
+  const resolvedDependenciesPath =
+    dependenciesPath != null && isPathInSources(dependenciesPath, sources)
+      ? dependenciesPath
+      : null
+
   const treeData = useMemo(() => buildFileTree(sources), [sources])
   const allKeys = useMemo(() => getAllKeys(treeData), [treeData])
   const allFolderKeys = useMemo(() => getAllFolderKeys(treeData), [treeData])
@@ -55,7 +69,7 @@ export function useAppOrchestration({
     setExpandedKeys(initialDependencyCruiserState.expandedKeys)
   }, [initialDependencyCruiserState.expandedKeys])
 
-  const panelOpen = dependenciesPath != null
+  const panelOpen = resolvedDependenciesPath != null
 
   const updateExpandedKeys = (updater: string[] | ((prev: string[]) => string[])) => {
     setExpandedKeys((prev) => {
@@ -115,9 +129,9 @@ export function useAppOrchestration({
   }
 
   const focusActivePath = () => {
-    if (activePath == null) return
-    activatePath(activePath)
-    focusPath(activePath)
+    if (resolvedActivePath == null) return
+    activatePath(resolvedActivePath)
+    focusPath(resolvedActivePath)
   }
 
   const clearLocalStorage = () => {
@@ -135,17 +149,17 @@ export function useAppOrchestration({
   }
 
   const copyActive = () => {
-    if (activePath == null) return
-    void copyToClipboard(activePath)
+    if (resolvedActivePath == null) return
+    void copyToClipboard(resolvedActivePath)
   }
 
   const viewActiveDependencies = () => {
-    if (activePath == null) return
-    handleShowDependencies(activePath)
+    if (resolvedActivePath == null) return
+    handleShowDependencies(resolvedActivePath)
   }
 
   const expandActive = () => {
-    const folderPath = resolveActiveFolderPath(activePath, sources)
+    const folderPath = resolveActiveFolderPath(resolvedActivePath, sources)
     if (folderPath == null) return
     updateExpandedKeys((keys) =>
       keys.includes(folderPath) ? keys : [...keys, folderPath],
@@ -153,13 +167,13 @@ export function useAppOrchestration({
   }
 
   const expandActiveRecursive = () => {
-    const folderPath = resolveActiveFolderPath(activePath, sources)
+    const folderPath = resolveActiveFolderPath(resolvedActivePath, sources)
     if (folderPath == null) return
     expandRecursive(folderPath)
   }
 
   const collapseActive = () => {
-    const folderPath = resolveActiveFolderPath(activePath, sources)
+    const folderPath = resolveActiveFolderPath(resolvedActivePath, sources)
     if (folderPath == null) return
     updateExpandedKeys((keys) =>
       keys.includes(folderPath) ? keys.filter((key) => key !== folderPath) : keys,
@@ -167,7 +181,7 @@ export function useAppOrchestration({
   }
 
   const collapseActiveRecursive = () => {
-    const folderPath = resolveActiveFolderPath(activePath, sources)
+    const folderPath = resolveActiveFolderPath(resolvedActivePath, sources)
     if (folderPath == null) return
     updateExpandedKeys((keys) => removeSubtreeFolderKeys(keys, folderPath, sources))
   }
@@ -196,8 +210,8 @@ export function useAppOrchestration({
     panelOpen,
     selectedPaths,
     expandedKeys,
-    activePath,
-    dependenciesPath,
+    activePath: resolvedActivePath,
+    dependenciesPath: resolvedDependenciesPath,
     setSelectedPaths,
     updateExpandedKeys,
     activatePath,

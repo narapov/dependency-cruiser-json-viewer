@@ -9,9 +9,11 @@ import { DependencyGraph, type DependencyGraphHandle } from '../components/Depen
 import { DependencyPanel } from '../components/DependencyPanel'
 import { FileTree, type FileTreeHandle } from '../components/FileTree'
 import { QuickPick, type QuickPickHandle } from '../components/QuickPick'
-import { useAppCommands, useAppOrchestration, useCruiseResult, useInitialDependencyCruiserState } from './hooks'
+import { filterCruiseResult, countIgnoredModules } from '../domain'
+import { useAppCommands, useAppOrchestration, useCruiseResult, useIgnorePatterns, useInitialDependencyCruiserState } from './hooks'
 import { AppHeader } from './partials/AppHeader'
 import { AppStatusBar } from './partials/AppStatusBar'
+import { IgnorePatternsDialog } from './partials/IgnorePatternsDialog'
 import { LanguagePickerDialog } from './partials/LanguagePickerDialog'
 import { ThemePickerDialog } from './partials/ThemePickerDialog'
 import styles from './App.module.css'
@@ -19,15 +21,27 @@ import styles from './App.module.css'
 function App() {
   const { t } = useTranslation()
   const { data, isPending, isError, error } = useCruiseResult()
+  const { patterns, setPatterns } = useIgnorePatterns()
   const fileTreeRef = useRef<FileTreeHandle>(null)
   const graphRef = useRef<DependencyGraphHandle>(null)
   const quickPickRef = useRef<QuickPickHandle>(null)
   const [themePickerOpen, setThemePickerOpen] = useState(false)
   const [languagePickerOpen, setLanguagePickerOpen] = useState(false)
+  const [ignorePatternsOpen, setIgnorePatternsOpen] = useState(false)
+
+  const filteredData = useMemo(
+    () => (data ? filterCruiseResult(data, patterns) : undefined),
+    [data, patterns],
+  )
+
+  const ignoredModuleCount = useMemo(
+    () => (data ? countIgnoredModules(data, patterns) : 0),
+    [data, patterns],
+  )
 
   const sources = useMemo(
-    () => data?.modules.map((module) => module.source) ?? [],
-    [data?.modules],
+    () => filteredData?.modules.map((module) => module.source) ?? [],
+    [filteredData?.modules],
   )
   const initialDependencyCruiserState = useInitialDependencyCruiserState(sources)
   const orch = useAppOrchestration({ sources, fileTreeRef, graphRef, initialDependencyCruiserState })
@@ -35,6 +49,7 @@ function App() {
     orch,
     openThemePicker: () => setThemePickerOpen(true),
     openLanguagePicker: () => setLanguagePickerOpen(true),
+    openIgnorePatterns: () => setIgnorePatternsOpen(true),
   })
 
   if (isPending) {
@@ -56,15 +71,20 @@ function App() {
     )
   }
 
-  const modules: IModule[] = data.modules
+  const modules: IModule[] = filteredData!.modules
+  const totalModulesCount = data.modules.length
+  const filteredModulesCount = modules.length
 
   return (
     <AppLayout
       header={
         <AppHeader
-          moduleCount={data.summary.totalCruised}
+          filteredModulesCount={filteredModulesCount}
+          totalModulesCount={totalModulesCount}
+          hasIgnoredModules={ignoredModuleCount > 0}
           onOpenFileSearch={() => quickPickRef.current?.openFileMode()}
           onOpenCommandPalette={() => quickPickRef.current?.openCommandMode()}
+          onOpenIgnorePatterns={() => setIgnorePatternsOpen(true)}
         />
       }
       sidebar={
@@ -122,6 +142,12 @@ function App() {
           <LanguagePickerDialog
             open={languagePickerOpen}
             onClose={() => setLanguagePickerOpen(false)}
+          />
+          <IgnorePatternsDialog
+            open={ignorePatternsOpen}
+            patterns={patterns}
+            onClose={() => setIgnorePatternsOpen(false)}
+            onSave={setPatterns}
           />
         </>
       }

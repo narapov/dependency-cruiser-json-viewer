@@ -1,8 +1,7 @@
 {
   "app": {
     "title": "Deps Viewer",
-    "modulesCount_one": "{{count}} module",
-    "modulesCount_other": "{{count}} modules",
+    "modulesCountFiltered": "{{filtered}}/{{total}} modules",
     "loadErrorTitle": "Échec du chargement du résultat cruise",
     "searchFiles": "Rechercher des fichiers ({{shortcut}})",
     "commandPalette": "Palette de commandes (F1)"
@@ -37,6 +36,7 @@
     "selectAll": "Tout sélectionner",
     "setTheme": "Choisir le thème",
     "setLanguage": "Choisir la langue",
+    "setIgnorePatterns": "Définir les motifs d'exclusion",
     "unselectAll": "Tout désélectionner"
   },
   "quickPick": {
@@ -87,5 +87,14 @@
   },
   "statusBar": {
     "noSelection": "Aucune sélection"
+  },
+  "ignorePatterns": {
+    "setIgnorePatterns": "Définir les motifs d'exclusion",
+    "description": "Un motif glob par ligne. Les modules correspondants sont exclus du graphe et de l'arborescence.",
+    "docsLink": "Documentation des motifs glob",
+    "placeholder": "**/*.test.ts\n**/*.stories.tsx",
+    "examples": "Exemples",
+    "save": "Enregistrer",
+    "cancel": "Annuler"
   }
 }
