@@ -14,28 +14,9 @@
 
 .container :global(.react-flow__minimap) {
   margin: 12px;
-  border: 1px solid #d9d9d9;
+  border: 1px solid var(--mui-palette-divider);
   border-radius: 4px;
   overflow: hidden;
-}
-
-.legend {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin: 12px;
-  padding: 8px 10px;
-  background: #fff;
-  border: 1px solid #d9d9d9;
-  border-radius: 4px;
-  font-size: 12px;
-  pointer-events: none;
-}
-
-.legendItem {
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
 .legendLine {
@@ -57,82 +38,22 @@
   border-top-color: var(--graph-circular-type-only);
 }
 
-.empty {
-  display: grid;
-  place-items: center;
-  height: 100%;
-  color: #8c8c8c;
-  font-size: 14px;
-}
-
-.node {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  background: #fff;
-  border: 1px solid #d9d9d9;
-  border-radius: 4px;
-  font-size: 12px;
-  min-width: 120px;
-  box-sizing: border-box;
-  width: 100%;
-}
-
-.highlighted {
-  border-color: blue;
-  box-shadow: 0 0 0 1px blue;
-}
-
-.circular {
-  border-color: var(--graph-circular);
-}
-
-.label {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.icon {
-  font-size: 12px;
-  color: #8c8c8c;
-  flex-shrink: 0;
-}
-
-.group {
-  width: 100%;
-  height: 100%;
-  box-sizing: border-box;
-  border: 2px solid #d9d9d9;
-  border-radius: 8px;
-  position: relative;
-  pointer-events: none;
-}
-
-.groupHighlighted {
-  border-color: blue;
-  box-shadow: 0 0 0 1px blue;
-}
-
-.groupHeader {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  width: 100%;
-  height: 36px;
-  padding: 0 10px;
-  border-bottom: 1px solid #f0f0f0;
-  background: #fafafa;
-  border-radius: 6px 6px 0 0;
-  font-size: 12px;
-  box-sizing: border-box;
-  pointer-events: auto;
-  cursor: pointer;
-}
-
 .groupHandle {
   top: 18px;
   transform: none;
   pointer-events: auto;
+}
+
+.match {
+  font-weight: 600;
+  color: var(--mui-palette-text-primary);
+  background: var(--mui-palette-primary-light);
+  border-radius: 2px;
+}
+
+.pathMatch {
+  font-weight: 600;
+  color: var(--mui-palette-text-secondary);
+  background: color-mix(in srgb, var(--mui-palette-primary-light) 65%, transparent);
+  border-radius: 2px;
 }

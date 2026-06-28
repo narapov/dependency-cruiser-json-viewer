@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box'
 import {
   CIRCULAR_EDGE_COLOR,
   INCOMING_EDGE_COLOR,
@@ -17,30 +18,42 @@ const dashedItems = [
   {
     label: 'Type-only',
     className: styles.legendLineDashed,
-    style: undefined,
   },
   {
     label: 'Type-only circular',
     className: `${styles.legendLineDashed} ${styles.legendLineDashedTypeOnlyCircular}`,
-    style: undefined,
   },
 ] as const
 
 export function GraphLegend() {
   return (
-    <div className={styles.legend}>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 0.75,
+        m: 1.5,
+        p: '8px 10px',
+        bgcolor: 'background.paper',
+        border: 1,
+        borderColor: 'divider',
+        borderRadius: 1,
+        fontSize: 12,
+        pointerEvents: 'none',
+      }}
+    >
       {solidItems.map(({ color, label }) => (
-        <div key={label} className={styles.legendItem}>
+        <Box key={label} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <span className={styles.legendLine} style={{ backgroundColor: color }} />
           <span>{label}</span>
-        </div>
+        </Box>
       ))}
       {dashedItems.map(({ label, className }) => (
-        <div key={label} className={styles.legendItem}>
+        <Box key={label} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <span className={className} />
           <span>{label}</span>
-        </div>
+        </Box>
       ))}
-    </div>
+    </Box>
   )
 }

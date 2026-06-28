@@ -34,7 +34,7 @@ export function AppStatusBar({
         px: 1,
         borderTop: 1,
         borderColor: 'divider',
-        bgcolor: 'grey.50',
+        bgcolor: 'background.default',
         overflow: 'hidden',
       }}
     >

@@ -1,10 +1,11 @@
+import Box from '@mui/material/Box'
 import Dialog from '@mui/material/Dialog'
 import DialogContent from '@mui/material/DialogContent'
 import TextField from '@mui/material/TextField'
+import Typography from '@mui/material/Typography'
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { useQuickOpenShortcut, useQuickOpenState } from './hooks'
 import { QuickOpenResultsList } from './partials/QuickOpenResultsList'
-import styles from './QuickOpen.module.css'
 
 export type { QuickOpenResultItem } from './QuickOpen.types'
 
@@ -85,24 +86,33 @@ export function QuickOpen({ sources, onSelect }: QuickOpenProps) {
       slotProps={{ transition: { onEntered: focusInput } }}
     >
       <DialogContent sx={{ p: 0 }}>
-        <div className={styles.panel} onKeyDown={handleKeyDown}>
-          <div className={styles.inputWrap}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            maxHeight: 'min(420px, 70vh)',
+            overflow: 'hidden',
+          }}
+          onKeyDown={handleKeyDown}
+        >
+          <Box sx={{ px: 1.5, pt: 1.5, pb: 1, borderBottom: 1, borderColor: 'divider' }}>
             <TextField
               inputRef={inputRef}
-              className={styles.input}
               placeholder="Search files and folders..."
               value={query}
               onChange={(event) => handleQueryChange(event.target.value)}
               variant="standard"
               fullWidth
               autoComplete="off"
-              slotProps={{ htmlInput: { spellCheck: 'false' } }}
+              slotProps={{ htmlInput: { spellCheck: 'false', style: { fontSize: 14 } } }}
             />
-          </div>
+          </Box>
           {results.length === 0 ? (
-            <div className={styles.empty}>
+            <Typography
+              sx={{ px: 1.5, py: 2, color: 'text.secondary', fontSize: 13, textAlign: 'center' }}
+            >
               {query.trim() ? 'No matching files or folders' : 'Start typing to search'}
-            </div>
+            </Typography>
           ) : (
             <QuickOpenResultsList
               results={results}
@@ -113,7 +123,7 @@ export function QuickOpen({ sources, onSelect }: QuickOpenProps) {
               onSelect={handleSelect}
             />
           )}
-        </div>
+        </Box>
       </DialogContent>
     </Dialog>
   )

@@ -11,7 +11,7 @@ import { muiTheme } from './Shared/styles/muiTheme'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ThemeProvider theme={muiTheme}>
+    <ThemeProvider theme={muiTheme} modeStorageKey="theme" defaultMode="system">
       <CssBaseline />
       <QueryClientProvider client={queryClient}>
         <App />

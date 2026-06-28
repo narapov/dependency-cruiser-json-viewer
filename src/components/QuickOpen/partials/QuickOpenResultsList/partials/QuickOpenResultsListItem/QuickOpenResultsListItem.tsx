@@ -1,8 +1,12 @@
+import Box from '@mui/material/Box'
+import { getParentPath } from '../../../../../../domain'
 import { MaterialFileSystemIcon } from '../../../../../../Shared'
-import { useMemo, type ReactNode } from 'react'
+import { useMemo } from 'react'
 import type { QuickOpenResultItem } from '../../../../QuickOpen.types'
-import styles from '../../../../QuickOpen.module.css'
 import { computeQuickOpenHighlight } from './helpers/computeQuickOpenHighlight'
+import { QuickOpenHighlightedText } from './partials/QuickOpenHighlightedText'
+import { QuickOpenNameHighlight } from './partials/QuickOpenNameHighlight'
+import { QuickOpenPathHighlight } from './partials/QuickOpenPathHighlight'
 
 interface QuickOpenResultsListItemProps {
   item: QuickOpenResultItem
@@ -10,47 +14,6 @@ interface QuickOpenResultsListItemProps {
   highlighted: boolean
   onMouseEnter: () => void
   onClick: () => void
-}
-
-function getParentPath(key: string): string | null {
-  const lastSlash = key.lastIndexOf('/')
-  if (lastSlash === -1) return null
-  return key.slice(0, lastSlash)
-}
-
-function renderHighlighted(text: string, indexes: number[], className: string): ReactNode {
-  if (indexes.length === 0) {
-    return text
-  }
-
-  const sorted = [...indexes].sort((a, b) => a - b)
-  const segments: ReactNode[] = []
-  let position = 0
-
-  for (let index = 0; index < sorted.length; index++) {
-    const start = sorted[index]
-    let end = start + 1
-    while (index + 1 < sorted.length && sorted[index + 1] === end) {
-      end++
-      index++
-    }
-
-    if (position < start) {
-      segments.push(text.slice(position, start))
-    }
-    segments.push(
-      <span key={start} className={className}>
-        {text.slice(start, end)}
-      </span>,
-    )
-    position = end
-  }
-
-  if (position < text.length) {
-    segments.push(text.slice(position))
-  }
-
-  return <>{segments}</>
 }
 
 export function QuickOpenResultsListItem({
@@ -67,25 +30,51 @@ export function QuickOpenResultsListItem({
   )
 
   return (
-    <li
-      className={`${styles.item} ${highlighted ? styles.itemHighlighted : ''}`}
+    <Box
+      component="li"
       role="option"
       aria-selected={highlighted}
       onMouseEnter={onMouseEnter}
       onMouseDown={(event) => event.preventDefault()}
       onClick={onClick}
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1,
+        px: 1.5,
+        py: 0.75,
+        cursor: 'pointer',
+        fontSize: 13,
+        lineHeight: '20px',
+        bgcolor: highlighted ? 'action.selected' : 'transparent',
+        '&:hover': {
+          bgcolor: 'action.hover',
+        },
+      }}
     >
-      <span className={styles.icon}>
+      <Box component="span" sx={{ flexShrink: 0, color: 'text.secondary', fontSize: 14 }}>
         <MaterialFileSystemIcon name={item.name} isFolder={item.isFolder} />
-      </span>
-      <span className={styles.name}>
-        {renderHighlighted(item.name, nameIndexes, styles.match)}
-      </span>
+      </Box>
+      <QuickOpenHighlightedText
+        text={item.name}
+        indexes={nameIndexes}
+        Highlight={QuickOpenNameHighlight}
+        sx={{ flexShrink: 0, color: 'text.primary' }}
+      />
       {parentPath && (
-        <span className={styles.path}>
-          {renderHighlighted(parentPath, pathIndexes, styles.pathMatch)}
-        </span>
+        <QuickOpenHighlightedText
+          text={parentPath}
+          indexes={pathIndexes}
+          Highlight={QuickOpenPathHighlight}
+          sx={{
+            minWidth: 0,
+            overflow: 'hidden',
+            color: 'text.secondary',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        />
       )}
-    </li>
+    </Box>
   )
 }

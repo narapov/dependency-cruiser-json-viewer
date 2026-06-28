@@ -1,0 +1,7 @@
+import { styled } from '@mui/material/styles'
+import { highlightBaseStyles } from '../../helpers/highlightBaseStyles'
+
+export const QuickOpenNameHighlight = styled('span')(({ theme }) => ({
+  ...highlightBaseStyles(theme),
+  color: theme.palette.text.primary,
+}))

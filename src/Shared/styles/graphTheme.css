@@ -7,3 +7,8 @@
   --graph-selected: #fa8c16;
   --graph-default-edge: #b1b1b7;
 }
+
+[data-dark] {
+  --graph-circular-background: #2a1215;
+  --graph-default-edge: #6b6b70;
+}

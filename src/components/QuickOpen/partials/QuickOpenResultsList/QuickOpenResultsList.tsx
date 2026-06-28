@@ -1,6 +1,6 @@
+import Box from '@mui/material/Box'
 import type { RefObject } from 'react'
 import type { QuickOpenResultItem } from '../../QuickOpen.types'
-import styles from '../../QuickOpen.module.css'
 import { QuickOpenResultsListItem } from './partials/QuickOpenResultsListItem'
 
 interface QuickOpenResultsListProps {
@@ -21,7 +21,20 @@ export function QuickOpenResultsList({
   onSelect,
 }: QuickOpenResultsListProps) {
   return (
-    <ul ref={listRef} className={styles.list} role="listbox">
+    <Box
+      component="ul"
+      ref={listRef}
+      role="listbox"
+      sx={{
+        flex: 1,
+        minHeight: 0,
+        m: 0,
+        py: 0.5,
+        px: 0,
+        listStyle: 'none',
+        overflowY: 'auto',
+      }}
+    >
       {results.map((item, index) => (
         <QuickOpenResultsListItem
           key={item.key}
@@ -32,6 +45,6 @@ export function QuickOpenResultsList({
           onClick={() => onSelect(item.key)}
         />
       ))}
-    </ul>
+    </Box>
   )
 }

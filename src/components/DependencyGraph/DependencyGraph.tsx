@@ -1,4 +1,6 @@
+import Box from '@mui/material/Box'
 import { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState, type Ref } from 'react'
+import { useColorScheme, useTheme } from '@mui/material/styles'
 import {
   Background,
   Controls,
@@ -66,6 +68,9 @@ function DependencyGraphInner({
   onActivePathChange,
   activePath,
 }: DependencyGraphInnerProps) {
+  const theme = useTheme()
+  const { mode, systemMode } = useColorScheme()
+  const resolvedMode = mode === 'system' ? systemMode : mode
   const { fitView, getNode, getZoom } = useReactFlow()
   const prevExpandedKey = useRef<string | null>(null)
   const pendingFocusPath = useRef<string | null>(null)
@@ -75,7 +80,11 @@ function DependencyGraphInner({
   )
 
   const sources = modules.map((module) => module.source)
-  const folderColors = assignFolderColors(sources)
+  const colorMode = resolvedMode ?? 'light'
+  const folderColors = useMemo(
+    () => assignFolderColors(sources, colorMode),
+    [sources, colorMode],
+  )
   const expandedFolders = new Set(expandedKeys)
 
   const { nodes, edges } = buildGraph({
@@ -244,14 +253,22 @@ function DependencyGraphInner({
     if (node.type === 'folder') {
       return (node.data as FolderNodeData).backgroundColor
     }
-    return '#fff'
+    return theme.palette.background.paper
   }
 
   if (selectedPaths.length === 0) {
     return (
-      <div className={styles.empty}>
+      <Box
+        sx={{
+          display: 'grid',
+          placeItems: 'center',
+          height: '100%',
+          color: 'text.secondary',
+          fontSize: 14,
+        }}
+      >
         Select files or folders to view dependencies
-      </div>
+      </Box>
     )
   }
 
@@ -262,6 +279,7 @@ function DependencyGraphInner({
         edges={displayEdges}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
+        colorMode={mode ?? 'system'}
         onNodeClick={onNodeClick}
         onEdgeClick={onEdgeClick}
         onPaneClick={onPaneClick}
@@ -275,7 +293,7 @@ function DependencyGraphInner({
         fitView
         proOptions={{ hideAttribution: true }}
       >
-        <Background />
+        <Background color={theme.palette.divider} />
         <Panel position="top-right">
           <GraphLegend />
         </Panel>
@@ -284,8 +302,6 @@ function DependencyGraphInner({
           pannable
           zoomable
           nodeColor={nodeColor}
-          nodeStrokeColor="#d9d9d9"
-          maskColor="rgba(240, 240, 240, 0.6)"
           style={{ width: 160, height: 120 }}
         />
         <Controls position="bottom-right" showInteractive={false} />

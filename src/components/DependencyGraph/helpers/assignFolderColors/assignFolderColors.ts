@@ -1,5 +1,16 @@
-const SATURATION = 32
-const LIGHTNESS_OPTIONS = [95, 94, 96] as const
+export type FolderColorMode = 'light' | 'dark'
+
+const FOLDER_COLOR_PALETTE = {
+  light: {
+    saturation: 32,
+    lightnessOptions: [95, 94, 96] as const,
+  },
+  dark: {
+    saturation: 36,
+    lightnessOptions: [22, 20, 24] as const,
+  },
+} as const
+
 const GOLDEN_ANGLE = 137.508
 const MIN_PARENT_HUE_DELTA = 40
 const MIN_SIBLING_HUE_DELTA = 25
@@ -56,9 +67,10 @@ function pickHue(
   return candidate
 }
 
-function toPastelColor(hue: number, lightnessIndex: number): string {
-  const lightness = LIGHTNESS_OPTIONS[lightnessIndex % LIGHTNESS_OPTIONS.length]
-  return `hsl(${Math.round(hue)}, ${SATURATION}%, ${lightness}%)`
+function toPastelColor(hue: number, lightnessIndex: number, mode: FolderColorMode): string {
+  const { saturation, lightnessOptions } = FOLDER_COLOR_PALETTE[mode]
+  const lightness = lightnessOptions[lightnessIndex % lightnessOptions.length]
+  return `hsl(${Math.round(hue)}, ${saturation}%, ${lightness}%)`
 }
 
 function assignColorsRecursive(
@@ -66,6 +78,7 @@ function assignColorsRecursive(
   parentHue: number | null,
   childrenIndex: Map<string, string[]>,
   colors: Map<string, string>,
+  mode: FolderColorMode,
 ): void {
   const childPaths = childrenIndex.get(parentKey) ?? []
   const usedHues: number[] = []
@@ -74,15 +87,18 @@ function assignColorsRecursive(
     const path = childPaths[i]
     const hue = pickHue(parentHue, i, usedHues)
     usedHues.push(hue)
-    colors.set(path, toPastelColor(hue, i))
-    assignColorsRecursive(path, hue, childrenIndex, colors)
+    colors.set(path, toPastelColor(hue, i, mode))
+    assignColorsRecursive(path, hue, childrenIndex, colors, mode)
   }
 }
 
-export function assignFolderColors(sources: string[]): ReadonlyMap<string, string> {
+export function assignFolderColors(
+  sources: string[],
+  mode: FolderColorMode = 'light',
+): ReadonlyMap<string, string> {
   const childrenIndex = buildChildrenIndex(sources)
   const colors = new Map<string, string>()
-  assignColorsRecursive('', null, childrenIndex, colors)
+  assignColorsRecursive('', null, childrenIndex, colors, mode)
   return colors
 }
 
