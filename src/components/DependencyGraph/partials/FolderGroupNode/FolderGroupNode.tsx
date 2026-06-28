@@ -2,6 +2,7 @@ import { MaterialFileSystemIcon } from '../../../../Shared'
 import { Handle, Position, type NodeProps } from '@xyflow/react'
 import type { FolderGroupNodeData } from '../../DependencyGraph.types'
 import styles from '../../DependencyGraph.module.css'
+import { FolderExpandToggle } from '../FolderExpandToggle'
 import { NodeContextMenu } from '../NodeContextMenu'
 
 export function FolderGroupNode({ data }: NodeProps) {
@@ -24,17 +25,13 @@ export function FolderGroupNode({ data }: NodeProps) {
         onShowDependencies={onShowDependencies}
       >
         <div className={styles.groupHeader}>
-          <button
-            type="button"
-            className={styles.toggle}
-            aria-label={expanded ? 'Collapse folder' : 'Expand folder'}
+          <FolderExpandToggle
+            expanded={expanded}
             onClick={(e) => {
               e.stopPropagation()
               onToggle(path)
             }}
-          >
-            {expanded ? '▼' : '▶'}
-          </button>
+          />
           <MaterialFileSystemIcon
             name={label}
             isFolder

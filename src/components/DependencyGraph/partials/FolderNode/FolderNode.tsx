@@ -2,6 +2,7 @@ import { Handle, Position, type NodeProps } from '@xyflow/react'
 import { CIRCULAR_NODE_BACKGROUND, MaterialFileSystemIcon } from '../../../../Shared'
 import type { FolderNodeData } from '../../DependencyGraph.types'
 import styles from '../../DependencyGraph.module.css'
+import { FolderExpandToggle } from '../FolderExpandToggle'
 import { NodeContextMenu } from '../NodeContextMenu'
 
 export function FolderNode({ data }: NodeProps) {
@@ -23,17 +24,13 @@ export function FolderNode({ data }: NodeProps) {
         style={{ backgroundColor: circular ? CIRCULAR_NODE_BACKGROUND : backgroundColor }}
       >
         <Handle type="target" position={Position.Left} />
-        <button
-          type="button"
-          className={styles.toggle}
-          aria-label={expanded ? 'Collapse folder' : 'Expand folder'}
+        <FolderExpandToggle
+          expanded={expanded}
           onClick={(e) => {
             e.stopPropagation()
             onToggle(path)
           }}
-        >
-          {expanded ? '▼' : '▶'}
-        </button>
+        />
         <MaterialFileSystemIcon
           name={label}
           isFolder
