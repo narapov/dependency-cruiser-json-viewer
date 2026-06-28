@@ -101,7 +101,7 @@ export function QuickOpen({ sources, onSelect }: QuickOpenProps) {
               placeholder="Search files and folders..."
               value={query}
               onChange={(event) => handleQueryChange(event.target.value)}
-              variant="standard"
+              variant="outlined"
               fullWidth
               autoComplete="off"
               slotProps={{ htmlInput: { spellCheck: 'false', style: { fontSize: 14 } } }}
