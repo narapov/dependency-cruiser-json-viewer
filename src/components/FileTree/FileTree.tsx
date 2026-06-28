@@ -168,7 +168,13 @@ export function FileTree({
             sx={{
               minWidth: 'max-content',
               width: '100%',
-              '& .MuiTreeItem-content': { borderRadius: 0 },
+              '& .MuiTreeItem-content': (theme) => ({
+                borderRadius: 0,
+                py: 0,
+                pr: 0.5,
+                paddingLeft: `calc(${theme.spacing(0.5)} + var(--TreeView-itemChildrenIndentation) * var(--TreeView-itemDepth))`,
+                gap: 0.5,
+              }),
             }}
             apiRef={apiRef}
             items={treeData}
