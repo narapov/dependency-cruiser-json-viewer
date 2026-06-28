@@ -3,21 +3,22 @@ import Dialog from '@mui/material/Dialog'
 import DialogContent from '@mui/material/DialogContent'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
-import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
+import { useEffect, useImperativeHandle, useRef, useState, type KeyboardEvent, type Ref } from 'react'
 import { useQuickPickShortcut, useQuickPickState } from './hooks'
 import { QuickPickCommandResultsList } from './partials/QuickPickCommandResultsList'
 import { QuickPickFileResultsList } from './partials/QuickPickFileResultsList'
-import type { QuickPickCommand } from './types'
+import type { QuickPickCommand, QuickPickHandle } from './types'
 
-export type { QuickPickCommand, QuickPickFileItem } from './QuickPick.types'
+export type { QuickPickCommand, QuickPickFileItem, QuickPickHandle } from './QuickPick.types'
 
 interface QuickPickProps {
+  ref?: Ref<QuickPickHandle>
   sources: string[]
   commands: QuickPickCommand[]
   onSelectPath: (path: string) => void
 }
 
-export function QuickPick({ sources, commands, onSelectPath }: QuickPickProps) {
+export function QuickPick({ ref, sources, commands, onSelectPath }: QuickPickProps) {
   const {
     open,
     query,
@@ -29,12 +30,18 @@ export function QuickPick({ sources, commands, onSelectPath }: QuickPickProps) {
     commandResults,
     results,
     close,
+    openFileMode,
     toggleFileMode,
     openCommandMode,
   } = useQuickPickState(sources, commands)
   const [highlightedIndex, setHighlightedIndex] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLUListElement>(null)
+
+  useImperativeHandle(ref, () => ({
+    openFileMode,
+    openCommandMode,
+  }))
 
   useQuickPickShortcut({ open, onToggleFileMode: toggleFileMode, onOpenCommandMode: openCommandMode })
 

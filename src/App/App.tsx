@@ -7,7 +7,7 @@ import { AppLayout } from '../components/AppLayout'
 import { DependencyGraph, type DependencyGraphHandle } from '../components/DependencyGraph'
 import { DependencyPanel } from '../components/DependencyPanel'
 import { FileTree, type FileTreeHandle } from '../components/FileTree'
-import { QuickPick } from '../components/QuickPick'
+import { QuickPick, type QuickPickHandle } from '../components/QuickPick'
 import { useAppCommands, useAppOrchestration, useCruiseResult, useInitialDependencyCruiserState } from './hooks'
 import { AppHeader } from './partials/AppHeader'
 import { AppStatusBar } from './partials/AppStatusBar'
@@ -18,6 +18,7 @@ function App() {
   const { data, isPending, isError, error } = useCruiseResult()
   const fileTreeRef = useRef<FileTreeHandle>(null)
   const graphRef = useRef<DependencyGraphHandle>(null)
+  const quickPickRef = useRef<QuickPickHandle>(null)
   const [themePickerOpen, setThemePickerOpen] = useState(false)
 
   const sources = useMemo(
@@ -54,7 +55,13 @@ function App() {
 
   return (
     <AppLayout
-      header={<AppHeader moduleCount={data.summary.totalCruised} />}
+      header={
+        <AppHeader
+          moduleCount={data.summary.totalCruised}
+          onOpenFileSearch={() => quickPickRef.current?.openFileMode()}
+          onOpenCommandPalette={() => quickPickRef.current?.openCommandMode()}
+        />
+      }
       sidebar={
         <FileTree
           ref={fileTreeRef}
@@ -98,6 +105,7 @@ function App() {
       overlay={
         <>
           <QuickPick
+            ref={quickPickRef}
             sources={sources}
             commands={commands}
             onSelectPath={orch.handleQuickPickSelect}

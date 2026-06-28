@@ -1,8 +1,35 @@
+import TerminalOutlined from '@mui/icons-material/TerminalOutlined'
+import SearchOutlined from '@mui/icons-material/SearchOutlined'
 import Box from '@mui/material/Box'
+import IconButton from '@mui/material/IconButton'
+import Stack from '@mui/material/Stack'
+import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
+import { formatShortcut } from '../../../Shared'
 import { ThemeSelector } from '../ThemeSelector'
 
-export function AppHeader({ moduleCount }: { moduleCount?: number }) {
+const headerIconButtonSx = {
+  color: 'rgba(255, 255, 255, 0.75)',
+  p: 0.5,
+  '&:hover': {
+    bgcolor: 'rgba(255, 255, 255, 0.08)',
+  },
+} as const
+
+interface AppHeaderProps {
+  moduleCount?: number
+  onOpenFileSearch: () => void
+  onOpenCommandPalette: () => void
+}
+
+export function AppHeader({
+  moduleCount,
+  onOpenFileSearch,
+  onOpenCommandPalette,
+}: AppHeaderProps) {
+  const searchFilesLabel = `Search Files (${formatShortcut('P')})`
+  const commandPaletteLabel = 'Command Palette (F1)'
+
   return (
     <Box
       sx={{
@@ -28,7 +55,29 @@ export function AppHeader({ moduleCount }: { moduleCount?: number }) {
           </Typography>
         )}
       </Typography>
-      <ThemeSelector />
+      <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
+        <Tooltip title={searchFilesLabel}>
+          <IconButton
+            size="small"
+            aria-label={searchFilesLabel}
+            onClick={onOpenFileSearch}
+            sx={headerIconButtonSx}
+          >
+            <SearchOutlined sx={{ fontSize: 18 }} />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title={commandPaletteLabel}>
+          <IconButton
+            size="small"
+            aria-label={commandPaletteLabel}
+            onClick={onOpenCommandPalette}
+            sx={headerIconButtonSx}
+          >
+            <TerminalOutlined sx={{ fontSize: 18 }} />
+          </IconButton>
+        </Tooltip>
+        <ThemeSelector />
+      </Stack>
     </Box>
   )
 }
