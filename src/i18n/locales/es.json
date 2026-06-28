@@ -1,0 +1,101 @@
+{
+  "app": {
+    "title": "Deps Viewer",
+    "modulesCountFiltered": "{{filtered}}/{{total}} módulos",
+    "loadErrorTitle": "Error al cargar el resultado cruise",
+    "searchFiles": "Buscar archivos ({{shortcut}})",
+    "commandPalette": "Paleta de comandos (F1)"
+  },
+  "actions": {
+    "copyPath": "Copiar ruta",
+    "showInGraph": "Mostrar en el grafo",
+    "showInGraphAndFileTree": "Mostrar en el grafo y el árbol de archivos",
+    "showInFileTree": "Mostrar en el árbol de archivos",
+    "viewDependencies": "Ver dependencias",
+    "expand": "Expandir",
+    "collapse": "Contraer",
+    "expandFolder": "Expandir carpeta",
+    "collapseFolder": "Contraer carpeta",
+    "expandRecursive": "Expandir recursivamente",
+    "close": "Cerrar",
+    "highlight": "Resaltar",
+    "clear": "Limpiar"
+  },
+  "commands": {
+    "clearLocalStorage": "Borrar almacenamiento local",
+    "showActive": "Mostrar elemento activo",
+    "copyActive": "Copiar elemento activo",
+    "viewActiveDependencies": "Ver dependencias del elemento activo",
+    "expandActive": "Expandir elemento activo",
+    "expandActiveRecursive": "Expandir recursivamente el elemento activo",
+    "collapseActive": "Contraer elemento activo",
+    "collapseActiveRecursive": "Contraer recursivamente el elemento activo",
+    "clearAllHighlights": "Limpiar todos los resaltados",
+    "expandAllRecursive": "Expandir todo recursivamente",
+    "collapseAllRecursive": "Contraer todo recursivamente",
+    "selectAll": "Seleccionar todo",
+    "setTheme": "Elegir tema",
+    "setLanguage": "Elegir idioma",
+    "setIgnorePatterns": "Configurar patrones de exclusión",
+    "unselectAll": "Deseleccionar todo"
+  },
+  "quickPick": {
+    "commandPlaceholder": "Escribe el nombre de un comando para ejecutar...",
+    "filePlaceholder": "Buscar archivos y carpetas...",
+    "noMatchingCommands": "No hay comandos coincidentes",
+    "typeToFilterCommands": "Escribe para filtrar comandos",
+    "noMatchingFiles": "No hay archivos o carpetas coincidentes",
+    "startTyping": "Empieza a escribir para buscar"
+  },
+  "theme": {
+    "label": "Tema",
+    "light": "Claro",
+    "dark": "Oscuro",
+    "system": "Sistema",
+    "setTheme": "Elegir tema",
+    "themeOptions": "Opciones de tema",
+    "active": "(activo)"
+  },
+  "language": {
+    "label": "Idioma",
+    "setLanguage": "Elegir idioma",
+    "languageOptions": "Opciones de idioma",
+    "en": "English",
+    "fr": "Français",
+    "de": "Deutsch",
+    "ru": "Русский",
+    "es": "Español",
+    "active": "(activo)"
+  },
+  "graph": {
+    "legend": {
+      "incoming": "Entrante",
+      "outgoing": "Saliente",
+      "circular": "Circular",
+      "selected": "Seleccionado",
+      "typeOnly": "Solo tipo",
+      "typeOnlyCircular": "Solo tipo circular"
+    },
+    "edgeMenu": {
+      "viewSource": "Ver origen",
+      "viewTarget": "Ver destino"
+    }
+  },
+  "dependencyPanel": {
+    "dependencies": "Dependencias",
+    "dependents": "Dependientes",
+    "noDependencies": "Sin dependencias"
+  },
+  "statusBar": {
+    "noSelection": "Sin selección"
+  },
+  "ignorePatterns": {
+    "setIgnorePatterns": "Configurar patrones de exclusión",
+    "description": "Un patrón glob por línea. Los módulos coincidentes se excluyen del grafo y del árbol de archivos.",
+    "docsLink": "Documentación de patrones glob",
+    "placeholder": "**/*.test.ts\n**/*.stories.tsx",
+    "examples": "Ejemplos",
+    "save": "Guardar",
+    "cancel": "Cancelar"
+  }
+}

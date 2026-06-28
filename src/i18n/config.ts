@@ -2,14 +2,15 @@ import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 import de from './locales/de.json'
 import en from './locales/en.json'
+import es from './locales/es.json'
 import fr from './locales/fr.json'
 import ru from './locales/ru.json'
-import { LANGUAGE_STORAGE_KEY, type LanguageOptionValue } from './languageOptions'
+import { LANGUAGE_STORAGE_KEY, SUPPORTED_LANGUAGES, type LanguageOptionValue } from './languageOptions'
 
 function getStoredLanguage(): LanguageOptionValue {
   const stored = localStorage.getItem(LANGUAGE_STORAGE_KEY)
-  if (stored === 'en' || stored === 'fr' || stored === 'de' || stored === 'ru') {
-    return stored
+  if (stored != null && SUPPORTED_LANGUAGES.includes(stored as LanguageOptionValue)) {
+    return stored as LanguageOptionValue
   }
   return 'en'
 }
@@ -27,10 +28,11 @@ void i18n.use(initReactI18next).init({
     fr: { translation: fr },
     de: { translation: de },
     ru: { translation: ru },
+    es: { translation: es },
   },
   lng: initialLanguage,
   fallbackLng: 'en',
-  supportedLngs: ['en', 'fr', 'de', 'ru'],
+  supportedLngs: SUPPORTED_LANGUAGES,
   interpolation: {
     escapeValue: false,
   },
