@@ -20,6 +20,7 @@ import { FileNode } from './partials/FileNode'
 import { FolderGroupNode } from './partials/FolderGroupNode'
 import { FolderNode } from './partials/FolderNode'
 import { GraphLegend } from './partials/GraphLegend'
+import { useEdgeContextMenu } from './hooks'
 import styles from './DependencyGraph.module.css'
 
 const nodeTypes = {
@@ -97,6 +98,10 @@ function DependencyGraphInner({
     fitView({ nodes: [{ id: path }], padding: 0.5, duration: 300 })
   }
 
+  const { onEdgeContextMenu, edgeContextMenu } = useEdgeContextMenu({
+    onFocusNode: runFocusNode,
+  })
+
   useImperativeHandle(imperativeRef, () => ({
     focusNode(path: string) {
       requestAnimationFrame(() => runFocusNode(path))
@@ -154,6 +159,10 @@ function DependencyGraphInner({
     setSelectedEdgeId(null)
   }
 
+  const onPaneContextMenu = (event: React.MouseEvent | MouseEvent) => {
+    event.preventDefault()
+  }
+
   const onNodeClick = (_: React.MouseEvent, node: Node) => {
     setSelectedEdgeId(null)
     if (activePath === node.id) {
@@ -181,36 +190,42 @@ function DependencyGraphInner({
   }
 
   return (
-    <ReactFlow
-      nodes={nodes}
-      edges={displayEdges}
-      nodeTypes={nodeTypes}
-      edgeTypes={edgeTypes}
-      onNodeClick={onNodeClick}
-      onEdgeClick={onEdgeClick}
-      onPaneClick={onPaneClick}
-      nodesDraggable={false}
-      minZoom={0.01}
-      maxZoom={20}
-      onlyRenderVisibleElements
-      fitView
-      proOptions={{ hideAttribution: true }}
-    >
-      <Background />
-      <Panel position="top-right">
-        <GraphLegend />
-      </Panel>
-      <MiniMap
-        position="bottom-left"
-        pannable
-        zoomable
-        nodeColor={nodeColor}
-        nodeStrokeColor="#d9d9d9"
-        maskColor="rgba(240, 240, 240, 0.6)"
-        style={{ width: 160, height: 120 }}
-      />
-      <Controls position="bottom-right" showInteractive={false} />
-    </ReactFlow>
+    <>
+      <ReactFlow
+        nodes={nodes}
+        edges={displayEdges}
+        nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
+        onNodeClick={onNodeClick}
+        onEdgeClick={onEdgeClick}
+        onPaneClick={onPaneClick}
+        onPaneContextMenu={onPaneContextMenu}
+        onNodeContextMenu={onPaneContextMenu}
+        onEdgeContextMenu={onEdgeContextMenu}
+        nodesDraggable={false}
+        minZoom={0.01}
+        maxZoom={20}
+        onlyRenderVisibleElements
+        fitView
+        proOptions={{ hideAttribution: true }}
+      >
+        <Background />
+        <Panel position="top-right">
+          <GraphLegend />
+        </Panel>
+        <MiniMap
+          position="bottom-left"
+          pannable
+          zoomable
+          nodeColor={nodeColor}
+          nodeStrokeColor="#d9d9d9"
+          maskColor="rgba(240, 240, 240, 0.6)"
+          style={{ width: 160, height: 120 }}
+        />
+        <Controls position="bottom-right" showInteractive={false} />
+      </ReactFlow>
+      {edgeContextMenu}
+    </>
   )
 }
 

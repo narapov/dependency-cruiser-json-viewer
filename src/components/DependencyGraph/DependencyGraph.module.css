@@ -147,11 +147,7 @@
   font-size: 12px;
   box-sizing: border-box;
   pointer-events: auto;
-  cursor: grab;
-}
-
-.groupHeader:active {
-  cursor: grabbing;
+  cursor: pointer;
 }
 
 .groupHandle {

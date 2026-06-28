@@ -635,6 +635,8 @@ export function buildGraph({
           data,
           parentId,
           draggable: false,
+          selectable: false,
+          style: { pointerEvents: 'none' },
           zIndex: -1,
         })
       } else {
