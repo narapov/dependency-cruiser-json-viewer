@@ -6,6 +6,7 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 import js from '@eslint/js';
+import pluginQuery from '@tanstack/eslint-plugin-query';
 
 const sharedImportRestrictions = {
   patterns: [
@@ -46,6 +47,7 @@ const sharedImportRestrictions = {
 
 export default defineConfig([
   globalIgnores(['dist']),
+  ...pluginQuery.configs['flat/recommended'],
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
@@ -56,6 +58,22 @@ export default defineConfig([
     ],
     languageOptions: {
       globals: globals.browser,
+    },
+    rules: {
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
+    },
+  },
+  {
+    files: ['**/*Context.tsx', '**/*.context.tsx'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
     },
   },
   {
