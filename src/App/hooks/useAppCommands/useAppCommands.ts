@@ -22,6 +22,7 @@ interface UseAppCommandsOptions {
   openThemePicker: () => void
   openLanguagePicker: () => void
   openIgnorePatterns: () => void
+  openLoadCruiseResult: () => void
 }
 
 export function useAppCommands({
@@ -29,6 +30,7 @@ export function useAppCommands({
   openThemePicker,
   openLanguagePicker,
   openIgnorePatterns,
+  openLoadCruiseResult,
 }: UseAppCommandsOptions): QuickPickCommand[] {
   const { t } = useTranslation()
   const {
@@ -90,6 +92,11 @@ export function useAppCommands({
       id: 'setIgnorePatterns',
       label: t('commands.setIgnorePatterns'),
       onExecute: openIgnorePatterns,
+    },
+    {
+      id: 'loadCruiseResult',
+      label: t('commands.loadCruiseResult'),
+      onExecute: openLoadCruiseResult,
     },
     { id: 'unselectAll', label: t('commands.unselectAll'), onExecute: unselectAll },
   ].sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: 'base' }))

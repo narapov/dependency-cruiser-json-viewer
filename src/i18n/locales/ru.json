@@ -3,6 +3,11 @@
     "title": "Dependency Cruiser JSON Viewer",
     "modulesCountFiltered": "{{filtered}}/{{total}} модулей",
     "loadErrorTitle": "Не удалось загрузить результат cruise",
+    "noCruiseResultTitle": "Результат cruise не загружен",
+    "noCruiseResultMessage": "Загрузите JSON-файл dependency-cruiser, чтобы исследовать проект.",
+    "loadCruiseResult": "Загрузить JSON-файл",
+    "invalidCruiseResultJson": "Выбранный файл не является корректным JSON.",
+    "invalidCruiseResultFormat": "Выбранный файл не похож на результат cruise dependency-cruiser.",
     "searchFiles": "Поиск файлов ({{shortcut}})",
     "commandPalette": "Палитра команд (F1)"
   },
@@ -37,6 +42,7 @@
     "setTheme": "Выбрать тему",
     "setLanguage": "Выбрать язык",
     "setIgnorePatterns": "Настроить игнорируемые паттерны",
+    "loadCruiseResult": "Загрузить JSON dependency-cruiser",
     "unselectAll": "Снять выделение"
   },
   "quickPick": {

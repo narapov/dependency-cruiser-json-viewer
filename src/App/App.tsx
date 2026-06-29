@@ -1,6 +1,9 @@
 import Alert from '@mui/material/Alert'
 import AlertTitle from '@mui/material/AlertTitle'
+import Button from '@mui/material/Button'
 import CircularProgress from '@mui/material/CircularProgress'
+import Snackbar from '@mui/material/Snackbar'
+import Stack from '@mui/material/Stack'
 import type { IModule } from 'dependency-cruiser'
 import { useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -9,10 +12,11 @@ import { DependencyGraph, type DependencyGraphHandle } from '../components/Depen
 import { DependencyPanel } from '../components/DependencyPanel'
 import { FileTree, type FileTreeHandle } from '../components/FileTree'
 import { QuickPick, type QuickPickHandle } from '../components/QuickPick'
-import { filterCruiseResult, countIgnoredModules } from '../domain'
-import { useAppCommands, useAppOrchestration, useCruiseResult, useIgnorePatterns, useInitialDependencyCruiserState } from './hooks'
+import { filterCruiseResult, countIgnoredModules, CruiseResultParseError } from '../domain'
+import { useAppCommands, useAppOrchestration, useCruiseResult, useIgnorePatterns, useInitialDependencyCruiserState, useLoadCruiseResultFromFile } from './hooks'
 import { AppHeader } from './partials/AppHeader'
 import { AppStatusBar } from './partials/AppStatusBar'
+import { CruiseResultFileInput } from './partials/CruiseResultFileInput'
 import { IgnorePatternsDialog } from './partials/IgnorePatternsDialog'
 import { LanguagePickerDialog } from './partials/LanguagePickerDialog'
 import { ThemePickerDialog } from './partials/ThemePickerDialog'
@@ -21,6 +25,8 @@ import styles from './App.module.css'
 function App() {
   const { t } = useTranslation()
   const { data, isPending, isError, error } = useCruiseResult()
+  const { fileInputRef, openFilePicker, handleFileSelect, fileLoadError, clearFileLoadError } =
+    useLoadCruiseResultFromFile()
   const { patterns, setPatterns } = useIgnorePatterns()
   const fileTreeRef = useRef<FileTreeHandle>(null)
   const graphRef = useRef<DependencyGraphHandle>(null)
@@ -50,6 +56,7 @@ function App() {
     openThemePicker: () => setThemePickerOpen(true),
     openLanguagePicker: () => setLanguagePickerOpen(true),
     openIgnorePatterns: () => setIgnorePatternsOpen(true),
+    openLoadCruiseResult: openFilePicker,
   })
 
   if (isPending) {
@@ -61,12 +68,32 @@ function App() {
   }
 
   if (isError) {
+    const apiParseError =
+      error instanceof CruiseResultParseError ? t('app.invalidCruiseResultFormat') : null
+
     return (
       <div className={styles.centered}>
-        <Alert severity="error">
-          <AlertTitle>{t('app.loadErrorTitle')}</AlertTitle>
-          {error.message}
-        </Alert>
+        <Stack spacing={2} sx={{ maxWidth: 480, px: 2, alignItems: 'center' }}>
+          {apiParseError ? (
+            <Alert severity="error" sx={{ width: '100%' }}>
+              {apiParseError}
+            </Alert>
+          ) : (
+            <Alert severity="info" sx={{ width: '100%' }}>
+              <AlertTitle>{t('app.noCruiseResultTitle')}</AlertTitle>
+              {t('app.noCruiseResultMessage')}
+            </Alert>
+          )}
+          {fileLoadError && (
+            <Alert severity="error" sx={{ width: '100%' }}>
+              {fileLoadError}
+            </Alert>
+          )}
+          <Button variant="contained" onClick={openFilePicker}>
+            {t('app.loadCruiseResult')}
+          </Button>
+          <CruiseResultFileInput ref={fileInputRef} onFileSelect={handleFileSelect} />
+        </Stack>
       </div>
     )
   }
@@ -135,6 +162,17 @@ function App() {
             commands={commands}
             onSelectPath={orch.handleQuickPickSelect}
           />
+          <CruiseResultFileInput ref={fileInputRef} onFileSelect={handleFileSelect} />
+          <Snackbar
+            open={Boolean(fileLoadError)}
+            autoHideDuration={6000}
+            onClose={clearFileLoadError}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+          >
+            <Alert severity="error" onClose={clearFileLoadError} sx={{ width: '100%' }}>
+              {fileLoadError}
+            </Alert>
+          </Snackbar>
           <ThemePickerDialog
             open={themePickerOpen}
             onClose={() => setThemePickerOpen(false)}

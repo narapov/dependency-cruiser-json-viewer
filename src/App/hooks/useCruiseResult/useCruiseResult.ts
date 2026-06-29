@@ -6,5 +6,6 @@ export function useCruiseResult() {
     queryKey: ['cruise-result'],
     queryFn: ({ signal }) => fetchCruiseResult(signal),
     staleTime: Infinity,
+    retry: false,
   })
 }
