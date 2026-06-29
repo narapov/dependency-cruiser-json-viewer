@@ -34,6 +34,11 @@ Interactive browser viewer for [dependency-cruiser](https://github.com/sverweij/
 4. `npm run depcruise` (if imports or layer boundaries changed)
 5. `npm run build` (for non-trivial changes)
 
+**Git hooks** (installed automatically via `npm install` → `prepare`):
+
+- **pre-commit:** ESLint (`--fix --max-warnings=0`) and Prettier on staged files via lint-staged
+- **commit-msg:** Conventional Commits enforced by commitlint (`type: subject`, e.g. `feat: add quick pick`)
+
 ## Architecture
 
 ```
@@ -45,7 +50,7 @@ Shared  →  no App, components, or domain
 
 ### Import rules
 
-Enforced by `eslint.config.js` and `.dependency-cruiser.cjs`:
+Enforced by `eslint.config.ts` and `.dependency-cruiser.cjs`:
 
 - Import **`domain`** only from `src/domain/index.ts` (e.g. `from '../../domain'`).
 - Import **`Shared`** only from `src/Shared/index.ts` (e.g. `from '../../Shared'`).
@@ -100,6 +105,7 @@ Feature/
 - React Compiler is enabled — avoid manual `useMemo`/`useCallback` unless there is a clear reason.
 - UI: prefer MUI components and APIs (`@mui/material`, `@mui/icons-material`, `@mui/x-tree-view`) over custom markup or third-party UI libraries. Use CSS modules (`*.module.css`) only for layout or styling that MUI does not cover.
 - Naming: PascalCase folders/files for components, `useXxx` for hooks, barrel `index.ts` in each folder.
+- Tool config files (Prettier, commitlint, Vite, etc.): prefer `*.config.ts` when the tool supports TypeScript; use `.cjs` / `.mjs` only when the tool requires it or TS is not supported.
 - Keep diffs minimal — do not change unrelated code.
 
 ## Testing
