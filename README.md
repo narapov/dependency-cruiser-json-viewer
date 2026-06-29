@@ -32,17 +32,17 @@ The CLI serves the built viewer from `dist` and streams your JSON file at `/crui
 
 ## Scripts
 
-| Command | Description |
-|---|---|
-| `npm run dev` | Start Vite dev server |
-| `npm run build` | Type-check and build for production |
-| `npm run preview` | Preview production build |
-| `npm run test` | Run tests |
-| `npm run lint` | Run ESLint |
-| `npm run depcruise` | Run dependency-cruiser on `src` |
-| `npm run depcruise:json` | Export cruise result to `public/cruise-result.json` |
-| `npm run depcruise:json-for-cli` | Export cruise result to `test-data/cruise-result.json` |
-| `npm run cli:verify` | Build, refresh `test-data/cruise-result.json`, start CLI server |
+| Command                          | Description                                                     |
+| -------------------------------- | --------------------------------------------------------------- |
+| `npm run dev`                    | Start Vite dev server                                           |
+| `npm run build`                  | Type-check and build for production                             |
+| `npm run preview`                | Preview production build                                        |
+| `npm run test`                   | Run tests                                                       |
+| `npm run lint`                   | Run ESLint                                                      |
+| `npm run depcruise`              | Run dependency-cruiser on `src`                                 |
+| `npm run depcruise:json`         | Export cruise result to `public/cruise-result.json`             |
+| `npm run depcruise:json-for-cli` | Export cruise result to `test-data/cruise-result.json`          |
+| `npm run cli:verify`             | Build, refresh `test-data/cruise-result.json`, start CLI server |
 
 ## License
 

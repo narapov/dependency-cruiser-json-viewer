@@ -1,1 +1,1 @@
-export * from './parseCruiseResultJson'
+export * from './parseCruiseResultJson';

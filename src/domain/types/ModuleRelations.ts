@@ -1,11 +1,11 @@
 export interface ModuleRelation {
-  path: string
-  circular: boolean
-  typeOnly: boolean
-  typeOnlyCircular: boolean
+  path: string;
+  circular: boolean;
+  typeOnly: boolean;
+  typeOnlyCircular: boolean;
 }
 
 export interface ModuleRelations {
-  dependencies: ModuleRelation[]
-  dependents: ModuleRelation[]
+  dependencies: ModuleRelation[];
+  dependents: ModuleRelation[];
 }

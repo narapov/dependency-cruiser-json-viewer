@@ -1,1 +1,1 @@
-export * from './getAncestorKeys'
+export * from './getAncestorKeys';

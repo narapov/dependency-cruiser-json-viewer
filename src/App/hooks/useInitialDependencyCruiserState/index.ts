@@ -1,1 +1,1 @@
-export * from './useInitialDependencyCruiserState'
+export * from './useInitialDependencyCruiserState';

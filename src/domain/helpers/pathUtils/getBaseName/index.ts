@@ -1,1 +1,1 @@
-export * from './getBaseName'
+export * from './getBaseName';

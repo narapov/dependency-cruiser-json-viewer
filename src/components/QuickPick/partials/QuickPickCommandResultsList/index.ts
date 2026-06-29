@@ -1,1 +1,1 @@
-export * from './QuickPickCommandResultsList'
+export * from './QuickPickCommandResultsList';

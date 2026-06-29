@@ -1,1 +1,1 @@
-export * from './countIgnoredModules'
+export * from './countIgnoredModules';

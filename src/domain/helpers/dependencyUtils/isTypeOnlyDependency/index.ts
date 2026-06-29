@@ -1,1 +1,1 @@
-export * from './isTypeOnlyDependency'
+export * from './isTypeOnlyDependency';

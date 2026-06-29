@@ -1,4 +1,4 @@
 export interface DependencyEdgeData {
-  title: string
-  typeOnly?: boolean
+  title: string;
+  typeOnly?: boolean;
 }

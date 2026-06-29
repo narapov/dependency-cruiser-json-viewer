@@ -1,28 +1,29 @@
-import { useTranslation } from 'react-i18next'
-import type { QuickPickCommand } from '../../../components/QuickPick'
+import { useTranslation } from 'react-i18next';
+
+import type { QuickPickCommand } from '../../../components/QuickPick';
 
 export interface AppCommandsOrchestration {
-  clearLocalStorage: () => void
-  focusActivePath: () => void
-  copyActive: () => void
-  viewActiveDependencies: () => void
-  expandActive: () => void
-  expandActiveRecursive: () => void
-  collapseActive: () => void
-  collapseActiveRecursive: () => void
-  clearAllHighlights: () => void
-  expandAllRecursive: () => void
-  collapseAllRecursive: () => void
-  selectAll: () => void
-  unselectAll: () => void
+  clearLocalStorage: () => void;
+  focusActivePath: () => void;
+  copyActive: () => void;
+  viewActiveDependencies: () => void;
+  expandActive: () => void;
+  expandActiveRecursive: () => void;
+  collapseActive: () => void;
+  collapseActiveRecursive: () => void;
+  clearAllHighlights: () => void;
+  expandAllRecursive: () => void;
+  collapseAllRecursive: () => void;
+  selectAll: () => void;
+  unselectAll: () => void;
 }
 
 interface UseAppCommandsOptions {
-  orch: AppCommandsOrchestration
-  openThemePicker: () => void
-  openLanguagePicker: () => void
-  openIgnorePatterns: () => void
-  openLoadCruiseResult: () => void
+  orch: AppCommandsOrchestration;
+  openThemePicker: () => void;
+  openLanguagePicker: () => void;
+  openIgnorePatterns: () => void;
+  openLoadCruiseResult: () => void;
 }
 
 export function useAppCommands({
@@ -32,7 +33,7 @@ export function useAppCommands({
   openIgnorePatterns,
   openLoadCruiseResult,
 }: UseAppCommandsOptions): QuickPickCommand[] {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
   const {
     clearLocalStorage,
     focusActivePath,
@@ -47,7 +48,7 @@ export function useAppCommands({
     collapseAllRecursive,
     selectAll,
     unselectAll,
-  } = orch
+  } = orch;
 
   return [
     { id: 'clearLocalStorage', label: t('commands.clearLocalStorage'), onExecute: clearLocalStorage },
@@ -99,5 +100,5 @@ export function useAppCommands({
       onExecute: openLoadCruiseResult,
     },
     { id: 'unselectAll', label: t('commands.unselectAll'), onExecute: unselectAll },
-  ].sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: 'base' }))
+  ].sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: 'base' }));
 }

@@ -1,4 +1,4 @@
-import Box from '@mui/material/Box'
+import Box from '@mui/material/Box';
 
 const pathSx = {
   display: 'block',
@@ -10,11 +10,11 @@ const pathSx = {
   textAlign: 'left',
   fontFamily: 'monospace',
   fontSize: 12,
-} as const
+} as const;
 
 interface EdgeContextMenuHeaderProps {
-  source: string
-  target: string
+  source: string;
+  target: string;
 }
 
 export function EdgeContextMenuHeader({ source, target }: EdgeContextMenuHeaderProps) {
@@ -50,5 +50,5 @@ export function EdgeContextMenuHeader({ source, target }: EdgeContextMenuHeaderP
         {target}
       </Box>
     </Box>
-  )
+  );
 }

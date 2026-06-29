@@ -1,1 +1,1 @@
-export * from './useEdgeContextMenu'
+export * from './useEdgeContextMenu';

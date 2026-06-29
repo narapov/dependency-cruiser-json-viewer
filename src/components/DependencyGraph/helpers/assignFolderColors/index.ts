@@ -1,1 +1,1 @@
-export * from './assignFolderColors'
+export * from './assignFolderColors';

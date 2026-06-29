@@ -1,20 +1,17 @@
-import Box from '@mui/material/Box'
-import type { ReactNode } from 'react'
-import {
-  PANEL_MIN_WIDTH,
-  SIDEBAR_MIN_WIDTH,
-  useDependenciesPanelWidth,
-  useSidebarWidth,
-} from './hooks'
+import type { ReactNode } from 'react';
+
+import Box from '@mui/material/Box';
+
+import { PANEL_MIN_WIDTH, SIDEBAR_MIN_WIDTH, useDependenciesPanelWidth, useSidebarWidth } from './hooks';
 
 export interface AppLayoutProps {
-  header: ReactNode
-  sidebar: ReactNode
-  main: ReactNode
-  panel: ReactNode | null
-  overlay: ReactNode | null
-  footer: ReactNode
-  panelOpen: boolean
+  header: ReactNode;
+  sidebar: ReactNode;
+  main: ReactNode;
+  panel: ReactNode | null;
+  overlay: ReactNode | null;
+  footer: ReactNode;
+  panelOpen: boolean;
 }
 
 const shellSx = {
@@ -27,12 +24,12 @@ const shellSx = {
     "footer footer footer"
   `,
   gridTemplateRows: 'auto 1fr auto',
-} as const
+} as const;
 
 const regionSx = {
   minHeight: 0,
   overflow: 'hidden',
-} as const
+} as const;
 
 const resizeHandleSx = {
   position: 'absolute',
@@ -45,20 +42,11 @@ const resizeHandleSx = {
   '&:hover': {
     bgcolor: 'action.hover',
   },
-} as const
+} as const;
 
-export function AppLayout({
-  header,
-  sidebar,
-  main,
-  panel,
-  overlay,
-  footer,
-  panelOpen,
-}: AppLayoutProps) {
-  const { sidebarWidth, onResizePointerDown } = useSidebarWidth()
-  const { width: panelWidth, onResizePointerDown: onPanelResizePointerDown } =
-    useDependenciesPanelWidth(sidebarWidth)
+export function AppLayout({ header, sidebar, main, panel, overlay, footer, panelOpen }: AppLayoutProps) {
+  const { sidebarWidth, onResizePointerDown } = useSidebarWidth();
+  const { width: panelWidth, onResizePointerDown: onPanelResizePointerDown } = useDependenciesPanelWidth(sidebarWidth);
 
   return (
     <Box
@@ -136,5 +124,5 @@ export function AppLayout({
         {footer}
       </Box>
     </Box>
-  )
+  );
 }

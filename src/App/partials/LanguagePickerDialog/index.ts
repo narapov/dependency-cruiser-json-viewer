@@ -1,1 +1,1 @@
-export * from './LanguagePickerDialog'
+export * from './LanguagePickerDialog';

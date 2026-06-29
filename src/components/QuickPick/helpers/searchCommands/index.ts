@@ -1,1 +1,1 @@
-export * from './searchCommands'
+export * from './searchCommands';

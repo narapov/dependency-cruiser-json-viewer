@@ -1,1 +1,1 @@
-export * from './ThemePickerDialog'
+export * from './ThemePickerDialog';

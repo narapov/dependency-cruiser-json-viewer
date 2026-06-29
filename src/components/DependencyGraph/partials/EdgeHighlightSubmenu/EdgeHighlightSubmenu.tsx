@@ -1,47 +1,42 @@
-import { useCallback, useState, type MouseEvent } from 'react'
-import Box from '@mui/material/Box'
-import CheckIcon from '@mui/icons-material/Check'
-import ChevronRightIcon from '@mui/icons-material/ChevronRight'
-import ListItemText from '@mui/material/ListItemText'
-import Menu from '@mui/material/Menu'
-import MenuItem from '@mui/material/MenuItem'
-import { useTranslation } from 'react-i18next'
-import { USER_EDGE_HIGHLIGHT_COLORS } from '../../../../Shared'
+import { useCallback, useState, type MouseEvent } from 'react';
+import { useTranslation } from 'react-i18next';
+
+import CheckIcon from '@mui/icons-material/Check';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import Box from '@mui/material/Box';
+import ListItemText from '@mui/material/ListItemText';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+
+import { USER_EDGE_HIGHLIGHT_COLORS } from '../../../../Shared';
 
 interface EdgeHighlightSubmenuProps {
-  currentHighlight: string | undefined
-  onSetHighlight: (color: string | null) => void
-  onClose: () => void
+  currentHighlight: string | undefined;
+  onSetHighlight: (color: string | null) => void;
+  onClose: () => void;
 }
 
-export function EdgeHighlightSubmenu({
-  currentHighlight,
-  onSetHighlight,
-  onClose,
-}: EdgeHighlightSubmenuProps) {
-  const { t } = useTranslation()
-  const [submenuAnchor, setSubmenuAnchor] = useState<HTMLElement | null>(null)
+export function EdgeHighlightSubmenu({ currentHighlight, onSetHighlight, onClose }: EdgeHighlightSubmenuProps) {
+  const { t } = useTranslation();
+  const [submenuAnchor, setSubmenuAnchor] = useState<HTMLElement | null>(null);
 
   const handleSubmenuClose = useCallback(() => {
-    setSubmenuAnchor(null)
-  }, [])
+    setSubmenuAnchor(null);
+  }, []);
 
   const handleAction = useCallback(
     (action: () => void) => (event: MouseEvent) => {
-      event.stopPropagation()
-      handleSubmenuClose()
-      onClose()
-      action()
+      event.stopPropagation();
+      handleSubmenuClose();
+      onClose();
+      action();
     },
     [handleSubmenuClose, onClose],
-  )
+  );
 
   return (
     <>
-      <MenuItem
-        onMouseEnter={(event) => setSubmenuAnchor(event.currentTarget)}
-        aria-haspopup="true"
-      >
+      <MenuItem onMouseEnter={event => setSubmenuAnchor(event.currentTarget)} aria-haspopup="true">
         <ListItemText>{t('actions.highlight')}</ListItemText>
         <ChevronRightIcon fontSize="small" sx={{ ml: 2, color: 'text.secondary' }} />
       </MenuItem>
@@ -63,7 +58,7 @@ export function EdgeHighlightSubmenu({
           },
         }}
       >
-        {USER_EDGE_HIGHLIGHT_COLORS.map((color) => (
+        {USER_EDGE_HIGHLIGHT_COLORS.map(color => (
           <MenuItem
             key={color}
             onClick={handleAction(() => onSetHighlight(color))}
@@ -84,7 +79,9 @@ export function EdgeHighlightSubmenu({
               }}
             >
               {currentHighlight === color && (
-                <CheckIcon sx={{ fontSize: 14, color: 'common.white', filter: 'drop-shadow(0 0 1px rgba(0,0,0,0.8))' }} />
+                <CheckIcon
+                  sx={{ fontSize: 14, color: 'common.white', filter: 'drop-shadow(0 0 1px rgba(0,0,0,0.8))' }}
+                />
               )}
             </Box>
           </MenuItem>
@@ -99,5 +96,5 @@ export function EdgeHighlightSubmenu({
         )}
       </Menu>
     </>
-  )
+  );
 }

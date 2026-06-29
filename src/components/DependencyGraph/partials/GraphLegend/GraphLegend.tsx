@@ -1,22 +1,20 @@
-import Box from '@mui/material/Box'
-import { useTranslation } from 'react-i18next'
-import {
-  CIRCULAR_EDGE_COLOR,
-  INCOMING_EDGE_COLOR,
-  OUTGOING_EDGE_COLOR,
-  SELECTED_EDGE_COLOR,
-} from '../../../../Shared'
-import styles from '../../DependencyGraph.module.css'
+import { useTranslation } from 'react-i18next';
+
+import Box from '@mui/material/Box';
+
+import { CIRCULAR_EDGE_COLOR, INCOMING_EDGE_COLOR, OUTGOING_EDGE_COLOR, SELECTED_EDGE_COLOR } from '../../../../Shared';
+
+import styles from '../../DependencyGraph.module.css';
 
 export function GraphLegend() {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
   const solidItems = [
     { color: INCOMING_EDGE_COLOR, labelKey: 'graph.legend.incoming' },
     { color: OUTGOING_EDGE_COLOR, labelKey: 'graph.legend.outgoing' },
     { color: CIRCULAR_EDGE_COLOR, labelKey: 'graph.legend.circular' },
     { color: SELECTED_EDGE_COLOR, labelKey: 'graph.legend.selected' },
-  ] as const
+  ] as const;
 
   const dashedItems = [
     {
@@ -27,7 +25,7 @@ export function GraphLegend() {
       labelKey: 'graph.legend.typeOnlyCircular',
       className: `${styles.legendLineDashed} ${styles.legendLineDashedTypeOnlyCircular}`,
     },
-  ] as const
+  ] as const;
 
   return (
     <Box
@@ -58,5 +56,5 @@ export function GraphLegend() {
         </Box>
       ))}
     </Box>
-  )
+  );
 }

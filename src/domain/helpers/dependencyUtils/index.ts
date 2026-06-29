@@ -1,2 +1,2 @@
-export * from './isTypeOnlyDependency'
-export * from './mergeDependencyRelationFlags'
+export * from './isTypeOnlyDependency';
+export * from './mergeDependencyRelationFlags';

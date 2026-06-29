@@ -1,2 +1,2 @@
-export * from './ModuleRelations'
-export * from './DependencyCruiserState'
+export * from './ModuleRelations';
+export * from './DependencyCruiserState';

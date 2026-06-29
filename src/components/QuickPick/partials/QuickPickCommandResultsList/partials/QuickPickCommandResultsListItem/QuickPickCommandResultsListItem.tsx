@@ -1,16 +1,18 @@
-import Box from '@mui/material/Box'
-import { useMemo } from 'react'
-import type { QuickPickCommand } from '../../../../types'
-import { computeQuickPickHighlight } from '../../../QuickPickFileResultsList/partials/QuickPickFileResultsListItem/helpers/computeQuickPickHighlight'
-import { QuickPickHighlightedText } from '../../../QuickPickFileResultsList/partials/QuickPickFileResultsListItem/partials/QuickPickHighlightedText'
-import { QuickPickNameHighlight } from '../../../QuickPickFileResultsList/partials/QuickPickFileResultsListItem/partials/QuickPickNameHighlight'
+import { useMemo } from 'react';
+
+import Box from '@mui/material/Box';
+
+import type { QuickPickCommand } from '../../../../types';
+import { computeQuickPickHighlight } from '../../../QuickPickFileResultsList/partials/QuickPickFileResultsListItem/helpers/computeQuickPickHighlight';
+import { QuickPickHighlightedText } from '../../../QuickPickFileResultsList/partials/QuickPickFileResultsListItem/partials/QuickPickHighlightedText';
+import { QuickPickNameHighlight } from '../../../QuickPickFileResultsList/partials/QuickPickFileResultsListItem/partials/QuickPickNameHighlight';
 
 interface QuickPickCommandResultsListItemProps {
-  command: QuickPickCommand
-  query: string
-  highlighted: boolean
-  onMouseEnter: () => void
-  onClick: () => void
+  command: QuickPickCommand;
+  query: string;
+  highlighted: boolean;
+  onMouseEnter: () => void;
+  onClick: () => void;
 }
 
 export function QuickPickCommandResultsListItem({
@@ -23,7 +25,7 @@ export function QuickPickCommandResultsListItem({
   const highlight = useMemo(
     () => computeQuickPickHighlight(query, command.label, command.label),
     [query, command.label],
-  )
+  );
 
   return (
     <Box
@@ -51,5 +53,5 @@ export function QuickPickCommandResultsListItem({
         Highlight={QuickPickNameHighlight}
       />
     </Box>
-  )
+  );
 }

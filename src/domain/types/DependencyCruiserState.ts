@@ -1,4 +1,4 @@
 export interface DependencyCruiserState {
-  selectedKeys: string[]
-  expandedKeys: string[]
+  selectedKeys: string[];
+  expandedKeys: string[];
 }

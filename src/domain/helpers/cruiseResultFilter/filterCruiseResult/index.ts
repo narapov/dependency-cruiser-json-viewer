@@ -1,1 +1,1 @@
-export * from './filterCruiseResult'
+export * from './filterCruiseResult';

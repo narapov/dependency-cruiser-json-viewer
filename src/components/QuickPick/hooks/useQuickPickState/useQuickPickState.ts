@@ -1,43 +1,44 @@
-import { useDeferredValue, useMemo, useState } from 'react'
-import { buildSearchItems, searchCommands, searchPaths } from '../../helpers'
-import type { QuickPickCommand } from '../../types'
+import { useDeferredValue, useMemo, useState } from 'react';
+
+import { buildSearchItems, searchCommands, searchPaths } from '../../helpers';
+import type { QuickPickCommand } from '../../types';
 
 export function useQuickPickState(sources: string[], commands: QuickPickCommand[]) {
-  const [open, setOpen] = useState(false)
-  const [query, setQuery] = useState('')
-  const deferredQuery = useDeferredValue(query)
-  const allItems = useMemo(() => buildSearchItems(sources), [sources])
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const deferredQuery = useDeferredValue(query);
+  const allItems = useMemo(() => buildSearchItems(sources), [sources]);
 
-  const isCommandMode = query.startsWith('>')
-  const commandQuery = isCommandMode ? query.slice(1).trim() : ''
-  const deferredCommandQuery = useDeferredValue(commandQuery)
+  const isCommandMode = query.startsWith('>');
+  const commandQuery = isCommandMode ? query.slice(1).trim() : '';
+  const deferredCommandQuery = useDeferredValue(commandQuery);
 
-  const fileResults = isCommandMode ? [] : searchPaths(allItems, deferredQuery)
-  const commandResults = isCommandMode ? searchCommands(commands, deferredCommandQuery) : []
-  const results = isCommandMode ? commandResults : fileResults
+  const fileResults = isCommandMode ? [] : searchPaths(allItems, deferredQuery);
+  const commandResults = isCommandMode ? searchCommands(commands, deferredCommandQuery) : [];
+  const results = isCommandMode ? commandResults : fileResults;
 
   const close = () => {
-    setOpen(false)
-    setQuery('')
-  }
+    setOpen(false);
+    setQuery('');
+  };
 
   const openFileMode = () => {
-    setQuery('')
-    setOpen(true)
-  }
+    setQuery('');
+    setOpen(true);
+  };
 
   const openCommandMode = () => {
-    setQuery('>')
-    setOpen(true)
-  }
+    setQuery('>');
+    setOpen(true);
+  };
 
   const toggleFileMode = () => {
     if (open) {
-      close()
+      close();
     } else {
-      openFileMode()
+      openFileMode();
     }
-  }
+  };
 
   return {
     open,
@@ -53,5 +54,5 @@ export function useQuickPickState(sources: string[], commands: QuickPickCommand[
     openFileMode,
     openCommandMode,
     toggleFileMode,
-  }
+  };
 }

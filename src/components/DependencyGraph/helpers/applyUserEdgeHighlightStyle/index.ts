@@ -1,1 +1,1 @@
-export * from './applyUserEdgeHighlightStyle'
+export * from './applyUserEdgeHighlightStyle';

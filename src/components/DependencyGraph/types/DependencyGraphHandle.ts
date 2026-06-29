@@ -1,4 +1,4 @@
 export interface DependencyGraphHandle {
-  focusNode(path: string): void
-  clearAllHighlights(): void
+  focusNode(path: string): void;
+  clearAllHighlights(): void;
 }

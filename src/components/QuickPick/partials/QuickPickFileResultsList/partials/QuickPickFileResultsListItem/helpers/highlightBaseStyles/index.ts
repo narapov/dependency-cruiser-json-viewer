@@ -1,1 +1,1 @@
-export * from './highlightBaseStyles'
+export * from './highlightBaseStyles';

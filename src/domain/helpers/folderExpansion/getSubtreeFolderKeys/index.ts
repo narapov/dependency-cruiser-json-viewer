@@ -1,1 +1,1 @@
-export * from './getSubtreeFolderKeys'
+export * from './getSubtreeFolderKeys';

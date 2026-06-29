@@ -1,1 +1,1 @@
-export * from './mergeDependencyRelationFlags'
+export * from './mergeDependencyRelationFlags';

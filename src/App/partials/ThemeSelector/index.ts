@@ -1,1 +1,1 @@
-export { ThemeSelector } from './ThemeSelector'
+export { ThemeSelector } from './ThemeSelector';

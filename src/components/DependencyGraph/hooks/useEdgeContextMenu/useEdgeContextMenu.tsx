@@ -1,15 +1,17 @@
-import { useCallback, useState, type MouseEvent } from 'react'
-import type { Edge, EdgeMouseHandler } from '@xyflow/react'
-import Menu from '@mui/material/Menu'
-import MenuItem from '@mui/material/MenuItem'
-import { useTranslation } from 'react-i18next'
-import { EdgeContextMenuHeader } from '../../partials/EdgeContextMenuHeader'
-import { EdgeHighlightSubmenu } from '../../partials/EdgeHighlightSubmenu'
+import { useCallback, useState, type MouseEvent } from 'react';
+import { useTranslation } from 'react-i18next';
+
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import type { Edge, EdgeMouseHandler } from '@xyflow/react';
+
+import { EdgeContextMenuHeader } from '../../partials/EdgeContextMenuHeader';
+import { EdgeHighlightSubmenu } from '../../partials/EdgeHighlightSubmenu';
 
 export interface UseEdgeContextMenuOptions {
-  onFocusNode: (path: string) => void
-  getEdgeHighlight: (edgeId: string) => string | undefined
-  onSetUserEdgeHighlight: (edgeId: string, color: string | null) => void
+  onFocusNode: (path: string) => void;
+  getEdgeHighlight: (edgeId: string) => string | undefined;
+  onSetUserEdgeHighlight: (edgeId: string, color: string | null) => void;
 }
 
 export function useEdgeContextMenu({
@@ -17,32 +19,32 @@ export function useEdgeContextMenu({
   getEdgeHighlight,
   onSetUserEdgeHighlight,
 }: UseEdgeContextMenuOptions) {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
   const [menuState, setMenuState] = useState<{
-    anchorPosition: { top: number; left: number }
-    edge: Edge
-  } | null>(null)
+    anchorPosition: { top: number; left: number };
+    edge: Edge;
+  } | null>(null);
 
   const handleClose = useCallback(() => {
-    setMenuState(null)
-  }, [])
+    setMenuState(null);
+  }, []);
 
   const handleAction = useCallback(
     (action: () => void) => (event: MouseEvent) => {
-      event.stopPropagation()
-      handleClose()
-      action()
+      event.stopPropagation();
+      handleClose();
+      action();
     },
     [handleClose],
-  )
+  );
 
   const onEdgeContextMenu: EdgeMouseHandler = useCallback((event, edge) => {
-    event.preventDefault()
+    event.preventDefault();
     setMenuState({
       anchorPosition: { top: event.clientY, left: event.clientX },
       edge,
-    })
-  }, [])
+    });
+  }, []);
 
   const edgeContextMenu = (
     <Menu
@@ -54,10 +56,7 @@ export function useEdgeContextMenu({
     >
       {menuState && (
         <>
-          <EdgeContextMenuHeader
-            source={menuState.edge.source}
-            target={menuState.edge.target}
-          />
+          <EdgeContextMenuHeader source={menuState.edge.source} target={menuState.edge.target} />
           <MenuItem onClick={handleAction(() => onFocusNode(menuState.edge.source))}>
             {t('graph.edgeMenu.viewSource')}
           </MenuItem>
@@ -66,13 +65,13 @@ export function useEdgeContextMenu({
           </MenuItem>
           <EdgeHighlightSubmenu
             currentHighlight={getEdgeHighlight(menuState.edge.id)}
-            onSetHighlight={(color) => onSetUserEdgeHighlight(menuState.edge.id, color)}
+            onSetHighlight={color => onSetUserEdgeHighlight(menuState.edge.id, color)}
             onClose={handleClose}
           />
         </>
       )}
     </Menu>
-  )
+  );
 
-  return { onEdgeContextMenu, edgeContextMenu }
+  return { onEdgeContextMenu, edgeContextMenu };
 }

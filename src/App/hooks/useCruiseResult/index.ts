@@ -1,1 +1,1 @@
-export * from './useCruiseResult'
+export * from './useCruiseResult';

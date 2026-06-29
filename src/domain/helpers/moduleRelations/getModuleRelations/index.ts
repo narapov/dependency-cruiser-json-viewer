@@ -1,1 +1,1 @@
-export * from './getModuleRelations'
+export * from './getModuleRelations';

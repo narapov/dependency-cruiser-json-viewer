@@ -1,8 +1,8 @@
-import { appStorageKey, useResizableWidth } from '../../../../Shared'
+import { appStorageKey, useResizableWidth } from '../../../../Shared';
 
-export const DEFAULT_WIDTH = 360
-export const MIN_WIDTH = 200
-export const STORAGE_KEY = appStorageKey('dependencies-panel-width')
+export const DEFAULT_WIDTH = 360;
+export const MIN_WIDTH = 200;
+export const STORAGE_KEY = appStorageKey('dependencies-panel-width');
 
 export function useDependenciesPanelWidth(leftSidebarWidth: number) {
   return useResizableWidth({
@@ -11,5 +11,5 @@ export function useDependenciesPanelWidth(leftSidebarWidth: number) {
     minWidth: MIN_WIDTH,
     side: 'right',
     oppositeWidth: leftSidebarWidth,
-  })
+  });
 }

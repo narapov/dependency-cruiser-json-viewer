@@ -1,4 +1,4 @@
 export interface FolderChildren {
-  folders: string[]
-  files: string[]
+  folders: string[];
+  files: string[];
 }

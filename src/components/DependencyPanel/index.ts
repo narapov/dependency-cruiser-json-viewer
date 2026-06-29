@@ -1,1 +1,1 @@
-export * from './DependencyPanel'
+export * from './DependencyPanel';

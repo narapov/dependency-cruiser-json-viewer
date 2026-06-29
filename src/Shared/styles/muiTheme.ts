@@ -1,11 +1,11 @@
-import { createTheme } from '@mui/material/styles'
+import { createTheme } from '@mui/material/styles';
 
 declare module '@mui/material/styles' {
   interface Palette {
-    appHeader: Palette['primary']
+    appHeader: Palette['primary'];
   }
   interface PaletteOptions {
-    appHeader?: PaletteOptions['primary']
+    appHeader?: PaletteOptions['primary'];
   }
 }
 
@@ -51,4 +51,4 @@ export const muiTheme = createTheme({
       },
     },
   },
-})
+});

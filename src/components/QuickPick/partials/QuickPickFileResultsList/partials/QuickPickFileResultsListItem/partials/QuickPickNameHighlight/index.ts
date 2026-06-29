@@ -1,1 +1,1 @@
-export * from './QuickPickNameHighlight'
+export * from './QuickPickNameHighlight';

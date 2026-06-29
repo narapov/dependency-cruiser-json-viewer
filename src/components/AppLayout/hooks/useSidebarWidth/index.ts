@@ -1,1 +1,1 @@
-export * from './useSidebarWidth'
+export * from './useSidebarWidth';

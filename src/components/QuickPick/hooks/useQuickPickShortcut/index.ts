@@ -1,1 +1,1 @@
-export * from './useQuickPickShortcut'
+export * from './useQuickPickShortcut';

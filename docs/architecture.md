@@ -48,13 +48,13 @@ Do not re-export helper-local types from module barrels unless they are part of 
 
 Each `index.ts` re-exports its module. Prefer `export * from` — barrels stay in sync with implementations during refactors.
 
-| Situation | Pattern |
-|-----------|---------|
-| Single source, entire module is public | `export * from './module'` |
-| Multiple sources, all public | several `export * from './submodule'` |
-| Hide part of the API | named `export { a, b } from '...'` |
-| Name collision between modules | `export { X as Y } from '...'` |
-| Default export (`App`) | `export { default } from './App'` |
+| Situation                              | Pattern                               |
+| -------------------------------------- | ------------------------------------- |
+| Single source, entire module is public | `export * from './module'`            |
+| Multiple sources, all public           | several `export * from './submodule'` |
+| Hide part of the API                   | named `export { a, b } from '...'`    |
+| Name collision between modules         | `export { X as Y } from '...'`        |
+| Default export (`App`)                 | `export { default } from './App'`     |
 
 Use **named** re-exports only when intentional:
 
@@ -64,13 +64,13 @@ Use **named** re-exports only when intentional:
 
 ## Import rules
 
-| From | Import |
-|------|--------|
-| Anywhere outside Shared | `from '../../Shared'` only |
-| App, components | `from '../../domain'` only |
-| App internals | `from './hooks'` |
-| Between features | `from '../FileTree'` (barrel) |
-| Inside a module | `from './partials/X'`, `from './helpers/X'` (via their index.ts) |
+| From                    | Import                                                           |
+| ----------------------- | ---------------------------------------------------------------- |
+| Anywhere outside Shared | `from '../../Shared'` only                                       |
+| App, components         | `from '../../domain'` only                                       |
+| App internals           | `from './hooks'`                                                 |
+| Between features        | `from '../FileTree'` (barrel)                                    |
+| Inside a module         | `from './partials/X'`, `from './helpers/X'` (via their index.ts) |
 
 Forbidden:
 
@@ -129,10 +129,10 @@ Feature modules own their data:
 
 ## Imperative handles
 
-| Handle | Method | Purpose |
-|--------|--------|---------|
-| `FileTreeHandle` | `focusPath(path)` | Scroll to and focus tree item |
-| `DependencyGraphHandle` | `focusNode(path)` | `fitView` to graph node |
+| Handle                  | Method            | Purpose                       |
+| ----------------------- | ----------------- | ----------------------------- |
+| `FileTreeHandle`        | `focusPath(path)` | Scroll to and focus tree item |
+| `DependencyGraphHandle` | `focusNode(path)` | `fitView` to graph node       |
 
 React 19: `ref` is a regular prop (no `forwardRef`). Project uses React Compiler — avoid manual `useCallback`/`useMemo` in new code.
 

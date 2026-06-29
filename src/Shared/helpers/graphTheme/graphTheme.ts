@@ -1,10 +1,10 @@
-export const INCOMING_EDGE_COLOR = 'var(--graph-incoming)'
-export const OUTGOING_EDGE_COLOR = 'var(--graph-outgoing)'
-export const CIRCULAR_EDGE_COLOR = 'var(--graph-circular)'
-export const TYPE_ONLY_CIRCULAR_EDGE_COLOR = 'var(--graph-circular-type-only)'
-export const CIRCULAR_NODE_BACKGROUND = 'var(--graph-circular-background)'
-export const SELECTED_EDGE_COLOR = 'var(--graph-selected)'
-export const DEFAULT_EDGE_COLOR = 'var(--graph-default-edge)'
+export const INCOMING_EDGE_COLOR = 'var(--graph-incoming)';
+export const OUTGOING_EDGE_COLOR = 'var(--graph-outgoing)';
+export const CIRCULAR_EDGE_COLOR = 'var(--graph-circular)';
+export const TYPE_ONLY_CIRCULAR_EDGE_COLOR = 'var(--graph-circular-type-only)';
+export const CIRCULAR_NODE_BACKGROUND = 'var(--graph-circular-background)';
+export const SELECTED_EDGE_COLOR = 'var(--graph-selected)';
+export const DEFAULT_EDGE_COLOR = 'var(--graph-default-edge)';
 
 export const USER_EDGE_HIGHLIGHT_COLORS = [
   '#e6194b',
@@ -23,4 +23,4 @@ export const USER_EDGE_HIGHLIGHT_COLORS = [
   '#fffac8',
   '#800000',
   '#aaffc3',
-] as const
+] as const;

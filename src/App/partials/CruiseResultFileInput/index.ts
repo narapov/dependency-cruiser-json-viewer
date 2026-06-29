@@ -1,1 +1,1 @@
-export * from './CruiseResultFileInput'
+export * from './CruiseResultFileInput';

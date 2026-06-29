@@ -1,23 +1,22 @@
-import { forwardRef, type KeyboardEvent } from 'react'
-import { getBaseName } from '../../../../domain'
-import { MaterialFileSystemIcon } from '../../../../Shared'
-import { useTreeItemModel } from '@mui/x-tree-view/hooks'
-import type { TreeViewCancellableEvent } from '@mui/x-tree-view/models'
-import { TreeItem, type TreeItemProps } from '@mui/x-tree-view/TreeItem'
-import { isTreeLeaf } from '../../helpers'
-import type { TreeNodeData } from '../../types'
-import { useFileTreeContextMenu } from '../../hooks'
-import { useFileTreeContext } from './FileTreeContext'
+import { forwardRef, type KeyboardEvent } from 'react';
 
-export const FileTreeItem = forwardRef<HTMLLIElement, TreeItemProps>(function FileTreeItem(
-  props,
-  ref,
-) {
-  const { itemId, children, ...other } = props
-  const ctx = useFileTreeContext()
-  const item = useTreeItemModel<TreeNodeData>(itemId)
-  const isFolder = item != null && !isTreeLeaf(item)
-  const navigable = item != null && ctx.canShowInGraph(itemId)
+import { useTreeItemModel } from '@mui/x-tree-view/hooks';
+import type { TreeViewCancellableEvent } from '@mui/x-tree-view/models';
+import { TreeItem, type TreeItemProps } from '@mui/x-tree-view/TreeItem';
+
+import { getBaseName } from '../../../../domain';
+import { MaterialFileSystemIcon } from '../../../../Shared';
+import { isTreeLeaf } from '../../helpers';
+import { useFileTreeContextMenu } from '../../hooks';
+import type { TreeNodeData } from '../../types';
+import { useFileTreeContext } from './FileTreeContext';
+
+export const FileTreeItem = forwardRef<HTMLLIElement, TreeItemProps>(function FileTreeItem(props, ref) {
+  const { itemId, children, ...other } = props;
+  const ctx = useFileTreeContext();
+  const item = useTreeItemModel<TreeNodeData>(itemId);
+  const isFolder = item != null && !isTreeLeaf(item);
+  const navigable = item != null && ctx.canShowInGraph(itemId);
 
   const { onContextMenu, contextMenu } = useFileTreeContextMenu({
     path: item?.key ?? itemId,
@@ -27,7 +26,7 @@ export const FileTreeItem = forwardRef<HTMLLIElement, TreeItemProps>(function Fi
     onExpandRecursive: isFolder ? ctx.onExpandRecursive : undefined,
     onShowInGraph: navigable ? ctx.onShowInGraph : undefined,
     onShowDependencies: navigable ? ctx.onShowDependencies : undefined,
-  })
+  });
 
   return (
     <>
@@ -47,11 +46,11 @@ export const FileTreeItem = forwardRef<HTMLLIElement, TreeItemProps>(function Fi
             <div
               {...labelProps}
               style={{ ...style, overflow: 'visible', minWidth: 'auto' }}
-              onDoubleClick={(event) => {
+              onDoubleClick={event => {
                 if (isFolder) {
-                  ctx.onToggleExpand(itemId)
+                  ctx.onToggleExpand(itemId);
                 }
-                onDoubleClick?.(event)
+                onDoubleClick?.(event);
               }}
             >
               {item ? (
@@ -80,12 +79,12 @@ export const FileTreeItem = forwardRef<HTMLLIElement, TreeItemProps>(function Fi
         slotProps={{
           root: {
             onKeyDown: (event: KeyboardEvent<HTMLLIElement> & TreeViewCancellableEvent) => {
-              if (event.key !== 'Enter') return
-              event.defaultMuiPrevented = true
+              if (event.key !== 'Enter') return;
+              event.defaultMuiPrevented = true;
               event.preventDefault();
               event.stopPropagation();
               if (navigable) {
-                ctx.onShowInGraph?.(itemId)
+                ctx.onShowInGraph?.(itemId);
               }
             },
           },
@@ -99,5 +98,5 @@ export const FileTreeItem = forwardRef<HTMLLIElement, TreeItemProps>(function Fi
       </TreeItem>
       {contextMenu}
     </>
-  )
-})
+  );
+});

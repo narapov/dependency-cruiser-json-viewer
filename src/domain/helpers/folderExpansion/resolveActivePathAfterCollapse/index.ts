@@ -1,1 +1,1 @@
-export * from './resolveActivePathAfterCollapse'
+export * from './resolveActivePathAfterCollapse';

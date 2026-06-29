@@ -1,1 +1,1 @@
-export * from './FolderGroupNode'
+export * from './FolderGroupNode';

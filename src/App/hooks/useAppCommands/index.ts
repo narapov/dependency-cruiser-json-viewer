@@ -1,1 +1,1 @@
-export * from './useAppCommands'
+export * from './useAppCommands';

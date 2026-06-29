@@ -1,5 +1,6 @@
-import { BaseEdge, getBezierPath, type EdgeProps } from '@xyflow/react'
-import type { DependencyEdgeData } from '../../DependencyGraph.types'
+import { BaseEdge, getBezierPath, type EdgeProps } from '@xyflow/react';
+
+import type { DependencyEdgeData } from '../../DependencyGraph.types';
 
 export function DependencyEdge({
   id,
@@ -22,9 +23,9 @@ export function DependencyEdge({
     targetX,
     targetY,
     targetPosition,
-  })
+  });
 
-  const title = (data as DependencyEdgeData | undefined)?.title
+  const title = (data as DependencyEdgeData | undefined)?.title;
 
   return (
     <>
@@ -40,5 +41,5 @@ export function DependencyEdge({
         {!!title && <title>{title}</title>}
       </path>
     </>
-  )
+  );
 }

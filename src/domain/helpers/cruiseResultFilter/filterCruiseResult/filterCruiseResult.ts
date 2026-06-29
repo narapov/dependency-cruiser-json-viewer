@@ -1,29 +1,28 @@
-import type { ICruiseResult } from 'dependency-cruiser'
-import { isIgnoredPath } from '../isIgnoredPath'
+import type { ICruiseResult } from 'dependency-cruiser';
+
+import { isIgnoredPath } from '../isIgnoredPath';
 
 export function filterCruiseResult(result: ICruiseResult, patterns: string[]): ICruiseResult {
   if (patterns.length === 0) {
-    return result
+    return result;
   }
 
   const excluded = new Set(
-    result.modules
-      .filter((module) => isIgnoredPath(module.source, patterns))
-      .map((module) => module.source),
-  )
+    result.modules.filter(module => isIgnoredPath(module.source, patterns)).map(module => module.source),
+  );
 
   if (excluded.size === 0) {
-    return result
+    return result;
   }
 
   const modules = result.modules
-    .filter((module) => !excluded.has(module.source))
-    .map((module) => ({
+    .filter(module => !excluded.has(module.source))
+    .map(module => ({
       ...module,
       dependencies: module.dependencies.filter(
-        (dependency) => dependency.resolved == null || !excluded.has(dependency.resolved),
+        dependency => dependency.resolved == null || !excluded.has(dependency.resolved),
       ),
-    }))
+    }));
 
   return {
     ...result,
@@ -32,5 +31,5 @@ export function filterCruiseResult(result: ICruiseResult, patterns: string[]): I
       ...result.summary,
       totalCruised: modules.length,
     },
-  }
+  };
 }

@@ -1,1 +1,1 @@
-export * from './buildFileTree'
+export * from './buildFileTree';

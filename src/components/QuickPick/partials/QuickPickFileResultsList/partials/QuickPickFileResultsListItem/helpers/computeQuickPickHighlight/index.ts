@@ -1,1 +1,1 @@
-export * from './computeQuickPickHighlight'
+export * from './computeQuickPickHighlight';

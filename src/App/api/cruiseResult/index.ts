@@ -1,1 +1,1 @@
-export * from './cruiseResult'
+export * from './cruiseResult';

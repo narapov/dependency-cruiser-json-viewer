@@ -1,1 +1,1 @@
-export * from './applySelectedEdgeStyle'
+export * from './applySelectedEdgeStyle';

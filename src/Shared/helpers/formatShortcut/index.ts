@@ -1,1 +1,1 @@
-export * from './formatShortcut'
+export * from './formatShortcut';

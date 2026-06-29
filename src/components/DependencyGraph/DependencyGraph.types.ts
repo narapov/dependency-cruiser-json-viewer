@@ -6,4 +6,4 @@ export type {
   FolderChildren,
   FolderGroupNodeData,
   FolderNodeData,
-} from './types'
+} from './types';

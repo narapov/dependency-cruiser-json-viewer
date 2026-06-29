@@ -1,1 +1,1 @@
-export * from './getEdgeDependencyKeys'
+export * from './getEdgeDependencyKeys';

@@ -1,29 +1,27 @@
-import AccountTreeOutlined from '@mui/icons-material/AccountTreeOutlined'
-import ContentCopyOutlined from '@mui/icons-material/ContentCopyOutlined'
-import MyLocationOutlined from '@mui/icons-material/MyLocationOutlined'
-import Box from '@mui/material/Box'
-import Divider from '@mui/material/Divider'
-import IconButton from '@mui/material/IconButton'
-import Stack from '@mui/material/Stack'
-import Tooltip from '@mui/material/Tooltip'
-import Typography from '@mui/material/Typography'
-import { useTranslation } from 'react-i18next'
-import { copyToClipboard } from '../../../Shared'
+import { useTranslation } from 'react-i18next';
+
+import AccountTreeOutlined from '@mui/icons-material/AccountTreeOutlined';
+import ContentCopyOutlined from '@mui/icons-material/ContentCopyOutlined';
+import MyLocationOutlined from '@mui/icons-material/MyLocationOutlined';
+import Box from '@mui/material/Box';
+import Divider from '@mui/material/Divider';
+import IconButton from '@mui/material/IconButton';
+import Stack from '@mui/material/Stack';
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
+
+import { copyToClipboard } from '../../../Shared';
 
 interface AppStatusBarProps {
-  activePath: string | null
-  onFocusActivePath: () => void
-  onShowDependencies: (path: string) => void
+  activePath: string | null;
+  onFocusActivePath: () => void;
+  onShowDependencies: (path: string) => void;
 }
 
-export function AppStatusBar({
-  activePath,
-  onFocusActivePath,
-  onShowDependencies,
-}: AppStatusBarProps) {
-  const { t } = useTranslation()
-  const hasSelection = activePath != null
-  const label = activePath ?? t('statusBar.noSelection')
+export function AppStatusBar({ activePath, onFocusActivePath, onShowDependencies }: AppStatusBarProps) {
+  const { t } = useTranslation();
+  const hasSelection = activePath != null;
+  const label = activePath ?? t('statusBar.noSelection');
 
   return (
     <Box
@@ -95,5 +93,5 @@ export function AppStatusBar({
         {label}
       </Typography>
     </Box>
-  )
+  );
 }

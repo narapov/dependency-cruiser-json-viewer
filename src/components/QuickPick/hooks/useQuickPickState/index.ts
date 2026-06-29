@@ -1,1 +1,1 @@
-export * from './useQuickPickState'
+export * from './useQuickPickState';

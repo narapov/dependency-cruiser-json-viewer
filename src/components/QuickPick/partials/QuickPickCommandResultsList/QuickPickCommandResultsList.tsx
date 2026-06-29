@@ -1,15 +1,17 @@
-import Box from '@mui/material/Box'
-import type { RefObject } from 'react'
-import type { QuickPickCommand } from '../../types'
-import { QuickPickCommandResultsListItem } from './partials/QuickPickCommandResultsListItem'
+import type { RefObject } from 'react';
+
+import Box from '@mui/material/Box';
+
+import type { QuickPickCommand } from '../../types';
+import { QuickPickCommandResultsListItem } from './partials/QuickPickCommandResultsListItem';
 
 interface QuickPickCommandResultsListProps {
-  results: QuickPickCommand[]
-  query: string
-  highlightedIndex: number
-  listRef: RefObject<HTMLUListElement | null>
-  onHighlightIndex: (index: number) => void
-  onSelect: (command: QuickPickCommand) => void
+  results: QuickPickCommand[];
+  query: string;
+  highlightedIndex: number;
+  listRef: RefObject<HTMLUListElement | null>;
+  onHighlightIndex: (index: number) => void;
+  onSelect: (command: QuickPickCommand) => void;
 }
 
 export function QuickPickCommandResultsList({
@@ -46,5 +48,5 @@ export function QuickPickCommandResultsList({
         />
       ))}
     </Box>
-  )
+  );
 }

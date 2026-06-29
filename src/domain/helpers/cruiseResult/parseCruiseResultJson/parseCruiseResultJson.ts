@@ -1,15 +1,15 @@
-import type { ICruiseResult } from 'dependency-cruiser'
-import { array, object, string } from 'zod'
+import type { ICruiseResult } from 'dependency-cruiser';
+import { array, object, string } from 'zod';
 
-export type CruiseResultParseErrorCode = 'invalidJson' | 'invalidFormat'
+export type CruiseResultParseErrorCode = 'invalidJson' | 'invalidFormat';
 
 export class CruiseResultParseError extends Error {
-  readonly code: CruiseResultParseErrorCode
+  readonly code: CruiseResultParseErrorCode;
 
   constructor(code: CruiseResultParseErrorCode) {
-    super(code)
-    this.name = 'CruiseResultParseError'
-    this.code = code
+    super(code);
+    this.name = 'CruiseResultParseError';
+    this.code = code;
   }
 }
 
@@ -22,22 +22,22 @@ export const cruiseResultSchema = object({
 }).loose();
 
 export function validateCruiseResult(parsed: unknown): ICruiseResult {
-  const result = cruiseResultSchema.safeParse(parsed)
+  const result = cruiseResultSchema.safeParse(parsed);
   if (!result.success) {
-    throw new CruiseResultParseError('invalidFormat')
+    throw new CruiseResultParseError('invalidFormat');
   }
 
-  return result.data as unknown as ICruiseResult
+  return result.data as unknown as ICruiseResult;
 }
 
 export function parseCruiseResultJson(text: string): ICruiseResult {
-  let parsed: unknown
+  let parsed: unknown;
 
   try {
-    parsed = JSON.parse(text)
+    parsed = JSON.parse(text);
   } catch {
-    throw new CruiseResultParseError('invalidJson')
+    throw new CruiseResultParseError('invalidJson');
   }
 
-  return validateCruiseResult(parsed)
+  return validateCruiseResult(parsed);
 }

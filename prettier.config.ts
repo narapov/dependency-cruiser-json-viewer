@@ -1,6 +1,6 @@
-import { type Config } from 'prettier'
+import { type Config } from 'prettier';
 
-import sortImports from '@ianvs/prettier-plugin-sort-imports'
+import sortImports from '@ianvs/prettier-plugin-sort-imports';
 
 const config: Config = {
   arrowParens: 'avoid',
@@ -46,6 +46,6 @@ const config: Config = {
       },
     },
   ],
-}
+};
 
-export default config
+export default config;

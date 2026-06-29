@@ -1,1 +1,1 @@
-export * from './getRepresentative'
+export * from './getRepresentative';

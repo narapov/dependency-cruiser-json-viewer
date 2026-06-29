@@ -1,1 +1,1 @@
-export * from './isUnderFolder'
+export * from './isUnderFolder';

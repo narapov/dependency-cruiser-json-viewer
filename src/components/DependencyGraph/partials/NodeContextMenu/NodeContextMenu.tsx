@@ -1,18 +1,20 @@
-import { useCallback, useState, type MouseEvent, type ReactNode } from 'react'
-import Menu from '@mui/material/Menu'
-import MenuItem from '@mui/material/MenuItem'
-import { useTranslation } from 'react-i18next'
-import { copyToClipboard } from '../../../../Shared'
+import { useCallback, useState, type MouseEvent, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
+
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+
+import { copyToClipboard } from '../../../../Shared';
 
 interface NodeContextMenuProps {
-  path: string
-  isFolder: boolean
-  expanded?: boolean
-  onToggle?: (path: string) => void
-  onExpandRecursive?: (path: string) => void
-  onShowInFileTree: (path: string) => void
-  onShowDependencies?: (path: string) => void
-  children: ReactNode
+  path: string;
+  isFolder: boolean;
+  expanded?: boolean;
+  onToggle?: (path: string) => void;
+  onExpandRecursive?: (path: string) => void;
+  onShowInFileTree: (path: string) => void;
+  onShowDependencies?: (path: string) => void;
+  children: ReactNode;
 }
 
 export function NodeContextMenu({
@@ -25,28 +27,26 @@ export function NodeContextMenu({
   onShowDependencies,
   children,
 }: NodeContextMenuProps) {
-  const { t } = useTranslation()
-  const [anchorPosition, setAnchorPosition] = useState<{ top: number; left: number } | null>(
-    null,
-  )
+  const { t } = useTranslation();
+  const [anchorPosition, setAnchorPosition] = useState<{ top: number; left: number } | null>(null);
 
   const handleContextMenu = useCallback((event: MouseEvent) => {
-    event.preventDefault()
-    setAnchorPosition({ top: event.clientY, left: event.clientX })
-  }, [])
+    event.preventDefault();
+    setAnchorPosition({ top: event.clientY, left: event.clientX });
+  }, []);
 
   const handleClose = useCallback(() => {
-    setAnchorPosition(null)
-  }, [])
+    setAnchorPosition(null);
+  }, []);
 
   const handleAction = useCallback(
     (action: () => void) => (event: MouseEvent) => {
-      event.stopPropagation()
-      handleClose()
-      action()
+      event.stopPropagation();
+      handleClose();
+      action();
     },
     [handleClose],
-  )
+  );
 
   return (
     <>
@@ -64,19 +64,13 @@ export function NodeContextMenu({
           </MenuItem>
         )}
         {isFolder && onExpandRecursive && (
-          <MenuItem onClick={handleAction(() => onExpandRecursive(path))}>
-            {t('actions.expandRecursive')}
-          </MenuItem>
+          <MenuItem onClick={handleAction(() => onExpandRecursive(path))}>{t('actions.expandRecursive')}</MenuItem>
         )}
-        <MenuItem onClick={handleAction(() => onShowInFileTree(path))}>
-          {t('actions.showInFileTree')}
-        </MenuItem>
+        <MenuItem onClick={handleAction(() => onShowInFileTree(path))}>{t('actions.showInFileTree')}</MenuItem>
         {onShowDependencies && (
-          <MenuItem onClick={handleAction(() => onShowDependencies(path))}>
-            {t('actions.viewDependencies')}
-          </MenuItem>
+          <MenuItem onClick={handleAction(() => onShowDependencies(path))}>{t('actions.viewDependencies')}</MenuItem>
         )}
       </Menu>
     </>
-  )
+  );
 }

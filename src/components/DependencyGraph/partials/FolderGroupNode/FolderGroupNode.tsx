@@ -1,10 +1,12 @@
-import Box from '@mui/material/Box'
-import { MaterialFileSystemIcon } from '../../../../Shared'
-import { Handle, Position, type NodeProps } from '@xyflow/react'
-import type { FolderGroupNodeData } from '../../DependencyGraph.types'
-import styles from '../../DependencyGraph.module.css'
-import { FolderExpandToggle } from '../FolderExpandToggle'
-import { NodeContextMenu } from '../NodeContextMenu'
+import Box from '@mui/material/Box';
+import { Handle, Position, type NodeProps } from '@xyflow/react';
+
+import { MaterialFileSystemIcon } from '../../../../Shared';
+import type { FolderGroupNodeData } from '../../DependencyGraph.types';
+import { FolderExpandToggle } from '../FolderExpandToggle';
+import { NodeContextMenu } from '../NodeContextMenu';
+
+import styles from '../../DependencyGraph.module.css';
 
 export function FolderGroupNode({ data }: NodeProps) {
   const {
@@ -17,7 +19,7 @@ export function FolderGroupNode({ data }: NodeProps) {
     onExpandRecursive,
     onShowInFileTree,
     onShowDependencies,
-  } = data as FolderGroupNodeData
+  } = data as FolderGroupNodeData;
 
   return (
     <Box
@@ -33,7 +35,7 @@ export function FolderGroupNode({ data }: NodeProps) {
         bgcolor: backgroundColor,
         ...(highlighted && {
           borderColor: 'primary.main',
-          boxShadow: (theme) => `0 0 0 1px ${theme.palette.primary.main}`,
+          boxShadow: theme => `0 0 0 1px ${theme.palette.primary.main}`,
         }),
       }}
     >
@@ -67,23 +69,20 @@ export function FolderGroupNode({ data }: NodeProps) {
         >
           <FolderExpandToggle
             expanded={expanded}
-            onClick={(e) => {
-              e.stopPropagation()
-              onToggle(path)
+            onClick={e => {
+              e.stopPropagation();
+              onToggle(path);
             }}
           />
           <Box component="span" sx={{ fontSize: 12, flexShrink: 0, display: 'inline-flex' }}>
             <MaterialFileSystemIcon name={label} isFolder isOpen={expanded} />
           </Box>
-          <Box
-            component="span"
-            sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-          >
+          <Box component="span" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {label}
           </Box>
         </Box>
       </NodeContextMenu>
       <Handle type="source" position={Position.Right} className={styles.groupHandle} />
     </Box>
-  )
+  );
 }

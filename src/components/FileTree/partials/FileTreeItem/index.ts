@@ -1,2 +1,2 @@
-export * from './FileTreeContext'
-export * from './FileTreeItem'
+export * from './FileTreeContext';
+export * from './FileTreeItem';

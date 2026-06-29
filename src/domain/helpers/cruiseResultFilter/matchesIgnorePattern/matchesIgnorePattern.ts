@@ -1,14 +1,14 @@
-import picomatch from 'picomatch'
+import picomatch from 'picomatch';
 
 export function matchesIgnorePattern(path: string, pattern: string): boolean {
-  const trimmed = pattern.trim()
+  const trimmed = pattern.trim();
   if (trimmed.length === 0) {
-    return false
+    return false;
   }
 
   try {
-    return picomatch(trimmed)(path)
+    return picomatch(trimmed)(path);
   } catch {
-    return false
+    return false;
   }
 }

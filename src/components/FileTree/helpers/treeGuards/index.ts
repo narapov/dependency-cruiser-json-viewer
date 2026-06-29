@@ -1,1 +1,1 @@
-export * from './treeGuards'
+export * from './treeGuards';

@@ -1,1 +1,1 @@
-export * from './useResizableWidth'
+export * from './useResizableWidth';

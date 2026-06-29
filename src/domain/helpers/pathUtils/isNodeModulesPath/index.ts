@@ -1,1 +1,1 @@
-export * from './isNodeModulesPath'
+export * from './isNodeModulesPath';

@@ -1,25 +1,27 @@
-import Brightness4Outlined from '@mui/icons-material/Brightness4Outlined'
-import DarkModeOutlined from '@mui/icons-material/DarkModeOutlined'
-import LightModeOutlined from '@mui/icons-material/LightModeOutlined'
-import ToggleButton from '@mui/material/ToggleButton'
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
-import Tooltip from '@mui/material/Tooltip'
-import { useColorScheme } from '@mui/material/styles'
-import { useTranslation } from 'react-i18next'
-import { THEME_OPTIONS } from './themeOptions'
+import { useTranslation } from 'react-i18next';
+
+import Brightness4Outlined from '@mui/icons-material/Brightness4Outlined';
+import DarkModeOutlined from '@mui/icons-material/DarkModeOutlined';
+import LightModeOutlined from '@mui/icons-material/LightModeOutlined';
+import { useColorScheme } from '@mui/material/styles';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import Tooltip from '@mui/material/Tooltip';
+
+import { THEME_OPTIONS } from './themeOptions';
 
 const THEME_ICONS = {
   light: LightModeOutlined,
   dark: DarkModeOutlined,
   system: Brightness4Outlined,
-} as const
+} as const;
 
 export function ThemeSelector() {
-  const { mode, setMode } = useColorScheme()
-  const { t } = useTranslation()
+  const { mode, setMode } = useColorScheme();
+  const { t } = useTranslation();
 
   if (!mode) {
-    return null
+    return null;
   }
 
   return (
@@ -29,7 +31,7 @@ export function ThemeSelector() {
       value={mode}
       onChange={(_, value: typeof mode | null) => {
         if (value != null) {
-          setMode(value)
+          setMode(value);
         }
       }}
       aria-label={t('theme.label')}
@@ -53,8 +55,8 @@ export function ThemeSelector() {
       }}
     >
       {THEME_OPTIONS.map(({ value, labelKey }) => {
-        const label = t(labelKey)
-        const Icon = THEME_ICONS[value]
+        const label = t(labelKey);
+        const Icon = THEME_ICONS[value];
         return (
           <Tooltip key={value} title={label}>
             <span>
@@ -63,8 +65,8 @@ export function ThemeSelector() {
               </ToggleButton>
             </span>
           </Tooltip>
-        )
+        );
       })}
     </ToggleButtonGroup>
-  )
+  );
 }

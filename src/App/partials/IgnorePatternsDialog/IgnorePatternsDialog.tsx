@@ -1,50 +1,52 @@
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
-import Chip from '@mui/material/Chip'
-import Dialog from '@mui/material/Dialog'
-import DialogActions from '@mui/material/DialogActions'
-import DialogContent from '@mui/material/DialogContent'
-import DialogTitle from '@mui/material/DialogTitle'
-import Link from '@mui/material/Link'
-import Stack from '@mui/material/Stack'
-import TextField from '@mui/material/TextField'
-import Typography from '@mui/material/Typography'
-import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { GLOB_PATTERNS_DOCS_URL, IGNORE_PATTERN_EXAMPLES } from '../../hooks/useIgnorePatterns'
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import Link from '@mui/material/Link';
+import Stack from '@mui/material/Stack';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
+
+import { GLOB_PATTERNS_DOCS_URL, IGNORE_PATTERN_EXAMPLES } from '../../hooks/useIgnorePatterns';
 
 interface IgnorePatternsDialogProps {
-  open: boolean
-  patterns: string[]
-  onClose: () => void
-  onSave: (patterns: string[]) => void
+  open: boolean;
+  patterns: string[];
+  onClose: () => void;
+  onSave: (patterns: string[]) => void;
 }
 
 function patternsToText(patterns: string[]): string {
-  return patterns.join('\n')
+  return patterns.join('\n');
 }
 
 function textToPatterns(text: string): string[] {
   return text
     .split('\n')
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0)
+    .map(line => line.trim())
+    .filter(line => line.length > 0);
 }
 
 interface IgnorePatternsFormProps {
-  patterns: string[]
-  onClose: () => void
-  onSave: (patterns: string[]) => void
+  patterns: string[];
+  onClose: () => void;
+  onSave: (patterns: string[]) => void;
 }
 
 function IgnorePatternsForm({ patterns, onClose, onSave }: IgnorePatternsFormProps) {
-  const { t } = useTranslation()
-  const [draft, setDraft] = useState(() => patternsToText(patterns))
+  const { t } = useTranslation();
+  const [draft, setDraft] = useState(() => patternsToText(patterns));
 
   const handleSave = () => {
-    onSave(textToPatterns(draft))
-    onClose()
-  }
+    onSave(textToPatterns(draft));
+    onClose();
+  };
 
   return (
     <>
@@ -68,7 +70,7 @@ function IgnorePatternsForm({ patterns, onClose, onSave }: IgnorePatternsFormPro
           minRows={6}
           maxRows={14}
           value={draft}
-          onChange={(event) => setDraft(event.target.value)}
+          onChange={event => setDraft(event.target.value)}
           placeholder={t('ignorePatterns.placeholder')}
           slotProps={{
             input: {
@@ -81,7 +83,7 @@ function IgnorePatternsForm({ patterns, onClose, onSave }: IgnorePatternsFormPro
             {t('ignorePatterns.examples')}
           </Typography>
           <Stack direction="row" useFlexGap spacing={0.75} sx={{ flexWrap: 'wrap' }}>
-            {IGNORE_PATTERN_EXAMPLES.map((example) => (
+            {IGNORE_PATTERN_EXAMPLES.map(example => (
               <Chip
                 key={example}
                 label={example}
@@ -100,16 +102,11 @@ function IgnorePatternsForm({ patterns, onClose, onSave }: IgnorePatternsFormPro
         </Button>
       </DialogActions>
     </>
-  )
+  );
 }
 
-export function IgnorePatternsDialog({
-  open,
-  patterns,
-  onClose,
-  onSave,
-}: IgnorePatternsDialogProps) {
-  const { t } = useTranslation()
+export function IgnorePatternsDialog({ open, patterns, onClose, onSave }: IgnorePatternsDialogProps) {
+  const { t } = useTranslation();
 
   return (
     <Dialog
@@ -121,13 +118,8 @@ export function IgnorePatternsDialog({
     >
       <DialogTitle sx={{ pb: 1, fontSize: 16 }}>{t('ignorePatterns.setIgnorePatterns')}</DialogTitle>
       {open ? (
-        <IgnorePatternsForm
-          key={patternsToText(patterns)}
-          patterns={patterns}
-          onClose={onClose}
-          onSave={onSave}
-        />
+        <IgnorePatternsForm key={patternsToText(patterns)} patterns={patterns} onClose={onClose} onSave={onSave} />
       ) : null}
     </Dialog>
-  )
+  );
 }

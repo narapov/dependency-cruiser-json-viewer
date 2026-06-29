@@ -1,1 +1,1 @@
-export * from './isPathVisibleInSelection'
+export * from './isPathVisibleInSelection';

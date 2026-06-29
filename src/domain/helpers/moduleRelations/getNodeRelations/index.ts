@@ -1,1 +1,1 @@
-export * from './getNodeRelations'
+export * from './getNodeRelations';

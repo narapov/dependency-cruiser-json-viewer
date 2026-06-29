@@ -1,1 +1,1 @@
-export * from './GraphLegend'
+export * from './GraphLegend';

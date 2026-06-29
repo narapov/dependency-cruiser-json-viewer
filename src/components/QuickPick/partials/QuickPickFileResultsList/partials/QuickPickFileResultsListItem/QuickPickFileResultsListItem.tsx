@@ -1,19 +1,21 @@
-import Box from '@mui/material/Box'
-import { getParentPath } from '../../../../../../domain'
-import { MaterialFileSystemIcon } from '../../../../../../Shared'
-import { useMemo } from 'react'
-import type { QuickPickFileItem } from '../../../../QuickPick.types'
-import { computeQuickPickHighlight } from './helpers/computeQuickPickHighlight'
-import { QuickPickHighlightedText } from './partials/QuickPickHighlightedText'
-import { QuickPickNameHighlight } from './partials/QuickPickNameHighlight'
-import { QuickPickPathHighlight } from './partials/QuickPickPathHighlight'
+import { useMemo } from 'react';
+
+import Box from '@mui/material/Box';
+
+import { getParentPath } from '../../../../../../domain';
+import { MaterialFileSystemIcon } from '../../../../../../Shared';
+import type { QuickPickFileItem } from '../../../../QuickPick.types';
+import { computeQuickPickHighlight } from './helpers/computeQuickPickHighlight';
+import { QuickPickHighlightedText } from './partials/QuickPickHighlightedText';
+import { QuickPickNameHighlight } from './partials/QuickPickNameHighlight';
+import { QuickPickPathHighlight } from './partials/QuickPickPathHighlight';
 
 interface QuickPickFileResultsListItemProps {
-  item: QuickPickFileItem
-  query: string
-  highlighted: boolean
-  onMouseEnter: () => void
-  onClick: () => void
+  item: QuickPickFileItem;
+  query: string;
+  highlighted: boolean;
+  onMouseEnter: () => void;
+  onClick: () => void;
 }
 
 export function QuickPickFileResultsListItem({
@@ -23,11 +25,11 @@ export function QuickPickFileResultsListItem({
   onMouseEnter,
   onClick,
 }: QuickPickFileResultsListItemProps) {
-  const parentPath = getParentPath(item.key)
+  const parentPath = getParentPath(item.key);
   const { nameIndexes, pathIndexes } = useMemo(
     () => computeQuickPickHighlight(query, item.name, item.key),
     [query, item.name, item.key],
-  )
+  );
 
   return (
     <Box
@@ -35,7 +37,7 @@ export function QuickPickFileResultsListItem({
       role="option"
       aria-selected={highlighted}
       onMouseEnter={onMouseEnter}
-      onMouseDown={(event) => event.preventDefault()}
+      onMouseDown={event => event.preventDefault()}
       onClick={onClick}
       sx={{
         display: 'flex',
@@ -76,5 +78,5 @@ export function QuickPickFileResultsListItem({
         />
       )}
     </Box>
-  )
+  );
 }

@@ -1,1 +1,1 @@
-export * from './IgnorePatternsDialog'
+export * from './IgnorePatternsDialog';

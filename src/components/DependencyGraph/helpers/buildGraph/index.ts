@@ -1,1 +1,1 @@
-export * from './buildGraph'
+export * from './buildGraph';

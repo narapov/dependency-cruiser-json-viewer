@@ -1,21 +1,21 @@
-import { MarkerType, type Edge } from '@xyflow/react'
+import { MarkerType, type Edge } from '@xyflow/react';
 
-const USER_HIGHLIGHT_EDGE_Z_INDEX = 1001
+const USER_HIGHLIGHT_EDGE_Z_INDEX = 1001;
 
 export function applyUserEdgeHighlightStyle(
   edges: Edge[],
   userEdgeHighlights: ReadonlyMap<string, string>,
   edgeDependencyKeyMap: ReadonlyMap<string, readonly string[]>,
 ): Edge[] {
-  if (userEdgeHighlights.size === 0) return edges
+  if (userEdgeHighlights.size === 0) return edges;
 
-  return edges.map((edge) => {
-    const dependencyKeys = edgeDependencyKeyMap.get(edge.id) ?? []
+  return edges.map(edge => {
+    const dependencyKeys = edgeDependencyKeyMap.get(edge.id) ?? [];
     const color = dependencyKeys
-      .map((key) => userEdgeHighlights.get(key))
-      .find((value): value is string => value != null)
+      .map(key => userEdgeHighlights.get(key))
+      .find((value): value is string => value != null);
 
-    if (color == null) return edge
+    if (color == null) return edge;
 
     const markerEnd =
       typeof edge.markerEnd === 'object' && edge.markerEnd !== null
@@ -27,7 +27,7 @@ export function applyUserEdgeHighlightStyle(
         : {
             type: MarkerType.ArrowClosed,
             color,
-          }
+          };
 
     return {
       ...edge,
@@ -38,6 +38,6 @@ export function applyUserEdgeHighlightStyle(
         stroke: color,
         strokeWidth: 3,
       },
-    }
-  })
+    };
+  });
 }

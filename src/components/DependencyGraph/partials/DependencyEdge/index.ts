@@ -1,1 +1,1 @@
-export * from './DependencyEdge'
+export * from './DependencyEdge';

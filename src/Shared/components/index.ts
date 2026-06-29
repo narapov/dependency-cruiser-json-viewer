@@ -1,1 +1,1 @@
-export * from './MaterialFileSystemIcon'
+export * from './MaterialFileSystemIcon';

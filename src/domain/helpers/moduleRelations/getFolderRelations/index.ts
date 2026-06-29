@@ -1,1 +1,1 @@
-export * from './getFolderRelations'
+export * from './getFolderRelations';

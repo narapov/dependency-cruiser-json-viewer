@@ -1,1 +1,1 @@
-export * from './treeIndex'
+export * from './treeIndex';

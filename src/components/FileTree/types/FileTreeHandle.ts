@@ -1,3 +1,3 @@
 export interface FileTreeHandle {
-  focusPath(path: string): void
+  focusPath(path: string): void;
 }

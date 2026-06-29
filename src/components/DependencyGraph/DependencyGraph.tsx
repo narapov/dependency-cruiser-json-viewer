@@ -1,6 +1,7 @@
-import Box from '@mui/material/Box'
-import { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState, type Ref } from 'react'
-import { useColorScheme, useTheme } from '@mui/material/styles'
+import { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState, type Ref } from 'react';
+
+import Box from '@mui/material/Box';
+import { useColorScheme, useTheme } from '@mui/material/styles';
 import {
   Background,
   Controls,
@@ -11,9 +12,13 @@ import {
   useReactFlow,
   type Edge,
   type Node,
-} from '@xyflow/react'
-import '@xyflow/react/dist/style.css'
-import type { IModule } from 'dependency-cruiser'
+} from '@xyflow/react';
+
+import '@xyflow/react/dist/style.css';
+
+import type { IModule } from 'dependency-cruiser';
+
+import type { FolderGroupNodeData, FolderNodeData } from './DependencyGraph.types';
 import {
   applySelectedEdgeStyle,
   applyUserEdgeHighlightStyle,
@@ -22,38 +27,38 @@ import {
   buildGraph,
   collectValidDependencyKeys,
   getEdgeHighlightColor,
-} from './helpers'
-import type { FolderGroupNodeData, FolderNodeData } from './DependencyGraph.types'
-import type { DependencyGraphHandle } from './types'
-import { DependencyEdge } from './partials/DependencyEdge'
-import { FileNode } from './partials/FileNode'
-import { FolderGroupNode } from './partials/FolderGroupNode'
-import { FolderNode } from './partials/FolderNode'
-import { GraphLegend } from './partials/GraphLegend'
-import { useEdgeContextMenu } from './hooks'
-import styles from './DependencyGraph.module.css'
+} from './helpers';
+import { useEdgeContextMenu } from './hooks';
+import { DependencyEdge } from './partials/DependencyEdge';
+import { FileNode } from './partials/FileNode';
+import { FolderGroupNode } from './partials/FolderGroupNode';
+import { FolderNode } from './partials/FolderNode';
+import { GraphLegend } from './partials/GraphLegend';
+import type { DependencyGraphHandle } from './types';
+
+import styles from './DependencyGraph.module.css';
 
 const nodeTypes = {
   folder: FolderNode,
   folderGroup: FolderGroupNode,
   file: FileNode,
-}
+};
 
 const edgeTypes = {
   dependency: DependencyEdge,
-}
+};
 
 interface DependencyGraphInnerProps {
-  imperativeRef?: Ref<DependencyGraphHandle>
-  modules: IModule[]
-  selectedPaths: string[]
-  expandedKeys: string[]
-  onToggleFolder: (path: string) => void
-  onExpandRecursive: (path: string) => void
-  onShowInFileTree: (path: string) => void
-  onShowDependencies?: (path: string) => void
-  onActivePathChange?: (path: string) => void
-  activePath?: string | null
+  imperativeRef?: Ref<DependencyGraphHandle>;
+  modules: IModule[];
+  selectedPaths: string[];
+  expandedKeys: string[];
+  onToggleFolder: (path: string) => void;
+  onExpandRecursive: (path: string) => void;
+  onShowInFileTree: (path: string) => void;
+  onShowDependencies?: (path: string) => void;
+  onActivePathChange?: (path: string) => void;
+  activePath?: string | null;
 }
 
 function DependencyGraphInner({
@@ -68,24 +73,19 @@ function DependencyGraphInner({
   onActivePathChange,
   activePath,
 }: DependencyGraphInnerProps) {
-  const theme = useTheme()
-  const { mode, systemMode } = useColorScheme()
-  const resolvedMode = mode === 'system' ? systemMode : mode
-  const { fitView, getNode, getZoom } = useReactFlow()
-  const prevExpandedKey = useRef<string | null>(null)
-  const pendingFocusPath = useRef<string | null>(null)
-  const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null)
-  const [userEdgeHighlights, setUserEdgeHighlights] = useState<ReadonlyMap<string, string>>(
-    () => new Map(),
-  )
+  const theme = useTheme();
+  const { mode, systemMode } = useColorScheme();
+  const resolvedMode = mode === 'system' ? systemMode : mode;
+  const { fitView, getNode, getZoom } = useReactFlow();
+  const prevExpandedKey = useRef<string | null>(null);
+  const pendingFocusPath = useRef<string | null>(null);
+  const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
+  const [userEdgeHighlights, setUserEdgeHighlights] = useState<ReadonlyMap<string, string>>(() => new Map());
 
-  const sources = modules.map((module) => module.source)
-  const colorMode = resolvedMode ?? 'light'
-  const folderColors = useMemo(
-    () => assignFolderColors(sources, colorMode),
-    [sources, colorMode],
-  )
-  const expandedFolders = new Set(expandedKeys)
+  const sources = modules.map(module => module.source);
+  const colorMode = resolvedMode ?? 'light';
+  const folderColors = useMemo(() => assignFolderColors(sources, colorMode), [sources, colorMode]);
+  const expandedFolders = new Set(expandedKeys);
 
   const { nodes, edges } = buildGraph({
     modules,
@@ -97,126 +97,123 @@ function DependencyGraphInner({
     onExpandRecursive,
     onShowInFileTree,
     onShowDependencies,
-  })
+  });
 
-  const activeEdgeId =
-    selectedEdgeId != null && edges.some((edge) => edge.id === selectedEdgeId)
-      ? selectedEdgeId
-      : null
+  const activeEdgeId = selectedEdgeId != null && edges.some(edge => edge.id === selectedEdgeId) ? selectedEdgeId : null;
 
   const edgeDependencyKeyMap = useMemo(
     () => buildEdgeDependencyKeyMap(modules, selectedPaths, expandedFolders, edges),
     [modules, selectedPaths, expandedFolders, edges],
-  )
+  );
 
   const displayEdges = applyUserEdgeHighlightStyle(
     applySelectedEdgeStyle(edges, activeEdgeId),
     userEdgeHighlights,
     edgeDependencyKeyMap,
-  )
+  );
 
   const setUserEdgeHighlight = useCallback(
     (edgeId: string, color: string | null) => {
-      const dependencyKeys = edgeDependencyKeyMap.get(edgeId) ?? []
-      if (dependencyKeys.length === 0) return
+      const dependencyKeys = edgeDependencyKeyMap.get(edgeId) ?? [];
+      if (dependencyKeys.length === 0) return;
 
-      setUserEdgeHighlights((prev) => {
-        const next = new Map(prev)
+      setUserEdgeHighlights(prev => {
+        const next = new Map(prev);
         for (const key of dependencyKeys) {
           if (color == null) {
-            next.delete(key)
+            next.delete(key);
           } else {
-            next.set(key, color)
+            next.set(key, color);
           }
         }
-        return next
-      })
+        return next;
+      });
     },
     [edgeDependencyKeyMap],
-  )
+  );
 
   const getEdgeHighlight = useCallback(
     (edgeId: string) => {
-      const dependencyKeys = edgeDependencyKeyMap.get(edgeId) ?? []
-      return getEdgeHighlightColor(dependencyKeys, userEdgeHighlights)
+      const dependencyKeys = edgeDependencyKeyMap.get(edgeId) ?? [];
+      return getEdgeHighlightColor(dependencyKeys, userEdgeHighlights);
     },
     [edgeDependencyKeyMap, userEdgeHighlights],
-  )
+  );
 
   useEffect(() => {
-    const validKeys = collectValidDependencyKeys(modules, selectedPaths)
-    setUserEdgeHighlights((prev) => {
-      let changed = false
-      const next = new Map<string, string>()
+    const validKeys = collectValidDependencyKeys(modules, selectedPaths);
+    setUserEdgeHighlights(prev => {
+      let changed = false;
+      const next = new Map<string, string>();
       for (const [key, color] of prev) {
         if (validKeys.has(key)) {
-          next.set(key, color)
+          next.set(key, color);
         } else {
-          changed = true
+          changed = true;
         }
       }
-      return changed ? next : prev
-    })
-  }, [modules, selectedPaths])
+      return changed ? next : prev;
+    });
+  }, [modules, selectedPaths]);
 
-  const selectionKey = selectedPaths.slice().sort().join('|')
-  const expandedStructureKey = expandedKeys.slice().sort().join('|')
+  const selectionKey = selectedPaths.slice().sort().join('|');
+  const expandedStructureKey = expandedKeys.slice().sort().join('|');
 
   const runFocusNode = (path: string) => {
     if (!getNode(path)) {
-      pendingFocusPath.current = path
-      return
+      pendingFocusPath.current = path;
+      return;
     }
-    pendingFocusPath.current = null
-    fitView({ nodes: [{ id: path }], padding: 0.5, duration: 300 })
-  }
+    pendingFocusPath.current = null;
+    fitView({ nodes: [{ id: path }], padding: 0.5, duration: 300 });
+  };
 
   const { onEdgeContextMenu, edgeContextMenu } = useEdgeContextMenu({
     onFocusNode: runFocusNode,
     getEdgeHighlight,
     onSetUserEdgeHighlight: setUserEdgeHighlight,
-  })
+  });
 
   useImperativeHandle(imperativeRef, () => ({
     focusNode(path: string) {
-      requestAnimationFrame(() => runFocusNode(path))
+      requestAnimationFrame(() => runFocusNode(path));
     },
     clearAllHighlights() {
-      setUserEdgeHighlights(new Map())
+      setUserEdgeHighlights(new Map());
     },
-  }))
+  }));
 
   useEffect(() => {
-    const path = pendingFocusPath.current
-    if (!path || !getNode(path)) return
+    const path = pendingFocusPath.current;
+    if (!path || !getNode(path)) return;
 
-    pendingFocusPath.current = null
+    pendingFocusPath.current = null;
     const frame = requestAnimationFrame(() => {
-      fitView({ nodes: [{ id: path }], padding: 0.5, duration: 300 })
-    })
-    return () => cancelAnimationFrame(frame)
-  }, [nodes, fitView, getNode])
+      fitView({ nodes: [{ id: path }], padding: 0.5, duration: 300 });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [nodes, fitView, getNode]);
 
   useEffect(() => {
-    if (nodes.length === 0) return
+    if (nodes.length === 0) return;
 
     const frame = requestAnimationFrame(() => {
-      fitView({ padding: 0.2, duration: 200 })
-    })
-    return () => cancelAnimationFrame(frame)
-  }, [selectionKey, nodes.length, fitView])
+      fitView({ padding: 0.2, duration: 200 });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [selectionKey, nodes.length, fitView]);
 
   useEffect(() => {
     if (prevExpandedKey.current === null) {
-      prevExpandedKey.current = expandedStructureKey
-      return
+      prevExpandedKey.current = expandedStructureKey;
+      return;
     }
-    if (prevExpandedKey.current === expandedStructureKey) return
-    prevExpandedKey.current = expandedStructureKey
+    if (prevExpandedKey.current === expandedStructureKey) return;
+    prevExpandedKey.current = expandedStructureKey;
 
-    if (!activePath || !getNode(activePath)) return
+    if (!activePath || !getNode(activePath)) return;
 
-    const zoom = getZoom()
+    const zoom = getZoom();
     const frame = requestAnimationFrame(() => {
       fitView({
         nodes: [{ id: activePath }],
@@ -224,40 +221,40 @@ function DependencyGraphInner({
         maxZoom: zoom,
         padding: 0.5,
         duration: 200,
-      })
-    })
-    return () => cancelAnimationFrame(frame)
-  }, [expandedStructureKey, activePath, nodes, fitView, getNode, getZoom])
+      });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [expandedStructureKey, activePath, nodes, fitView, getNode, getZoom]);
 
   const onEdgeClick = (_: React.MouseEvent, edge: Edge) => {
-    setSelectedEdgeId(edge.id)
-  }
+    setSelectedEdgeId(edge.id);
+  };
 
   const onPaneClick = () => {
-    setSelectedEdgeId(null)
-  }
+    setSelectedEdgeId(null);
+  };
 
   const onPaneContextMenu = (event: React.MouseEvent | MouseEvent) => {
-    event.preventDefault()
-  }
+    event.preventDefault();
+  };
 
   const onNodeClick = (_: React.MouseEvent, node: Node) => {
-    setSelectedEdgeId(null)
+    setSelectedEdgeId(null);
     if (activePath === node.id) {
-      return
+      return;
     }
-    onActivePathChange?.(node.id)
-  }
+    onActivePathChange?.(node.id);
+  };
 
   const nodeColor = (node: Node) => {
     if (node.type === 'folderGroup') {
-      return (node.data as FolderGroupNodeData).backgroundColor
+      return (node.data as FolderGroupNodeData).backgroundColor;
     }
     if (node.type === 'folder') {
-      return (node.data as FolderNodeData).backgroundColor
+      return (node.data as FolderNodeData).backgroundColor;
     }
-    return theme.palette.background.paper
-  }
+    return theme.palette.background.paper;
+  };
 
   if (selectedPaths.length === 0) {
     return (
@@ -272,7 +269,7 @@ function DependencyGraphInner({
       >
         Select files or folders to view dependencies
       </Box>
-    )
+    );
   }
 
   return (
@@ -300,22 +297,16 @@ function DependencyGraphInner({
         <Panel position="top-right">
           <GraphLegend />
         </Panel>
-        <MiniMap
-          position="bottom-left"
-          pannable
-          zoomable
-          nodeColor={nodeColor}
-          style={{ width: 160, height: 120 }}
-        />
+        <MiniMap position="bottom-left" pannable zoomable nodeColor={nodeColor} style={{ width: 160, height: 120 }} />
         <Controls position="bottom-right" showInteractive={false} />
       </ReactFlow>
       {edgeContextMenu}
     </>
-  )
+  );
 }
 
 interface DependencyGraphProps extends Omit<DependencyGraphInnerProps, 'imperativeRef'> {
-  ref?: Ref<DependencyGraphHandle>
+  ref?: Ref<DependencyGraphHandle>;
 }
 
 export function DependencyGraph({ ref, ...props }: DependencyGraphProps) {
@@ -325,5 +316,5 @@ export function DependencyGraph({ ref, ...props }: DependencyGraphProps) {
         <DependencyGraphInner imperativeRef={ref} {...props} />
       </ReactFlowProvider>
     </div>
-  )
+  );
 }

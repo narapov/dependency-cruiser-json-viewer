@@ -1,1 +1,1 @@
-export * from './EdgeHighlightSubmenu'
+export * from './EdgeHighlightSubmenu';

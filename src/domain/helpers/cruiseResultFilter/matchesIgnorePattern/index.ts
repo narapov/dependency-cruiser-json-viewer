@@ -1,1 +1,1 @@
-export * from './matchesIgnorePattern'
+export * from './matchesIgnorePattern';

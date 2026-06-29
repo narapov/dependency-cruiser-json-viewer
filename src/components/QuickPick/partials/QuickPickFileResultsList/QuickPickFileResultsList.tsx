@@ -1,15 +1,17 @@
-import Box from '@mui/material/Box'
-import type { RefObject } from 'react'
-import type { QuickPickFileItem } from '../../QuickPick.types'
-import { QuickPickFileResultsListItem } from './partials/QuickPickFileResultsListItem'
+import type { RefObject } from 'react';
+
+import Box from '@mui/material/Box';
+
+import type { QuickPickFileItem } from '../../QuickPick.types';
+import { QuickPickFileResultsListItem } from './partials/QuickPickFileResultsListItem';
 
 interface QuickPickFileResultsListProps {
-  results: QuickPickFileItem[]
-  query: string
-  highlightedIndex: number
-  listRef: RefObject<HTMLUListElement | null>
-  onHighlightIndex: (index: number) => void
-  onSelect: (path: string) => void
+  results: QuickPickFileItem[];
+  query: string;
+  highlightedIndex: number;
+  listRef: RefObject<HTMLUListElement | null>;
+  onHighlightIndex: (index: number) => void;
+  onSelect: (path: string) => void;
 }
 
 export function QuickPickFileResultsList({
@@ -46,5 +48,5 @@ export function QuickPickFileResultsList({
         />
       ))}
     </Box>
-  )
+  );
 }

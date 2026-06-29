@@ -1,2 +1,2 @@
-export * from './buildSearchItems'
-export * from './searchPaths'
+export * from './buildSearchItems';
+export * from './searchPaths';

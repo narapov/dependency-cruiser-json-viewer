@@ -1,1 +1,1 @@
-export * from './AppStatusBar'
+export * from './AppStatusBar';

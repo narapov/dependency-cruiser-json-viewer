@@ -1,4 +1,4 @@
 export interface QuickPickHandle {
-  openFileMode(): void
-  openCommandMode(): void
+  openFileMode(): void;
+  openCommandMode(): void;
 }

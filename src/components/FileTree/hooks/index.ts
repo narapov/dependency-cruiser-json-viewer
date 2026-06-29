@@ -1,1 +1,1 @@
-export * from './useFileTreeContextMenu'
+export * from './useFileTreeContextMenu';

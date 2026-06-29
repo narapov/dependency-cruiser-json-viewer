@@ -1,1 +1,1 @@
-export * from './getParentPath'
+export * from './getParentPath';

@@ -1,2 +1,2 @@
-export * from './ignorePatternsOptions'
-export * from './useIgnorePatterns'
+export * from './ignorePatternsOptions';
+export * from './useIgnorePatterns';

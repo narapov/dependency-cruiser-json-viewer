@@ -1,1 +1,1 @@
-export * from './FolderExpandToggle'
+export * from './FolderExpandToggle';

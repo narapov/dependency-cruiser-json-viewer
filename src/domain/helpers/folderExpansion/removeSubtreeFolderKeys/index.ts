@@ -1,1 +1,1 @@
-export * from './removeSubtreeFolderKeys'
+export * from './removeSubtreeFolderKeys';

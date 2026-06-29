@@ -1,1 +1,1 @@
-export * from './isIgnoredPath'
+export * from './isIgnoredPath';

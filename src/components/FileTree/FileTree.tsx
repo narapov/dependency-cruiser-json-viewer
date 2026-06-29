@@ -1,27 +1,29 @@
-import { useEffect, useImperativeHandle, useRef, type Ref, type SyntheticEvent } from 'react'
-import Box from '@mui/material/Box'
-import { useRichTreeViewApiRef } from '@mui/x-tree-view/hooks'
-import { RichTreeView } from '@mui/x-tree-view/RichTreeView'
-import { isPathVisibleInSelection } from '../../domain'
-import { buildFileTree, buildTreeIndex } from './helpers'
-import { FileTreeItem, FileTreeProvider } from './partials/FileTreeItem'
-import type { FileTreeHandle } from './types'
+import { useEffect, useImperativeHandle, useRef, type Ref, type SyntheticEvent } from 'react';
 
-const CLICK_DELAY_MS = 250
+import Box from '@mui/material/Box';
+import { useRichTreeViewApiRef } from '@mui/x-tree-view/hooks';
+import { RichTreeView } from '@mui/x-tree-view/RichTreeView';
 
-const SELECTION_PROPAGATION = { descendants: true, parents: true } as const
+import { isPathVisibleInSelection } from '../../domain';
+import { buildFileTree, buildTreeIndex } from './helpers';
+import { FileTreeItem, FileTreeProvider } from './partials/FileTreeItem';
+import type { FileTreeHandle } from './types';
+
+const CLICK_DELAY_MS = 250;
+
+const SELECTION_PROPAGATION = { descendants: true, parents: true } as const;
 
 interface FileTreeProps {
-  ref?: Ref<FileTreeHandle>
-  sources: string[]
-  selectedKeys?: string[]
-  onSelect?: (keys: string[]) => void
-  expandedKeys: string[]
-  onExpand: (keys: string[]) => void
-  onExpandRecursive?: (path: string) => void
-  onShowInGraph?: (path: string) => void
-  onShowDependencies?: (path: string) => void
-  activePath?: string | null
+  ref?: Ref<FileTreeHandle>;
+  sources: string[];
+  selectedKeys?: string[];
+  onSelect?: (keys: string[]) => void;
+  expandedKeys: string[];
+  onExpand: (keys: string[]) => void;
+  onExpandRecursive?: (path: string) => void;
+  onShowInGraph?: (path: string) => void;
+  onShowDependencies?: (path: string) => void;
+  activePath?: string | null;
 }
 
 export function FileTree({
@@ -36,59 +38,57 @@ export function FileTree({
   onShowDependencies,
   activePath = null,
 }: FileTreeProps) {
-  const apiRef = useRichTreeViewApiRef()
-  const clickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const apiRef = useRichTreeViewApiRef();
+  const clickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const treeData = buildFileTree(sources)
-  const treeIndex = buildTreeIndex(treeData)
+  const treeData = buildFileTree(sources);
+  const treeIndex = buildTreeIndex(treeData);
 
-  const canShowNodeInGraph = (key: string) => isPathVisibleInSelection(key, selectedKeys)
+  const canShowNodeInGraph = (key: string) => isPathVisibleInSelection(key, selectedKeys);
 
   const toggleExpand = (key: string) => {
     onExpand(
-      expandedKeys.includes(key)
-        ? expandedKeys.filter((expandedKey) => expandedKey !== key)
-        : [...expandedKeys, key],
-    )
-  }
+      expandedKeys.includes(key) ? expandedKeys.filter(expandedKey => expandedKey !== key) : [...expandedKeys, key],
+    );
+  };
 
   useImperativeHandle(ref, () => ({
     focusPath(path: string) {
       requestAnimationFrame(() => {
-        apiRef.current?.getItemDOMElement(path)?.scrollIntoView({ block: 'nearest' })
-        apiRef.current?.focusItem?.(null, path)
-      })
+        apiRef.current?.getItemDOMElement(path)?.scrollIntoView({ block: 'nearest' });
+        apiRef.current?.focusItem?.(null, path);
+      });
     },
-  }))
+  }));
 
   const handleSelectedItemsChange = (_event: unknown, itemIds?: string[]) => {
-    const keys = Array.isArray(_event) ? _event : itemIds
+    const keys = Array.isArray(_event) ? _event : itemIds;
     if (keys) {
-      onSelect?.(keys)
+      onSelect?.(keys);
     }
-  }
+  };
 
   const handleExpandedItemsChange = (_event: unknown, itemIds?: string[]) => {
-    const keys = Array.isArray(_event) ? _event : itemIds
+    const keys = Array.isArray(_event) ? _event : itemIds;
     if (keys) {
-      onExpand(keys)
+      onExpand(keys);
     }
-  }
+  };
 
   const handleShowInGraph = (itemId: string) => {
-    if (!canShowNodeInGraph(itemId)) return
-    onShowInGraph?.(itemId)
-  }
+    if (!canShowNodeInGraph(itemId)) return;
+    onShowInGraph?.(itemId);
+  };
 
   const handleItemClick = (_event: SyntheticEvent, itemId: string) => {
-    if (!canShowNodeInGraph(itemId)) return
+    if (!canShowNodeInGraph(itemId)) return;
 
-    if (clickTimerRef.current) clearTimeout(clickTimerRef.current)
+    if (clickTimerRef.current) clearTimeout(clickTimerRef.current);
     clickTimerRef.current = setTimeout(() => {
-      clickTimerRef.current = null
-      handleShowInGraph(itemId)
-    }, CLICK_DELAY_MS)
-  }
+      clickTimerRef.current = null;
+      handleShowInGraph(itemId);
+    }, CLICK_DELAY_MS);
+  };
 
   const fileTreeContext = {
     activePath,
@@ -100,25 +100,25 @@ export function FileTree({
     onShowDependencies,
     onShowInGraph: handleShowInGraph,
     onToggleExpand: toggleExpand,
-  }
+  };
 
   useEffect(() => {
-    if (!activePath) return
+    if (!activePath) return;
 
     const frame = requestAnimationFrame(() => {
-      apiRef.current?.getItemDOMElement(activePath)?.scrollIntoView({ block: 'nearest' })
-    })
+      apiRef.current?.getItemDOMElement(activePath)?.scrollIntoView({ block: 'nearest' });
+    });
 
-    return () => cancelAnimationFrame(frame)
-  }, [activePath, expandedKeys, apiRef])
+    return () => cancelAnimationFrame(frame);
+  }, [activePath, expandedKeys, apiRef]);
 
   useEffect(() => {
     return () => {
       if (clickTimerRef.current) {
-        clearTimeout(clickTimerRef.current)
+        clearTimeout(clickTimerRef.current);
       }
-    }
-  }, [])
+    };
+  }, []);
 
   return (
     <Box sx={{ height: '100%', minHeight: 0, minWidth: 0, overflowX: 'auto', overflowY: 'auto' }}>
@@ -127,7 +127,7 @@ export function FileTree({
           sx={{
             minWidth: 'max-content',
             width: '100%',
-            '& .MuiTreeItem-content': (theme) => ({
+            '& .MuiTreeItem-content': theme => ({
               borderRadius: 0,
               py: 0,
               pr: 0.5,
@@ -137,10 +137,8 @@ export function FileTree({
           }}
           apiRef={apiRef}
           items={treeData}
-          getItemId={(item) => item.key}
-          getItemLabel={(item) =>
-            typeof item.title === 'string' ? item.title : item.key
-          }
+          getItemId={item => item.key}
+          getItemLabel={item => (typeof item.title === 'string' ? item.title : item.key)}
           expandedItems={expandedKeys}
           onExpandedItemsChange={handleExpandedItemsChange}
           selectedItems={selectedKeys}
@@ -154,5 +152,5 @@ export function FileTree({
         />
       </FileTreeProvider>
     </Box>
-  )
+  );
 }

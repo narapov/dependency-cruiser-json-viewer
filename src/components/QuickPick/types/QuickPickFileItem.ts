@@ -1,5 +1,5 @@
 export interface QuickPickFileItem {
-  key: string
-  name: string
-  isFolder: boolean
+  key: string;
+  name: string;
+  isFolder: boolean;
 }
