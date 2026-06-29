@@ -10,7 +10,7 @@
   ],
   "private": true,
   "license": "MIT",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "bin": {
     "dependency-cruiser-json-viewer": "bin/dependency-cruiser-json-viewer.mjs"
@@ -21,7 +21,9 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "npm run build:ts && vite build",
+    "build:gh-pages": "npm run build:ts && vite build --base=/dependency-cruiser-json-viewer/ && npm run depcruise:json",
+    "build:ts":"tsc -b",
     "lint": "eslint .",
     "depcruise": "depcruise src",
     "depcruise:json": "depcruise src -T json -f public/cruise-result.json",
