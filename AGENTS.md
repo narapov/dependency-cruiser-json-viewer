@@ -12,24 +12,27 @@ Interactive browser viewer for [dependency-cruiser](https://github.com/sverweij/
 
 ## Commands
 
-| Command | Description | When to run |
-|---|---|---|
-| `npm run dev` | Start Vite dev server | Local development |
-| `npm run build` | Type-check and build for production | Before finishing a task |
-| `npm run preview` | Preview production build | After build verification |
-| `npm run test` | Run Vitest suite | After logic changes |
-| `npm run lint` | Run ESLint | After any TS/TSX changes |
-| `npm run depcruise` | Validate layer rules on `src` | After import/layer changes |
-| `npm run depcruise:json` | Export cruise result to `public/cruise-result.json` | When sample data needs refresh |
-| `npm run depcruise:json-for-cli` | Export cruise result to `test-data/cruise-result.json` | When CLI test data needs refresh |
-| `npm run cli:verify` | Build, refresh `test-data/cruise-result.json`, start CLI server | Local CLI verification |
+| Command                          | Description                                                     | When to run                             |
+| -------------------------------- | --------------------------------------------------------------- | --------------------------------------- |
+| `npm run dev`                    | Start Vite dev server                                           | Local development                       |
+| `npm run build`                  | Type-check and build for production                             | Before finishing a task                 |
+| `npm run preview`                | Preview production build                                        | After build verification                |
+| `npm run test`                   | Run Vitest suite                                                | After logic changes                     |
+| `npm run lint`                   | Run ESLint                                                      | After any TS/TSX changes                |
+| `npm run format`                 | Format all files with Prettier                                  | After formatting-related config changes |
+| `npm run format:check`           | Check formatting (CI-friendly)                                  | After TS/TSX changes                    |
+| `npm run depcruise`              | Validate layer rules on `src`                                   | After import/layer changes              |
+| `npm run depcruise:json`         | Export cruise result to `public/cruise-result.json`             | When sample data needs refresh          |
+| `npm run depcruise:json-for-cli` | Export cruise result to `test-data/cruise-result.json`          | When CLI test data needs refresh        |
+| `npm run cli:verify`             | Build, refresh `test-data/cruise-result.json`, start CLI server | Local CLI verification                  |
 
 **Verification checklist before finishing:**
 
 1. `npm run lint`
-2. `npm run test`
-3. `npm run depcruise` (if imports or layer boundaries changed)
-4. `npm run build` (for non-trivial changes)
+2. `npm run format:check`
+3. `npm run test`
+4. `npm run depcruise` (if imports or layer boundaries changed)
+5. `npm run build` (for non-trivial changes)
 
 ## Architecture
 
@@ -52,12 +55,12 @@ Enforced by `eslint.config.js` and `.dependency-cruiser.cjs`:
 
 ### dependency-cruiser forbidden rules
 
-| Rule | From | To (forbidden) |
-|---|---|---|
-| `no-app-from-components` | `src/components/` | `src/App/` |
-| `no-shared-from-app-or-components` | `src/Shared/` | `src/App/`, `src/components/` |
-| `no-domain-from-upper-layers` | `src/domain/` | `src/App/`, `src/components/` |
-| `no-shared-from-domain` | `src/Shared/` | `src/domain/` |
+| Rule                               | From              | To (forbidden)                |
+| ---------------------------------- | ----------------- | ----------------------------- |
+| `no-app-from-components`           | `src/components/` | `src/App/`                    |
+| `no-shared-from-app-or-components` | `src/Shared/`     | `src/App/`, `src/components/` |
+| `no-domain-from-upper-layers`      | `src/domain/`     | `src/App/`, `src/components/` |
+| `no-shared-from-domain`            | `src/Shared/`     | `src/domain/`                 |
 
 ### Legacy — do not extend
 
@@ -67,14 +70,14 @@ Enforced by `eslint.config.js` and `.dependency-cruiser.cjs`:
 
 ## Where to put new code
 
-| What | Where |
-|---|---|
-| Reusable UI feature | `src/components/<Feature>/` |
-| App-only dialogs, header, status bar | `src/App/partials/` |
-| App orchestration and state | `src/App/hooks/` |
-| Pure business logic | `src/domain/helpers/<name>/` |
-| Cross-cutting utilities | `src/Shared/` |
-| HTTP / data fetching (app-level) | `src/App/api/` |
+| What                                 | Where                        |
+| ------------------------------------ | ---------------------------- |
+| Reusable UI feature                  | `src/components/<Feature>/`  |
+| App-only dialogs, header, status bar | `src/App/partials/`          |
+| App orchestration and state          | `src/App/hooks/`             |
+| Pure business logic                  | `src/domain/helpers/<name>/` |
+| Cross-cutting utilities              | `src/Shared/`                |
+| HTTP / data fetching (app-level)     | `src/App/api/`               |
 
 ### Component module layout
 
