@@ -26,7 +26,7 @@
     "build:ts":"tsc -b",
     "lint": "eslint .",
     "depcruise": "depcruise src",
-    "depcruise:json": "depcruise src -T json -f public/cruise-result.json",
+    "depcruise:json": "depcruise src -T json -f dist/cruise-result.json",
     "depcruise:json-for-cli": "depcruise src -T json -f test-data/cruise-result.json",
     "cli:verify": "npm run build && npm run depcruise:json-for-cli && node bin/dependency-cruiser-json-viewer.mjs test-data/cruise-result.json",
     "test": "vitest run",
