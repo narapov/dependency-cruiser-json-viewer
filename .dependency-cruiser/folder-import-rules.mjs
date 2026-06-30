@@ -219,7 +219,7 @@ function buildFolderImportRules() {
   ];
 }
 
-module.exports = {
+export {
   SUBDIRS_RE,
   EXTERNAL_DEP_TYPES,
   SRC_FOLDER_SCOPE_NOT,

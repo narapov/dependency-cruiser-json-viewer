@@ -4,10 +4,10 @@ import Box from '@mui/material/Box';
 
 import { getParentPath } from '../../../../../../domain';
 import { MaterialFileSystemIcon } from '../../../../../../Shared';
+import { computeQuickPickHighlight } from '../../../../helpers/computeQuickPickHighlight';
 import type { QuickPickFileItem } from '../../../../QuickPick.types';
-import { computeQuickPickHighlight } from './helpers/computeQuickPickHighlight';
-import { QuickPickHighlightedText } from './partials/QuickPickHighlightedText';
-import { QuickPickNameHighlight } from './partials/QuickPickNameHighlight';
+import { QuickPickHighlightedText } from '../../../QuickPickHighlightedText';
+import { QuickPickNameHighlight } from '../../../QuickPickNameHighlight';
 import { QuickPickPathHighlight } from './partials/QuickPickPathHighlight';
 
 interface QuickPickFileResultsListItemProps {

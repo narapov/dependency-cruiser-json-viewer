@@ -50,13 +50,12 @@ Shared  →  no App, components, or domain
 
 ### Import rules
 
-Enforced by `eslint.config.ts` and `.dependency-cruiser.cjs`:
+Enforced by `.dependency-cruiser.mjs` (`npm run depcruise`):
 
 - Import **`domain`** only from `src/domain/index.ts` (e.g. `from '../../domain'`).
 - Import **`Shared`** only from `src/Shared/index.ts` (e.g. `from '../../Shared'`).
 - Do not import `App/helpers/*` outside `App/`.
 - Do not deep-import `partials/`, `helpers/`, or `types/` — use the module's public `index.ts` or `ComponentName.types.ts`.
-- `Shared/` is exempt from ESLint import restrictions internally.
 
 ### dependency-cruiser forbidden rules
 
@@ -66,7 +65,7 @@ Enforced by `eslint.config.ts` and `.dependency-cruiser.cjs`:
 | `shared-only-shared-and-domain`          | `src/Shared/`               | `src/Shared/`, `src/domain/`                                   |
 | `components-only-shared-domain-and-self` | `src/components/{Feature}/` | `src/Shared/`, `src/domain/`, same `src/components/{Feature}/` |
 
-Folder-level import rules (siblings, `./index`, partials branches) live in `.dependency-cruiser/folder-import-rules.cjs`.
+Folder-level import rules (siblings, `./index`, partials branches) live in `.dependency-cruiser/folder-import-rules.mjs`.
 
 ### Legacy — do not extend
 

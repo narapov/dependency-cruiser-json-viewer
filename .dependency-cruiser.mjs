@@ -1,8 +1,8 @@
 /** @type {import('dependency-cruiser').IConfiguration} */
-const { buildFolderImportRules } = require('./.dependency-cruiser/folder-import-rules.cjs');
-const { buildLayerImportRules } = require('./.dependency-cruiser/layer-import-rules.cjs');
+import { buildFolderImportRules } from './.dependency-cruiser/folder-import-rules.mjs';
+import { buildLayerImportRules } from './.dependency-cruiser/layer-import-rules.mjs';
 
-module.exports = {
+export default {
   forbidden: [...buildLayerImportRules(), ...buildFolderImportRules()],
   options: {
     doNotFollow: {

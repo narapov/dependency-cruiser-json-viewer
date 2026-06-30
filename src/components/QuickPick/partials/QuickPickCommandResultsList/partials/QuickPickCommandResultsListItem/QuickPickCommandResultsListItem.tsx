@@ -2,10 +2,10 @@ import { useMemo } from 'react';
 
 import Box from '@mui/material/Box';
 
+import { computeQuickPickHighlight } from '../../../../helpers/computeQuickPickHighlight';
 import type { QuickPickCommand } from '../../../../types';
-import { computeQuickPickHighlight } from '../../../QuickPickFileResultsList/partials/QuickPickFileResultsListItem/helpers/computeQuickPickHighlight';
-import { QuickPickHighlightedText } from '../../../QuickPickFileResultsList/partials/QuickPickFileResultsListItem/partials/QuickPickHighlightedText';
-import { QuickPickNameHighlight } from '../../../QuickPickFileResultsList/partials/QuickPickFileResultsListItem/partials/QuickPickNameHighlight';
+import { QuickPickHighlightedText } from '../../../QuickPickHighlightedText';
+import { QuickPickNameHighlight } from '../../../QuickPickNameHighlight';
 
 interface QuickPickCommandResultsListItemProps {
   command: QuickPickCommand;

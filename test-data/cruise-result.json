@@ -175,6 +175,23 @@
         },
         {
           "dynamic": false,
+          "module": "./partials/CruiseResultFileInput",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/App/partials/CruiseResultFileInput/index.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
           "module": "./partials/IgnorePatternsDialog",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
@@ -260,6 +277,23 @@
         },
         {
           "dynamic": false,
+          "module": "@mui/material/Button",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "npm",
+            "import"
+          ],
+          "resolved": "node_modules/@mui/material/Button/index.js",
+          "coreModule": false,
+          "followable": false,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": true,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
           "module": "@mui/material/CircularProgress",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
@@ -268,6 +302,40 @@
             "import"
           ],
           "resolved": "node_modules/@mui/material/CircularProgress/index.js",
+          "coreModule": false,
+          "followable": false,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": true,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "@mui/material/Snackbar",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "npm",
+            "import"
+          ],
+          "resolved": "node_modules/@mui/material/Snackbar/index.js",
+          "coreModule": false,
+          "followable": false,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": true,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "@mui/material/Stack",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "npm",
+            "import"
+          ],
+          "resolved": "node_modules/@mui/material/Stack/index.js",
           "coreModule": false,
           "followable": false,
           "couldNotResolve": false,
@@ -386,6 +454,25 @@
       "valid": true
     },
     {
+      "source": "node_modules/@mui/material/Button/index.js",
+      "followable": false,
+      "coreModule": false,
+      "couldNotResolve": false,
+      "matchesDoNotFollow": true,
+      "dependencyTypes": [
+        "npm",
+        "import"
+      ],
+      "dependencies": [],
+      "dependents": [
+        "src/App/App.tsx",
+        "src/App/partials/LanguageSelector/LanguageSelector.tsx",
+        "src/App/partials/IgnorePatternsDialog/IgnorePatternsDialog.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
       "source": "node_modules/@mui/material/CircularProgress/index.js",
       "followable": false,
       "coreModule": false,
@@ -398,6 +485,44 @@
       "dependencies": [],
       "dependents": [
         "src/App/App.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "node_modules/@mui/material/Snackbar/index.js",
+      "followable": false,
+      "coreModule": false,
+      "couldNotResolve": false,
+      "matchesDoNotFollow": true,
+      "dependencyTypes": [
+        "npm",
+        "import"
+      ],
+      "dependencies": [],
+      "dependents": [
+        "src/App/App.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "node_modules/@mui/material/Stack/index.js",
+      "followable": false,
+      "coreModule": false,
+      "couldNotResolve": false,
+      "matchesDoNotFollow": true,
+      "dependencyTypes": [
+        "npm",
+        "import"
+      ],
+      "dependencies": [],
+      "dependents": [
+        "src/App/App.tsx",
+        "src/components/DependencyPanel/DependencyPanel.tsx",
+        "src/App/partials/AppHeader/AppHeader.tsx",
+        "src/App/partials/AppStatusBar/AppStatusBar.tsx",
+        "src/App/partials/IgnorePatternsDialog/IgnorePatternsDialog.tsx"
       ],
       "orphan": false,
       "valid": true
@@ -419,6 +544,7 @@
         "src/components/DependencyGraph/DependencyGraph.tsx",
         "src/components/DependencyGraph/types/BuildGraph.ts",
         "src/components/DependencyGraph/helpers/buildGraph/buildGraph.ts",
+        "src/domain/helpers/cruiseResult/parseCruiseResultJson/parseCruiseResultJson.ts",
         "src/domain/helpers/cruiseResultFilter/countIgnoredModules/countIgnoredModules.ts",
         "src/domain/helpers/cruiseResultFilter/filterCruiseResult/filterCruiseResult.ts",
         "src/domain/helpers/dependencyUtils/isTypeOnlyDependency/isTypeOnlyDependency.ts",
@@ -430,6 +556,7 @@
         "src/App/api/cruiseResult/cruiseResult.ts",
         "src/components/DependencyGraph/helpers/buildGraph/buildGraph.test.ts",
         "src/components/DependencyGraph/helpers/getEdgeDependencyKeys/getEdgeDependencyKeys.test.ts",
+        "src/domain/helpers/cruiseResult/parseCruiseResultJson/parseCruiseResultJson.test.ts",
         "src/domain/helpers/cruiseResultFilter/countIgnoredModules/countIgnoredModules.test.ts",
         "src/domain/helpers/cruiseResultFilter/filterCruiseResult/filterCruiseResult.test.ts",
         "src/domain/helpers/moduleRelations/getFolderRelations/getFolderRelations.test.ts",
@@ -470,13 +597,15 @@
         "src/components/QuickPick/hooks/useQuickPickState/useQuickPickState.ts",
         "src/components/QuickPick/partials/QuickPickCommandResultsList/QuickPickCommandResultsList.tsx",
         "src/components/QuickPick/partials/QuickPickCommandResultsList/partials/QuickPickCommandResultsListItem/QuickPickCommandResultsListItem.tsx",
-        "src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/partials/QuickPickHighlightedText/QuickPickHighlightedText.tsx",
+        "src/components/QuickPick/partials/QuickPickHighlightedText/QuickPickHighlightedText.tsx",
         "src/components/QuickPick/partials/QuickPickFileResultsList/QuickPickFileResultsList.tsx",
         "src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/QuickPickFileResultsListItem.tsx",
         "src/App/hooks/useAppOrchestration/useAppOrchestration.ts",
         "src/App/hooks/useIgnorePatterns/useIgnorePatterns.ts",
         "src/App/hooks/useInitialDependencyCruiserState/useInitialDependencyCruiserState.ts",
+        "src/App/hooks/useLoadCruiseResultFromFile/useLoadCruiseResultFromFile.ts",
         "src/App/partials/LanguageSelector/LanguageSelector.tsx",
+        "src/App/partials/CruiseResultFileInput/CruiseResultFileInput.tsx",
         "src/App/partials/IgnorePatternsDialog/IgnorePatternsDialog.tsx",
         "src/App/partials/LanguagePickerDialog/LanguagePickerDialog.tsx",
         "src/App/partials/ThemePickerDialog/ThemePickerDialog.tsx",
@@ -507,6 +636,7 @@
         "src/components/FileTree/hooks/useFileTreeContextMenu/useFileTreeContextMenu.tsx",
         "src/components/QuickPick/QuickPick.tsx",
         "src/App/hooks/useAppCommands/useAppCommands.ts",
+        "src/App/hooks/useLoadCruiseResultFromFile/useLoadCruiseResultFromFile.ts",
         "src/App/partials/AppHeader/AppHeader.tsx",
         "src/App/partials/LanguageSelector/LanguageSelector.tsx",
         "src/i18n/config.ts",
@@ -633,7 +763,7 @@
         "src/components/QuickPick/QuickPick.tsx",
         "src/components/QuickPick/partials/QuickPickCommandResultsList/QuickPickCommandResultsList.tsx",
         "src/components/QuickPick/partials/QuickPickCommandResultsList/partials/QuickPickCommandResultsListItem/QuickPickCommandResultsListItem.tsx",
-        "src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/partials/QuickPickHighlightedText/QuickPickHighlightedText.tsx",
+        "src/components/QuickPick/partials/QuickPickHighlightedText/QuickPickHighlightedText.tsx",
         "src/components/QuickPick/partials/QuickPickFileResultsList/QuickPickFileResultsList.tsx",
         "src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/QuickPickFileResultsListItem.tsx",
         "src/App/partials/AppHeader/AppHeader.tsx",
@@ -1204,6 +1334,7 @@
       "dependents": [
         "src/Shared/helpers/queryClient/queryClient.ts",
         "src/App/hooks/useCruiseResult/useCruiseResult.ts",
+        "src/App/hooks/useLoadCruiseResultFromFile/useLoadCruiseResultFromFile.ts",
         "src/main.tsx"
       ],
       "orphan": false,
@@ -1741,9 +1872,9 @@
       "dependencies": [],
       "dependents": [
         "src/components/DependencyGraph/DependencyGraph.tsx",
-        "src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/partials/QuickPickHighlightedText/QuickPickHighlightedText.tsx",
-        "src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/partials/QuickPickNameHighlight/QuickPickNameHighlight.tsx",
-        "src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/helpers/highlightBaseStyles/highlightBaseStyles.ts",
+        "src/components/QuickPick/partials/QuickPickHighlightedText/QuickPickHighlightedText.tsx",
+        "src/components/QuickPick/partials/QuickPickNameHighlight/QuickPickNameHighlight.tsx",
+        "src/components/QuickPick/helpers/highlightBaseStyles/highlightBaseStyles.ts",
         "src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/partials/QuickPickPathHighlight/QuickPickPathHighlight.tsx",
         "src/App/partials/ThemeSelector/ThemeSelector.tsx",
         "src/App/partials/ThemePickerDialog/ThemePickerDialog.tsx",
@@ -2504,7 +2635,9 @@
         "src/components/QuickPick/helpers/searchPaths/buildSearchItems.ts",
         "src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/QuickPickFileResultsListItem.tsx",
         "src/App/hooks/useAppOrchestration/useAppOrchestration.ts",
-        "src/App/hooks/useInitialDependencyCruiserState/useInitialDependencyCruiserState.ts"
+        "src/App/api/cruiseResult/cruiseResult.ts",
+        "src/App/hooks/useInitialDependencyCruiserState/useInitialDependencyCruiserState.ts",
+        "src/App/hooks/useLoadCruiseResultFromFile/useLoadCruiseResultFromFile.ts"
       ],
       "orphan": false,
       "valid": true
@@ -2512,6 +2645,23 @@
     {
       "source": "src/domain/helpers/index.ts",
       "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./cruiseResult",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "export"
+          ],
+          "resolved": "src/domain/helpers/cruiseResult/index.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
         {
           "dynamic": false,
           "module": "./cruiseResultFilter",
@@ -2617,6 +2767,123 @@
       ],
       "dependents": [
         "src/domain/index.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/domain/helpers/cruiseResult/index.ts",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./parseCruiseResultJson",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "export"
+          ],
+          "resolved": "src/domain/helpers/cruiseResult/parseCruiseResultJson/index.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/domain/helpers/index.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/domain/helpers/cruiseResult/parseCruiseResultJson/index.ts",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./parseCruiseResultJson",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "export"
+          ],
+          "resolved": "src/domain/helpers/cruiseResult/parseCruiseResultJson/parseCruiseResultJson.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/domain/helpers/cruiseResult/index.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/domain/helpers/cruiseResult/parseCruiseResultJson/parseCruiseResultJson.ts",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "dependency-cruiser",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "npm-dev",
+            "type-only",
+            "import"
+          ],
+          "resolved": "node_modules/dependency-cruiser/src/main/index.mjs",
+          "coreModule": false,
+          "followable": false,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": true,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "zod",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "npm",
+            "import"
+          ],
+          "resolved": "node_modules/zod/index.cjs",
+          "coreModule": false,
+          "followable": false,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": true,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/domain/helpers/cruiseResult/parseCruiseResultJson/index.ts",
+        "src/domain/helpers/cruiseResult/parseCruiseResultJson/parseCruiseResultJson.test.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "node_modules/zod/index.cjs",
+      "followable": false,
+      "coreModule": false,
+      "couldNotResolve": false,
+      "matchesDoNotFollow": true,
+      "dependencyTypes": [
+        "npm",
+        "import"
+      ],
+      "dependencies": [],
+      "dependents": [
+        "src/domain/helpers/cruiseResult/parseCruiseResultJson/parseCruiseResultJson.ts"
       ],
       "orphan": false,
       "valid": true
@@ -6024,24 +6291,6 @@
         },
         {
           "dynamic": false,
-          "module": "../../domain",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "type-only",
-            "import"
-          ],
-          "resolved": "src/domain/index.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
-        {
-          "dynamic": false,
           "module": "../../Shared",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
@@ -6421,26 +6670,6 @@
       "dependencies": [],
       "dependents": [
         "src/components/DependencyPanel/DependencyPanel.tsx"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "node_modules/@mui/material/Stack/index.js",
-      "followable": false,
-      "coreModule": false,
-      "couldNotResolve": false,
-      "matchesDoNotFollow": true,
-      "dependencyTypes": [
-        "npm",
-        "import"
-      ],
-      "dependencies": [],
-      "dependents": [
-        "src/components/DependencyPanel/DependencyPanel.tsx",
-        "src/App/partials/AppHeader/AppHeader.tsx",
-        "src/App/partials/AppStatusBar/AppStatusBar.tsx",
-        "src/App/partials/IgnorePatternsDialog/IgnorePatternsDialog.tsx"
       ],
       "orphan": false,
       "valid": true
@@ -8180,7 +8409,7 @@
       "dependents": [
         "src/components/QuickPick/helpers/searchCommands/searchCommands.ts",
         "src/components/QuickPick/helpers/searchPaths/searchPaths.ts",
-        "src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/helpers/computeQuickPickHighlight/computeQuickPickHighlight.ts"
+        "src/components/QuickPick/helpers/computeQuickPickHighlight/computeQuickPickHighlight.ts"
       ],
       "orphan": false,
       "valid": true
@@ -8557,6 +8786,23 @@
       "dependencies": [
         {
           "dynamic": false,
+          "module": "../../../../helpers/computeQuickPickHighlight",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/QuickPick/helpers/computeQuickPickHighlight/index.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
           "module": "../../../../types",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
@@ -8575,14 +8821,14 @@
         },
         {
           "dynamic": false,
-          "module": "../../../QuickPickFileResultsList/partials/QuickPickFileResultsListItem/helpers/computeQuickPickHighlight",
+          "module": "../../../QuickPickHighlightedText",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
           "dependencyTypes": [
             "local",
             "import"
           ],
-          "resolved": "src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/helpers/computeQuickPickHighlight/index.ts",
+          "resolved": "src/components/QuickPick/partials/QuickPickHighlightedText/index.ts",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -8592,31 +8838,14 @@
         },
         {
           "dynamic": false,
-          "module": "../../../QuickPickFileResultsList/partials/QuickPickFileResultsListItem/partials/QuickPickHighlightedText",
+          "module": "../../../QuickPickNameHighlight",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
           "dependencyTypes": [
             "local",
             "import"
           ],
-          "resolved": "src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/partials/QuickPickHighlightedText/index.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
-        {
-          "dynamic": false,
-          "module": "../../../QuickPickFileResultsList/partials/QuickPickFileResultsListItem/partials/QuickPickNameHighlight",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/partials/QuickPickNameHighlight/index.ts",
+          "resolved": "src/components/QuickPick/partials/QuickPickNameHighlight/index.ts",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -8666,7 +8895,7 @@
       "valid": true
     },
     {
-      "source": "src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/helpers/computeQuickPickHighlight/index.ts",
+      "source": "src/components/QuickPick/helpers/computeQuickPickHighlight/index.ts",
       "dependencies": [
         {
           "dynamic": false,
@@ -8677,7 +8906,7 @@
             "local",
             "export"
           ],
-          "resolved": "src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/helpers/computeQuickPickHighlight/computeQuickPickHighlight.ts",
+          "resolved": "src/components/QuickPick/helpers/computeQuickPickHighlight/computeQuickPickHighlight.ts",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -8694,7 +8923,7 @@
       "valid": true
     },
     {
-      "source": "src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/helpers/computeQuickPickHighlight/computeQuickPickHighlight.ts",
+      "source": "src/components/QuickPick/helpers/computeQuickPickHighlight/computeQuickPickHighlight.ts",
       "dependencies": [
         {
           "dynamic": false,
@@ -8715,14 +8944,14 @@
         }
       ],
       "dependents": [
-        "src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/helpers/computeQuickPickHighlight/index.ts",
-        "src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/helpers/computeQuickPickHighlight/computeQuickPickHighlight.test.ts"
+        "src/components/QuickPick/helpers/computeQuickPickHighlight/index.ts",
+        "src/components/QuickPick/helpers/computeQuickPickHighlight/computeQuickPickHighlight.test.ts"
       ],
       "orphan": false,
       "valid": true
     },
     {
-      "source": "src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/partials/QuickPickHighlightedText/index.ts",
+      "source": "src/components/QuickPick/partials/QuickPickHighlightedText/index.ts",
       "dependencies": [
         {
           "dynamic": false,
@@ -8733,7 +8962,7 @@
             "local",
             "export"
           ],
-          "resolved": "src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/partials/QuickPickHighlightedText/QuickPickHighlightedText.tsx",
+          "resolved": "src/components/QuickPick/partials/QuickPickHighlightedText/QuickPickHighlightedText.tsx",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -8750,7 +8979,7 @@
       "valid": true
     },
     {
-      "source": "src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/partials/QuickPickHighlightedText/QuickPickHighlightedText.tsx",
+      "source": "src/components/QuickPick/partials/QuickPickHighlightedText/QuickPickHighlightedText.tsx",
       "dependencies": [
         {
           "dynamic": false,
@@ -8807,13 +9036,13 @@
         }
       ],
       "dependents": [
-        "src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/partials/QuickPickHighlightedText/index.ts"
+        "src/components/QuickPick/partials/QuickPickHighlightedText/index.ts"
       ],
       "orphan": false,
       "valid": true
     },
     {
-      "source": "src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/partials/QuickPickNameHighlight/index.ts",
+      "source": "src/components/QuickPick/partials/QuickPickNameHighlight/index.ts",
       "dependencies": [
         {
           "dynamic": false,
@@ -8824,7 +9053,7 @@
             "local",
             "export"
           ],
-          "resolved": "src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/partials/QuickPickNameHighlight/QuickPickNameHighlight.tsx",
+          "resolved": "src/components/QuickPick/partials/QuickPickNameHighlight/QuickPickNameHighlight.tsx",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -8841,7 +9070,7 @@
       "valid": true
     },
     {
-      "source": "src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/partials/QuickPickNameHighlight/QuickPickNameHighlight.tsx",
+      "source": "src/components/QuickPick/partials/QuickPickNameHighlight/QuickPickNameHighlight.tsx",
       "dependencies": [
         {
           "dynamic": false,
@@ -8852,7 +9081,7 @@
             "local",
             "import"
           ],
-          "resolved": "src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/helpers/highlightBaseStyles/index.ts",
+          "resolved": "src/components/QuickPick/helpers/highlightBaseStyles/index.ts",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -8879,13 +9108,13 @@
         }
       ],
       "dependents": [
-        "src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/partials/QuickPickNameHighlight/index.ts"
+        "src/components/QuickPick/partials/QuickPickNameHighlight/index.ts"
       ],
       "orphan": false,
       "valid": true
     },
     {
-      "source": "src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/helpers/highlightBaseStyles/index.ts",
+      "source": "src/components/QuickPick/helpers/highlightBaseStyles/index.ts",
       "dependencies": [
         {
           "dynamic": false,
@@ -8896,7 +9125,7 @@
             "local",
             "export"
           ],
-          "resolved": "src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/helpers/highlightBaseStyles/highlightBaseStyles.ts",
+          "resolved": "src/components/QuickPick/helpers/highlightBaseStyles/highlightBaseStyles.ts",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -8906,14 +9135,14 @@
         }
       ],
       "dependents": [
-        "src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/partials/QuickPickNameHighlight/QuickPickNameHighlight.tsx",
+        "src/components/QuickPick/partials/QuickPickNameHighlight/QuickPickNameHighlight.tsx",
         "src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/partials/QuickPickPathHighlight/QuickPickPathHighlight.tsx"
       ],
       "orphan": false,
       "valid": true
     },
     {
-      "source": "src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/helpers/highlightBaseStyles/highlightBaseStyles.ts",
+      "source": "src/components/QuickPick/helpers/highlightBaseStyles/highlightBaseStyles.ts",
       "dependencies": [
         {
           "dynamic": false,
@@ -8935,7 +9164,7 @@
         }
       ],
       "dependents": [
-        "src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/helpers/highlightBaseStyles/index.ts"
+        "src/components/QuickPick/helpers/highlightBaseStyles/index.ts"
       ],
       "orphan": false,
       "valid": true
@@ -9143,6 +9372,23 @@
         },
         {
           "dynamic": false,
+          "module": "../../../../helpers/computeQuickPickHighlight",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/QuickPick/helpers/computeQuickPickHighlight/index.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
           "module": "../../../../QuickPick.types",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
@@ -9161,14 +9407,14 @@
         },
         {
           "dynamic": false,
-          "module": "./helpers/computeQuickPickHighlight",
+          "module": "../../../QuickPickHighlightedText",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
           "dependencyTypes": [
             "local",
             "import"
           ],
-          "resolved": "src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/helpers/computeQuickPickHighlight/index.ts",
+          "resolved": "src/components/QuickPick/partials/QuickPickHighlightedText/index.ts",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -9178,31 +9424,14 @@
         },
         {
           "dynamic": false,
-          "module": "./partials/QuickPickHighlightedText",
+          "module": "../../../QuickPickNameHighlight",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
           "dependencyTypes": [
             "local",
             "import"
           ],
-          "resolved": "src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/partials/QuickPickHighlightedText/index.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
-        {
-          "dynamic": false,
-          "module": "./partials/QuickPickNameHighlight",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "import"
-          ],
-          "resolved": "src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/partials/QuickPickNameHighlight/index.ts",
+          "resolved": "src/components/QuickPick/partials/QuickPickNameHighlight/index.ts",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -9300,14 +9529,14 @@
       "dependencies": [
         {
           "dynamic": false,
-          "module": "../../helpers/highlightBaseStyles",
+          "module": "../../../../../../helpers/highlightBaseStyles",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
           "dependencyTypes": [
             "local",
             "import"
           ],
-          "resolved": "src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/helpers/highlightBaseStyles/index.ts",
+          "resolved": "src/components/QuickPick/helpers/highlightBaseStyles/index.ts",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -9420,6 +9649,23 @@
             "export"
           ],
           "resolved": "src/App/hooks/useInitialDependencyCruiserState/index.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "./useLoadCruiseResultFromFile",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "export"
+          ],
+          "resolved": "src/App/hooks/useLoadCruiseResultFromFile/index.ts",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -9625,24 +9871,6 @@
         },
         {
           "dynamic": false,
-          "module": "../../../domain",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "type-only",
-            "import"
-          ],
-          "resolved": "src/domain/index.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        },
-        {
-          "dynamic": false,
           "module": "../../../Shared",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
@@ -9784,6 +10012,23 @@
     {
       "source": "src/App/api/cruiseResult/cruiseResult.ts",
       "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../../../domain",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/domain/index.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
         {
           "dynamic": false,
           "module": "axios",
@@ -10027,6 +10272,111 @@
       ],
       "dependents": [
         "src/App/hooks/useInitialDependencyCruiserState/index.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/App/hooks/useLoadCruiseResultFromFile/index.ts",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./useLoadCruiseResultFromFile",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "export"
+          ],
+          "resolved": "src/App/hooks/useLoadCruiseResultFromFile/useLoadCruiseResultFromFile.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/App/hooks/index.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/App/hooks/useLoadCruiseResultFromFile/useLoadCruiseResultFromFile.ts",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../../../domain",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/domain/index.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "@tanstack/react-query",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "npm",
+            "import"
+          ],
+          "resolved": "node_modules/@tanstack/react-query/build/legacy/index.cjs",
+          "coreModule": false,
+          "followable": false,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": true,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "react",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "npm",
+            "import"
+          ],
+          "resolved": "node_modules/react/index.js",
+          "coreModule": false,
+          "followable": false,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": true,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "react-i18next",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "npm",
+            "import"
+          ],
+          "resolved": "node_modules/react-i18next/dist/commonjs/index.js",
+          "coreModule": false,
+          "followable": false,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": true,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/App/hooks/useLoadCruiseResultFromFile/index.ts"
       ],
       "orphan": false,
       "valid": true
@@ -10475,24 +10825,6 @@
       ],
       "dependents": [
         "src/App/partials/LanguageSelector/index.ts"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "node_modules/@mui/material/Button/index.js",
-      "followable": false,
-      "coreModule": false,
-      "couldNotResolve": false,
-      "matchesDoNotFollow": true,
-      "dependencyTypes": [
-        "npm",
-        "import"
-      ],
-      "dependencies": [],
-      "dependents": [
-        "src/App/partials/LanguageSelector/LanguageSelector.tsx",
-        "src/App/partials/IgnorePatternsDialog/IgnorePatternsDialog.tsx"
       ],
       "orphan": false,
       "valid": true
@@ -11328,6 +11660,60 @@
       "valid": true
     },
     {
+      "source": "src/App/partials/CruiseResultFileInput/index.ts",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./CruiseResultFileInput",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "export"
+          ],
+          "resolved": "src/App/partials/CruiseResultFileInput/CruiseResultFileInput.tsx",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/App/App.tsx"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/App/partials/CruiseResultFileInput/CruiseResultFileInput.tsx",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "react",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "npm",
+            "import"
+          ],
+          "resolved": "node_modules/react/index.js",
+          "coreModule": false,
+          "followable": false,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": true,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/App/partials/CruiseResultFileInput/index.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
       "source": "src/App/partials/IgnorePatternsDialog/index.ts",
       "dependencies": [
         {
@@ -12155,9 +12541,10 @@
         "src/components/DependencyGraph/helpers/assignFolderColors/assignFolderColors.test.ts",
         "src/components/DependencyGraph/helpers/buildGraph/buildGraph.test.ts",
         "src/components/DependencyGraph/helpers/getEdgeDependencyKeys/getEdgeDependencyKeys.test.ts",
+        "src/components/QuickPick/helpers/computeQuickPickHighlight/computeQuickPickHighlight.test.ts",
         "src/components/QuickPick/helpers/searchCommands/searchCommands.test.ts",
         "src/components/QuickPick/helpers/searchPaths/searchPaths.test.ts",
-        "src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/helpers/computeQuickPickHighlight/computeQuickPickHighlight.test.ts",
+        "src/domain/helpers/cruiseResult/parseCruiseResultJson/parseCruiseResultJson.test.ts",
         "src/domain/helpers/cruiseResultFilter/countIgnoredModules/countIgnoredModules.test.ts",
         "src/domain/helpers/cruiseResultFilter/filterCruiseResult/filterCruiseResult.test.ts",
         "src/domain/helpers/dependencyCruiserState/getDefaultExpandedKeys/getDefaultExpandedKeys.test.ts",
@@ -12600,6 +12987,48 @@
       "valid": true
     },
     {
+      "source": "src/components/QuickPick/helpers/computeQuickPickHighlight/computeQuickPickHighlight.test.ts",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./computeQuickPickHighlight",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/components/QuickPick/helpers/computeQuickPickHighlight/computeQuickPickHighlight.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "vitest",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "npm-dev",
+            "import"
+          ],
+          "resolved": "node_modules/vitest/dist/index.js",
+          "coreModule": false,
+          "followable": false,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": true,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
       "source": "src/components/QuickPick/helpers/searchCommands/searchCommands.test.ts",
       "dependencies": [
         {
@@ -12737,22 +13166,40 @@
       "valid": true
     },
     {
-      "source": "src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/helpers/computeQuickPickHighlight/computeQuickPickHighlight.test.ts",
+      "source": "src/domain/helpers/cruiseResult/parseCruiseResultJson/parseCruiseResultJson.test.ts",
       "dependencies": [
         {
           "dynamic": false,
-          "module": "./computeQuickPickHighlight",
+          "module": "./parseCruiseResultJson",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
           "dependencyTypes": [
             "local",
             "import"
           ],
-          "resolved": "src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/helpers/computeQuickPickHighlight/computeQuickPickHighlight.ts",
+          "resolved": "src/domain/helpers/cruiseResult/parseCruiseResultJson/parseCruiseResultJson.ts",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
           "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "dependency-cruiser",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "npm-dev",
+            "type-only",
+            "import"
+          ],
+          "resolved": "node_modules/dependency-cruiser/src/main/index.mjs",
+          "coreModule": false,
+          "followable": false,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": true,
           "circular": false,
           "valid": true
         },
@@ -13762,10 +14209,10 @@
     "warn": 0,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 310,
-    "totalDependenciesCruised": 582,
+    "totalCruised": 320,
+    "totalDependenciesCruised": 601,
     "optionsUsed": {
-      "baseDir": "/Users/nikolayarapov/repo/deps-viewer",
+      "baseDir": "/Users/nikolayarapov/repo/dependency-cruiser-json-viewer",
       "combinedDependencies": false,
       "detectJSDocImports": false,
       "detectProcessBuiltinModuleCalls": false,
@@ -13784,7 +14231,7 @@
       "outputTo": "test-data/cruise-result.json",
       "outputType": "json",
       "preserveSymlinks": false,
-      "rulesFile": ".dependency-cruiser.cjs",
+      "rulesFile": ".dependency-cruiser.mjs",
       "skipAnalysisNotInRules": false,
       "tsConfig": {
         "fileName": "tsconfig.app.json"
@@ -13795,46 +14242,934 @@
     "ruleSetUsed": {
       "forbidden": [
         {
-          "name": "no-app-from-components",
-          "severity": "error",
-          "from": {
-            "path": "^src/components/"
-          },
-          "to": {
-            "path": "^src/App/"
-          },
-          "scope": "module"
-        },
-        {
-          "name": "no-shared-from-app-or-components",
-          "severity": "error",
-          "from": {
-            "path": "^src/Shared/"
-          },
-          "to": {
-            "path": "^src/(App|components)/"
-          },
-          "scope": "module"
-        },
-        {
-          "name": "no-domain-from-upper-layers",
+          "name": "domain-only-domain",
           "severity": "error",
           "from": {
             "path": "^src/domain/"
           },
           "to": {
-            "path": "^src/(App|components)/"
+            "dependencyTypesNot": [
+              "npm",
+              "npm-dev",
+              "core",
+              "type-only"
+            ],
+            "pathNot": "^src/domain/"
           },
           "scope": "module"
         },
         {
-          "name": "no-shared-from-domain",
+          "name": "shared-only-shared-and-domain",
           "severity": "error",
           "from": {
             "path": "^src/Shared/"
           },
           "to": {
-            "path": "^src/domain/"
+            "dependencyTypesNot": [
+              "npm",
+              "npm-dev",
+              "core",
+              "type-only"
+            ],
+            "pathNot": "^src/Shared/|^src/domain/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "components-only-shared-domain-and-self",
+          "severity": "error",
+          "from": {
+            "path": "(^src/components/([^/]+))/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "npm-dev",
+              "core",
+              "type-only"
+            ],
+            "pathNot": "^src/Shared/|^src/domain/|$1/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "index-no-ancestor",
+          "severity": "error",
+          "from": {
+            "path": "^src/.+/index\\.ts$",
+            "pathNot": "^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "ancestor": true
+          },
+          "scope": "module"
+        },
+        {
+          "name": "non-index-no-local-index",
+          "severity": "error",
+          "from": {
+            "path": "(^src/.+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "$1/index\\.ts$"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "same-dir-no-deep",
+          "severity": "error",
+          "from": {
+            "path": "(^src/.+)/[^/]+$",
+            "pathNot": "^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "$1/.+/.+",
+            "pathNot": "$1/[^/]+/index\\.ts$|$1/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/[^/]+$|$1/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/[^/]+/index\\.ts$"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "ancestor-no-deep-subdir",
+          "severity": "error",
+          "from": {
+            "path": "(^src/.+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "ancestor": true,
+            "path": "(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/[^/]+/[^/]+",
+            "pathNot": "(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/[^/]+/index\\.ts$"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "ancestor-no-nested-partials",
+          "severity": "error",
+          "from": {
+            "path": "(^src/.+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "ancestor": true,
+            "path": "partials/[^/]+/partials/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-no-nested-partials-app-d0",
+          "severity": "error",
+          "from": {
+            "path": "(^src/App/partials/([^/]+))/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/partials/",
+            "pathNot": "^$1/|partials/$2/partials/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-sibling-then-subdir-app-d0",
+          "severity": "error",
+          "from": {
+            "path": "(^src/App/partials/([^/]+))/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/[^/]+",
+            "pathNot": "^$1/|partials/$2/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-no-nested-partials-app-d1",
+          "severity": "error",
+          "from": {
+            "path": "(^src/App/partials/([^/]+)/partials/[^/]+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/partials/",
+            "pathNot": "^$1/|partials/$2/partials/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-sibling-then-subdir-app-d1",
+          "severity": "error",
+          "from": {
+            "path": "(^src/App/partials/([^/]+)/partials/[^/]+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/[^/]+",
+            "pathNot": "^$1/|partials/$2/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-no-nested-partials-app-d2",
+          "severity": "error",
+          "from": {
+            "path": "(^src/App/partials/([^/]+)/partials/[^/]+/partials/[^/]+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/partials/",
+            "pathNot": "^$1/|partials/$2/partials/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-sibling-then-subdir-app-d2",
+          "severity": "error",
+          "from": {
+            "path": "(^src/App/partials/([^/]+)/partials/[^/]+/partials/[^/]+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/[^/]+",
+            "pathNot": "^$1/|partials/$2/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-no-nested-partials-app-d3",
+          "severity": "error",
+          "from": {
+            "path": "(^src/App/partials/([^/]+)/partials/[^/]+/partials/[^/]+/partials/[^/]+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/partials/",
+            "pathNot": "^$1/|partials/$2/partials/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-sibling-then-subdir-app-d3",
+          "severity": "error",
+          "from": {
+            "path": "(^src/App/partials/([^/]+)/partials/[^/]+/partials/[^/]+/partials/[^/]+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/[^/]+",
+            "pathNot": "^$1/|partials/$2/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-no-nested-partials-app-d4",
+          "severity": "error",
+          "from": {
+            "path": "(^src/App/partials/([^/]+)/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/partials/",
+            "pathNot": "^$1/|partials/$2/partials/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-sibling-then-subdir-app-d4",
+          "severity": "error",
+          "from": {
+            "path": "(^src/App/partials/([^/]+)/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/[^/]+",
+            "pathNot": "^$1/|partials/$2/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-no-nested-partials-app-d5",
+          "severity": "error",
+          "from": {
+            "path": "(^src/App/partials/([^/]+)/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/partials/",
+            "pathNot": "^$1/|partials/$2/partials/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-sibling-then-subdir-app-d5",
+          "severity": "error",
+          "from": {
+            "path": "(^src/App/partials/([^/]+)/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/[^/]+",
+            "pathNot": "^$1/|partials/$2/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-no-nested-partials-app-d6",
+          "severity": "error",
+          "from": {
+            "path": "(^src/App/partials/([^/]+)/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/partials/",
+            "pathNot": "^$1/|partials/$2/partials/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-sibling-then-subdir-app-d6",
+          "severity": "error",
+          "from": {
+            "path": "(^src/App/partials/([^/]+)/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/[^/]+",
+            "pathNot": "^$1/|partials/$2/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-no-nested-partials-app-d7",
+          "severity": "error",
+          "from": {
+            "path": "(^src/App/partials/([^/]+)/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/partials/",
+            "pathNot": "^$1/|partials/$2/partials/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-sibling-then-subdir-app-d7",
+          "severity": "error",
+          "from": {
+            "path": "(^src/App/partials/([^/]+)/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/[^/]+",
+            "pathNot": "^$1/|partials/$2/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-no-nested-partials-app-d8",
+          "severity": "error",
+          "from": {
+            "path": "(^src/App/partials/([^/]+)/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/partials/",
+            "pathNot": "^$1/|partials/$2/partials/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-sibling-then-subdir-app-d8",
+          "severity": "error",
+          "from": {
+            "path": "(^src/App/partials/([^/]+)/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/[^/]+",
+            "pathNot": "^$1/|partials/$2/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-no-nested-partials-app-d9",
+          "severity": "error",
+          "from": {
+            "path": "(^src/App/partials/([^/]+)/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/partials/",
+            "pathNot": "^$1/|partials/$2/partials/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-sibling-then-subdir-app-d9",
+          "severity": "error",
+          "from": {
+            "path": "(^src/App/partials/([^/]+)/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/[^/]+",
+            "pathNot": "^$1/|partials/$2/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-no-nested-partials-app-d10",
+          "severity": "error",
+          "from": {
+            "path": "(^src/App/partials/([^/]+)/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/partials/",
+            "pathNot": "^$1/|partials/$2/partials/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-sibling-then-subdir-app-d10",
+          "severity": "error",
+          "from": {
+            "path": "(^src/App/partials/([^/]+)/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/[^/]+",
+            "pathNot": "^$1/|partials/$2/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-no-nested-partials-components-d0",
+          "severity": "error",
+          "from": {
+            "path": "(^src/components/[^/]+/partials/([^/]+))/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/partials/",
+            "pathNot": "^$1/|partials/$2/partials/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-sibling-then-subdir-components-d0",
+          "severity": "error",
+          "from": {
+            "path": "(^src/components/[^/]+/partials/([^/]+))/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/[^/]+",
+            "pathNot": "^$1/|partials/$2/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-no-nested-partials-components-d1",
+          "severity": "error",
+          "from": {
+            "path": "(^src/components/[^/]+/partials/([^/]+)/partials/[^/]+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/partials/",
+            "pathNot": "^$1/|partials/$2/partials/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-sibling-then-subdir-components-d1",
+          "severity": "error",
+          "from": {
+            "path": "(^src/components/[^/]+/partials/([^/]+)/partials/[^/]+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/[^/]+",
+            "pathNot": "^$1/|partials/$2/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-no-nested-partials-components-d2",
+          "severity": "error",
+          "from": {
+            "path": "(^src/components/[^/]+/partials/([^/]+)/partials/[^/]+/partials/[^/]+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/partials/",
+            "pathNot": "^$1/|partials/$2/partials/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-sibling-then-subdir-components-d2",
+          "severity": "error",
+          "from": {
+            "path": "(^src/components/[^/]+/partials/([^/]+)/partials/[^/]+/partials/[^/]+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/[^/]+",
+            "pathNot": "^$1/|partials/$2/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-no-nested-partials-components-d3",
+          "severity": "error",
+          "from": {
+            "path": "(^src/components/[^/]+/partials/([^/]+)/partials/[^/]+/partials/[^/]+/partials/[^/]+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/partials/",
+            "pathNot": "^$1/|partials/$2/partials/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-sibling-then-subdir-components-d3",
+          "severity": "error",
+          "from": {
+            "path": "(^src/components/[^/]+/partials/([^/]+)/partials/[^/]+/partials/[^/]+/partials/[^/]+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/[^/]+",
+            "pathNot": "^$1/|partials/$2/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-no-nested-partials-components-d4",
+          "severity": "error",
+          "from": {
+            "path": "(^src/components/[^/]+/partials/([^/]+)/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/partials/",
+            "pathNot": "^$1/|partials/$2/partials/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-sibling-then-subdir-components-d4",
+          "severity": "error",
+          "from": {
+            "path": "(^src/components/[^/]+/partials/([^/]+)/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/[^/]+",
+            "pathNot": "^$1/|partials/$2/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-no-nested-partials-components-d5",
+          "severity": "error",
+          "from": {
+            "path": "(^src/components/[^/]+/partials/([^/]+)/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/partials/",
+            "pathNot": "^$1/|partials/$2/partials/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-sibling-then-subdir-components-d5",
+          "severity": "error",
+          "from": {
+            "path": "(^src/components/[^/]+/partials/([^/]+)/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/[^/]+",
+            "pathNot": "^$1/|partials/$2/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-no-nested-partials-components-d6",
+          "severity": "error",
+          "from": {
+            "path": "(^src/components/[^/]+/partials/([^/]+)/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/partials/",
+            "pathNot": "^$1/|partials/$2/partials/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-sibling-then-subdir-components-d6",
+          "severity": "error",
+          "from": {
+            "path": "(^src/components/[^/]+/partials/([^/]+)/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/[^/]+",
+            "pathNot": "^$1/|partials/$2/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-no-nested-partials-components-d7",
+          "severity": "error",
+          "from": {
+            "path": "(^src/components/[^/]+/partials/([^/]+)/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/partials/",
+            "pathNot": "^$1/|partials/$2/partials/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-sibling-then-subdir-components-d7",
+          "severity": "error",
+          "from": {
+            "path": "(^src/components/[^/]+/partials/([^/]+)/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/[^/]+",
+            "pathNot": "^$1/|partials/$2/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-no-nested-partials-components-d8",
+          "severity": "error",
+          "from": {
+            "path": "(^src/components/[^/]+/partials/([^/]+)/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/partials/",
+            "pathNot": "^$1/|partials/$2/partials/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-sibling-then-subdir-components-d8",
+          "severity": "error",
+          "from": {
+            "path": "(^src/components/[^/]+/partials/([^/]+)/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/[^/]+",
+            "pathNot": "^$1/|partials/$2/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-no-nested-partials-components-d9",
+          "severity": "error",
+          "from": {
+            "path": "(^src/components/[^/]+/partials/([^/]+)/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/partials/",
+            "pathNot": "^$1/|partials/$2/partials/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-sibling-then-subdir-components-d9",
+          "severity": "error",
+          "from": {
+            "path": "(^src/components/[^/]+/partials/([^/]+)/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/[^/]+",
+            "pathNot": "^$1/|partials/$2/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-no-nested-partials-components-d10",
+          "severity": "error",
+          "from": {
+            "path": "(^src/components/[^/]+/partials/([^/]+)/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/partials/",
+            "pathNot": "^$1/|partials/$2/partials/"
+          },
+          "scope": "module"
+        },
+        {
+          "name": "outside-dir-sibling-then-subdir-components-d10",
+          "severity": "error",
+          "from": {
+            "path": "(^src/components/[^/]+/partials/([^/]+)/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+)/[^/]+$",
+            "pathNot": "/index\\.ts$|^src/i18n/"
+          },
+          "to": {
+            "dependencyTypesNot": [
+              "npm",
+              "core",
+              "type-only"
+            ],
+            "path": "partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/[^/]+",
+            "pathNot": "^$1/|partials/$2/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/|partials/$2/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/partials/[^/]+/(?:hooks|partials|hocs|contexts|types|constants|helpers|api)/"
           },
           "scope": "module"
         }

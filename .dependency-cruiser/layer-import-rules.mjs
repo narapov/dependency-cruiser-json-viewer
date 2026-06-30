@@ -63,7 +63,4 @@ function buildLayerImportRules() {
   ];
 }
 
-module.exports = {
-  EXTERNAL_DEP_TYPES,
-  buildLayerImportRules,
-};
+export { EXTERNAL_DEP_TYPES, buildLayerImportRules };

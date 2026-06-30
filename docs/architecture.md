@@ -12,7 +12,7 @@ main → App → components/* → domain → Shared
 - **`src/components/*`** — feature modules (FileTree, DependencyGraph, QuickPick, DependencyPanel, AppLayout). May import **`src/Shared/`**, **`src/domain/`**, and files within the **same** `src/components/{Feature}/` tree.
 - **`src/components/AppLayout/`** — layout shell only (resize handles, CSS regions, slots).
 
-Layer boundaries are enforced by [`.dependency-cruiser/layer-import-rules.cjs`](../.dependency-cruiser/layer-import-rules.cjs) (`domain-only-domain`, `shared-only-shared-and-domain`, `components-only-shared-domain-and-self`).
+Layer boundaries are enforced by [`.dependency-cruiser/layer-import-rules.mjs`](../.dependency-cruiser/layer-import-rules.mjs) (`domain-only-domain`, `shared-only-shared-and-domain`, `components-only-shared-domain-and-self`).
 
 ## Module structure
 
@@ -63,7 +63,7 @@ Allowed subfolders (`subdir`): `hooks`, `partials`, `hocs`, `contexts`, `types`,
 
 ### Folder import rules (per directory)
 
-Rules are **recursive** — the same constraints apply at every folder depth. Enforced by [`.dependency-cruiser/folder-import-rules.cjs`](../.dependency-cruiser/folder-import-rules.cjs) (`npm run depcruise`). Scope: `src/**` except `src/i18n/`.
+Rules are **recursive** — the same constraints apply at every folder depth. Enforced by [`.dependency-cruiser/folder-import-rules.mjs`](../.dependency-cruiser/folder-import-rules.mjs) (`npm run depcruise`). Scope: `src/**` except `src/i18n/`.
 
 | Direction                                | Allowed                                                                                                                                 | Forbidden                                                                                             |
 | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
@@ -202,5 +202,4 @@ React 19: `ref` is a regular prop (no `forwardRef`). Project uses React Compiler
 
 ## Enforcement
 
-- ESLint `no-restricted-imports` — blocks deep Shared imports and cross-module internals.
-- `dependency-cruiser` — layer rules ([`.dependency-cruiser/layer-import-rules.cjs`](../.dependency-cruiser/layer-import-rules.cjs)) and folder import rules for `src/**` ([`.dependency-cruiser/folder-import-rules.cjs`](../.dependency-cruiser/folder-import-rules.cjs), `npm run depcruise`). See [Folder import rules](#folder-import-rules-per-directory) above.
+- `dependency-cruiser` — layer rules ([`.dependency-cruiser/layer-import-rules.mjs`](../.dependency-cruiser/layer-import-rules.mjs)) and folder import rules for `src/**` ([`.dependency-cruiser/folder-import-rules.mjs`](../.dependency-cruiser/folder-import-rules.mjs), `npm run depcruise`). See [Folder import rules](#folder-import-rules-per-directory) above.
