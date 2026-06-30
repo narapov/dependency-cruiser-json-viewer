@@ -60,12 +60,13 @@ Enforced by `eslint.config.ts` and `.dependency-cruiser.cjs`:
 
 ### dependency-cruiser forbidden rules
 
-| Rule                               | From              | To (forbidden)                |
-| ---------------------------------- | ----------------- | ----------------------------- |
-| `no-app-from-components`           | `src/components/` | `src/App/`                    |
-| `no-shared-from-app-or-components` | `src/Shared/`     | `src/App/`, `src/components/` |
-| `no-domain-from-upper-layers`      | `src/domain/`     | `src/App/`, `src/components/` |
-| `no-shared-from-domain`            | `src/Shared/`     | `src/domain/`                 |
+| Rule                                     | From                        | Allowed targets                                                |
+| ---------------------------------------- | --------------------------- | -------------------------------------------------------------- |
+| `domain-only-domain`                     | `src/domain/`               | `src/domain/` only                                             |
+| `shared-only-shared-and-domain`          | `src/Shared/`               | `src/Shared/`, `src/domain/`                                   |
+| `components-only-shared-domain-and-self` | `src/components/{Feature}/` | `src/Shared/`, `src/domain/`, same `src/components/{Feature}/` |
+
+Folder-level import rules (siblings, `./index`, partials branches) live in `.dependency-cruiser/folder-import-rules.cjs`.
 
 ### Legacy — do not extend
 

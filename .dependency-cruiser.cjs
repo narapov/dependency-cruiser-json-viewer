@@ -1,31 +1,9 @@
 /** @type {import('dependency-cruiser').IConfiguration} */
+const { buildFolderImportRules } = require('./.dependency-cruiser/folder-import-rules.cjs');
+const { buildLayerImportRules } = require('./.dependency-cruiser/layer-import-rules.cjs');
+
 module.exports = {
-  forbidden: [
-    {
-      name: 'no-app-from-components',
-      severity: 'error',
-      from: { path: '^src/components/' },
-      to: { path: '^src/App/' },
-    },
-    {
-      name: 'no-shared-from-app-or-components',
-      severity: 'error',
-      from: { path: '^src/Shared/' },
-      to: { path: '^src/(App|components)/' },
-    },
-    {
-      name: 'no-domain-from-upper-layers',
-      severity: 'error',
-      from: { path: '^src/domain/' },
-      to: { path: '^src/(App|components)/' },
-    },
-    {
-      name: 'no-shared-from-domain',
-      severity: 'error',
-      from: { path: '^src/Shared/' },
-      to: { path: '^src/domain/' },
-    },
-  ],
+  forbidden: [...buildLayerImportRules(), ...buildFolderImportRules()],
   options: {
     doNotFollow: {
       path: 'node_modules',
