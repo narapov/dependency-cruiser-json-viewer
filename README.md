@@ -6,7 +6,7 @@ Built with [React](https://react.dev/), [MUI](https://mui.com/), and [@xyflow/re
 
 ## Demo
 
-![demo](https://github.com/user-attachments/assets/51771a09-9395-44f3-8319-ca3fd0318370)
+![demo](https://raw.githubusercontent.com/narapov/dependency-cruiser-json-viewer/main/demo.webp)
 
 Try it live: [https://narapov.github.io/dependency-cruiser-json-viewer/](https://narapov.github.io/dependency-cruiser-json-viewer/)
 
