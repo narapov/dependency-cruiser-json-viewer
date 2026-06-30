@@ -13,6 +13,7 @@ export default {
   },
   npm: {
     publish: true,
+    skipChecks: true,
   },
   plugins: {
     '@release-it/conventional-changelog': {
