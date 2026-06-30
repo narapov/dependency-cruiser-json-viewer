@@ -6,6 +6,8 @@ Built with [React](https://react.dev/), [MUI](https://mui.com/), and [@xyflow/re
 
 ## Demo
 
+![demo](https://github.com/user-attachments/assets/51771a09-9395-44f3-8319-ca3fd0318370)
+
 Try it live: [https://narapov.github.io/dependency-cruiser-json-viewer/](https://narapov.github.io/dependency-cruiser-json-viewer/)
 
 The demo loads the dependency-cruiser cruise result of this project by default. To explore your own codebase, press **F1** to open the command palette and choose **Load dependency-cruiser JSON** to pick a local `.json` file.
