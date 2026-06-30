@@ -1,5 +1,7 @@
 # dependency-cruiser-json-viewer
 
+[![npm version](https://img.shields.io/npm/v/dependency-cruiser-json-viewer.svg)](https://www.npmjs.com/package/dependency-cruiser-json-viewer)
+
 Interactive browser viewer for [dependency-cruiser](https://github.com/sverweij/dependency-cruiser) JSON cruise results — explore file trees, dependency graphs, and module relations.
 
 Built with [React](https://react.dev/), [MUI](https://mui.com/), and [@xyflow/react](https://reactflow.dev/).
