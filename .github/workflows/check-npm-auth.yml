@@ -1,0 +1,28 @@
+name: Check npm auth
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-npm-auth:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          registry-url: https://registry.npmjs.org
+          token: ${{ secrets.NODE_AUTH_TOKEN }}
+      - run: npm ci
+      - name: Check npm auth
+        run: |
+          if [ -z "$NODE_AUTH_TOKEN" ]; then echo "NODE_AUTH_TOKEN is EMPTY"; exit 1; fi
+          echo "NODE_AUTH_TOKEN length: ${#NODE_AUTH_TOKEN}"
+          cat .npmrc | sed 's/:_authToken=.*/:_authToken=***/'
+          npm whoami
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
