@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type RefObject } from 'react';
+import { useMemo, useState, type RefObject } from 'react';
 
 import type { DependencyGraphHandle } from '../../../components/DependencyGraph';
 import type { FileTreeHandle } from '../../../components/FileTree';
@@ -47,9 +47,21 @@ export function useAppOrchestration({
   initialDependencyCruiserState,
 }: UseAppOrchestrationOptions) {
   const [selectedPaths, setSelectedPaths] = useState(initialDependencyCruiserState.selectedKeys);
+  const [prevSelectedKeys, setPrevSelectedKeys] = useState(initialDependencyCruiserState.selectedKeys);
   const [expandedKeys, setExpandedKeys] = useState(initialDependencyCruiserState.expandedKeys);
+  const [prevExpandedKeys, setPrevExpandedKeys] = useState(initialDependencyCruiserState.expandedKeys);
   const [activePath, setActivePath] = useState<string | null>(null);
   const [dependenciesPath, setDependenciesPath] = useState<string | null>(null);
+
+  if (initialDependencyCruiserState.selectedKeys !== prevSelectedKeys) {
+    setPrevSelectedKeys(initialDependencyCruiserState.selectedKeys);
+    setSelectedPaths(initialDependencyCruiserState.selectedKeys);
+  }
+
+  if (initialDependencyCruiserState.expandedKeys !== prevExpandedKeys) {
+    setPrevExpandedKeys(initialDependencyCruiserState.expandedKeys);
+    setExpandedKeys(initialDependencyCruiserState.expandedKeys);
+  }
 
   const resolvedActivePath = activePath != null && isPathInSources(activePath, sources) ? activePath : null;
   const resolvedDependenciesPath =
@@ -58,14 +70,6 @@ export function useAppOrchestration({
   const treeData = useMemo(() => buildFileTree(sources), [sources]);
   const allKeys = useMemo(() => getAllKeys(treeData), [treeData]);
   const allFolderKeys = useMemo(() => getAllFolderKeys(treeData), [treeData]);
-
-  useEffect(() => {
-    setSelectedPaths(initialDependencyCruiserState.selectedKeys);
-  }, [initialDependencyCruiserState.selectedKeys]);
-
-  useEffect(() => {
-    setExpandedKeys(initialDependencyCruiserState.expandedKeys);
-  }, [initialDependencyCruiserState.expandedKeys]);
 
   const panelOpen = resolvedDependenciesPath != null;
 

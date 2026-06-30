@@ -28,10 +28,12 @@ export function ThemePickerDialog({ open, onClose }: ThemePickerDialogProps) {
   const listRef = useRef<HTMLUListElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!open) return;
+  const focusList = () => {
     setHighlightedIndex(getThemeIndex(mode));
-  }, [open, mode]);
+    requestAnimationFrame(() => {
+      containerRef.current?.focus();
+    });
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -41,12 +43,6 @@ export function ThemePickerDialog({ open, onClose }: ThemePickerDialogProps) {
       highlighted.scrollIntoView({ block: 'nearest' });
     }
   }, [highlightedIndex, open]);
-
-  const focusList = () => {
-    requestAnimationFrame(() => {
-      containerRef.current?.focus();
-    });
-  };
 
   const handleSelect = (value: ThemeOptionValue) => {
     setMode(value);

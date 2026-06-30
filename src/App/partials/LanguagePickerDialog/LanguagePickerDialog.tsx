@@ -27,10 +27,12 @@ export function LanguagePickerDialog({ open, onClose }: LanguagePickerDialogProp
   const listRef = useRef<HTMLUListElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!open) return;
+  const focusList = () => {
     setHighlightedIndex(getLanguageIndex(currentLanguage));
-  }, [open, currentLanguage]);
+    requestAnimationFrame(() => {
+      containerRef.current?.focus();
+    });
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -40,12 +42,6 @@ export function LanguagePickerDialog({ open, onClose }: LanguagePickerDialogProp
       highlighted.scrollIntoView({ block: 'nearest' });
     }
   }, [highlightedIndex, open]);
-
-  const focusList = () => {
-    requestAnimationFrame(() => {
-      containerRef.current?.focus();
-    });
-  };
 
   const handleSelect = (value: LanguageOptionValue) => {
     void i18n.changeLanguage(value);

@@ -85,7 +85,7 @@ function DependencyGraphInner({
   const sources = modules.map(module => module.source);
   const colorMode = resolvedMode ?? 'light';
   const folderColors = useMemo(() => assignFolderColors(sources, colorMode), [sources, colorMode]);
-  const expandedFolders = new Set(expandedKeys);
+  const expandedFolders = useMemo(() => new Set(expandedKeys), [expandedKeys]);
 
   const { nodes, edges } = buildGraph({
     modules,
@@ -106,9 +106,24 @@ function DependencyGraphInner({
     [modules, selectedPaths, expandedFolders, edges],
   );
 
+  const validDependencyKeys = useMemo(
+    () => collectValidDependencyKeys(modules, selectedPaths),
+    [modules, selectedPaths],
+  );
+
+  const effectiveUserEdgeHighlights = useMemo(() => {
+    const next = new Map<string, string>();
+    for (const [key, color] of userEdgeHighlights) {
+      if (validDependencyKeys.has(key)) {
+        next.set(key, color);
+      }
+    }
+    return next;
+  }, [userEdgeHighlights, validDependencyKeys]);
+
   const displayEdges = applyUserEdgeHighlightStyle(
     applySelectedEdgeStyle(edges, activeEdgeId),
-    userEdgeHighlights,
+    effectiveUserEdgeHighlights,
     edgeDependencyKeyMap,
   );
 
@@ -135,26 +150,10 @@ function DependencyGraphInner({
   const getEdgeHighlight = useCallback(
     (edgeId: string) => {
       const dependencyKeys = edgeDependencyKeyMap.get(edgeId) ?? [];
-      return getEdgeHighlightColor(dependencyKeys, userEdgeHighlights);
+      return getEdgeHighlightColor(dependencyKeys, effectiveUserEdgeHighlights);
     },
-    [edgeDependencyKeyMap, userEdgeHighlights],
+    [edgeDependencyKeyMap, effectiveUserEdgeHighlights],
   );
-
-  useEffect(() => {
-    const validKeys = collectValidDependencyKeys(modules, selectedPaths);
-    setUserEdgeHighlights(prev => {
-      let changed = false;
-      const next = new Map<string, string>();
-      for (const [key, color] of prev) {
-        if (validKeys.has(key)) {
-          next.set(key, color);
-        } else {
-          changed = true;
-        }
-      }
-      return changed ? next : prev;
-    });
-  }, [modules, selectedPaths]);
 
   const selectionKey = selectedPaths.slice().sort().join('|');
   const expandedStructureKey = expandedKeys.slice().sort().join('|');
