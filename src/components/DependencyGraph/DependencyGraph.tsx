@@ -28,6 +28,7 @@ import {
   buildGraph,
   collectValidDependencyKeys,
   getEdgeHighlightColor,
+  getMinimapNodeColor,
 } from './helpers';
 import { useEdgeContextMenu } from './hooks';
 import { DependencyEdge } from './partials/DependencyEdge';
@@ -35,7 +36,7 @@ import { FileNode } from './partials/FileNode';
 import { FolderGroupNode } from './partials/FolderGroupNode';
 import { FolderNode } from './partials/FolderNode';
 import { GraphLegend } from './partials/GraphLegend';
-import type { DependencyGraphHandle, FolderGroupNodeData, FolderNodeData } from './types';
+import type { DependencyGraphHandle } from './types';
 
 import styles from './DependencyGraph.module.css';
 
@@ -264,15 +265,7 @@ function DependencyGraphInner({
     onActivePathChange?.(node.id);
   };
 
-  const nodeColor = (node: Node) => {
-    if (node.type === 'folderGroup') {
-      return (node.data as FolderGroupNodeData).backgroundColor;
-    }
-    if (node.type === 'folder') {
-      return (node.data as FolderNodeData).backgroundColor;
-    }
-    return theme.palette.background.paper;
-  };
+  const miniMapNodeColor = (graphNode: Node) => getMinimapNodeColor(graphNode, colorMode);
 
   if (selectedPaths.length === 0) {
     return (
@@ -315,7 +308,15 @@ function DependencyGraphInner({
         <Panel position="top-right">
           <GraphLegend />
         </Panel>
-        <MiniMap position="bottom-left" pannable zoomable nodeColor={nodeColor} style={{ width: 160, height: 120 }} />
+        <MiniMap
+          position="bottom-left"
+          pannable
+          zoomable
+          nodeColor={miniMapNodeColor}
+          nodeStrokeColor={resolvedMode === 'dark' ? theme.palette.grey[600] : theme.palette.grey[500]}
+          nodeStrokeWidth={1}
+          style={{ width: 160, height: 120 }}
+        />
         <Controls position="bottom-right" showInteractive={false} />
       </ReactFlow>
       {edgeContextMenu}

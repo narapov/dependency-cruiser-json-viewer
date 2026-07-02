@@ -2,12 +2,12 @@ export type FolderColorMode = 'light' | 'dark';
 
 const FOLDER_COLOR_PALETTE = {
   light: {
-    saturation: 32,
-    lightnessOptions: [95, 94, 96] as const,
+    saturation: 48,
+    lightnessOptions: [90, 88, 92] as const,
   },
   dark: {
-    saturation: 36,
-    lightnessOptions: [22, 20, 24] as const,
+    saturation: 42,
+    lightnessOptions: [26, 24, 28] as const,
   },
 } as const;
 

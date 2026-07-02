@@ -77,8 +77,9 @@ describe('assignFolderColors', () => {
     for (const color of colors.values()) {
       const parsed = parsePastelHsl(color);
       expect(parsed).not.toBeNull();
-      expect(parsed!.lightness).toBeGreaterThanOrEqual(94);
-      expect(parsed!.saturation).toBeLessThanOrEqual(38);
+      expect(parsed!.lightness).toBeGreaterThanOrEqual(88);
+      expect(parsed!.saturation).toBeGreaterThanOrEqual(48);
+      expect(parsed!.saturation).toBeLessThanOrEqual(52);
     }
   });
 
@@ -87,9 +88,10 @@ describe('assignFolderColors', () => {
     for (const color of colors.values()) {
       const parsed = parsePastelHsl(color);
       expect(parsed).not.toBeNull();
-      expect(parsed!.lightness).toBeGreaterThanOrEqual(16);
+      expect(parsed!.lightness).toBeGreaterThanOrEqual(24);
       expect(parsed!.lightness).toBeLessThanOrEqual(28);
-      expect(parsed!.saturation).toBeLessThanOrEqual(40);
+      expect(parsed!.saturation).toBeGreaterThanOrEqual(42);
+      expect(parsed!.saturation).toBeLessThanOrEqual(44);
     }
   });
 

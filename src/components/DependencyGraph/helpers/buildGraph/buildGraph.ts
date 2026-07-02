@@ -22,9 +22,9 @@ import type {
   FolderGroupNodeData,
   FolderNodeData,
 } from '../../types';
+import { getLeafNodeSize, LEAF_NODE_HEIGHT, LEAF_NODE_MIN_WIDTH } from '../getLeafNodeSize';
 
-const NODE_WIDTH = 180;
-const NODE_HEIGHT = 40;
+const NODE_HEIGHT = LEAF_NODE_HEIGHT;
 const GROUP_PADDING = 16;
 const GROUP_HEADER = 36;
 const GRID_MIN_CHILDREN = 6;
@@ -44,6 +44,31 @@ interface EdgeBuildInfo {
 interface NodeSize {
   width: number;
   height: number;
+}
+
+function getLeafSizeForPath(path: string, visibleNodes: Map<string, 'folder' | 'file'>): NodeSize {
+  const label = getBaseName(path);
+  const kind = visibleNodes.get(path) === 'folder' ? 'folder' : 'file';
+
+  return getLeafNodeSize(label, kind);
+}
+
+function toNodeDimensions(size: NodeSize): Pick<Node, 'width' | 'height' | 'style'> {
+  return {
+    width: size.width,
+    height: size.height,
+    style: { width: size.width, height: size.height },
+  };
+}
+
+function applyNodeDimensions(node: Node, size: NodeSize): void {
+  node.width = size.width;
+  node.height = size.height;
+  node.style = {
+    ...node.style,
+    width: size.width,
+    height: size.height,
+  };
 }
 
 function buildChildrenIndex(sources: string[]): Map<string, FolderChildren> {
@@ -374,7 +399,7 @@ function applyChildPositions(
   }
 
   const groupSize = {
-    width: Math.max(maxX + GROUP_PADDING, NODE_WIDTH + GROUP_PADDING * 2),
+    width: Math.max(maxX + GROUP_PADDING, LEAF_NODE_MIN_WIDTH + GROUP_PADDING * 2),
     height: Math.max(maxY + GROUP_PADDING, GROUP_HEADER + NODE_HEIGHT + GROUP_PADDING),
   };
 
@@ -382,11 +407,7 @@ function applyChildPositions(
     groupSizes.set(folderId, groupSize);
     const groupNode = nodeMap.get(folderId);
     if (groupNode) {
-      groupNode.style = {
-        ...groupNode.style,
-        width: groupSize.width,
-        height: groupSize.height,
-      };
+      applyNodeDimensions(groupNode, groupSize);
       groupNode.zIndex = -1;
     }
   }
@@ -425,7 +446,7 @@ function layoutGroup(
 
   if (childIds.length === 0) {
     const emptySize = {
-      width: NODE_WIDTH + GROUP_PADDING * 2,
+      width: LEAF_NODE_MIN_WIDTH + GROUP_PADDING * 2,
       height: GROUP_HEADER + NODE_HEIGHT + GROUP_PADDING * 2,
     };
     if (folderId !== null) {
@@ -450,7 +471,7 @@ function layoutGroup(
       );
       childSizes.set(childId, size);
     } else {
-      childSizes.set(childId, { width: NODE_WIDTH, height: NODE_HEIGHT });
+      childSizes.set(childId, getLeafSizeForPath(childId, visibleNodes));
     }
   }
 
@@ -589,9 +610,11 @@ export function buildGraph({
           zIndex: -1,
         });
       } else {
+        const label = getBaseName(path);
         const circular = folderHasCircularDescendant(path, selectedSet, childrenIndex, circularModules);
+        const leafSize = getLeafNodeSize(label, 'folder');
         const data: FolderNodeData = {
-          label: getBaseName(path),
+          label,
           path,
           expanded: false,
           circular,
@@ -608,11 +631,14 @@ export function buildGraph({
           data,
           parentId,
           extent: parentId ? 'parent' : undefined,
+          ...toNodeDimensions(leafSize),
         });
       }
     } else {
+      const label = getBaseName(path);
+      const leafSize = getLeafNodeSize(label, 'file');
       const data: FileNodeData = {
-        label: getBaseName(path),
+        label,
         path,
         circular: circularModules.has(path),
         onShowInFileTree,
@@ -625,6 +651,7 @@ export function buildGraph({
         data,
         parentId,
         extent: parentId ? 'parent' : undefined,
+        ...toNodeDimensions(leafSize),
       });
     }
   }

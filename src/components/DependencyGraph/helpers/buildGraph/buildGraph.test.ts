@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { CIRCULAR_EDGE_COLOR, TYPE_ONLY_CIRCULAR_EDGE_COLOR } from '@/Shared';
 
+import { LEAF_NODE_MIN_WIDTH } from '../getLeafNodeSize';
 import { buildGraph } from './buildGraph';
 
 function moduleAt(source: string, dependencies: IModule['dependencies'] = []): IModule {
@@ -323,5 +324,53 @@ describe('buildGraph layout', () => {
 
     expect(largeGroup?.style?.width).toBeGreaterThan(mediumGroup?.style?.width as number);
     expect(largeGroup?.style?.height).toBeGreaterThan(mediumGroup?.style?.height as number);
+  });
+
+  it('assigns explicit width to leaf nodes based on label length', () => {
+    const longPath = 'src/foo/very-long-file-name-that-exceeds-minimum-width.ts';
+    const modules = [moduleAt(longPath)];
+
+    const { nodes } = buildGraph({
+      modules,
+      selectedPaths: [longPath],
+      expandedFolders: new Set(['src', 'src/foo']),
+      ...noopArgs,
+    });
+
+    const fileNode = nodes.find(node => node.id === longPath && node.type === 'file');
+    expect(fileNode?.width).toBeGreaterThan(LEAF_NODE_MIN_WIDTH);
+    expect(fileNode?.height).toBe(40);
+    expect(fileNode?.style?.width).toBe(fileNode?.width);
+    expect(fileNode?.style?.height).toBe(fileNode?.height);
+  });
+
+  it('group size grows when children have longer names', () => {
+    const shortSources = ['src/foo/a.ts', 'src/foo/b.ts'];
+    const longSources = [
+      'src/foo/very-long-file-name-that-exceeds-minimum-width-a.ts',
+      'src/foo/very-long-file-name-that-exceeds-minimum-width-b.ts',
+    ];
+    const shortModules = shortSources.map(source => moduleAt(source));
+    const longModules = longSources.map(source => moduleAt(source));
+
+    const shortGraph = buildGraph({
+      modules: shortModules,
+      selectedPaths: shortSources,
+      expandedFolders: new Set(['src', 'src/foo']),
+      ...noopArgs,
+    });
+    const longGraph = buildGraph({
+      modules: longModules,
+      selectedPaths: longSources,
+      expandedFolders: new Set(['src', 'src/foo']),
+      ...noopArgs,
+    });
+
+    const shortGroup = shortGraph.nodes.find(node => node.id === 'src/foo' && node.type === 'folderGroup');
+    const longGroup = longGraph.nodes.find(node => node.id === 'src/foo' && node.type === 'folderGroup');
+
+    expect(longGroup?.style?.width).toBeGreaterThan(shortGroup?.style?.width as number);
+    expect(longGroup?.width).toBe(longGroup?.style?.width);
+    expect(longGroup?.height).toBe(longGroup?.style?.height);
   });
 });
