@@ -2,7 +2,7 @@ import type { IModule } from 'dependency-cruiser';
 
 import type { Edge } from '@xyflow/react';
 
-import { getRepresentative } from '@/domain';
+import { getVisibleRepresentative } from '@/domain';
 
 export function makeDependencyKey(source: string, target: string): string {
   return `${source}->${target}`;
@@ -29,6 +29,7 @@ export function getEdgeDependencyKeys(
   modules: IModule[],
   selectedPaths: string[],
   expandedFolders: Set<string>,
+  visibleNodeIds: ReadonlySet<string>,
   sourceRep: string,
   targetRep: string,
 ): string[] {
@@ -42,8 +43,8 @@ export function getEdgeDependencyKeys(
       const resolved = dep.resolved;
       if (!resolved || !selectedSet.has(resolved)) continue;
 
-      const source = getRepresentative(module.source, selectedSet, expandedFolders);
-      const target = getRepresentative(resolved, selectedSet, expandedFolders);
+      const source = getVisibleRepresentative(module.source, selectedSet, expandedFolders, visibleNodeIds);
+      const target = getVisibleRepresentative(resolved, selectedSet, expandedFolders, visibleNodeIds);
 
       if (source === sourceRep && target === targetRep) {
         keys.push(makeDependencyKey(module.source, resolved));
@@ -58,12 +59,16 @@ export function buildEdgeDependencyKeyMap(
   modules: IModule[],
   selectedPaths: string[],
   expandedFolders: Set<string>,
+  visibleNodeIds: ReadonlySet<string>,
   edges: Edge[],
 ): Map<string, string[]> {
   const map = new Map<string, string[]>();
 
   for (const edge of edges) {
-    map.set(edge.id, getEdgeDependencyKeys(modules, selectedPaths, expandedFolders, edge.source, edge.target));
+    map.set(
+      edge.id,
+      getEdgeDependencyKeys(modules, selectedPaths, expandedFolders, visibleNodeIds, edge.source, edge.target),
+    );
   }
 
   return map;

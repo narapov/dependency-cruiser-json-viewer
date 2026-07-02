@@ -1,4 +1,4 @@
-import { getBaseName, getParentPath } from '@/domain';
+import { getAncestorKeys, getBaseName, getParentPath } from '@/domain';
 
 import type { QuickPickFileItem } from '../../types';
 
@@ -13,12 +13,8 @@ function collectPaths(sources: string[]): Set<string> {
 
   for (const source of sources) {
     paths.add(source);
-    let current = source;
-    while (true) {
-      const parent = getParentPath(current);
-      if (!parent) break;
-      paths.add(parent);
-      current = parent;
+    for (const ancestor of getAncestorKeys(source)) {
+      paths.add(ancestor);
     }
   }
 

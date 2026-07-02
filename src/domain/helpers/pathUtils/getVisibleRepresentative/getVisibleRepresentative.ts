@@ -1,0 +1,19 @@
+import { getParentPath } from '../getParentPath';
+import { getRepresentative } from '../getRepresentative';
+
+export function getVisibleRepresentative(
+  path: string,
+  selectedSet: Set<string>,
+  expandedFolders: Set<string>,
+  visibleNodeIds: ReadonlySet<string>,
+): string {
+  let current = getRepresentative(path, selectedSet, expandedFolders);
+
+  while (!visibleNodeIds.has(current)) {
+    const parent = getParentPath(current);
+    if (!parent) break;
+    current = parent;
+  }
+
+  return current;
+}

@@ -8,7 +8,7 @@ import {
   finalizeDependencyRelationFlags,
   getBaseName,
   getParentPath,
-  getRepresentative,
+  getVisibleRepresentative,
   isTypeOnlyDependency,
   mergeDependencyRelationFlags,
 } from '@/domain';
@@ -22,6 +22,7 @@ import type {
   FolderGroupNodeData,
   FolderNodeData,
 } from '../../types';
+import { buildVirtualLayoutEdges, type LayoutEdge } from '../buildVirtualLayoutEdges';
 import { getLeafNodeSize, LEAF_NODE_HEIGHT, LEAF_NODE_MIN_WIDTH } from '../getLeafNodeSize';
 
 const NODE_HEIGHT = LEAF_NODE_HEIGHT;
@@ -171,17 +172,12 @@ function folderHasCircularDescendant(
 function getEffectiveRoot(path: string, selectedSet: Set<string>, childrenIndex: Map<string, FolderChildren>): string {
   let topmost = path;
   let current = path;
+  let parent = getParentPath(current);
 
-  while (true) {
-    const parent = getParentPath(current);
-    if (!parent) break;
-
-    if (selectedSet.has(parent) || hasSelectedDescendants(parent, selectedSet, childrenIndex)) {
-      topmost = parent;
-      current = parent;
-    } else {
-      break;
-    }
+  while (parent && (selectedSet.has(parent) || hasSelectedDescendants(parent, selectedSet, childrenIndex))) {
+    topmost = parent;
+    current = parent;
+    parent = getParentPath(current);
   }
 
   return topmost;
@@ -280,22 +276,22 @@ function getLayoutSpacing(childCount: number) {
   };
 }
 
-function getSiblingEdges(childIds: string[], edges: Edge[]): Edge[] {
+function getSiblingLayoutEdges(childIds: string[], layoutEdges: LayoutEdge[]): LayoutEdge[] {
   const childSet = new Set(childIds);
-  return edges.filter(edge => childSet.has(edge.source) && childSet.has(edge.target));
+  return layoutEdges.filter(edge => childSet.has(edge.source) && childSet.has(edge.target));
 }
 
 // Dense groups with few sibling dependencies get a grid instead of dagre.
-function shouldUseGridLayout(childIds: string[], edges: Edge[]): boolean {
+function shouldUseGridLayout(childIds: string[], layoutEdges: LayoutEdge[]): boolean {
   if (childIds.length < GRID_MIN_CHILDREN) return false;
-  const siblingEdges = getSiblingEdges(childIds, edges);
+  const siblingEdges = getSiblingLayoutEdges(childIds, layoutEdges);
   return siblingEdges.length / childIds.length < GRID_MAX_EDGE_RATIO;
 }
 
-function orderChildrenForGrid(childIds: string[], edges: Edge[]): string[] {
+function orderChildrenForGrid(childIds: string[], layoutEdges: LayoutEdge[]): string[] {
   const childSet = new Set(childIds);
   const withOutgoing = new Set<string>();
-  for (const edge of edges) {
+  for (const edge of layoutEdges) {
     if (childSet.has(edge.source) && childSet.has(edge.target)) {
       withOutgoing.add(edge.source);
     }
@@ -306,7 +302,7 @@ function orderChildrenForGrid(childIds: string[], edges: Edge[]): string[] {
 function layoutChildrenWithDagre(
   childIds: string[],
   childSizes: Map<string, NodeSize>,
-  edges: Edge[],
+  layoutEdges: LayoutEdge[],
 ): Map<string, { x: number; y: number }> {
   const spacing = getLayoutSpacing(childIds.length);
   const graph = new dagre.graphlib.Graph();
@@ -319,7 +315,7 @@ function layoutChildrenWithDagre(
   }
 
   const childSet = new Set(childIds);
-  for (const edge of edges) {
+  for (const edge of layoutEdges) {
     if (childSet.has(edge.source) && childSet.has(edge.target)) {
       graph.setEdge(edge.source, edge.target);
     }
@@ -343,10 +339,10 @@ function layoutChildrenWithDagre(
 function layoutChildrenAsGrid(
   childIds: string[],
   childSizes: Map<string, NodeSize>,
-  edges: Edge[],
+  layoutEdges: LayoutEdge[],
 ): Map<string, { x: number; y: number }> {
   const columns = Math.ceil(Math.sqrt(childIds.length));
-  const orderedIds = orderChildrenForGrid(childIds, edges);
+  const orderedIds = orderChildrenForGrid(childIds, layoutEdges);
   const positions = new Map<string, { x: number; y: number }>();
 
   let currentX = GROUP_PADDING;
@@ -428,9 +424,9 @@ function applyChildPositions(
  *      unrelated nodes in a single vertical column; a sqrt-based grid spreads them
  *      into multiple columns instead.
  *
- * Only edges between direct siblings at the current level influence layout.
+ * Only virtual layout edges between direct siblings at the current level influence layout.
  * Cross-group dependencies (e.g. file in src/foo -> file in src/bar) do not
- * affect positions — React Flow draws those edges after layout.
+ * affect positions — React Flow draws visual edges after layout.
  */
 function layoutGroup(
   folderId: string | null,
@@ -440,7 +436,8 @@ function layoutGroup(
   expandedFolders: Set<string>,
   visibleNodeIds: Set<string>,
   parentByNode: Map<string, string | null>,
-  edges: Edge[],
+  modules: readonly IModule[],
+  selectedSet: Set<string>,
 ): NodeSize {
   const childIds = getDirectChildren(folderId, visibleNodeIds, parentByNode);
 
@@ -467,7 +464,8 @@ function layoutGroup(
         expandedFolders,
         visibleNodeIds,
         parentByNode,
-        edges,
+        modules,
+        selectedSet,
       );
       childSizes.set(childId, size);
     } else {
@@ -475,9 +473,11 @@ function layoutGroup(
     }
   }
 
-  const positions = shouldUseGridLayout(childIds, edges)
-    ? layoutChildrenAsGrid(childIds, childSizes, edges)
-    : layoutChildrenWithDagre(childIds, childSizes, edges);
+  const layoutEdges = buildVirtualLayoutEdges(folderId, childIds, modules, selectedSet);
+
+  const positions = shouldUseGridLayout(childIds, layoutEdges)
+    ? layoutChildrenAsGrid(childIds, childSizes, layoutEdges)
+    : layoutChildrenWithDagre(childIds, childSizes, layoutEdges);
 
   return applyChildPositions(childIds, childSizes, positions, folderId, nodeMap, groupSizes);
 }
@@ -513,8 +513,8 @@ export function buildGraph({
       const resolved = dep.resolved;
       if (!resolved || !selectedSet.has(resolved)) continue;
 
-      const sourceRep = getRepresentative(module.source, selectedSet, expandedFolders);
-      const targetRep = getRepresentative(resolved, selectedSet, expandedFolders);
+      const sourceRep = getVisibleRepresentative(module.source, selectedSet, expandedFolders, visibleNodeIds);
+      const targetRep = getVisibleRepresentative(resolved, selectedSet, expandedFolders, visibleNodeIds);
 
       if (sourceRep === targetRep) continue;
       if (!visibleNodeIds.has(sourceRep) || !visibleNodeIds.has(targetRep)) continue;
@@ -656,10 +656,21 @@ export function buildGraph({
     }
   }
 
-  layoutGroup(null, nodeMap, groupSizes, visibleNodes, expandedFolders, visibleNodeIds, parentByNode, edges);
+  layoutGroup(
+    null,
+    nodeMap,
+    groupSizes,
+    visibleNodes,
+    expandedFolders,
+    visibleNodeIds,
+    parentByNode,
+    modules,
+    selectedSet,
+  );
 
   return {
     nodes: [...nodeMap.values()],
     edges,
+    visibleNodeIds,
   };
 }

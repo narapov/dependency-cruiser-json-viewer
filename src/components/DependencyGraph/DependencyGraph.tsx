@@ -89,7 +89,11 @@ function DependencyGraphInner({
   const folderColors = useMemo(() => assignFolderColors(sources, colorMode), [sources, colorMode]);
   const expandedFolders = useMemo(() => new Set(expandedKeys), [expandedKeys]);
 
-  const { nodes: baseNodes, edges: baseEdges } = useMemo(
+  const {
+    nodes: baseNodes,
+    edges: baseEdges,
+    visibleNodeIds,
+  } = useMemo(
     () =>
       buildGraph({
         modules,
@@ -122,8 +126,8 @@ function DependencyGraphInner({
     selectedEdgeId != null && baseEdges.some(edge => edge.id === selectedEdgeId) ? selectedEdgeId : null;
 
   const edgeDependencyKeyMap = useMemo(
-    () => buildEdgeDependencyKeyMap(modules, selectedPaths, expandedFolders, baseEdges),
-    [modules, selectedPaths, expandedFolders, baseEdges],
+    () => buildEdgeDependencyKeyMap(modules, selectedPaths, expandedFolders, visibleNodeIds, baseEdges),
+    [modules, selectedPaths, expandedFolders, visibleNodeIds, baseEdges],
   );
 
   const validDependencyKeys = useMemo(

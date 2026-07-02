@@ -2,10 +2,10 @@ import { getParentPath } from '../getParentPath';
 
 export function getRepresentative(path: string, selectedSet: Set<string>, expandedFolders: Set<string>): string {
   let current = path;
-  while (true) {
-    const parent = getParentPath(current);
-    if (!parent || !selectedSet.has(parent) || expandedFolders.has(parent)) break;
+  let parent = getParentPath(current);
+  while (parent && selectedSet.has(parent) && !expandedFolders.has(parent)) {
     current = parent;
+    parent = getParentPath(current);
   }
   return current;
 }

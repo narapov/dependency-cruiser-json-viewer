@@ -373,4 +373,69 @@ describe('buildGraph layout', () => {
     expect(longGroup?.width).toBe(longGroup?.style?.width);
     expect(longGroup?.height).toBe(longGroup?.style?.height);
   });
+
+  it('keeps parent sibling position stable when expanding a folder', () => {
+    const depToBar = { resolved: 'src/bar/c.ts' } as IModule['dependencies'][0];
+    const modules = [moduleAt('src/foo/a.ts', [depToBar]), moduleAt('src/bar/c.ts'), moduleAt('src/baz/e.ts')];
+    const graphArgs = {
+      modules,
+      selectedPaths: ['src/foo/a.ts', 'src/bar/c.ts', 'src/baz/e.ts'],
+      ...noopArgs,
+    };
+
+    const collapsed = buildGraph({
+      ...graphArgs,
+      expandedFolders: new Set(['src']),
+    });
+    const expanded = buildGraph({
+      ...graphArgs,
+      expandedFolders: new Set(['src', 'src/foo']),
+    });
+
+    const collapsedFoo = collapsed.nodes.find(node => node.id === 'src/foo');
+    const expandedFoo = expanded.nodes.find(node => node.id === 'src/foo');
+
+    expect(collapsedFoo?.position).toEqual(expandedFoo?.position);
+  });
+
+  it('still changes visual edges when a folder is expanded', () => {
+    const depToBar = { resolved: 'src/bar/c.ts' } as IModule['dependencies'][0];
+    const modules = [moduleAt('src/foo/a.ts', [depToBar]), moduleAt('src/bar/c.ts')];
+    const graphArgs = {
+      modules,
+      selectedPaths: ['src/foo', 'src/foo/a.ts', 'src/bar/c.ts'],
+      ...noopArgs,
+    };
+
+    const collapsed = buildGraph({
+      ...graphArgs,
+      expandedFolders: new Set(['src', 'src/bar']),
+    });
+    const expanded = buildGraph({
+      ...graphArgs,
+      expandedFolders: new Set(['src', 'src/foo', 'src/bar']),
+    });
+
+    expect(collapsed.edges.some(edge => edge.source === 'src/foo' && edge.target === 'src/bar/c.ts')).toBe(true);
+    expect(expanded.edges.some(edge => edge.source === 'src/foo/a.ts' && edge.target === 'src/bar/c.ts')).toBe(true);
+    expect(expanded.edges.some(edge => edge.source === 'src/foo' && edge.target === 'src/bar/c.ts')).toBe(false);
+  });
+
+  it('keeps visual edges on collapsed inner folders for half-checked file selections', () => {
+    const depToBar = { resolved: 'src/foo/bar/c.ts' } as IModule['dependencies'][0];
+    const modules = [moduleAt('src/foo/bar/c.ts'), moduleAt('lib/x.ts', [depToBar])];
+    const graphArgs = {
+      modules,
+      selectedPaths: ['lib/x.ts', 'src/foo/bar/c.ts'],
+      ...noopArgs,
+    };
+
+    const collapsedInner = buildGraph({
+      ...graphArgs,
+      expandedFolders: new Set(['src', 'src/foo']),
+    });
+
+    expect(collapsedInner.edges.some(edge => edge.source === 'lib' && edge.target === 'src/foo/bar')).toBe(true);
+    expect(collapsedInner.edges.some(edge => edge.target === 'src/foo/bar/c.ts')).toBe(false);
+  });
 });

@@ -16,4 +16,5 @@ export interface BuildGraphInput {
 export interface BuildGraphResult {
   nodes: Node[];
   edges: Edge[];
+  visibleNodeIds: ReadonlySet<string>;
 }
