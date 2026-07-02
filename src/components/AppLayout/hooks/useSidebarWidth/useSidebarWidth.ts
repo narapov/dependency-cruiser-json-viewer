@@ -1,4 +1,4 @@
-import { appStorageKey, clampWidth, useResizableWidth } from '../../../../Shared';
+import { appStorageKey, clampWidth, useResizableWidth } from '@/Shared';
 
 export const DEFAULT_WIDTH = 280;
 export const MIN_WIDTH = 150;

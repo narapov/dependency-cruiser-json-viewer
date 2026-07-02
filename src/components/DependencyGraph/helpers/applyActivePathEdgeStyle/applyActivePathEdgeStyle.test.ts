@@ -3,7 +3,8 @@ import { describe, expect, it } from 'vitest';
 
 import { MarkerType, type Edge } from '@xyflow/react';
 
-import { CIRCULAR_EDGE_COLOR, DEFAULT_EDGE_COLOR, INCOMING_EDGE_COLOR, OUTGOING_EDGE_COLOR } from '../../../../Shared';
+import { CIRCULAR_EDGE_COLOR, DEFAULT_EDGE_COLOR, INCOMING_EDGE_COLOR, OUTGOING_EDGE_COLOR } from '@/Shared';
+
 import { buildGraph } from '../buildGraph/buildGraph';
 import { applyActivePathEdgeStyle } from './applyActivePathEdgeStyle';
 

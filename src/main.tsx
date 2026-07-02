@@ -9,9 +9,10 @@ import './i18n';
 import './Shared/styles/graphTheme.css';
 import './index.css';
 
+import { queryClient } from '@/Shared';
+import { muiTheme } from '@/Shared/styles/muiTheme';
+
 import App from './App';
-import { queryClient } from './Shared';
-import { muiTheme } from './Shared/styles/muiTheme';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { getInitialDependencyCruiserState, type DependencyCruiserState } from '../../../domain';
+import { getInitialDependencyCruiserState, type DependencyCruiserState } from '@/domain';
 
 export type { DependencyCruiserState };
 

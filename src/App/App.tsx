@@ -9,12 +9,13 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Snackbar from '@mui/material/Snackbar';
 import Stack from '@mui/material/Stack';
 
+import { countIgnoredModules, CruiseResultParseError, filterCruiseResult } from '@/domain';
+
 import { AppLayout } from '../components/AppLayout';
 import { DependencyGraph, type DependencyGraphHandle } from '../components/DependencyGraph';
 import { DependencyPanel } from '../components/DependencyPanel';
 import { FileTree, type FileTreeHandle } from '../components/FileTree';
 import { QuickPick, type QuickPickHandle } from '../components/QuickPick';
-import { countIgnoredModules, CruiseResultParseError, filterCruiseResult } from '../domain';
 import {
   useAppCommands,
   useAppOrchestration,

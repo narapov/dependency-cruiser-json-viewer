@@ -2,7 +2,7 @@ import type { IModule } from 'dependency-cruiser';
 
 import type { Edge } from '@xyflow/react';
 
-import { getRepresentative } from '../../../../domain';
+import { getRepresentative } from '@/domain';
 
 export function makeDependencyKey(source: string, target: string): string {
   return `${source}->${target}`;

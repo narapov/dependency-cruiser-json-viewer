@@ -1,6 +1,6 @@
 import { MarkerType, type Edge } from '@xyflow/react';
 
-import { SELECTED_EDGE_COLOR } from '../../../../Shared';
+import { SELECTED_EDGE_COLOR } from '@/Shared';
 
 const SELECTED_EDGE_Z_INDEX = 1000;
 

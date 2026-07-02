@@ -4,8 +4,9 @@ import { useTreeItemModel } from '@mui/x-tree-view/hooks';
 import type { TreeViewCancellableEvent } from '@mui/x-tree-view/models';
 import { TreeItem, type TreeItemProps } from '@mui/x-tree-view/TreeItem';
 
-import { getBaseName } from '../../../../domain';
-import { MaterialFileSystemIcon } from '../../../../Shared';
+import { getBaseName } from '@/domain';
+import { MaterialFileSystemIcon } from '@/Shared';
+
 import { isTreeLeaf } from '../../helpers';
 import { useFileTreeContextMenu } from '../../hooks';
 import type { TreeNodeData } from '../../types';

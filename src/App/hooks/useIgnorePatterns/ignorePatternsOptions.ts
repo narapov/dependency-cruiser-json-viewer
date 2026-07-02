@@ -1,4 +1,4 @@
-import { appStorageKey } from '../../../Shared';
+import { appStorageKey } from '@/Shared';
 
 export const IGNORE_PATTERNS_STORAGE_KEY = appStorageKey('ignore-patterns');
 

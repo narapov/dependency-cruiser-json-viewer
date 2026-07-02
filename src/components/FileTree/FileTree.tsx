@@ -4,7 +4,8 @@ import Box from '@mui/material/Box';
 import { useRichTreeViewApiRef } from '@mui/x-tree-view/hooks';
 import { RichTreeView } from '@mui/x-tree-view/RichTreeView';
 
-import { isPathVisibleInSelection } from '../../domain';
+import { isPathVisibleInSelection } from '@/domain';
+
 import { buildFileTree, buildTreeIndex } from './helpers';
 import { FileTreeItem, FileTreeProvider } from './partials/FileTreeItem';
 import type { FileTreeHandle } from './types';

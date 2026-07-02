@@ -1,7 +1,8 @@
 import Box from '@mui/material/Box';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 
-import { MaterialFileSystemIcon } from '../../../../Shared';
+import { MaterialFileSystemIcon } from '@/Shared';
+
 import type { FolderGroupNodeData } from '../../types';
 import { FolderExpandToggle } from '../FolderExpandToggle';
 import { NodeContextMenu } from '../NodeContextMenu';

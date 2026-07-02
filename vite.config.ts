@@ -15,6 +15,11 @@ export default defineConfig({
   define: {
     __PACKAGE_NAME__: JSON.stringify(packageJson.name),
   },
+  resolve: {
+    alias: {
+      '@': path.resolve(import.meta.dirname, 'src'),
+    },
+  },
   plugins: [
     react(),
     babel({ presets: [reactCompilerPreset()] }),

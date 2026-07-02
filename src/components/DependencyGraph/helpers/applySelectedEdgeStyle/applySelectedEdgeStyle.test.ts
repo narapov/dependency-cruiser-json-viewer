@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import { MarkerType, type Edge } from '@xyflow/react';
 
-import { DEFAULT_EDGE_COLOR, SELECTED_EDGE_COLOR } from '../../../../Shared';
+import { DEFAULT_EDGE_COLOR, SELECTED_EDGE_COLOR } from '@/Shared';
+
 import { applySelectedEdgeStyle } from './applySelectedEdgeStyle';
 
 const SELECTED_EDGE_Z_INDEX = 1000;

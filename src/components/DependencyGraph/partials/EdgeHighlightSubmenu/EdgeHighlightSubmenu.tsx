@@ -8,7 +8,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 
-import { USER_EDGE_HIGHLIGHT_COLORS } from '../../../../Shared';
+import { USER_EDGE_HIGHLIGHT_COLORS } from '@/Shared';
 
 interface EdgeHighlightSubmenuProps {
   currentHighlight: string | undefined;

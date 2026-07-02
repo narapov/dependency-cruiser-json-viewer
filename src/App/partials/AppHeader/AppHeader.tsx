@@ -9,7 +9,8 @@ import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 
-import { formatShortcut } from '../../../Shared';
+import { formatShortcut } from '@/Shared';
+
 import { LanguageSelector } from '../LanguageSelector';
 import { ThemeSelector } from '../ThemeSelector';
 

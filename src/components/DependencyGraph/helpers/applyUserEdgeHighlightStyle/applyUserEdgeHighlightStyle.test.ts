@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import { MarkerType, type Edge } from '@xyflow/react';
 
-import { CIRCULAR_EDGE_COLOR } from '../../../../Shared';
+import { CIRCULAR_EDGE_COLOR } from '@/Shared';
+
 import { applyUserEdgeHighlightStyle } from './applyUserEdgeHighlightStyle';
 
 const USER_HIGHLIGHT_EDGE_Z_INDEX = 1001;

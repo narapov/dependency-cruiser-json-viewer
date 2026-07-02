@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import { useQueryClient } from '@tanstack/react-query';
 
-import { CruiseResultParseError, parseCruiseResultJson } from '../../../domain';
+import { CruiseResultParseError, parseCruiseResultJson } from '@/domain';
 
 export function useLoadCruiseResultFromFile() {
   const queryClient = useQueryClient();

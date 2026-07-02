@@ -2,8 +2,9 @@ import { useMemo } from 'react';
 
 import Box from '@mui/material/Box';
 
-import { getParentPath } from '../../../../../../domain';
-import { MaterialFileSystemIcon } from '../../../../../../Shared';
+import { getParentPath } from '@/domain';
+import { MaterialFileSystemIcon } from '@/Shared';
+
 import { computeQuickPickHighlight } from '../../../../helpers/computeQuickPickHighlight';
 import type { QuickPickFileItem } from '../../../../QuickPick.types';
 import { QuickPickHighlightedText } from '../../../QuickPickHighlightedText';

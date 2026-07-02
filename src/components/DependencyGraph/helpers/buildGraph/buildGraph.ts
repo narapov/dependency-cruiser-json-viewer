@@ -11,8 +11,9 @@ import {
   getRepresentative,
   isTypeOnlyDependency,
   mergeDependencyRelationFlags,
-} from '../../../../domain';
-import { CIRCULAR_EDGE_COLOR, DEFAULT_EDGE_COLOR, TYPE_ONLY_CIRCULAR_EDGE_COLOR } from '../../../../Shared';
+} from '@/domain';
+import { CIRCULAR_EDGE_COLOR, DEFAULT_EDGE_COLOR, TYPE_ONLY_CIRCULAR_EDGE_COLOR } from '@/Shared';
+
 import type {
   BuildGraphInput,
   BuildGraphResult,

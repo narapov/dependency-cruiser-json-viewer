@@ -52,8 +52,8 @@ Shared  →  no App, components, or domain
 
 Enforced by `.dependency-cruiser.mjs` (`npm run depcruise`):
 
-- Import **`domain`** only from `src/domain/index.ts` (e.g. `from '../../domain'`).
-- Import **`Shared`** only from `src/Shared/index.ts` (e.g. `from '../../Shared'`).
+- Import **`domain`** only from `src/domain/index.ts` (e.g. `from '@/domain'`).
+- Import **`Shared`** only from `src/Shared/index.ts` (e.g. `from '@/Shared'`).
 - Do not import `App/helpers/*` outside `App/`.
 - Do not deep-import `partials/`, `helpers/`, or `types/` — use the module's public `index.ts` or `ComponentName.types.ts`.
 

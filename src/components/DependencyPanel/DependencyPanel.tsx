@@ -15,8 +15,8 @@ import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 
-import { getNodeRelations, type ModuleRelation } from '../../domain';
-import { CIRCULAR_EDGE_COLOR, copyToClipboard, TYPE_ONLY_CIRCULAR_EDGE_COLOR } from '../../Shared';
+import { getNodeRelations, type ModuleRelation } from '@/domain';
+import { CIRCULAR_EDGE_COLOR, copyToClipboard, TYPE_ONLY_CIRCULAR_EDGE_COLOR } from '@/Shared';
 
 interface DependencyPanelProps {
   path: string;

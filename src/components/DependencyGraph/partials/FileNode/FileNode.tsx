@@ -1,7 +1,8 @@
 import Box from '@mui/material/Box';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 
-import { CIRCULAR_NODE_BACKGROUND, MaterialFileSystemIcon } from '../../../../Shared';
+import { CIRCULAR_NODE_BACKGROUND, MaterialFileSystemIcon } from '@/Shared';
+
 import type { FileNodeData } from '../../types';
 import { NodeContextMenu } from '../NodeContextMenu';
 

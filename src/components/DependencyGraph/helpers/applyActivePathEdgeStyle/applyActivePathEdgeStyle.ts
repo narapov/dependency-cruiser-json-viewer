@@ -1,11 +1,6 @@
 import { MarkerType, type Edge } from '@xyflow/react';
 
-import {
-  CIRCULAR_EDGE_COLOR,
-  INCOMING_EDGE_COLOR,
-  OUTGOING_EDGE_COLOR,
-  TYPE_ONLY_CIRCULAR_EDGE_COLOR,
-} from '../../../../Shared';
+import { CIRCULAR_EDGE_COLOR, INCOMING_EDGE_COLOR, OUTGOING_EDGE_COLOR, TYPE_ONLY_CIRCULAR_EDGE_COLOR } from '@/Shared';
 
 function isCircularEdge(edge: Edge): boolean {
   const stroke = edge.style?.stroke;

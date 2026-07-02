@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 
-import { copyToClipboard } from '../../../../Shared';
+import { copyToClipboard } from '@/Shared';
 
 interface NodeContextMenuProps {
   path: string;

@@ -1,4 +1,5 @@
-import { getBaseName, getParentPath } from '../../../../domain';
+import { getBaseName, getParentPath } from '@/domain';
+
 import type { QuickPickFileItem } from '../../types';
 
 const ROOT_KEY = '';

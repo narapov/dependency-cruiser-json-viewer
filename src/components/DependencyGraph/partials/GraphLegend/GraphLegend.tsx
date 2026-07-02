@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 
 import Box from '@mui/material/Box';
 
-import { CIRCULAR_EDGE_COLOR, INCOMING_EDGE_COLOR, OUTGOING_EDGE_COLOR, SELECTED_EDGE_COLOR } from '../../../../Shared';
+import { CIRCULAR_EDGE_COLOR, INCOMING_EDGE_COLOR, OUTGOING_EDGE_COLOR, SELECTED_EDGE_COLOR } from '@/Shared';
 
 import styles from '../../DependencyGraph.module.css';
 

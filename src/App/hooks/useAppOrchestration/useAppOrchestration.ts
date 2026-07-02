@@ -1,9 +1,5 @@
 import { useMemo, useState, type RefObject } from 'react';
 
-import type { DependencyGraphHandle } from '../../../components/DependencyGraph';
-import type { FileTreeHandle } from '../../../components/FileTree';
-import { buildFileTree } from '../../../components/FileTree/helpers';
-import { getAllFolderKeys, getAllKeys } from '../../../components/FileTree/helpers/treeIndex';
 import {
   getAncestorKeys,
   getParentPath,
@@ -13,8 +9,13 @@ import {
   resolveActivePathAfterCollapse,
   toggleExpandedKey,
   type DependencyCruiserState,
-} from '../../../domain';
-import { APP_STORAGE_PREFIX, copyToClipboard } from '../../../Shared';
+} from '@/domain';
+import { APP_STORAGE_PREFIX, copyToClipboard } from '@/Shared';
+
+import type { DependencyGraphHandle } from '../../../components/DependencyGraph';
+import type { FileTreeHandle } from '../../../components/FileTree';
+import { buildFileTree } from '../../../components/FileTree/helpers';
+import { getAllFolderKeys, getAllKeys } from '../../../components/FileTree/helpers/treeIndex';
 
 interface UseAppOrchestrationOptions {
   sources: string[];
