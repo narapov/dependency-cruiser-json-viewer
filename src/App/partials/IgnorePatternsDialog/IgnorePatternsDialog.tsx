@@ -13,7 +13,11 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
-import { GLOB_PATTERNS_DOCS_URL, IGNORE_PATTERN_EXAMPLES } from '../../hooks/useIgnorePatterns';
+import {
+  GLOB_PATTERNS_DOCS_URL,
+  IGNORE_PATTERN_EXAMPLES,
+  IGNORE_PATTERN_PLACEHOLDER,
+} from '../../hooks/useIgnorePatterns';
 
 interface IgnorePatternsDialogProps {
   open: boolean;
@@ -71,7 +75,7 @@ function IgnorePatternsForm({ patterns, onClose, onSave }: IgnorePatternsFormPro
           maxRows={14}
           value={draft}
           onChange={event => setDraft(event.target.value)}
-          placeholder={t('ignorePatterns.placeholder')}
+          placeholder={IGNORE_PATTERN_PLACEHOLDER}
           slotProps={{
             input: {
               sx: { fontFamily: 'monospace', fontSize: 13 },

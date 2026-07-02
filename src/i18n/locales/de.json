@@ -85,7 +85,8 @@
     "edgeMenu": {
       "viewSource": "Quelle anzeigen",
       "viewTarget": "Ziel anzeigen"
-    }
+    },
+    "emptySelection": "Dateien oder Ordner auswählen, um Abhängigkeiten anzuzeigen"
   },
   "dependencyPanel": {
     "dependencies": "Abhängigkeiten",
@@ -99,7 +100,6 @@
     "setIgnorePatterns": "Ignorier-Muster festlegen",
     "description": "Ein Glob-Muster pro Zeile. Übereinstimmende Module werden aus Graphen und Dateibaum ausgeschlossen.",
     "docsLink": "Dokumentation zu Glob-Mustern",
-    "placeholder": "**/*.test.ts\n**/*.stories.tsx",
     "examples": "Beispiele",
     "save": "Speichern",
     "cancel": "Abbrechen"

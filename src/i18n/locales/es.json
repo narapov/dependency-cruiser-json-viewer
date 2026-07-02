@@ -85,7 +85,8 @@
     "edgeMenu": {
       "viewSource": "Ver origen",
       "viewTarget": "Ver destino"
-    }
+    },
+    "emptySelection": "Seleccione archivos o carpetas para ver las dependencias"
   },
   "dependencyPanel": {
     "dependencies": "Dependencias",
@@ -99,7 +100,6 @@
     "setIgnorePatterns": "Configurar patrones de exclusión",
     "description": "Un patrón glob por línea. Los módulos coincidentes se excluyen del grafo y del árbol de archivos.",
     "docsLink": "Documentación de patrones glob",
-    "placeholder": "**/*.test.ts\n**/*.stories.tsx",
     "examples": "Ejemplos",
     "save": "Guardar",
     "cancel": "Cancelar"

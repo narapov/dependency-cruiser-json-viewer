@@ -85,7 +85,8 @@
     "edgeMenu": {
       "viewSource": "Показать источник",
       "viewTarget": "Показать цель"
-    }
+    },
+    "emptySelection": "Выберите файлы или папки, чтобы просмотреть зависимости"
   },
   "dependencyPanel": {
     "dependencies": "Зависимости",
@@ -99,7 +100,6 @@
     "setIgnorePatterns": "Игнорируемые паттерны",
     "description": "Один glob-паттерн на строку. Совпадающие модули исключаются из графа и дерева файлов.",
     "docsLink": "Документация по glob-паттернам",
-    "placeholder": "**/*.test.ts\n**/*.stories.tsx",
     "examples": "Примеры",
     "save": "Сохранить",
     "cancel": "Отмена"

@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState, type Ref } from 'react';
+import { useCallback, useImperativeHandle, useMemo, useState, type Ref } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import Box from '@mui/material/Box';
 import { useColorScheme, useTheme } from '@mui/material/styles';
@@ -75,12 +76,11 @@ function DependencyGraphInner({
   onActivePathChange,
   activePath,
 }: DependencyGraphInnerProps) {
+  const { t } = useTranslation();
   const theme = useTheme();
   const { mode, systemMode } = useColorScheme();
   const resolvedMode = mode === 'system' ? systemMode : mode;
-  const { fitView, getNode, getZoom } = useReactFlow();
-  const prevExpandedKey = useRef<string | null>(null);
-  const pendingFocusPath = useRef<string | null>(null);
+  const { fitView, getNode } = useReactFlow();
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
   const [userEdgeHighlights, setUserEdgeHighlights] = useState<ReadonlyMap<string, string>>(() => new Map());
 
@@ -179,16 +179,9 @@ function DependencyGraphInner({
     [edgeDependencyKeyMap, effectiveUserEdgeHighlights],
   );
 
-  const selectionKey = selectedPaths.slice().sort().join('|');
-  const expandedStructureKey = expandedKeys.slice().sort().join('|');
-
   const runFocusNode = (path: string) => {
-    if (!getNode(path)) {
-      pendingFocusPath.current = path;
-      return;
-    }
-    pendingFocusPath.current = null;
-    fitView({ nodes: [{ id: path }], padding: 0.5, duration: 300 });
+    if (!getNode(path)) return;
+    void fitView({ nodes: [{ id: path }], padding: 0.5, duration: 300 });
   };
 
   const { onEdgeContextMenu, edgeContextMenu } = useEdgeContextMenu({
@@ -199,55 +192,12 @@ function DependencyGraphInner({
 
   useImperativeHandle(imperativeRef, () => ({
     focusNode(path: string) {
-      requestAnimationFrame(() => runFocusNode(path));
+      runFocusNode(path);
     },
     clearAllHighlights() {
       setUserEdgeHighlights(new Map());
     },
   }));
-
-  useEffect(() => {
-    const path = pendingFocusPath.current;
-    if (!path || !getNode(path)) return;
-
-    pendingFocusPath.current = null;
-    const frame = requestAnimationFrame(() => {
-      fitView({ nodes: [{ id: path }], padding: 0.5, duration: 300 });
-    });
-    return () => cancelAnimationFrame(frame);
-  }, [baseNodes, fitView, getNode]);
-
-  useEffect(() => {
-    if (baseNodes.length === 0) return;
-
-    const frame = requestAnimationFrame(() => {
-      fitView({ padding: 0.2, duration: 200 });
-    });
-    return () => cancelAnimationFrame(frame);
-  }, [selectionKey, baseNodes.length, fitView]);
-
-  useEffect(() => {
-    if (prevExpandedKey.current === null) {
-      prevExpandedKey.current = expandedStructureKey;
-      return;
-    }
-    if (prevExpandedKey.current === expandedStructureKey) return;
-    prevExpandedKey.current = expandedStructureKey;
-
-    if (!activePath || !getNode(activePath)) return;
-
-    const zoom = getZoom();
-    const frame = requestAnimationFrame(() => {
-      fitView({
-        nodes: [{ id: activePath }],
-        minZoom: zoom,
-        maxZoom: zoom,
-        padding: 0.5,
-        duration: 200,
-      });
-    });
-    return () => cancelAnimationFrame(frame);
-  }, [expandedStructureKey, activePath, baseNodes, fitView, getNode, getZoom]);
 
   const onEdgeClick = (_: React.MouseEvent, edge: Edge) => {
     setSelectedEdgeId(edge.id);
@@ -282,7 +232,7 @@ function DependencyGraphInner({
           fontSize: 14,
         }}
       >
-        Select files or folders to view dependencies
+        {t('graph.emptySelection')}
       </Box>
     );
   }

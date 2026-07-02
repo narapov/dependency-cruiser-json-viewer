@@ -85,7 +85,8 @@
     "edgeMenu": {
       "viewSource": "View source",
       "viewTarget": "View target"
-    }
+    },
+    "emptySelection": "Select files or folders to view dependencies"
   },
   "dependencyPanel": {
     "dependencies": "Dependencies",
@@ -99,7 +100,6 @@
     "setIgnorePatterns": "Set Ignore Patterns",
     "description": "One glob pattern per line. Matching modules are excluded from the graph and file tree.",
     "docsLink": "Glob pattern documentation",
-    "placeholder": "**/*.test.ts\n**/*.stories.tsx",
     "examples": "Examples",
     "save": "Save",
     "cancel": "Cancel"

@@ -85,7 +85,8 @@
     "edgeMenu": {
       "viewSource": "Voir la source",
       "viewTarget": "Voir la cible"
-    }
+    },
+    "emptySelection": "Sélectionnez des fichiers ou des dossiers pour afficher les dépendances"
   },
   "dependencyPanel": {
     "dependencies": "Dépendances",
@@ -99,7 +100,6 @@
     "setIgnorePatterns": "Définir les motifs d'exclusion",
     "description": "Un motif glob par ligne. Les modules correspondants sont exclus du graphe et de l'arborescence.",
     "docsLink": "Documentation des motifs glob",
-    "placeholder": "**/*.test.ts\n**/*.stories.tsx",
     "examples": "Exemples",
     "save": "Enregistrer",
     "cancel": "Annuler"
