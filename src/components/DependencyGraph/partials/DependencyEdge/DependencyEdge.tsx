@@ -1,6 +1,6 @@
 import { BaseEdge, getBezierPath, type EdgeProps } from '@xyflow/react';
 
-import type { DependencyEdgeData } from '../../DependencyGraph.types';
+import type { DependencyEdgeData } from '../../types';
 
 export function DependencyEdge({
   id,

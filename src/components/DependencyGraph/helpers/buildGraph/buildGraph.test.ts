@@ -22,7 +22,6 @@ describe('buildGraph half-checked folders', () => {
       modules,
       selectedPaths: ['src/foo/a.ts'],
       expandedFolders: new Set(['src']),
-      highlightedNodeId: null,
       folderColors: new Map(),
       onToggleFolder: noopToggle,
       onExpandRecursive: noopExpandRecursive,
@@ -41,7 +40,6 @@ describe('buildGraph half-checked folders', () => {
       modules,
       selectedPaths: ['src/foo/a.ts'],
       expandedFolders: new Set(['src', 'src/foo']),
-      highlightedNodeId: null,
       folderColors: new Map(),
       onToggleFolder: noopToggle,
       onExpandRecursive: noopExpandRecursive,
@@ -59,7 +57,6 @@ describe('buildGraph half-checked folders', () => {
       modules,
       selectedPaths,
       expandedFolders: new Set(['src', 'src/foo', 'src/bar']),
-      highlightedNodeId: null,
       folderColors: new Map(),
       onToggleFolder: noopToggle,
       onExpandRecursive: noopExpandRecursive,
@@ -79,7 +76,6 @@ describe('buildGraph half-checked folders', () => {
       modules,
       selectedPaths: ['src/foo/a.ts', 'lib/y.ts'],
       expandedFolders: new Set(['src', 'src/foo', 'lib']),
-      highlightedNodeId: null,
       folderColors: new Map(),
       onToggleFolder: noopToggle,
       onExpandRecursive: noopExpandRecursive,
@@ -108,7 +104,6 @@ describe('buildGraph circular dependencies', () => {
       modules,
       selectedPaths: ['src/foo/a.ts', 'src/foo/b.ts'],
       expandedFolders: new Set(['src', 'src/foo']),
-      highlightedNodeId: null,
       folderColors: new Map(),
       onToggleFolder: noopToggle,
       onExpandRecursive: noopExpandRecursive,
@@ -124,7 +119,6 @@ describe('buildGraph circular dependencies', () => {
       modules,
       selectedPaths: ['src/foo/a.ts', 'src/foo/b.ts'],
       expandedFolders: new Set(['src']),
-      highlightedNodeId: null,
       folderColors: new Map(),
       onToggleFolder: noopToggle,
       onExpandRecursive: noopExpandRecursive,
@@ -140,7 +134,6 @@ describe('buildGraph circular dependencies', () => {
       modules,
       selectedPaths: ['src/foo/a.ts', 'src/foo/b.ts'],
       expandedFolders: new Set(['src', 'src/foo']),
-      highlightedNodeId: null,
       folderColors: new Map(),
       onToggleFolder: noopToggle,
       onExpandRecursive: noopExpandRecursive,
@@ -156,23 +149,6 @@ describe('buildGraph circular dependencies', () => {
       modules,
       selectedPaths: ['src/foo/a.ts', 'src/foo/b.ts'],
       expandedFolders: new Set(['src', 'src/foo']),
-      highlightedNodeId: null,
-      folderColors: new Map(),
-      onToggleFolder: noopToggle,
-      onExpandRecursive: noopExpandRecursive,
-      onShowInFileTree: noopShowInFileTree,
-    });
-
-    const circularEdge = edges.find(edge => edge.source === 'src/foo/a.ts');
-    expect(circularEdge?.style?.stroke).toBe(CIRCULAR_EDGE_COLOR);
-  });
-
-  it('keeps circular edge red when node is highlighted', () => {
-    const { edges } = buildGraph({
-      modules,
-      selectedPaths: ['src/foo/a.ts', 'src/foo/b.ts'],
-      expandedFolders: new Set(['src', 'src/foo']),
-      highlightedNodeId: 'src/foo/a.ts',
       folderColors: new Map(),
       onToggleFolder: noopToggle,
       onExpandRecursive: noopExpandRecursive,
@@ -186,7 +162,6 @@ describe('buildGraph circular dependencies', () => {
 
 describe('buildGraph type-only dependencies', () => {
   const noopArgs = {
-    highlightedNodeId: null,
     folderColors: new Map(),
     onToggleFolder: noopToggle,
     onExpandRecursive: noopExpandRecursive,
@@ -279,7 +254,6 @@ describe('buildGraph type-only dependencies', () => {
 
 describe('buildGraph layout', () => {
   const noopArgs = {
-    highlightedNodeId: null,
     folderColors: new Map(),
     onToggleFolder: noopToggle,
     onExpandRecursive: noopExpandRecursive,

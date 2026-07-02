@@ -6,7 +6,6 @@ export interface BuildGraphInput {
   modules: IModule[];
   selectedPaths: string[];
   expandedFolders: Set<string>;
-  highlightedNodeId: string | null;
   folderColors: ReadonlyMap<string, string>;
   onToggleFolder: (path: string) => void;
   onExpandRecursive: (path: string) => void;

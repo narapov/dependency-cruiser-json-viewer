@@ -2,7 +2,7 @@ import Box from '@mui/material/Box';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 
 import { CIRCULAR_NODE_BACKGROUND, MaterialFileSystemIcon } from '../../../../Shared';
-import type { FolderNodeData } from '../../DependencyGraph.types';
+import type { FolderNodeData } from '../../types';
 import { FolderExpandToggle } from '../FolderExpandToggle';
 import { NodeContextMenu } from '../NodeContextMenu';
 

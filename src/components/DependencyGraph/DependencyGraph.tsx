@@ -18,8 +18,9 @@ import '@xyflow/react/dist/style.css';
 
 import type { IModule } from 'dependency-cruiser';
 
-import type { FolderGroupNodeData, FolderNodeData } from './DependencyGraph.types';
 import {
+  applyActivePathEdgeStyle,
+  applyActivePathNodeHighlight,
   applySelectedEdgeStyle,
   applyUserEdgeHighlightStyle,
   assignFolderColors,
@@ -34,7 +35,7 @@ import { FileNode } from './partials/FileNode';
 import { FolderGroupNode } from './partials/FolderGroupNode';
 import { FolderNode } from './partials/FolderNode';
 import { GraphLegend } from './partials/GraphLegend';
-import type { DependencyGraphHandle } from './types';
+import type { DependencyGraphHandle, FolderGroupNodeData, FolderNodeData } from './types';
 
 import styles from './DependencyGraph.module.css';
 
@@ -87,23 +88,41 @@ function DependencyGraphInner({
   const folderColors = useMemo(() => assignFolderColors(sources, colorMode), [sources, colorMode]);
   const expandedFolders = useMemo(() => new Set(expandedKeys), [expandedKeys]);
 
-  const { nodes, edges } = buildGraph({
-    modules,
-    selectedPaths,
-    expandedFolders,
-    highlightedNodeId: activePath ?? null,
-    folderColors,
-    onToggleFolder,
-    onExpandRecursive,
-    onShowInFileTree,
-    onShowDependencies,
-  });
+  const { nodes: baseNodes, edges: baseEdges } = useMemo(
+    () =>
+      buildGraph({
+        modules,
+        selectedPaths,
+        expandedFolders,
+        folderColors,
+        onToggleFolder,
+        onExpandRecursive,
+        onShowInFileTree,
+        onShowDependencies,
+      }),
+    [
+      modules,
+      selectedPaths,
+      expandedFolders,
+      folderColors,
+      onToggleFolder,
+      onExpandRecursive,
+      onShowInFileTree,
+      onShowDependencies,
+    ],
+  );
 
-  const activeEdgeId = selectedEdgeId != null && edges.some(edge => edge.id === selectedEdgeId) ? selectedEdgeId : null;
+  const displayNodes = useMemo(
+    () => applyActivePathNodeHighlight(baseNodes, activePath ?? null),
+    [baseNodes, activePath],
+  );
+
+  const activeEdgeId =
+    selectedEdgeId != null && baseEdges.some(edge => edge.id === selectedEdgeId) ? selectedEdgeId : null;
 
   const edgeDependencyKeyMap = useMemo(
-    () => buildEdgeDependencyKeyMap(modules, selectedPaths, expandedFolders, edges),
-    [modules, selectedPaths, expandedFolders, edges],
+    () => buildEdgeDependencyKeyMap(modules, selectedPaths, expandedFolders, baseEdges),
+    [modules, selectedPaths, expandedFolders, baseEdges],
   );
 
   const validDependencyKeys = useMemo(
@@ -122,7 +141,7 @@ function DependencyGraphInner({
   }, [userEdgeHighlights, validDependencyKeys]);
 
   const displayEdges = applyUserEdgeHighlightStyle(
-    applySelectedEdgeStyle(edges, activeEdgeId),
+    applySelectedEdgeStyle(applyActivePathEdgeStyle(baseEdges, activePath ?? null), activeEdgeId),
     effectiveUserEdgeHighlights,
     edgeDependencyKeyMap,
   );
@@ -191,16 +210,16 @@ function DependencyGraphInner({
       fitView({ nodes: [{ id: path }], padding: 0.5, duration: 300 });
     });
     return () => cancelAnimationFrame(frame);
-  }, [nodes, fitView, getNode]);
+  }, [baseNodes, fitView, getNode]);
 
   useEffect(() => {
-    if (nodes.length === 0) return;
+    if (baseNodes.length === 0) return;
 
     const frame = requestAnimationFrame(() => {
       fitView({ padding: 0.2, duration: 200 });
     });
     return () => cancelAnimationFrame(frame);
-  }, [selectionKey, nodes.length, fitView]);
+  }, [selectionKey, baseNodes.length, fitView]);
 
   useEffect(() => {
     if (prevExpandedKey.current === null) {
@@ -223,7 +242,7 @@ function DependencyGraphInner({
       });
     });
     return () => cancelAnimationFrame(frame);
-  }, [expandedStructureKey, activePath, nodes, fitView, getNode, getZoom]);
+  }, [expandedStructureKey, activePath, baseNodes, fitView, getNode, getZoom]);
 
   const onEdgeClick = (_: React.MouseEvent, edge: Edge) => {
     setSelectedEdgeId(edge.id);
@@ -274,7 +293,7 @@ function DependencyGraphInner({
   return (
     <>
       <ReactFlow
-        nodes={nodes}
+        nodes={displayNodes}
         edges={displayEdges}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}

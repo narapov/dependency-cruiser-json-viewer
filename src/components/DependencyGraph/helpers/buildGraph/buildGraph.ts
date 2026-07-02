@@ -12,13 +12,7 @@ import {
   isTypeOnlyDependency,
   mergeDependencyRelationFlags,
 } from '../../../../domain';
-import {
-  CIRCULAR_EDGE_COLOR,
-  DEFAULT_EDGE_COLOR,
-  INCOMING_EDGE_COLOR,
-  OUTGOING_EDGE_COLOR,
-  TYPE_ONLY_CIRCULAR_EDGE_COLOR,
-} from '../../../../Shared';
+import { CIRCULAR_EDGE_COLOR, DEFAULT_EDGE_COLOR, TYPE_ONLY_CIRCULAR_EDGE_COLOR } from '../../../../Shared';
 import type {
   BuildGraphInput,
   BuildGraphResult,
@@ -26,7 +20,7 @@ import type {
   FolderChildren,
   FolderGroupNodeData,
   FolderNodeData,
-} from '../../DependencyGraph.types';
+} from '../../types';
 
 const NODE_WIDTH = 180;
 const NODE_HEIGHT = 40;
@@ -470,7 +464,6 @@ export function buildGraph({
   modules,
   selectedPaths,
   expandedFolders,
-  highlightedNodeId,
   folderColors,
   onToggleFolder,
   onExpandRecursive,
@@ -528,9 +521,6 @@ export function buildGraph({
 
     const { sourceRep, targetRep, typeOnly, valueCircular, typeOnlyCircular } = info;
 
-    const isIncoming = highlightedNodeId != null && targetRep === highlightedNodeId;
-    const isOutgoing = highlightedNodeId != null && sourceRep === highlightedNodeId;
-
     let stroke = DEFAULT_EDGE_COLOR;
     let strokeWidth = 1;
     if (valueCircular) {
@@ -538,12 +528,6 @@ export function buildGraph({
       strokeWidth = 2;
     } else if (typeOnlyCircular) {
       stroke = TYPE_ONLY_CIRCULAR_EDGE_COLOR;
-      strokeWidth = 2;
-    } else if (isIncoming) {
-      stroke = INCOMING_EDGE_COLOR;
-      strokeWidth = 2;
-    } else if (isOutgoing) {
-      stroke = OUTGOING_EDGE_COLOR;
       strokeWidth = 2;
     }
 
@@ -576,7 +560,6 @@ export function buildGraph({
   const groupSizes = new Map<string, NodeSize>();
 
   for (const [path, type] of visibleNodes) {
-    const highlighted = path === highlightedNodeId;
     const parentId = parentByNode.get(path) ?? undefined;
 
     if (type === 'folder') {
@@ -587,7 +570,6 @@ export function buildGraph({
           label: getBaseName(path),
           path,
           expanded: true,
-          highlighted,
           backgroundColor: folderColors.get(path) ?? 'rgba(0, 0, 0, 0.02)',
           onToggle: onToggleFolder,
           onExpandRecursive,
@@ -611,7 +593,6 @@ export function buildGraph({
           label: getBaseName(path),
           path,
           expanded: false,
-          highlighted,
           circular,
           backgroundColor: folderColors.get(path) ?? 'rgba(0, 0, 0, 0.02)',
           onToggle: onToggleFolder,
@@ -632,7 +613,6 @@ export function buildGraph({
       const data: FileNodeData = {
         label: getBaseName(path),
         path,
-        highlighted,
         circular: circularModules.has(path),
         onShowInFileTree,
         onShowDependencies,

@@ -2,7 +2,7 @@ export interface FolderNodeData {
   label: string;
   path: string;
   expanded: boolean;
-  highlighted: boolean;
+  highlighted?: boolean;
   circular?: boolean;
   backgroundColor: string;
   onToggle: (path: string) => void;
@@ -16,7 +16,7 @@ export interface FolderGroupNodeData {
   label: string;
   path: string;
   expanded: boolean;
-  highlighted: boolean;
+  highlighted?: boolean;
   backgroundColor: string;
   onToggle: (path: string) => void;
   onExpandRecursive: (path: string) => void;
