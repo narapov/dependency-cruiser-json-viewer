@@ -13,11 +13,7 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
-import {
-  GLOB_PATTERNS_DOCS_URL,
-  IGNORE_PATTERN_EXAMPLES,
-  IGNORE_PATTERN_PLACEHOLDER,
-} from '../../hooks/useIgnorePatterns';
+import { GLOB_PATTERNS_DOCS_URL, IGNORE_PATTERN_EXAMPLES, IGNORE_PATTERN_PLACEHOLDER } from './ignorePatternsOptions';
 
 interface IgnorePatternsDialogProps {
   open: boolean;

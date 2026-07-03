@@ -28,9 +28,11 @@ describe('buildFolderImportRules', () => {
     expect(named.has('index-no-ancestor')).toBe(true);
     expect(named.has('non-index-no-local-index')).toBe(true);
     expect(named.has('same-dir-no-deep')).toBe(true);
-    expect(named.has('ancestor-no-deep-subdir')).toBe(true);
+    expect(named.has('no-deep-subdir')).toBe(true);
     expect(named.has('ancestor-no-nested-partials')).toBe(true);
-    expect(named.has('outside-dir-no-nested-partials-components-d0')).toBe(true);
+    expect(named.has('outside-dir-no-nested-partials-app-d0')).toBe(true);
+    expect(named.has('outside-dir-no-nested-partials-shared-d0')).toBe(true);
+    expect(named.has('outside-dir-no-nested-partials-domain-d0')).toBe(true);
     expect(named.has(`outside-dir-sibling-then-subdir-app-d${MAX_PARTIALS_DEPTH}`)).toBe(true);
   });
 
@@ -41,15 +43,15 @@ describe('buildFolderImportRules', () => {
 
   it('index-no-ancestor matches index.ts under src only', () => {
     const rule = named.get('index-no-ancestor')!;
-    expect(re(rule.from.path as string).test('src/components/QuickPick/index.ts')).toBe(true);
-    expect(re(rule.from.path as string).test('src/components/QuickPick/QuickPick.tsx')).toBe(false);
+    expect(re(rule.from.path as string).test('src/App/partials/QuickPick/index.ts')).toBe(true);
+    expect(re(rule.from.path as string).test('src/App/partials/QuickPick/QuickPick.tsx')).toBe(false);
     expect(rule.to.ancestor).toBe(true);
   });
 
   it('non-index-no-local-index captures same-folder index target', () => {
     const rule = named.get('non-index-no-local-index')!;
-    const from = 'src/components/QuickPick/QuickPick.tsx';
-    const indexPath = 'src/components/QuickPick/index.ts';
+    const from = 'src/App/partials/QuickPick/QuickPick.tsx';
+    const indexPath = 'src/App/partials/QuickPick/index.ts';
     const match = from.match(re(rule.from.path as string));
     expect(match).not.toBeNull();
     const pathNotPatterns = Array.isArray(rule.from.pathNot) ? rule.from.pathNot : [rule.from.pathNot];
@@ -60,7 +62,7 @@ describe('buildFolderImportRules', () => {
 
   it('same-dir-no-deep allows subdir child and index but forbids deeper paths', () => {
     const rule = named.get('same-dir-no-deep')!;
-    const dir = 'src/components/QuickPick';
+    const dir = 'src/App/partials/QuickPick';
     const pathNot = (rule.to.pathNot as string[]).map(pattern => pattern.replace('$1', dir));
 
     expect(re((rule.to.path as string).replace('$1', dir)).test(`${dir}/hooks/useQuickPick/useQuickPick.ts`)).toBe(
@@ -73,11 +75,22 @@ describe('buildFolderImportRules', () => {
     expect(re((rule.to.path as string).replace('$1', dir)).test(`${dir}/partials/A/partials/B/B.tsx`)).toBe(true);
   });
 
-  it('ancestor-no-deep-subdir allows subdir child index via ancestor', () => {
-    const rule = named.get('ancestor-no-deep-subdir')!;
+  it('no-deep-subdir forbids subdir/child/file but allows subdir/child/index', () => {
+    const rule = named.get('no-deep-subdir')!;
+    expect(rule.to.ancestor).toBeUndefined();
+
+    const deepPartial = 'src/App/partials/DependencyGraph/partials/EdgeHighlightSubmenu/EdgeHighlightSubmenu.tsx';
+    const partialIndex = 'src/App/partials/DependencyGraph/partials/EdgeHighlightSubmenu/index.ts';
+    const sameDirFrom = 'src/Shared/helpers/formatShortcut/formatShortcut.test.ts';
+    const sameDirTarget = 'src/Shared/helpers/formatShortcut/formatShortcut.ts';
+    const fromMatch = sameDirFrom.match(re(rule.from.path as string));
     expect(re(rule.to.path as string).test('hooks/useQuickPick/useQuickPick.ts')).toBe(true);
-    expect(re(rule.to.pathNot as string).test('hooks/useQuickPick/index.ts')).toBe(true);
-    expect(re(rule.to.pathNot as string).test('hooks/useQuickPick/useQuickPick.ts')).toBe(false);
+    expect(re(rule.to.path as string).test(deepPartial)).toBe(true);
+    expect(re((rule.to.pathNot as string[]).find(p => p.includes('index'))!).test(partialIndex)).toBe(true);
+    expect(
+      re((rule.to.pathNot as string[]).find(p => p === '^$1/')!.replace('$1', fromMatch![1])).test(sameDirTarget),
+    ).toBe(true);
+    expect(re((rule.to.pathNot as string[]).find(p => p.includes('index'))!).test(deepPartial)).toBe(false);
   });
 
   it('ancestor-no-nested-partials matches nested partials chains', () => {
@@ -87,19 +100,19 @@ describe('buildFolderImportRules', () => {
   });
 
   it('outside-dir rules exclude same-directory imports via $1 pathNot', () => {
-    const nestedPartials = named.get('outside-dir-no-nested-partials-components-d1')!;
-    const siblingSubdir = named.get('outside-dir-sibling-then-subdir-components-d1')!;
+    const nestedPartials = named.get('outside-dir-no-nested-partials-app-d1')!;
+    const siblingSubdir = named.get('outside-dir-sibling-then-subdir-app-d1')!;
     expect(nestedPartials.to.pathNot).toContain('^$1/');
     expect(siblingSubdir.to.pathNot).toContain('^$1/');
     expect((siblingSubdir.to.pathNot as string[]).some(pattern => pattern.includes('partials/$2/'))).toBe(true);
   });
 
   it('outside-dir-no-nested-partials catches cross-partial cousin imports', () => {
-    const rule = named.get('outside-dir-no-nested-partials-components-d1')!;
+    const rule = named.get('outside-dir-no-nested-partials-app-d1')!;
     const badTarget =
-      'src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/helpers/computeQuickPickHighlight/index.ts';
+      'src/App/partials/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/helpers/computeQuickPickHighlight/index.ts';
     const ownBranchTarget =
-      'src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/helpers/highlightBaseStyles/index.ts';
+      'src/App/partials/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/helpers/highlightBaseStyles/index.ts';
 
     const nestedPartialsPattern = rule.to.path as string;
     const ownBranchAllow = (rule.to.pathNot as string[]).find(pattern => pattern.includes('$2'))!;
@@ -111,9 +124,9 @@ describe('buildFolderImportRules', () => {
   });
 
   it('outside-dir-sibling-then-subdir allows parent helpers within own partials branch', () => {
-    const rule = named.get('outside-dir-sibling-then-subdir-components-d2')!;
+    const rule = named.get('outside-dir-sibling-then-subdir-app-d2')!;
     const allowedTarget =
-      'src/components/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/helpers/highlightBaseStyles/index.ts';
+      'src/App/partials/QuickPick/partials/QuickPickFileResultsList/partials/QuickPickFileResultsListItem/helpers/highlightBaseStyles/index.ts';
     const pathNot = (rule.to.pathNot as string[]).map(pattern => pattern.replace('$2', 'QuickPickFileResultsList'));
 
     expect(re(rule.to.path as string).test(allowedTarget)).toBe(true);
@@ -121,17 +134,26 @@ describe('buildFolderImportRules', () => {
   });
 
   it('outside-dir-sibling-then-subdir catches direct subdir of foreign partials sibling', () => {
-    const rule = named.get('outside-dir-sibling-then-subdir-components-d0')!;
-    const badTarget = 'src/components/QuickPick/partials/QuickPickFileResultsList/helpers/searchPaths/index.ts';
-    const allowedTarget = 'src/components/QuickPick/hooks/useQuickPickState/index.ts';
+    const rule = named.get('outside-dir-sibling-then-subdir-app-d0')!;
+    const badTarget = 'src/App/partials/QuickPick/partials/QuickPickFileResultsList/helpers/searchPaths/index.ts';
+    const allowedTarget = 'src/App/partials/QuickPick/QuickPick.tsx';
 
     expect(re(rule.to.path as string).test(badTarget)).toBe(true);
     expect(re(rule.to.path as string).test(allowedTarget)).toBe(false);
   });
 
+  it('outside-dir rules apply to all feature roots', () => {
+    expect(named.has('outside-dir-no-nested-partials-shared-d0')).toBe(true);
+    expect(named.has('outside-dir-sibling-then-subdir-domain-d0')).toBe(true);
+
+    const sharedRule = named.get('outside-dir-no-nested-partials-shared-d0')!;
+    expect(re(sharedRule.from.path as string).test('src/Shared/partials/Foo/Foo.tsx')).toBe(true);
+    expect(re(sharedRule.from.path as string).test('src/App/partials/QuickPick/QuickPick.tsx')).toBe(false);
+  });
+
   it('all rules exclude external dependency types', () => {
     for (const rule of rules) {
-      expect(rule.to.dependencyTypesNot).toEqual(['npm', 'core', 'type-only']);
+      expect(rule.to.dependencyTypesNot).toEqual(['npm', 'core']);
     }
   });
 });

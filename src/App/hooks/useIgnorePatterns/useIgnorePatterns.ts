@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { IGNORE_PATTERNS_STORAGE_KEY } from './ignorePatternsOptions';
+import { IGNORE_PATTERNS_STORAGE_KEY } from '../../partials/IgnorePatternsDialog';
 
 function readStoredPatterns(): string[] {
   const stored = localStorage.getItem(IGNORE_PATTERNS_STORAGE_KEY);

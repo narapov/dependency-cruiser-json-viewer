@@ -7,7 +7,7 @@ import type { FolderGroupNodeData } from '../../types';
 import { FolderExpandToggle } from '../FolderExpandToggle';
 import { NodeContextMenu } from '../NodeContextMenu';
 
-import styles from '../../DependencyGraph.module.css';
+import styles from './FolderGroupNode.module.css';
 
 export function FolderGroupNode({ data }: NodeProps) {
   const {

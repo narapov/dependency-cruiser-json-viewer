@@ -15,11 +15,13 @@ describe('buildLayerImportRules', () => {
   const rules = buildLayerImportRules();
   const named = byName(rules);
 
-  it('exports exactly three layer rules', () => {
-    expect(rules).toHaveLength(3);
+  it('exports all layer rules', () => {
+    expect(rules).toHaveLength(5);
     expect(named.has('domain-only-domain')).toBe(true);
     expect(named.has('shared-only-shared-and-domain')).toBe(true);
-    expect(named.has('components-only-shared-domain-and-self')).toBe(true);
+    expect(named.has('shared-feature-partials-only-shared-domain-and-self')).toBe(true);
+    expect(named.has('domain-feature-partials-only-domain-and-self')).toBe(true);
+    expect(named.has('app-root-only-shared-domain-and-partial-barrels')).toBe(true);
   });
 
   it('domain-only-domain allows only src/domain targets', () => {
@@ -34,25 +36,24 @@ describe('buildLayerImportRules', () => {
     const pathNot = Array.isArray(rule.to.pathNot) ? rule.to.pathNot : [rule.to.pathNot];
     expect(pathNot.some(pattern => re(pattern as string).test('src/Shared/hooks/useResizableWidth.ts'))).toBe(true);
     expect(pathNot.some(pattern => re(pattern as string).test('src/domain/helpers/pathUtils.ts'))).toBe(true);
-    expect(pathNot.some(pattern => re(pattern as string).test('src/components/FileTree/FileTree.tsx'))).toBe(false);
+    expect(pathNot.some(pattern => re(pattern as string).test('src/App/partials/FileTree/FileTree.tsx'))).toBe(false);
   });
 
-  it('components-only-shared-domain-and-self allows same feature via $1', () => {
-    const rule = named.get('components-only-shared-domain-and-self')!;
-    const from = 'src/components/QuickPick/QuickPick.tsx';
-    const match = from.match(re(rule.from.path as string));
-    expect(match).not.toBeNull();
-    const pathNot = (rule.to.pathNot as string[]).map(pattern => pattern.replace('$1', match![1]));
-    expect(pathNot.some(pattern => re(pattern).test('src/components/QuickPick/hooks/useQuickPickState.ts'))).toBe(true);
-    expect(pathNot.some(pattern => re(pattern).test('src/domain/index.ts'))).toBe(true);
-    expect(pathNot.some(pattern => re(pattern).test('src/Shared/index.ts'))).toBe(true);
-    expect(pathNot.some(pattern => re(pattern).test('src/components/FileTree/index.ts'))).toBe(false);
-    expect(pathNot.some(pattern => re(pattern).test('src/App/App.tsx'))).toBe(false);
+  it('app-root-only-shared-domain-and-partial-barrels allows intra-App and forbids deep partials', () => {
+    const rule = named.get('app-root-only-shared-domain-and-partial-barrels')!;
+    const from = 'src/App/hooks/useAppOrchestration/useAppOrchestration.ts';
+    expect(re(rule.from.path as string).test(from)).toBe(true);
+    expect(re(rule.from.pathNot as string).test('src/App/partials/QuickPick/QuickPick.tsx')).toBe(true);
+
+    expect(re(rule.to.path as string).test('src/App/partials/FileTree/helpers/treeIndex')).toBe(true);
+    expect(re(rule.to.path as string).test('src/App/partials/FileTree/FileTree.tsx')).toBe(true);
+    expect(re(rule.to.path as string).test('src/App/partials/FileTree/index.ts')).toBe(false);
+    expect(re(rule.to.path as string).test('src/App/hooks/useAppCommands/index.ts')).toBe(false);
   });
 
   it('all rules exclude external dependency types', () => {
     for (const rule of rules) {
-      expect(rule.to.dependencyTypesNot).toEqual(['npm', 'npm-dev', 'core', 'type-only']);
+      expect(rule.to.dependencyTypesNot).toEqual(['npm', 'npm-dev', 'core']);
     }
   });
 });

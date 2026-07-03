@@ -1,7 +1,7 @@
 import type { IModule } from 'dependency-cruiser';
 import { describe, expect, it } from 'vitest';
 
-import { buildGraph } from '../buildGraph/buildGraph';
+import { buildGraph } from '../buildGraph';
 import { buildEdgeDependencyKeyMap, getEdgeDependencyKeys, makeDependencyKey } from './getEdgeDependencyKeys';
 
 function moduleAt(source: string, dependencies: IModule['dependencies'] = []): IModule {

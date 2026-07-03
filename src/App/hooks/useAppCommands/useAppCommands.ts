@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
-import type { QuickPickCommand } from '../../../components/QuickPick';
+import type { QuickPickCommand } from '../../partials/QuickPick';
 
 export interface AppCommandsOrchestration {
   clearLocalStorage: () => void;

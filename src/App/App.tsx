@@ -11,11 +11,6 @@ import Stack from '@mui/material/Stack';
 
 import { countIgnoredModules, CruiseResultParseError, filterCruiseResult } from '@/domain';
 
-import { AppLayout } from '../components/AppLayout';
-import { DependencyGraph, type DependencyGraphHandle } from '../components/DependencyGraph';
-import { DependencyPanel } from '../components/DependencyPanel';
-import { FileTree, type FileTreeHandle } from '../components/FileTree';
-import { QuickPick, type QuickPickHandle } from '../components/QuickPick';
 import {
   useAppCommands,
   useAppOrchestration,
@@ -25,10 +20,15 @@ import {
   useLoadCruiseResultFromFile,
 } from './hooks';
 import { AppHeader } from './partials/AppHeader';
+import { AppLayout } from './partials/AppLayout';
 import { AppStatusBar } from './partials/AppStatusBar';
 import { CruiseResultFileInput } from './partials/CruiseResultFileInput';
+import { DependencyGraph, type DependencyGraphHandle } from './partials/DependencyGraph';
+import { DependencyPanel } from './partials/DependencyPanel';
+import { FileTree, type FileTreeHandle } from './partials/FileTree';
 import { IgnorePatternsDialog } from './partials/IgnorePatternsDialog';
 import { LanguagePickerDialog } from './partials/LanguagePickerDialog';
+import { QuickPick, type QuickPickHandle } from './partials/QuickPick';
 import { ThemePickerDialog } from './partials/ThemePickerDialog';
 
 import styles from './App.module.css';

@@ -2,7 +2,7 @@ import type { RefObject } from 'react';
 
 import Box from '@mui/material/Box';
 
-import type { QuickPickFileItem } from '../../QuickPick.types';
+import type { QuickPickFileItem } from '../../types';
 import { QuickPickFileResultsListItem } from './partials/QuickPickFileResultsListItem';
 
 interface QuickPickFileResultsListProps {

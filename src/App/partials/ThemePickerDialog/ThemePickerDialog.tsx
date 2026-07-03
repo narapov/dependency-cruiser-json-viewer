@@ -8,7 +8,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import { useColorScheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 
-import { THEME_OPTIONS, type ThemeOptionValue } from '../ThemeSelector/themeOptions';
+import { THEME_OPTIONS, type ThemeOptionValue } from '../ThemeSelector';
 
 interface ThemePickerDialogProps {
   open: boolean;

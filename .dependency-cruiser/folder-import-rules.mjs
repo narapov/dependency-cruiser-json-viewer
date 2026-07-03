@@ -24,28 +24,35 @@
 //   ✗ ./{subdir}/{child}/{grandchild}   ✗ ./partials/A/partials/B
 //   ✗ ./index  (in non-index files)
 //
-// ../ imports (ancestor-*; direct ancestors only; index-no-ancestor for index.ts):
+// ../ imports (ancestor-no-nested-partials; index-no-ancestor for index.ts):
 //   ✓ (../)+{name}             ✓ (../)+{name}/index.ts
 //   ✓ (../)+{subdir}/{child}   ✓ (../)+{subdir}/{child}/index.ts
-//   ✗ (../)+{subdir}/{child}/{grandchild}
 //   ✗ (../)+partials/A/partials/B/…
+//
+// {subdir}/{child}/{grandchild} (no-deep-subdir; any import path, including ./ and ../):
+//   ✓ {subdir}/{child}         ✓ {subdir}/{child}/index.ts
+//   ✗ {subdir}/{child}/{grandchild}
 //
 // Imports outside $1/ from partials/$2/… (outside-dir-*; $1 = file dir, $2 = branch root):
 //   ✓ …/partials/$2/partials/A/partials/B → ../../helpers/{child}
 //   ✗ …/partials/$2/… → …/partials/{not $2}/partials/…
 //   ✗ …/partials/$2/… → …/partials/{not $2}/{subdir}/…
 //
-// Scope: src/** except src/i18n/; partials branches — src/App, src/components/{Feature}.
+// Scope: src/** except src/i18n/ and src/assets/; partials branches — src/{FeatureRoot}.
+// Feature roots: App, Shared, domain (see SRC_FEATURE_ROOTS).
 // =============================================================================
 
 // Allowed subfolders for ./{subdir}/{child} and (../)+{subdir}/{child}.
 const SUBDIRS_RE = 'hooks|partials|hocs|contexts|types|constants|helpers|api';
 
-// npm, node built-ins, and import type are not checked by folder rules.
-const EXTERNAL_DEP_TYPES = ['npm', 'core', 'type-only'];
+// npm and node built-ins are not checked by folder rules.
+const EXTERNAL_DEP_TYPES = ['npm', 'core'];
 
-// src/i18n/ is out of scope — separate import layout (locales/*.json).
-const SRC_FOLDER_SCOPE_NOT = '^src/i18n/';
+// Top-level feature roots under src/ (excludes i18n, assets).
+const SRC_FEATURE_ROOTS = ['App', 'Shared', 'domain'];
+
+// src/i18n/ and src/assets/ are out of scope — separate import layout.
+const SRC_FOLDER_SCOPE_NOT = '^src/i18n/|^src/assets/';
 
 // Max partials/…/partials/… nesting (no * — safe-regex).
 const MAX_PARTIALS_DEPTH = 10;
@@ -54,10 +61,10 @@ const MAX_PARTIALS_DEPTH = 10;
 // Example: …/Feature/partials/SubFeature/partials/A/partials/B/B.tsx
 //   $1 = …/Feature/partials/SubFeature/partials/A/partials/B
 //   $2 = SubFeature
-const PARTIALS_SCOPE_PREFIXES = [
-  { key: 'app', path: '^src/App' },
-  { key: 'components', path: '^src/components/[^/]+' },
-];
+const PARTIALS_SCOPE_PREFIXES = SRC_FEATURE_ROOTS.map(name => ({
+  key: name.toLowerCase(),
+  path: `^src/${name}`,
+}));
 
 const NON_INDEX_FROM = {
   path: '(^src/.+)/[^/]+$',
@@ -192,17 +199,16 @@ function buildFolderImportRules() {
       },
     ),
 
-    // ancestor-no-deep-subdir (parent ../ imports; direct ancestors only)
-    // Allows: (../)+{name}, (../)+{name}/index.ts, (../)+{subdir}/{child},
-    //   (../)+{subdir}/{child}/index.ts.
-    //   ✓ …/partials/SubFeature/partials/A/A.tsx → ../../types
-    //   ✓ …/partials/SubFeature/partials/A/A.tsx → ../../../hooks/useXxx
-    // Forbids: going deeper than {subdir}/{child} via an ancestor.
+    // no-deep-subdir (any import path — ./, ../, alias)
+    // Allows: {subdir}/{child}, {subdir}/{child}/index.ts
+    //   ✓ hooks/useXxx/useXxx.tsx → ../../partials/SubFeature
+    //   ✓ Feature/Feature.tsx → ./helpers/helperName/index.ts
+    // Forbids: {subdir}/{child}/{grandchild} where grandchild is not index.
+    //   ✗ hooks/useXxx/useXxx.tsx → ../../partials/SubFeature/SubFeature.tsx
     //   ✗ …/partials/SubFeature/partials/A/A.tsx → ../../../hooks/useXxx/useXxx
-    forbidden('ancestor-no-deep-subdir', NON_INDEX_FROM, {
-      ancestor: true,
+    forbidden('no-deep-subdir', NON_INDEX_FROM, {
       path: `(?:${SUBDIRS_RE})/[^/]+/[^/]+`,
-      pathNot: `(?:${SUBDIRS_RE})/[^/]+/index\\.ts$`,
+      pathNot: ['^$1/', `/index\\.ts$`],
     }),
 
     // ancestor-no-nested-partials (parent ../ imports; direct ancestors only)
@@ -222,6 +228,7 @@ function buildFolderImportRules() {
 export {
   SUBDIRS_RE,
   EXTERNAL_DEP_TYPES,
+  SRC_FEATURE_ROOTS,
   SRC_FOLDER_SCOPE_NOT,
   MAX_PARTIALS_DEPTH,
   PARTIALS_SCOPE_PREFIXES,

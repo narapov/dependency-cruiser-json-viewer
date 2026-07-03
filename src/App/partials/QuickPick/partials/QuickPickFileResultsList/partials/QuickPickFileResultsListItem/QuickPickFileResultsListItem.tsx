@@ -6,7 +6,7 @@ import { getParentPath } from '@/domain';
 import { MaterialFileSystemIcon } from '@/Shared';
 
 import { computeQuickPickHighlight } from '../../../../helpers/computeQuickPickHighlight';
-import type { QuickPickFileItem } from '../../../../QuickPick.types';
+import type { QuickPickFileItem } from '../../../../types';
 import { QuickPickHighlightedText } from '../../../QuickPickHighlightedText';
 import { QuickPickNameHighlight } from '../../../QuickPickNameHighlight';
 import { QuickPickPathHighlight } from './partials/QuickPickPathHighlight';

@@ -4,7 +4,7 @@ import Box from '@mui/material/Box';
 
 import { CIRCULAR_EDGE_COLOR, INCOMING_EDGE_COLOR, OUTGOING_EDGE_COLOR, SELECTED_EDGE_COLOR } from '@/Shared';
 
-import styles from '../../DependencyGraph.module.css';
+import styles from './GraphLegend.module.css';
 
 export function GraphLegend() {
   const { t } = useTranslation();

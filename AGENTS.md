@@ -42,10 +42,12 @@ Interactive browser viewer for [dependency-cruiser](https://github.com/sverweij/
 ## Architecture
 
 ```
-App  →  components, domain, Shared, i18n
-components  →  domain, Shared
-domain  →  stdlib + dependency-cruiser types only
-Shared  →  no App, components, or domain
+Feature roots: src/App, src/Shared, src/domain (excludes src/i18n, src/assets)
+
+App                    →  domain, Shared, i18n; partials via index.ts only (from App root)
+App/partials/{Feature} →  folder rules only (no layer isolation between partials)
+domain                 →  stdlib + dependency-cruiser types only (src/domain/)
+Shared                 →  src/Shared/, src/domain/ only
 ```
 
 ### Import rules
@@ -56,37 +58,39 @@ Enforced by `.dependency-cruiser.mjs` (`npm run depcruise`):
 - Import **`Shared`** only from `src/Shared/index.ts` (e.g. `from '@/Shared'`).
 - Do not import `App/helpers/*` outside `App/`.
 - Do not deep-import `partials/`, `helpers/`, or `types/` — use the module's public `index.ts` or `ComponentName.types.ts`.
+- From `App` root (hooks, api, `App.tsx`): import partials only via `partials/{Name}/index.ts`.
 
 ### dependency-cruiser forbidden rules
 
-| Rule                                     | From                        | Allowed targets                                                |
-| ---------------------------------------- | --------------------------- | -------------------------------------------------------------- |
-| `domain-only-domain`                     | `src/domain/`               | `src/domain/` only                                             |
-| `shared-only-shared-and-domain`          | `src/Shared/`               | `src/Shared/`, `src/domain/`                                   |
-| `components-only-shared-domain-and-self` | `src/components/{Feature}/` | `src/Shared/`, `src/domain/`, same `src/components/{Feature}/` |
+| Rule                                                  | From                               | Allowed targets                                             |
+| ----------------------------------------------------- | ---------------------------------- | ----------------------------------------------------------- |
+| `domain-only-domain`                                  | `src/domain/`                      | `src/domain/` only                                          |
+| `shared-only-shared-and-domain`                       | `src/Shared/`                      | `src/Shared/`, `src/domain/`                                |
+| `shared-feature-partials-only-shared-domain-and-self` | `src/Shared/partials/{Feature}/`   | `src/Shared/`, `src/domain/`, same partials branch          |
+| `domain-feature-partials-only-domain-and-self`        | `src/domain/partials/{Feature}/`   | `src/domain/`, same partials branch                         |
+| `app-root-only-shared-domain-and-partial-barrels`     | `src/App/` (not under `partials/`) | intra-`App/`, external layers; partials via `index.ts` only |
 
-Folder-level import rules (siblings, `./index`, partials branches) live in `.dependency-cruiser/folder-import-rules.mjs`.
+Folder-level import rules (siblings, `./index`, partials branches) apply under all feature roots (`App`, `Shared`, `domain`) and live in `.dependency-cruiser/folder-import-rules.mjs`.
 
 ### Legacy — do not extend
 
-- `src/lib/` — orphaned; logic lives in `domain/` and `components/*/helpers/`.
-- `src/hooks/` — orphaned; use `App/hooks/` or per-component hooks instead.
-- `src/components/QuickOpen/` — replaced by `QuickPick`; still on disk but unused.
+- `src/lib/` — orphaned; logic lives in `domain/` and `App/partials/*/helpers/`.
+- `src/hooks/` — orphaned; use `App/hooks/` or per-feature hooks instead.
 
 ## Where to put new code
 
-| What                                 | Where                        |
-| ------------------------------------ | ---------------------------- |
-| Reusable UI feature                  | `src/components/<Feature>/`  |
-| App-only dialogs, header, status bar | `src/App/partials/`          |
-| App orchestration and state          | `src/App/hooks/`             |
-| Pure business logic                  | `src/domain/helpers/<name>/` |
-| Cross-cutting utilities              | `src/Shared/`                |
-| HTTP / data fetching (app-level)     | `src/App/api/`               |
+| What                                 | Where                         |
+| ------------------------------------ | ----------------------------- |
+| Main UI features (graph, tree, etc.) | `src/App/partials/<Feature>/` |
+| App-only dialogs, header, status bar | `src/App/partials/`           |
+| App orchestration and state          | `src/App/hooks/`              |
+| Pure business logic                  | `src/domain/helpers/<name>/`  |
+| Cross-cutting utilities              | `src/Shared/`                 |
+| HTTP / data fetching (app-level)     | `src/App/api/`                |
 
 ### Component module layout
 
-Follow the pattern in `src/components/FileTree/`:
+Follow the pattern in `src/App/partials/FileTree/`:
 
 ```
 Feature/

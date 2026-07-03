@@ -1,7 +1,7 @@
 /** @type {import('dependency-cruiser').IForbiddenRuleType[]} */
 
-// npm, node built-ins, npm-dev (vitest, …), and import type are not checked by layer rules.
-const EXTERNAL_DEP_TYPES = ['npm', 'npm-dev', 'core', 'type-only'];
+// npm, node built-ins, and npm-dev (vitest, …) are not checked by layer rules.
+const EXTERNAL_DEP_TYPES = ['npm', 'npm-dev', 'core'];
 
 /**
  * @param {string} name
@@ -46,19 +46,38 @@ function buildLayerImportRules() {
       },
     ),
 
-    // components-only-shared-domain-and-self
-    // $1 = src/components/{Feature}
-    // Allows: Shared, domain, and the same feature folder.
-    //   ✓ components/Feature/Feature.tsx → ./hooks/useX
-    //   ✓ components/Feature/… → ../../domain
-    //   ✓ components/Feature/… → ../../../../Shared
-    // Forbids: App, other features, i18n, …
-    //   ✗ components/Feature/… → components/OtherFeature
-    //   ✗ components/Feature/… → App/partials/AppHeader
+    // shared-feature-partials-only-shared-domain-and-self
+    // $1 = src/Shared/partials/{Feature}
     forbidden(
-      'components-only-shared-domain-and-self',
-      { path: '(^src/components/([^/]+))/' },
+      'shared-feature-partials-only-shared-domain-and-self',
+      { path: '(^src/Shared/partials/([^/]+))/' },
       { pathNot: ['^src/Shared/', '^src/domain/', '$1/'] },
+    ),
+
+    // domain-feature-partials-only-domain-and-self
+    // $1 = src/domain/partials/{Feature}
+    forbidden(
+      'domain-feature-partials-only-domain-and-self',
+      { path: '(^src/domain/partials/([^/]+))/' },
+      { pathNot: ['^src/domain/', '$1/'] },
+    ),
+
+    // app-root-only-shared-domain-and-partial-barrels
+    // From App root (hooks, api, App.tsx) — not under partials/.
+    // Allows: Shared, domain, i18n, intra-App imports, and partial barrels only.
+    //   ✓ App/hooks/useAppOrchestration → App/partials/FileTree/index.ts
+    //   ✓ App/App.tsx → App/hooks/index.ts
+    // Forbids: deep imports into partials internals.
+    //   ✗ App/hooks/useAppOrchestration → App/partials/FileTree/helpers/treeIndex
+    forbidden(
+      'app-root-only-shared-domain-and-partial-barrels',
+      {
+        path: '^src/App/',
+        pathNot: '^src/App/partials/',
+      },
+      {
+        path: '^src/App/partials/[^/]+/(?!index\\.ts$).+',
+      },
     ),
   ];
 }

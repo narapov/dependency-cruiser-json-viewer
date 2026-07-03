@@ -5,7 +5,7 @@ import { MarkerType, type Edge } from '@xyflow/react';
 
 import { CIRCULAR_EDGE_COLOR, DEFAULT_EDGE_COLOR, INCOMING_EDGE_COLOR, OUTGOING_EDGE_COLOR } from '@/Shared';
 
-import { buildGraph } from '../buildGraph/buildGraph';
+import { buildGraph } from '../buildGraph';
 import { applyActivePathEdgeStyle } from './applyActivePathEdgeStyle';
 
 function moduleAt(source: string, dependencies: IModule['dependencies'] = []): IModule {
