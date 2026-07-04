@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.1.3](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v0.1.2...v0.1.3) (2026-07-04)
+
+### Features
+
+- add dnd for graph nodes ([edd997a](https://github.com/narapov/dependency-cruiser-json-viewer/commit/edd997afd0deee2d6cf43ac838f442b693cab535))
+- show graph preview in minimap ([38b1c26](https://github.com/narapov/dependency-cruiser-json-viewer/commit/38b1c26f99820386f2f6cf3883b8a96b76b58228))
+
+### Bug Fixes
+
+- remove aggressive auto fitView ([64dbc10](https://github.com/narapov/dependency-cruiser-json-viewer/commit/64dbc1035a8ff67e899ba9e7be0769bfb7a4354f))
+
 ## [0.1.2](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v0.1.1...v0.1.2) (2026-06-30)
 
 ## 0.1.1 (2026-06-30)
