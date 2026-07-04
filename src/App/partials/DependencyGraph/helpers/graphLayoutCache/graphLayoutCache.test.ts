@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { Node } from '@xyflow/react';
 
-import { GRID_GAP_X, GROUP_HEADER, GROUP_PADDING } from '../buildGraph';
+import { GRID_GAP_Y, GROUP_HEADER, GROUP_PADDING } from '../buildGraph';
 import {
   applyAutoLayoutGroupLevel,
   applyAutoLayoutSubtree,
@@ -272,7 +272,8 @@ describe('reflowForDrag', () => {
 
     expect(result.find(n => n.id === 'file-a')?.position).toEqual(draggedPosition);
     const fileB = result.find(n => n.id === 'file-b');
-    expect(fileB!.position.x).toBeGreaterThanOrEqual(130 + 120 + GRID_GAP_X);
+    expect(fileB!.position.x).toBe(130);
+    expect(fileB!.position.y).toBeGreaterThanOrEqual(50 + 32 + GRID_GAP_Y);
   });
 
   it('expands folder group when dragged file moves near edge', () => {
@@ -328,7 +329,7 @@ describe('reflowForDrag', () => {
     const groupA = result.find(n => n.id === 'group-a');
     const groupB = result.find(n => n.id === 'group-b');
     expect(groupA!.width!).toBeGreaterThan(200);
-    expect(groupB!.position.x).toBeGreaterThan(210);
+    expect(groupB!.position.y).toBeGreaterThanOrEqual(groupA!.position.y + (groupA!.height ?? 0) + GRID_GAP_Y);
   });
 });
 
@@ -574,7 +575,7 @@ describe('reflowParentSiblings on expand', () => {
     const folderA = result.find(n => n.id === 'folder-a');
     const folderB = result.find(n => n.id === 'folder-b');
     expect(folderA?.position).toEqual({ x: 0, y: 50 });
-    expect(folderB!.position.x).toBeGreaterThanOrEqual(0 + 250 + GRID_GAP_X);
+    expect(folderB!.position.y).toBeGreaterThanOrEqual(50 + 200 + GRID_GAP_Y);
   });
 
   it('shifts sibling that sits to the left of expanded group when it overlaps', () => {
@@ -610,7 +611,7 @@ describe('reflowParentSiblings on expand', () => {
     const folderA = result.find(n => n.id === 'folder-a');
     const folderB = result.find(n => n.id === 'folder-b');
     expect(folderA?.position).toEqual({ x: 50, y: 50 });
-    expect(folderB!.position.x).toBeGreaterThanOrEqual(50 + 250 + GRID_GAP_X);
+    expect(folderB!.position.y).toBeGreaterThanOrEqual(50 + 200 + GRID_GAP_Y);
   });
 
   it('reflows siblings when multiple nested folders expand during recursive expand', () => {
@@ -663,7 +664,7 @@ describe('reflowParentSiblings on expand', () => {
     const childA = result.find(n => n.id === 'root/child-a')!;
     const childB = result.find(n => n.id === 'root/child-b')!;
     expect(root?.position).toEqual({ x: 0, y: 50 });
-    expect(childB.position.x).toBeGreaterThanOrEqual(childA.position.x + 200 + GRID_GAP_X);
+    expect(childB.position.y).toBeGreaterThanOrEqual(childA.position.y + 150 + GRID_GAP_Y);
   });
 });
 
@@ -689,7 +690,7 @@ describe('reflowParentSiblings', () => {
     });
 
     const nodeB = result.find(n => n.id === 'b');
-    expect(nodeB!.position.x).toBeGreaterThanOrEqual(200 + 60);
+    expect(nodeB!.position.y).toBeGreaterThanOrEqual(32 + GRID_GAP_Y);
   });
 
   it('reflows siblings when cached positions overlap after child reappears', () => {
@@ -726,8 +727,8 @@ describe('reflowParentSiblings', () => {
     const fileA = result.find(n => n.id === 'file-a')!;
     const fileB = result.find(n => n.id === 'file-b')!;
     const fileC = result.find(n => n.id === 'file-c')!;
-    expect(fileB.position.x).toBeGreaterThanOrEqual(fileA.position.x + 120 + GRID_GAP_X);
-    expect(fileC.position.x).toBeGreaterThanOrEqual(fileB.position.x + 120 + GRID_GAP_X);
+    expect(fileB.position.y).toBeGreaterThanOrEqual(fileA.position.y + 32 + GRID_GAP_Y);
+    expect(fileC.position.y).toBeGreaterThanOrEqual(fileB.position.y + 32 + GRID_GAP_Y);
   });
 
   it('reflows siblings when restored cache positions overlap without size change', () => {
@@ -753,6 +754,6 @@ describe('reflowParentSiblings', () => {
     });
 
     const nodeB = result.find(n => n.id === 'b');
-    expect(nodeB!.position.x).toBeGreaterThanOrEqual(120 + GRID_GAP_X);
+    expect(nodeB!.position.y).toBeGreaterThanOrEqual(32 + GRID_GAP_Y);
   });
 });

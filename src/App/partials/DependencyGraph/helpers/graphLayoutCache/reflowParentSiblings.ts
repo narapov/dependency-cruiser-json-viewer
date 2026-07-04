@@ -67,8 +67,7 @@ function pushAwayFromFixedNodes(
 
       const fixedSize = getNodeSizeFromNode(fixed);
       if (nodesOverlap({ x, y }, currentSize, fixed.position, fixedSize)) {
-        x = fixed.position.x + fixedSize.width + GRID_GAP_X;
-        y = Math.max(y, fixed.position.y);
+        y = fixed.position.y + fixedSize.height + GRID_GAP_Y;
         changed = true;
       }
     }
@@ -78,7 +77,8 @@ function pushAwayFromFixedNodes(
 
       const fixedSize = getNodeSizeFromNode(fixed);
       if (nodesOverlap({ x, y }, currentSize, fixed.position, fixedSize)) {
-        y = fixed.position.y + fixedSize.height + GRID_GAP_Y;
+        x = fixed.position.x + fixedSize.width + GRID_GAP_X;
+        y = Math.max(y, fixed.position.y);
         changed = true;
       }
     }
@@ -288,6 +288,40 @@ function reflowSiblingsInGroup(
     changed = pushAwayFromFixedNodes(siblings, nodeById, childFixedIds) || changed;
   }
 
+  // First pass: push down when siblings overlap.
+  for (let i = 0; i < siblings.length; i++) {
+    const current = siblings[i];
+    if (childFixedIds?.has(current.id)) continue;
+
+    const currentSize = getNodeSizeFromNode(current);
+    const { x } = current.position;
+    let { y } = current.position;
+
+    for (let j = 0; j < i; j++) {
+      const other = siblings[j];
+      const otherSize = getNodeSizeFromNode(other);
+
+      if (nodesOverlap({ x, y }, currentSize, other.position, otherSize)) {
+        y = other.position.y + otherSize.height + GRID_GAP_Y;
+        changed = true;
+      }
+    }
+
+    const fixedCheck = checkVerticalOverlapWithFixedNodes(childFixedIds, siblings, i, nodeById, x, y, currentSize);
+    y = fixedCheck.y;
+    if (fixedCheck.changed) changed = true;
+
+    if (y !== current.position.y) {
+      nodeById.set(current.id, {
+        ...current,
+        position: { x, y },
+      });
+      siblings[i] = nodeById.get(current.id)!;
+      changed = true;
+    }
+  }
+
+  // Second pass: push right when vertical overflow still causes overlap.
   for (let i = 0; i < siblings.length; i++) {
     const current = siblings[i];
     if (childFixedIds?.has(current.id)) continue;
@@ -312,39 +346,6 @@ function reflowSiblingsInGroup(
     if (fixedCheck.changed) changed = true;
 
     if (x !== current.position.x || y !== current.position.y) {
-      nodeById.set(current.id, {
-        ...current,
-        position: { x, y },
-      });
-      siblings[i] = nodeById.get(current.id)!;
-      changed = true;
-    }
-  }
-
-  // Second pass: push down rows when horizontal overflow causes vertical overlap.
-  for (let i = 0; i < siblings.length; i++) {
-    const current = siblings[i];
-    if (childFixedIds?.has(current.id)) continue;
-
-    const currentSize = getNodeSizeFromNode(current);
-    const { x } = current.position;
-    let { y } = current.position;
-
-    for (let j = 0; j < i; j++) {
-      const other = siblings[j];
-      const otherSize = getNodeSizeFromNode(other);
-
-      if (nodesOverlap({ x, y }, currentSize, other.position, otherSize)) {
-        y = other.position.y + otherSize.height + GRID_GAP_Y;
-        changed = true;
-      }
-    }
-
-    const fixedCheck = checkVerticalOverlapWithFixedNodes(childFixedIds, siblings, i, nodeById, x, y, currentSize);
-    y = fixedCheck.y;
-    if (fixedCheck.changed) changed = true;
-
-    if (y !== current.position.y) {
       nodeById.set(current.id, {
         ...current,
         position: { x, y },
