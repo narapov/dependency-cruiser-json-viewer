@@ -26,6 +26,7 @@ The usual workflow meant constantly tweaking filters, `collapsePattern`, and `ex
 
 - **File tree** — browse modules and folders; checkbox selection to dynamically show or hide parts of the codebase in the graph; expand/collapse, context menu.
 - **Dependency graph** — interactive graph with folder/file nodes and colored edges (incoming/outgoing/circular).
+- **Drag-and-drop layout** — rearrange graph nodes by dragging; custom positions persist when you expand or collapse folders. Turn off **Auto layout only** in the graph legend to enable dragging; use **Auto layout** in a folder's context menu to reset layout.
 - **Edge highlighting** — highlight dependencies via the edge context menu; highlights are tied to the underlying import relation and persist when you expand or collapse nodes.
 - **Drill-down navigation** — expanding a folder in the tree rebuilds the graph for that scope, so you can walk from high-level architecture down to individual files.
 - **Quick search & commands** — fuzzy file search (`Cmd/Ctrl+P`) and command palette (`F1`); see Keyboard shortcuts below.
