@@ -22,5 +22,7 @@ export interface FolderGroupNodeData {
   onExpandRecursive: (path: string) => void;
   onShowInFileTree: (path: string) => void;
   onShowDependencies?: (path: string) => void;
+  onAutoLayoutGroup?: (path: string) => void;
+  onAutoLayoutGroupRecursive?: (path: string) => void;
   [key: string]: unknown;
 }

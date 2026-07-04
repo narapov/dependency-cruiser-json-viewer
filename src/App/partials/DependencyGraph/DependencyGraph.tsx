@@ -1,4 +1,4 @@
-import { useCallback, useImperativeHandle, useMemo, useState, type Ref } from 'react';
+import { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState, type Ref } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Box from '@mui/material/Box';
@@ -31,11 +31,12 @@ import {
   getEdgeHighlightColor,
   getMinimapNodeColor,
 } from './helpers';
-import { useEdgeContextMenu } from './hooks';
+import { useEdgeContextMenu, useGraphLayoutNodes } from './hooks';
 import { DependencyEdge } from './partials/DependencyEdge';
 import { FileNode } from './partials/FileNode';
 import { FolderGroupNode } from './partials/FolderGroupNode';
 import { FolderNode } from './partials/FolderNode';
+import { GraphLayoutToggle } from './partials/GraphLayoutToggle';
 import { GraphLegend } from './partials/GraphLegend';
 import type { DependencyGraphHandle } from './types';
 
@@ -62,6 +63,8 @@ interface DependencyGraphInnerProps {
   onShowDependencies?: (path: string) => void;
   onActivePathChange?: (path: string) => void;
   activePath?: string | null;
+  autoLayoutOnly: boolean;
+  onAutoLayoutOnlyChange: (value: boolean) => void;
 }
 
 function DependencyGraphInner({
@@ -75,6 +78,8 @@ function DependencyGraphInner({
   onShowDependencies,
   onActivePathChange,
   activePath,
+  autoLayoutOnly,
+  onAutoLayoutOnlyChange,
 }: DependencyGraphInnerProps) {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -89,11 +94,7 @@ function DependencyGraphInner({
   const folderColors = useMemo(() => assignFolderColors(sources, colorMode), [sources, colorMode]);
   const expandedFolders = useMemo(() => new Set(expandedKeys), [expandedKeys]);
 
-  const {
-    nodes: baseNodes,
-    edges: baseEdges,
-    visibleNodeIds,
-  } = useMemo(
+  const graphResult = useMemo(
     () =>
       buildGraph({
         modules,
@@ -117,10 +118,48 @@ function DependencyGraphInner({
     ],
   );
 
-  const displayNodes = useMemo(
-    () => applyActivePathNodeHighlight(baseNodes, activePath ?? null),
-    [baseNodes, activePath],
-  );
+  const {
+    nodes: layoutNodes,
+    onNodesChange,
+    onNodeDrag,
+    onNodeDragStop,
+    onAutoLayoutGroup,
+    onAutoLayoutGroupRecursive,
+    hasUserLayout,
+  } = useGraphLayoutNodes({
+    graphResult,
+    autoLayoutOnly,
+  });
+
+  const { edges: baseEdges, visibleNodeIds } = graphResult;
+
+  const displayNodes = useMemo(() => {
+    const nodesWithAutoLayout = layoutNodes.map(node => {
+      const withCallbacks =
+        !autoLayoutOnly && node.type === 'folderGroup'
+          ? { ...node, data: { ...node.data, onAutoLayoutGroup, onAutoLayoutGroupRecursive } }
+          : node;
+
+      return autoLayoutOnly ? { ...withCallbacks, draggable: false, dragHandle: undefined } : withCallbacks;
+    });
+    return applyActivePathNodeHighlight(nodesWithAutoLayout, activePath ?? null);
+  }, [layoutNodes, autoLayoutOnly, onAutoLayoutGroup, onAutoLayoutGroupRecursive, activePath]);
+
+  const selectedPathsKey = selectedPaths.join('\0');
+  const prevSelectedPathsKeyRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (layoutNodes.length === 0 || hasUserLayout || autoLayoutOnly) return;
+
+    const isInitialLayout = prevSelectedPathsKeyRef.current === null;
+    const selectionChanged = prevSelectedPathsKeyRef.current !== selectedPathsKey;
+
+    if (isInitialLayout || selectionChanged) {
+      void fitView({ padding: 0.2, duration: 300 });
+    }
+
+    prevSelectedPathsKeyRef.current = selectedPathsKey;
+  }, [selectedPathsKey, hasUserLayout, autoLayoutOnly, layoutNodes.length, fitView]);
 
   const activeEdgeId =
     selectedEdgeId != null && baseEdges.some(edge => edge.id === selectedEdgeId) ? selectedEdgeId : null;
@@ -251,16 +290,21 @@ function DependencyGraphInner({
         onPaneContextMenu={onPaneContextMenu}
         onNodeContextMenu={onPaneContextMenu}
         onEdgeContextMenu={onEdgeContextMenu}
-        nodesDraggable={false}
+        onNodesChange={onNodesChange}
+        onNodeDrag={autoLayoutOnly ? undefined : onNodeDrag}
+        onNodeDragStop={autoLayoutOnly ? undefined : onNodeDragStop}
+        nodesDraggable={!autoLayoutOnly}
         minZoom={0.01}
         maxZoom={20}
         onlyRenderVisibleElements
-        fitView
         proOptions={{ hideAttribution: true }}
       >
         <Background color={theme.palette.divider} />
         <Panel position="top-right">
-          <GraphLegend />
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+            <GraphLayoutToggle checked={autoLayoutOnly} onChange={onAutoLayoutOnlyChange} />
+            <GraphLegend />
+          </Box>
         </Panel>
         <MiniMap
           position="bottom-left"
@@ -278,15 +322,25 @@ function DependencyGraphInner({
   );
 }
 
-interface DependencyGraphProps extends Omit<DependencyGraphInnerProps, 'imperativeRef'> {
+interface DependencyGraphProps extends Omit<
+  DependencyGraphInnerProps,
+  'imperativeRef' | 'autoLayoutOnly' | 'onAutoLayoutOnlyChange'
+> {
   ref?: Ref<DependencyGraphHandle>;
 }
 
 export function DependencyGraph({ ref, ...props }: DependencyGraphProps) {
+  const [autoLayoutOnly, setAutoLayoutOnly] = useState(true);
+
   return (
-    <div className={styles.container}>
+    <div className={`${styles.container}${autoLayoutOnly ? ` ${styles.layoutLocked}` : ''}`}>
       <ReactFlowProvider>
-        <DependencyGraphInner imperativeRef={ref} {...props} />
+        <DependencyGraphInner
+          imperativeRef={ref}
+          autoLayoutOnly={autoLayoutOnly}
+          onAutoLayoutOnlyChange={setAutoLayoutOnly}
+          {...props}
+        />
       </ReactFlowProvider>
     </div>
   );

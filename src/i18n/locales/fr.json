@@ -22,6 +22,8 @@
     "expandFolder": "Développer le dossier",
     "collapseFolder": "Réduire le dossier",
     "expandRecursive": "Développer récursivement",
+    "autoLayout": "Disposition automatique",
+    "autoLayoutRecursive": "Disposition automatique récursive",
     "close": "Fermer",
     "highlight": "Surligner",
     "clear": "Effacer"
@@ -86,7 +88,9 @@
       "viewSource": "Voir la source",
       "viewTarget": "Voir la cible"
     },
-    "emptySelection": "Sélectionnez des fichiers ou des dossiers pour afficher les dépendances"
+    "emptySelection": "Sélectionnez des fichiers ou des dossiers pour afficher les dépendances",
+    "autoLayoutOnly": "Mise en page automatique uniquement",
+    "autoLayoutOnlyHint": "Toujours utiliser la mise en page automatique et désactiver le glisser-déposer. Désactivé, le glisser-déposer est disponible ; le pliage et le dépliage des dossiers ne repositionnent pas les voisins ; utilisez « Mise en page automatique » dans le menu contextuel du dossier pour réorganiser son contenu."
   },
   "dependencyPanel": {
     "dependencies": "Dépendances",

@@ -3,3 +3,11 @@
   transform: none;
   pointer-events: auto;
 }
+
+.groupHeader {
+  cursor: grab;
+}
+
+.groupHeader:active {
+  cursor: grabbing;
+}

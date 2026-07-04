@@ -19,6 +19,18 @@
   overflow: hidden;
 }
 
+.container :global(.react-flow__node:has(.folder-group-header)) {
+  pointer-events: none;
+}
+
+.container.layoutLocked :global(.groupHeader) {
+  cursor: pointer;
+}
+
+.container.layoutLocked :global(.groupHeader:active) {
+  cursor: pointer;
+}
+
 .match {
   font-weight: 600;
   color: var(--mui-palette-text-primary);

@@ -20,6 +20,8 @@ export function FolderGroupNode({ data }: NodeProps) {
     onExpandRecursive,
     onShowInFileTree,
     onShowDependencies,
+    onAutoLayoutGroup,
+    onAutoLayoutGroupRecursive,
   } = data as FolderGroupNodeData;
 
   return (
@@ -49,8 +51,11 @@ export function FolderGroupNode({ data }: NodeProps) {
         onExpandRecursive={onExpandRecursive}
         onShowInFileTree={onShowInFileTree}
         onShowDependencies={onShowDependencies}
+        onAutoLayout={onAutoLayoutGroup}
+        onAutoLayoutRecursive={onAutoLayoutGroupRecursive}
       >
         <Box
+          className={`folder-group-header ${styles.groupHeader}`}
           sx={{
             display: 'flex',
             alignItems: 'center',

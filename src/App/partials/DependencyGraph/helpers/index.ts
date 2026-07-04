@@ -6,4 +6,5 @@ export * from './getEdgeDependencyKeys';
 export * from './getMinimapNodeColor';
 export * from './buildVirtualLayoutEdges';
 export * from './buildGraph';
+export * from './graphLayoutCache';
 export { assignFolderColors } from './assignFolderColors';

@@ -25,13 +25,14 @@ import type {
 import { buildVirtualLayoutEdges, type LayoutEdge } from '../buildVirtualLayoutEdges';
 import { getLeafNodeSize, LEAF_NODE_HEIGHT, LEAF_NODE_MIN_WIDTH } from '../getLeafNodeSize';
 
+export const GROUP_PADDING = 16;
+export const GROUP_HEADER = 36;
+export const GRID_GAP_X = 60;
+export const GRID_GAP_Y = 24;
+
 const NODE_HEIGHT = LEAF_NODE_HEIGHT;
-const GROUP_PADDING = 16;
-const GROUP_HEADER = 36;
 const GRID_MIN_CHILDREN = 6;
 const GRID_MAX_EDGE_RATIO = 0.4;
-const GRID_GAP_X = 60;
-const GRID_GAP_Y = 24;
 const TYPE_ONLY_EDGE_DASH = '6 4';
 
 interface EdgeBuildInfo {
@@ -254,10 +255,10 @@ function buildParentByNode(
   return parentByNode;
 }
 
-function getDirectChildren(
+export function getDirectChildren(
   folderId: string | null,
-  visibleNodeIds: Set<string>,
-  parentByNode: Map<string, string | null>,
+  visibleNodeIds: ReadonlySet<string>,
+  parentByNode: ReadonlyMap<string, string | null>,
 ): string[] {
   const children: string[] = [];
   for (const id of visibleNodeIds) {
@@ -482,6 +483,31 @@ function layoutGroup(
   return applyChildPositions(childIds, childSizes, positions, folderId, nodeMap, groupSizes);
 }
 
+function sortNodesForReactFlow(nodes: Node[]): Node[] {
+  const depthById = new Map<string, number>();
+
+  function getDepth(id: string): number {
+    const cached = depthById.get(id);
+    if (cached !== undefined) return cached;
+
+    const node = nodes.find(n => n.id === id);
+    if (!node?.parentId) {
+      depthById.set(id, 0);
+      return 0;
+    }
+
+    const depth = getDepth(node.parentId) + 1;
+    depthById.set(id, depth);
+    return depth;
+  }
+
+  for (const node of nodes) {
+    getDepth(node.id);
+  }
+
+  return [...nodes].sort((a, b) => (depthById.get(a.id) ?? 0) - (depthById.get(b.id) ?? 0));
+}
+
 export function buildGraph({
   modules,
   selectedPaths,
@@ -604,10 +630,11 @@ export function buildGraph({
           position: { x: 0, y: 0 },
           data,
           parentId,
-          draggable: false,
-          selectable: false,
-          style: { pointerEvents: 'none' },
+          draggable: true,
+          dragHandle: '.folder-group-header',
+          extent: parentId ? 'parent' : undefined,
           zIndex: -1,
+          style: { pointerEvents: 'none' },
         });
       } else {
         const label = getBaseName(path);
@@ -630,6 +657,7 @@ export function buildGraph({
           position: { x: 0, y: 0 },
           data,
           parentId,
+          draggable: true,
           extent: parentId ? 'parent' : undefined,
           ...toNodeDimensions(leafSize),
         });
@@ -650,6 +678,7 @@ export function buildGraph({
         position: { x: 0, y: 0 },
         data,
         parentId,
+        draggable: true,
         extent: parentId ? 'parent' : undefined,
         ...toNodeDimensions(leafSize),
       });
@@ -669,8 +698,9 @@ export function buildGraph({
   );
 
   return {
-    nodes: [...nodeMap.values()],
+    nodes: sortNodesForReactFlow([...nodeMap.values()]),
     edges,
     visibleNodeIds,
+    parentByNode,
   };
 }

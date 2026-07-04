@@ -22,6 +22,8 @@
     "expandFolder": "Expandir carpeta",
     "collapseFolder": "Contraer carpeta",
     "expandRecursive": "Expandir recursivamente",
+    "autoLayout": "Diseño automático",
+    "autoLayoutRecursive": "Diseño automático recursivo",
     "close": "Cerrar",
     "highlight": "Resaltar",
     "clear": "Limpiar"
@@ -86,7 +88,9 @@
       "viewSource": "Ver origen",
       "viewTarget": "Ver destino"
     },
-    "emptySelection": "Seleccione archivos o carpetas para ver las dependencias"
+    "emptySelection": "Seleccione archivos o carpetas para ver las dependencias",
+    "autoLayoutOnly": "Solo diseño automático",
+    "autoLayoutOnlyHint": "Usar siempre el diseño automático y desactivar arrastrar y soltar. Con la opción desactivada, arrastrar y soltar está disponible; al contraer o expandir carpetas los vecinos no vuelven a moverse; use «Diseño automático» en el menú contextual de la carpeta para reorganizar su contenido."
   },
   "dependencyPanel": {
     "dependencies": "Dependencias",

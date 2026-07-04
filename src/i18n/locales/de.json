@@ -22,6 +22,8 @@
     "expandFolder": "Ordner erweitern",
     "collapseFolder": "Ordner einklappen",
     "expandRecursive": "Rekursiv erweitern",
+    "autoLayout": "Automatisches Layout",
+    "autoLayoutRecursive": "Automatisches Layout rekursiv",
     "close": "Schließen",
     "highlight": "Hervorheben",
     "clear": "Löschen"
@@ -86,7 +88,9 @@
       "viewSource": "Quelle anzeigen",
       "viewTarget": "Ziel anzeigen"
     },
-    "emptySelection": "Dateien oder Ordner auswählen, um Abhängigkeiten anzuzeigen"
+    "emptySelection": "Dateien oder Ordner auswählen, um Abhängigkeiten anzuzeigen",
+    "autoLayoutOnly": "Nur automatisches Layout",
+    "autoLayoutOnlyHint": "Immer automatisches Layout verwenden und Drag-and-drop deaktivieren. Wenn aus, ist Drag-and-drop möglich; Nachbarn verschieben sich beim Ein- und Ausklappen von Ordnern nicht zurück; verwenden Sie „Automatisches Layout“ im Ordner-Kontextmenü, um den Ordnerinhalt neu anzuordnen."
   },
   "dependencyPanel": {
     "dependencies": "Abhängigkeiten",

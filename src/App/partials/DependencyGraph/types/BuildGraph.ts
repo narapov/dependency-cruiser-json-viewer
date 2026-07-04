@@ -17,4 +17,5 @@ export interface BuildGraphResult {
   nodes: Node[];
   edges: Edge[];
   visibleNodeIds: ReadonlySet<string>;
+  parentByNode: ReadonlyMap<string, string | null>;
 }

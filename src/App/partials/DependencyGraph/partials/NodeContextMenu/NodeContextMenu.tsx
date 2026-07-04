@@ -14,6 +14,8 @@ interface NodeContextMenuProps {
   onExpandRecursive?: (path: string) => void;
   onShowInFileTree: (path: string) => void;
   onShowDependencies?: (path: string) => void;
+  onAutoLayout?: (path: string) => void;
+  onAutoLayoutRecursive?: (path: string) => void;
   children: ReactNode;
 }
 
@@ -25,6 +27,8 @@ export function NodeContextMenu({
   onExpandRecursive,
   onShowInFileTree,
   onShowDependencies,
+  onAutoLayout,
+  onAutoLayoutRecursive,
   children,
 }: NodeContextMenuProps) {
   const { t } = useTranslation();
@@ -65,6 +69,14 @@ export function NodeContextMenu({
         )}
         {isFolder && onExpandRecursive && (
           <MenuItem onClick={handleAction(() => onExpandRecursive(path))}>{t('actions.expandRecursive')}</MenuItem>
+        )}
+        {onAutoLayout && (
+          <MenuItem onClick={handleAction(() => onAutoLayout(path))}>{t('actions.autoLayout')}</MenuItem>
+        )}
+        {onAutoLayoutRecursive && (
+          <MenuItem onClick={handleAction(() => onAutoLayoutRecursive(path))}>
+            {t('actions.autoLayoutRecursive')}
+          </MenuItem>
         )}
         <MenuItem onClick={handleAction(() => onShowInFileTree(path))}>{t('actions.showInFileTree')}</MenuItem>
         {onShowDependencies && (
