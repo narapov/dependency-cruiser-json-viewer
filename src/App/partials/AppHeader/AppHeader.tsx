@@ -14,8 +14,28 @@ import { formatShortcut } from '@/Shared';
 import { LanguageSelector } from '../LanguageSelector';
 import { ThemeSelector } from '../ThemeSelector';
 
+const headerGridSx = {
+  display: 'grid',
+  width: '100%',
+  alignItems: 'center',
+  gap: { xs: 0.5, md: 0 },
+  gridTemplateColumns: {
+    xs: '1fr auto',
+    md: 'auto 1fr auto',
+  },
+  gridTemplateAreas: {
+    xs: `
+      "title title"
+      "meta actions"
+    `,
+    md: `
+      "title meta actions"
+    `,
+  },
+} as const;
+
 const headerSecondaryTextSx = {
-  marginLeft: 1.5,
+  ml: { xs: 0, md: 1.5 },
   fontWeight: 400,
   color: 'rgba(255, 255, 255, 0.65)',
 } as const;
@@ -51,18 +71,24 @@ export function AppHeader({
   const ignorePatternsLabel = t('ignorePatterns.setIgnorePatterns');
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        width: '100%',
-      }}
-    >
-      <Stack direction="row" spacing={0} sx={{ alignItems: 'center' }}>
-        <Typography variant="subtitle1" component="h1" sx={{ margin: 0, color: 'common.white', fontWeight: 600 }}>
-          {t('app.title')}
-        </Typography>
+    <Box sx={headerGridSx}>
+      <Typography
+        variant="subtitle1"
+        component="h1"
+        sx={{
+          gridArea: 'title',
+          margin: 0,
+          minWidth: 0,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          color: 'common.white',
+          fontWeight: 600,
+        }}
+      >
+        {t('app.title')}
+      </Typography>
+      <Stack direction="row" spacing={0} sx={{ gridArea: 'meta', alignItems: 'center', minWidth: 0 }}>
         {filteredModulesCount != null && totalModulesCount != null && (
           <Typography component="span" variant="body2" sx={headerSecondaryTextSx}>
             {t('app.modulesCountFiltered', {
@@ -87,7 +113,11 @@ export function AppHeader({
           </IconButton>
         </Tooltip>
       </Stack>
-      <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
+      <Stack
+        direction="row"
+        spacing={0.5}
+        sx={{ gridArea: 'actions', alignItems: 'center', justifySelf: 'end', flexShrink: 0 }}
+      >
         <Tooltip title={searchFilesLabel}>
           <IconButton size="small" aria-label={searchFilesLabel} onClick={onOpenFileSearch} sx={headerIconButtonSx}>
             <SearchOutlined sx={{ fontSize: 18 }} />

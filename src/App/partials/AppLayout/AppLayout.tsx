@@ -61,7 +61,8 @@ export function AppLayout({ header, sidebar, main, panel, overlay, footer, panel
           gridArea: 'header',
           display: 'flex',
           alignItems: 'center',
-          px: 3,
+          px: { xs: 1.5, sm: 3 },
+          py: { xs: 0.75, md: 0 },
           bgcolor: 'appHeader.main',
         }}
       >
