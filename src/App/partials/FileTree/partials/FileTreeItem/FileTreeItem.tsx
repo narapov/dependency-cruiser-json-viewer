@@ -1,5 +1,6 @@
 import { forwardRef, type KeyboardEvent } from 'react';
 
+import { useTheme } from '@mui/material/styles';
 import { useTreeItemModel } from '@mui/x-tree-view/hooks';
 import type { TreeViewCancellableEvent } from '@mui/x-tree-view/models';
 import { TreeItem, type TreeItemProps } from '@mui/x-tree-view/TreeItem';
@@ -14,6 +15,7 @@ import { useFileTreeContext } from './FileTreeContext';
 
 export const FileTreeItem = forwardRef<HTMLLIElement, TreeItemProps>(function FileTreeItem(props, ref) {
   const { itemId, children, ...other } = props;
+  const theme = useTheme();
   const ctx = useFileTreeContext();
   const item = useTreeItemModel<TreeNodeData>(itemId);
   const isFolder = item != null && !isTreeLeaf(item);
@@ -93,11 +95,11 @@ export const FileTreeItem = forwardRef<HTMLLIElement, TreeItemProps>(function Fi
           content: {
             onContextMenu,
             title: item?.key ?? itemId,
-            sx: isActive
-              ? theme => ({
-                  boxShadow: `inset 0 0 0 1px ${theme.palette.primary.main}`,
-                })
-              : undefined,
+            ...(isActive && {
+              style: {
+                boxShadow: `inset 0 0 0 1px ${theme.palette.primary.main}`,
+              },
+            }),
           },
         }}
       >
