@@ -9,7 +9,9 @@
     "invalidCruiseResultJson": "Die ausgewählte Datei ist kein gültiges JSON.",
     "invalidCruiseResultFormat": "Die ausgewählte Datei ist kein dependency-cruiser-Cruise-Ergebnis.",
     "searchFiles": "Dateien suchen ({{shortcut}})",
-    "commandPalette": "Befehlspalette (F1)"
+    "commandPalette": "Befehlspalette (F1)",
+    "hideFileTree": "Dateibaum ausblenden ({{shortcut}})",
+    "showFileTree": "Dateibaum einblenden ({{shortcut}})"
   },
   "actions": {
     "copyPath": "Pfad kopieren",
@@ -45,6 +47,7 @@
     "setLanguage": "Sprache festlegen",
     "setIgnorePatterns": "Ignorier-Muster festlegen",
     "loadCruiseResult": "dependency-cruiser-JSON laden",
+    "toggleFileTree": "Dateibaum ein-/ausblenden",
     "unselectAll": "Auswahl aufheben"
   },
   "quickPick": {
@@ -77,6 +80,7 @@
   },
   "graph": {
     "legend": {
+      "title": "Legende",
       "incoming": "Eingehend",
       "outgoing": "Ausgehend",
       "circular": "Zirkulär",

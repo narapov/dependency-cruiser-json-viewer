@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import Box from '@mui/material/Box';
 
 import { PANEL_MIN_WIDTH, SIDEBAR_MIN_WIDTH, useDependenciesPanelWidth, useSidebarWidth } from './hooks';
+import { SIDEBAR_TOGGLE_WIDTH, SidebarToggle } from './partials/SidebarToggle';
 
 export interface AppLayoutProps {
   header: ReactNode;
@@ -12,6 +13,8 @@ export interface AppLayoutProps {
   overlay: ReactNode | null;
   footer: ReactNode;
   panelOpen: boolean;
+  sidebarOpen: boolean;
+  onToggleSidebar: () => void;
 }
 
 const shellSx = {
@@ -31,28 +34,50 @@ const regionSx = {
   overflow: 'hidden',
 } as const;
 
+const panelRegionSx = {
+  minHeight: 0,
+} as const;
+
 const resizeHandleSx = {
   position: 'absolute',
   top: 0,
   bottom: 0,
-  zIndex: 1,
+  zIndex: 2,
   width: 6,
   cursor: 'col-resize',
   touchAction: 'none',
   '&:hover': {
     bgcolor: 'action.hover',
   },
+  '@media (hover: none)': {
+    width: 12,
+  },
 } as const;
 
-export function AppLayout({ header, sidebar, main, panel, overlay, footer, panelOpen }: AppLayoutProps) {
-  const { sidebarWidth, onResizePointerDown } = useSidebarWidth();
-  const { width: panelWidth, onResizePointerDown: onPanelResizePointerDown } = useDependenciesPanelWidth(sidebarWidth);
+export function AppLayout({
+  header,
+  sidebar,
+  main,
+  panel,
+  overlay,
+  footer,
+  panelOpen,
+  sidebarOpen,
+  onToggleSidebar,
+}: AppLayoutProps) {
+  const { sidebarWidth, onResizePointerDown, onResizeContextMenu } = useSidebarWidth();
+  const leftOccupiedWidth = SIDEBAR_TOGGLE_WIDTH + (sidebarOpen ? sidebarWidth : 0);
+  const {
+    width: panelWidth,
+    onResizePointerDown: onPanelResizePointerDown,
+    onResizeContextMenu: onPanelResizeContextMenu,
+  } = useDependenciesPanelWidth(leftOccupiedWidth);
 
   return (
     <Box
       sx={{
         ...shellSx,
-        gridTemplateColumns: `${sidebarWidth}px 1fr ${panelOpen ? panelWidth : 0}px`,
+        gridTemplateColumns: `${leftOccupiedWidth}px 1fr ${panelOpen ? panelWidth : 0}px`,
       }}
     >
       <Box
@@ -68,33 +93,39 @@ export function AppLayout({ header, sidebar, main, panel, overlay, footer, panel
       >
         {header}
       </Box>
-      <Box sx={{ gridArea: 'sider', position: 'relative', ...regionSx }}>
+      <Box sx={{ gridArea: 'sider', position: 'relative', display: 'flex', ...panelRegionSx }}>
+        <SidebarToggle sidebarOpen={sidebarOpen} onToggle={onToggleSidebar} />
         <Box
           component="aside"
           sx={{
+            flex: sidebarOpen ? 1 : 0,
+            width: sidebarOpen ? undefined : 0,
             height: '100%',
             minWidth: 0,
-            overflowX: 'hidden',
+            overflow: 'hidden',
             bgcolor: 'background.paper',
-            borderRight: 1,
+            borderRight: sidebarOpen ? 1 : 0,
             borderColor: 'divider',
           }}
         >
           {sidebar}
         </Box>
-        <Box
-          role="separator"
-          aria-orientation="vertical"
-          aria-valuenow={sidebarWidth}
-          aria-valuemin={SIDEBAR_MIN_WIDTH}
-          onPointerDown={onResizePointerDown}
-          sx={{ ...resizeHandleSx, right: 0, transform: 'translateX(50%)' }}
-        />
+        {sidebarOpen && (
+          <Box
+            role="separator"
+            aria-orientation="vertical"
+            aria-valuenow={sidebarWidth}
+            aria-valuemin={SIDEBAR_MIN_WIDTH}
+            onPointerDown={onResizePointerDown}
+            onContextMenu={onResizeContextMenu}
+            sx={{ ...resizeHandleSx, right: 0, transform: 'translateX(50%)' }}
+          />
+        )}
       </Box>
       <Box component="main" sx={{ gridArea: 'main', ...regionSx }}>
         {main}
       </Box>
-      <Box sx={{ gridArea: 'panel', position: 'relative', ...regionSx }}>
+      <Box sx={{ gridArea: 'panel', position: 'relative', ...panelRegionSx }}>
         {panelOpen && (
           <Box
             role="separator"
@@ -102,6 +133,7 @@ export function AppLayout({ header, sidebar, main, panel, overlay, footer, panel
             aria-valuenow={panelWidth}
             aria-valuemin={PANEL_MIN_WIDTH}
             onPointerDown={onPanelResizePointerDown}
+            onContextMenu={onPanelResizeContextMenu}
             sx={{ ...resizeHandleSx, left: 0, transform: 'translateX(-50%)' }}
           />
         )}

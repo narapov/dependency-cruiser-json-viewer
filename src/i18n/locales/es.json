@@ -9,7 +9,9 @@
     "invalidCruiseResultJson": "El archivo seleccionado no es un JSON válido.",
     "invalidCruiseResultFormat": "El archivo seleccionado no parece un resultado cruise de dependency-cruiser.",
     "searchFiles": "Buscar archivos ({{shortcut}})",
-    "commandPalette": "Paleta de comandos (F1)"
+    "commandPalette": "Paleta de comandos (F1)",
+    "hideFileTree": "Ocultar árbol de archivos ({{shortcut}})",
+    "showFileTree": "Mostrar árbol de archivos ({{shortcut}})"
   },
   "actions": {
     "copyPath": "Copiar ruta",
@@ -45,6 +47,7 @@
     "setLanguage": "Elegir idioma",
     "setIgnorePatterns": "Configurar patrones de exclusión",
     "loadCruiseResult": "Cargar JSON de dependency-cruiser",
+    "toggleFileTree": "Mostrar/Ocultar árbol de archivos",
     "unselectAll": "Deseleccionar todo"
   },
   "quickPick": {
@@ -77,6 +80,7 @@
   },
   "graph": {
     "legend": {
+      "title": "Leyenda",
       "incoming": "Entrante",
       "outgoing": "Saliente",
       "circular": "Circular",

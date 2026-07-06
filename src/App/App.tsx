@@ -20,7 +20,7 @@ import {
   useLoadCruiseResultFromFile,
 } from './hooks';
 import { AppHeader } from './partials/AppHeader';
-import { AppLayout } from './partials/AppLayout';
+import { AppLayout, useSidebarOpen, useSidebarShortcut } from './partials/AppLayout';
 import { AppStatusBar } from './partials/AppStatusBar';
 import { CruiseResultFileInput } from './partials/CruiseResultFileInput';
 import { DependencyGraph, type DependencyGraphHandle } from './partials/DependencyGraph';
@@ -52,13 +52,17 @@ function App() {
 
   const sources = useMemo(() => filteredData?.modules.map(module => module.source) ?? [], [filteredData?.modules]);
   const initialDependencyCruiserState = useInitialDependencyCruiserState(sources);
+  const { sidebarOpen, setSidebarOpen, toggleSidebarOpen } = useSidebarOpen();
+  useSidebarShortcut({ onToggle: toggleSidebarOpen });
   const orch = useAppOrchestration({ sources, fileTreeRef, graphRef, initialDependencyCruiserState });
+
   const commands = useAppCommands({
     orch,
     openThemePicker: () => setThemePickerOpen(true),
     openLanguagePicker: () => setLanguagePickerOpen(true),
     openIgnorePatterns: () => setIgnorePatternsOpen(true),
     openLoadCruiseResult: openFilePicker,
+    toggleFileTree: toggleSidebarOpen,
   });
 
   if (isPending) {
@@ -137,7 +141,10 @@ function App() {
           expandedKeys={orch.expandedKeys}
           onToggleFolder={orch.toggleFolder}
           onExpandRecursive={orch.expandRecursive}
-          onShowInFileTree={orch.showInFileTree}
+          onShowInFileTree={path => {
+            setSidebarOpen(true);
+            orch.showInFileTree(path);
+          }}
           onShowDependencies={orch.handleShowDependencies}
           onActivePathChange={orch.activatePath}
           activePath={orch.activePath}
@@ -192,6 +199,8 @@ function App() {
         />
       }
       panelOpen={orch.panelOpen}
+      sidebarOpen={sidebarOpen}
+      onToggleSidebar={toggleSidebarOpen}
     />
   );
 }

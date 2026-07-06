@@ -52,7 +52,7 @@ export function useEdgeContextMenu({
       onClose={handleClose}
       anchorReference="anchorPosition"
       anchorPosition={menuState?.anchorPosition}
-      slotProps={{ paper: { sx: { maxWidth: 500 } } }}
+      slotProps={{ paper: { sx: { maxWidth: 'min(500px, calc(100% - 20px))' } } }}
     >
       {menuState && (
         <>

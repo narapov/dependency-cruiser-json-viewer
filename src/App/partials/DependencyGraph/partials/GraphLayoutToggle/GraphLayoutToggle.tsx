@@ -18,7 +18,6 @@ export function GraphLayoutToggle({ checked, onChange }: GraphLayoutToggleProps)
   return (
     <Box
       sx={{
-        m: 1.5,
         p: '4px 10px',
         bgcolor: 'background.paper',
         border: 1,

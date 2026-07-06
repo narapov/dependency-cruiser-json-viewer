@@ -122,7 +122,10 @@ export function FileTree({
   }, []);
 
   return (
-    <Box sx={{ height: '100%', minHeight: 0, minWidth: 0, overflowX: 'auto', overflowY: 'auto' }}>
+    <Box
+      sx={{ height: '100%', minHeight: 0, minWidth: 0, overflowX: 'auto', overflowY: 'auto', userSelect: 'none' }}
+      onContextMenu={event => event.preventDefault()}
+    >
       <FileTreeProvider value={fileTreeContext}>
         <RichTreeView
           sx={{

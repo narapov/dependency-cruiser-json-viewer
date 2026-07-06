@@ -18,6 +18,7 @@ export const FileTreeItem = forwardRef<HTMLLIElement, TreeItemProps>(function Fi
   const item = useTreeItemModel<TreeNodeData>(itemId);
   const isFolder = item != null && !isTreeLeaf(item);
   const navigable = item != null && ctx.canShowInGraph(itemId);
+  const isActive = ctx.activePath === itemId;
 
   const { onContextMenu, contextMenu } = useFileTreeContextMenu({
     path: item?.key ?? itemId,
@@ -92,6 +93,11 @@ export const FileTreeItem = forwardRef<HTMLLIElement, TreeItemProps>(function Fi
           content: {
             onContextMenu,
             title: item?.key ?? itemId,
+            sx: isActive
+              ? theme => ({
+                  boxShadow: `inset 0 0 0 1px ${theme.palette.primary.main}`,
+                })
+              : undefined,
           },
         }}
       >

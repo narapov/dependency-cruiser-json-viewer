@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useRef, type PointerEvent as ReactPointerEvent } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
+} from 'react';
 import { useLocalStorage, useWindowSize } from 'react-use';
 
 export const MIN_MAIN_WIDTH = 200;
@@ -34,7 +40,7 @@ export function useResizableWidth({
   const maxWidth =
     windowWidth > 0 ? Math.max(minWidth, windowWidth - oppositeWidth - MIN_MAIN_WIDTH) : Number.POSITIVE_INFINITY;
 
-  const dragRef = useRef<{ startX: number; startWidth: number } | null>(null);
+  const dragRef = useRef<{ startX: number; startWidth: number; pointerId: number } | null>(null);
   const resizingClass = RESIZING_CLASSES[side];
 
   useEffect(() => {
@@ -49,38 +55,49 @@ export function useResizableWidth({
     (event: ReactPointerEvent<HTMLDivElement>) => {
       event.preventDefault();
       const handle = event.currentTarget;
+      const pointerId = event.pointerId;
       dragRef.current = {
         startX: event.clientX,
         startWidth: width ?? defaultWidth,
+        pointerId,
       };
-      handle.setPointerCapture(event.pointerId);
+      handle.setPointerCapture(pointerId);
       document.body.classList.add(resizingClass);
 
       const onPointerMove = (moveEvent: globalThis.PointerEvent) => {
-        if (!dragRef.current) return;
+        if (!dragRef.current || moveEvent.pointerId !== dragRef.current.pointerId) return;
+        moveEvent.preventDefault();
         const delta =
           side === 'left' ? moveEvent.clientX - dragRef.current.startX : dragRef.current.startX - moveEvent.clientX;
         setWidth(clampWidth(dragRef.current.startWidth + delta, minWidth, maxWidth));
       };
 
       const onPointerUp = (upEvent: globalThis.PointerEvent) => {
+        if (!dragRef.current || upEvent.pointerId !== dragRef.current.pointerId) return;
         dragRef.current = null;
         document.body.classList.remove(resizingClass);
-        handle.releasePointerCapture(upEvent.pointerId);
-        handle.removeEventListener('pointermove', onPointerMove);
-        handle.removeEventListener('pointerup', onPointerUp);
-        handle.removeEventListener('pointercancel', onPointerUp);
+        document.removeEventListener('pointermove', onPointerMove);
+        document.removeEventListener('pointerup', onPointerUp);
+        document.removeEventListener('pointercancel', onPointerUp);
+        if (handle.hasPointerCapture(upEvent.pointerId)) {
+          handle.releasePointerCapture(upEvent.pointerId);
+        }
       };
 
-      handle.addEventListener('pointermove', onPointerMove);
-      handle.addEventListener('pointerup', onPointerUp);
-      handle.addEventListener('pointercancel', onPointerUp);
+      document.addEventListener('pointermove', onPointerMove, { passive: false });
+      document.addEventListener('pointerup', onPointerUp);
+      document.addEventListener('pointercancel', onPointerUp);
     },
     [defaultWidth, maxWidth, minWidth, resizingClass, setWidth, side, width],
   );
 
+  const onResizeContextMenu = useCallback((event: ReactMouseEvent<HTMLDivElement>) => {
+    event.preventDefault();
+  }, []);
+
   return {
     width: width ?? defaultWidth,
     onResizePointerDown,
+    onResizeContextMenu,
   };
 }

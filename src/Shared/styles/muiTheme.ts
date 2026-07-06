@@ -46,6 +46,7 @@ export const muiTheme = createTheme({
           'body.resizingSidebar, body.resizingPanel': {
             cursor: 'col-resize',
             userSelect: 'none',
+            touchAction: 'none',
           },
         },
       },

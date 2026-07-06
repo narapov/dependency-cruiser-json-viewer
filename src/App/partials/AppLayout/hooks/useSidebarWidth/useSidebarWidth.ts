@@ -9,7 +9,11 @@ export function clampSidebarWidth(width: number, maxWidth: number): number {
 }
 
 export function useSidebarWidth() {
-  const { width: sidebarWidth, onResizePointerDown } = useResizableWidth({
+  const {
+    width: sidebarWidth,
+    onResizePointerDown,
+    onResizeContextMenu,
+  } = useResizableWidth({
     storageKey: STORAGE_KEY,
     defaultWidth: DEFAULT_WIDTH,
     minWidth: MIN_WIDTH,
@@ -19,5 +23,6 @@ export function useSidebarWidth() {
   return {
     sidebarWidth,
     onResizePointerDown,
+    onResizeContextMenu,
   };
 }

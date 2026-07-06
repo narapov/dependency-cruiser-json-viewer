@@ -9,7 +9,9 @@
     "invalidCruiseResultJson": "The selected file is not valid JSON.",
     "invalidCruiseResultFormat": "The selected file is not a dependency-cruiser cruise result.",
     "searchFiles": "Search Files ({{shortcut}})",
-    "commandPalette": "Command Palette (F1)"
+    "commandPalette": "Command Palette (F1)",
+    "hideFileTree": "Hide file tree ({{shortcut}})",
+    "showFileTree": "Show file tree ({{shortcut}})"
   },
   "actions": {
     "copyPath": "Copy path",
@@ -45,6 +47,7 @@
     "setLanguage": "Set Language",
     "setIgnorePatterns": "Set Ignore Patterns",
     "loadCruiseResult": "Load dependency-cruiser JSON",
+    "toggleFileTree": "Toggle File Tree",
     "unselectAll": "Unselect All"
   },
   "quickPick": {
@@ -77,6 +80,7 @@
   },
   "graph": {
     "legend": {
+      "title": "Legend",
       "incoming": "Incoming",
       "outgoing": "Outgoing",
       "circular": "Circular",

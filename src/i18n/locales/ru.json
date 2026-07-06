@@ -9,7 +9,9 @@
     "invalidCruiseResultJson": "Выбранный файл не является корректным JSON.",
     "invalidCruiseResultFormat": "Выбранный файл не похож на результат cruise dependency-cruiser.",
     "searchFiles": "Поиск файлов ({{shortcut}})",
-    "commandPalette": "Палитра команд (F1)"
+    "commandPalette": "Палитра команд (F1)",
+    "hideFileTree": "Скрыть дерево файлов ({{shortcut}})",
+    "showFileTree": "Показать дерево файлов ({{shortcut}})"
   },
   "actions": {
     "copyPath": "Копировать путь",
@@ -45,6 +47,7 @@
     "setLanguage": "Выбрать язык",
     "setIgnorePatterns": "Настроить игнорируемые паттерны",
     "loadCruiseResult": "Загрузить JSON dependency-cruiser",
+    "toggleFileTree": "Переключить дерево файлов",
     "unselectAll": "Снять выделение"
   },
   "quickPick": {
@@ -77,6 +80,7 @@
   },
   "graph": {
     "legend": {
+      "title": "Легенда",
       "incoming": "Входящие",
       "outgoing": "Исходящие",
       "circular": "Циклические",
