@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useNodesState, type Node, type NodeChange, type OnNodeDrag } from '@xyflow/react';
 
@@ -34,8 +34,6 @@ interface UseGraphLayoutNodesResult {
   onNodesChange: (changes: NodeChange[]) => void;
   onNodeDrag: OnNodeDrag<Node>;
   onNodeDragStop: OnNodeDrag<Node>;
-  onAutoLayoutGroup: (groupId: string) => void;
-  onAutoLayoutGroupRecursive: (groupId: string) => void;
   hasUserLayout: boolean;
 }
 
@@ -187,13 +185,24 @@ export function useGraphLayoutNodes({
 
   const onAutoLayoutGroupRecursive = useCallback((groupId: string) => runAutoLayout(groupId, true), [runAutoLayout]);
 
+  const enrichedNodes = useMemo(
+    () =>
+      nodes.map(node => {
+        const withCallbacks =
+          !autoLayoutOnly && node.type === 'folderGroup'
+            ? { ...node, data: { ...node.data, onAutoLayoutGroup, onAutoLayoutGroupRecursive } }
+            : node;
+
+        return autoLayoutOnly ? { ...withCallbacks, draggable: false, dragHandle: undefined } : withCallbacks;
+      }),
+    [nodes, autoLayoutOnly, onAutoLayoutGroup, onAutoLayoutGroupRecursive],
+  );
+
   return {
-    nodes,
+    nodes: enrichedNodes,
     onNodesChange,
     onNodeDrag,
     onNodeDragStop,
-    onAutoLayoutGroup,
-    onAutoLayoutGroupRecursive,
     hasUserLayout,
   };
 }
