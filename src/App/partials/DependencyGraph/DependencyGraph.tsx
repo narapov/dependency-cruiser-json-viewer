@@ -1,3 +1,4 @@
+import type { IModule } from 'dependency-cruiser';
 import { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState, type Ref } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -15,9 +16,9 @@ import {
   type Node,
 } from '@xyflow/react';
 
-import '@xyflow/react/dist/style.css';
+import { useLogChangedProps } from '@/Shared';
 
-import type { IModule } from 'dependency-cruiser';
+import '@xyflow/react/dist/style.css';
 
 import {
   applyActivePathEdgeStyle,
@@ -88,6 +89,21 @@ function DependencyGraphInner({
   autoLayoutOnly,
   onAutoLayoutOnlyChange,
 }: DependencyGraphInnerProps) {
+  useLogChangedProps('DependencyGraphInner', {
+    imperativeRef,
+    modules,
+    selectedPaths,
+    expandedKeys,
+    onToggleFolder,
+    onExpandRecursive,
+    onShowInFileTree,
+    onShowDependencies,
+    onActivePathChange,
+    activePath,
+    autoLayoutOnly,
+    onAutoLayoutOnlyChange,
+  });
+
   const { t } = useTranslation();
   const theme = useTheme();
   const { mode, systemMode } = useColorScheme();

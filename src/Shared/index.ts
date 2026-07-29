@@ -1,4 +1,4 @@
 export * from './components';
-export * from './constants/appStoragePrefix';
+export * from './constants';
 export * from './helpers';
 export * from './hooks';

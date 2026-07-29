@@ -12,7 +12,7 @@ import {
   isTypeOnlyDependency,
   mergeDependencyRelationFlags,
 } from '@/domain';
-import { CIRCULAR_EDGE_COLOR, DEFAULT_EDGE_COLOR, TYPE_ONLY_CIRCULAR_EDGE_COLOR } from '@/Shared';
+import { CIRCULAR_EDGE_COLOR, DEFAULT_EDGE_COLOR, NEED_PROFILE, TYPE_ONLY_CIRCULAR_EDGE_COLOR } from '@/Shared';
 
 import type {
   BuildGraphInput,
@@ -34,6 +34,30 @@ const NODE_HEIGHT = LEAF_NODE_HEIGHT;
 const TYPE_ONLY_EDGE_DASH = '6 4';
 
 const elk = new ELK();
+
+function createBuildGraphProfiler(enabled: boolean) {
+  const marks = new Map<string, number>();
+  const totals = new Map<string, number>();
+
+  return {
+    start(label: string) {
+      if (!enabled) return;
+      marks.set(label, performance.now());
+    },
+    end(label: string) {
+      if (!enabled) return;
+      const startedAt = marks.get(label);
+      if (startedAt === undefined) return;
+      marks.delete(label);
+      totals.set(label, (totals.get(label) ?? 0) + (performance.now() - startedAt));
+    },
+    log(meta: { nodes: number; edges: number; selected: number }) {
+      if (!enabled) return;
+      const lines = [...totals.entries()].map(([label, ms]) => `  ${label}: ${ms.toFixed(1)}ms`).join('\n');
+      console.log(`[buildGraph] selected=${meta.selected} nodes=${meta.nodes} edges=${meta.edges}\n${lines}`);
+    },
+  };
+}
 
 interface EdgeBuildInfo {
   sourceRep: string;
@@ -281,6 +305,7 @@ async function layoutChildrenWithElk(
   childIds: string[],
   childSizes: Map<string, NodeSize>,
   layoutEdges: LayoutEdge[],
+  profiler?: ReturnType<typeof createBuildGraphProfiler>,
 ): Promise<Map<string, { x: number; y: number }>> {
   const spacing = getLayoutSpacing(childIds.length);
   const childSet = new Set(childIds);
@@ -292,14 +317,20 @@ async function layoutChildrenWithElk(
       targets: [edge.target],
     }));
 
+  profiler?.start('elk.layout');
   const layouted = await elk.layout({
     id: 'root',
     layoutOptions: {
       'elk.algorithm': 'layered',
       'elk.direction': 'RIGHT',
+      'elk.edgeRouting': 'SPLINES',
       'elk.separateConnectedComponents': 'true',
+      //'elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX',
       'elk.spacing.nodeNode': String(spacing.nodesep),
+      'elk.spacing.edgeNode': String(Math.max(12, spacing.nodesep * 0.4)),
+      'elk.spacing.edgeEdge': '10',
       'elk.layered.spacing.nodeNodeBetweenLayers': String(spacing.ranksep),
+      'elk.layered.spacing.edgeNodeBetweenLayers': String(Math.max(16, spacing.ranksep * 0.25)),
     },
     children: childIds.map(childId => {
       const size = childSizes.get(childId)!;
@@ -307,6 +338,7 @@ async function layoutChildrenWithElk(
     }),
     edges,
   });
+  profiler?.end('elk.layout');
 
   const positions = new Map<string, { x: number; y: number }>();
   for (const child of layouted.children ?? []) {
@@ -383,6 +415,7 @@ async function layoutGroup(
   parentByNode: Map<string, string | null>,
   modules: readonly IModule[],
   selectedSet: Set<string>,
+  profiler?: ReturnType<typeof createBuildGraphProfiler>,
 ): Promise<NodeSize> {
   const childIds = getDirectChildren(folderId, visibleNodeIds, parentByNode);
 
@@ -411,6 +444,7 @@ async function layoutGroup(
         parentByNode,
         modules,
         selectedSet,
+        profiler,
       );
       childSizes.set(childId, size);
     } else {
@@ -419,7 +453,7 @@ async function layoutGroup(
   }
 
   const layoutEdges = buildVirtualLayoutEdges(folderId, childIds, modules, selectedSet);
-  const positions = await layoutChildrenWithElk(childIds, childSizes, layoutEdges);
+  const positions = await layoutChildrenWithElk(childIds, childSizes, layoutEdges, profiler);
 
   return applyChildPositions(childIds, childSizes, positions, folderId, nodeMap, groupSizes);
 }
@@ -459,6 +493,10 @@ export async function buildGraph({
   onShowInFileTree,
   onShowDependencies,
 }: BuildGraphInput): Promise<BuildGraphResult> {
+  const profiler = createBuildGraphProfiler(NEED_PROFILE);
+  profiler.start('total');
+
+  profiler.start('visibleNodes');
   const selectedSet = new Set(selectedPaths);
   const moduleSources = new Set(modules.map(m => m.source));
   const childrenIndex = buildChildrenIndex(modules.map(m => m.source));
@@ -470,7 +508,9 @@ export async function buildGraph({
 
   const visibleNodeIds = new Set(visibleNodes.keys());
   const parentByNode = buildParentByNode(visibleNodes, expandedFolders);
+  profiler.end('visibleNodes');
 
+  profiler.start('edges');
   const edgeBuildMap = new Map<string, EdgeBuildInfo>();
 
   for (const module of modules) {
@@ -544,7 +584,9 @@ export async function buildGraph({
       style,
     });
   }
+  profiler.end('edges');
 
+  profiler.start('nodes');
   const nodeMap = new Map<string, Node>();
   const groupSizes = new Map<string, NodeSize>();
 
@@ -625,7 +667,9 @@ export async function buildGraph({
       });
     }
   }
+  profiler.end('nodes');
 
+  profiler.start('layout');
   await layoutGroup(
     null,
     nodeMap,
@@ -636,10 +680,23 @@ export async function buildGraph({
     parentByNode,
     modules,
     selectedSet,
+    profiler,
   );
+  profiler.end('layout');
+
+  profiler.start('sort');
+  const nodes = sortNodesForReactFlow([...nodeMap.values()]);
+  profiler.end('sort');
+
+  profiler.end('total');
+  profiler.log({
+    selected: selectedPaths.length,
+    nodes: nodes.length,
+    edges: edges.length,
+  });
 
   return {
-    nodes: sortNodesForReactFlow([...nodeMap.values()]),
+    nodes,
     edges,
     visibleNodeIds,
     parentByNode,

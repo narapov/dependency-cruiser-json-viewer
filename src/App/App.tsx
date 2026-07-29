@@ -52,7 +52,7 @@ function App() {
 
   const sources = useMemo(() => filteredData?.modules.map(module => module.source) ?? [], [filteredData?.modules]);
   const initialDependencyCruiserState = useInitialDependencyCruiserState(sources);
-  const { sidebarOpen, setSidebarOpen, toggleSidebarOpen } = useSidebarOpen();
+  const { sidebarOpen, toggleSidebarOpen } = useSidebarOpen();
   useSidebarShortcut({ onToggle: toggleSidebarOpen });
   const orch = useAppOrchestration({ sources, fileTreeRef, graphRef, initialDependencyCruiserState });
 
@@ -141,10 +141,11 @@ function App() {
           expandedKeys={orch.expandedKeys}
           onToggleFolder={orch.toggleFolder}
           onExpandRecursive={orch.expandRecursive}
-          onShowInFileTree={path => {
-            setSidebarOpen(true);
-            orch.showInFileTree(path);
-          }}
+          // onShowInFileTree={path => {
+          //   setSidebarOpen(true);
+          //   orch.showInFileTree(path);
+          // }}
+          onShowInFileTree={orch.showInFileTree}
           onShowDependencies={orch.handleShowDependencies}
           onActivePathChange={orch.activatePath}
           activePath={orch.activePath}
