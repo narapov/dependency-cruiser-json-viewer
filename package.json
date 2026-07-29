@@ -48,7 +48,6 @@
   },
   "dependencies": {
     "@baybreezy/file-extension-icon": "^0.0.5",
-    "@dagrejs/dagre": "^3.0.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^9.1.1",
@@ -57,6 +56,7 @@
     "@tanstack/react-query": "^5.101.1",
     "@xyflow/react": "^12.11.1",
     "axios": "^1.18.1",
+    "elkjs": "^0.12.0",
     "fuzzysort": "^3.1.0",
     "i18next": "^26.3.3",
     "picomatch": "^4.0.4",
@@ -78,7 +78,6 @@
     "@rolldown/plugin-babel": "^0.2.3",
     "@tanstack/eslint-plugin-query": "^5.101.2",
     "@types/babel__core": "^7.20.5",
-    "@types/dagre": "^0.7.54",
     "@types/node": "^24.13.2",
     "@types/picomatch": "^4.0.3",
     "@types/react": "^19.2.17",

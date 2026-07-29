@@ -38,7 +38,7 @@ import { FolderGroupNode } from './partials/FolderGroupNode';
 import { FolderNode } from './partials/FolderNode';
 import { GraphLayoutToggle } from './partials/GraphLayoutToggle';
 import { GraphLegend } from './partials/GraphLegend';
-import type { DependencyGraphHandle } from './types';
+import type { BuildGraphResult, DependencyGraphHandle } from './types';
 
 import styles from './DependencyGraph.module.css';
 
@@ -50,6 +50,13 @@ const nodeTypes = {
 
 const edgeTypes = {
   dependency: DependencyEdge,
+};
+
+const EMPTY_GRAPH_RESULT: BuildGraphResult = {
+  nodes: [],
+  edges: [],
+  visibleNodeIds: new Set(),
+  parentByNode: new Map(),
 };
 
 interface DependencyGraphInnerProps {
@@ -94,19 +101,12 @@ function DependencyGraphInner({
   const folderColors = useMemo(() => assignFolderColors(sources, colorMode), [sources, colorMode]);
   const expandedFolders = useMemo(() => new Set(expandedKeys), [expandedKeys]);
 
-  const graphResult = useMemo(
-    () =>
-      buildGraph({
-        modules,
-        selectedPaths,
-        expandedFolders,
-        folderColors,
-        onToggleFolder,
-        onExpandRecursive,
-        onShowInFileTree,
-        onShowDependencies,
-      }),
-    [
+  const [graphResult, setGraphResult] = useState<BuildGraphResult>(EMPTY_GRAPH_RESULT);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    void buildGraph({
       modules,
       selectedPaths,
       expandedFolders,
@@ -115,8 +115,23 @@ function DependencyGraphInner({
       onExpandRecursive,
       onShowInFileTree,
       onShowDependencies,
-    ],
-  );
+    }).then(result => {
+      if (!cancelled) setGraphResult(result);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    modules,
+    selectedPaths,
+    expandedFolders,
+    folderColors,
+    onToggleFolder,
+    onExpandRecursive,
+    onShowInFileTree,
+    onShowDependencies,
+  ]);
 
   const {
     nodes: layoutNodes,

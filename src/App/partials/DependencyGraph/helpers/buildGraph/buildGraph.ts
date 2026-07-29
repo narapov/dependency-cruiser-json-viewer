@@ -1,6 +1,6 @@
 import type { IModule } from 'dependency-cruiser';
+import ELK from 'elkjs/lib/elk.bundled.js';
 
-import dagre from '@dagrejs/dagre';
 import { MarkerType, type Edge, type Node } from '@xyflow/react';
 
 import {
@@ -31,9 +31,9 @@ export const GRID_GAP_X = 60;
 export const GRID_GAP_Y = 24;
 
 const NODE_HEIGHT = LEAF_NODE_HEIGHT;
-const GRID_MIN_CHILDREN = 6;
-const GRID_MAX_EDGE_RATIO = 0.4;
 const TYPE_ONLY_EDGE_DASH = '6 4';
+
+const elk = new ELK();
 
 interface EdgeBuildInfo {
   sourceRep: string;
@@ -277,96 +277,44 @@ function getLayoutSpacing(childCount: number) {
   };
 }
 
-function getSiblingLayoutEdges(childIds: string[], layoutEdges: LayoutEdge[]): LayoutEdge[] {
-  const childSet = new Set(childIds);
-  return layoutEdges.filter(edge => childSet.has(edge.source) && childSet.has(edge.target));
-}
-
-// Dense groups with few sibling dependencies get a grid instead of dagre.
-function shouldUseGridLayout(childIds: string[], layoutEdges: LayoutEdge[]): boolean {
-  if (childIds.length < GRID_MIN_CHILDREN) return false;
-  const siblingEdges = getSiblingLayoutEdges(childIds, layoutEdges);
-  return siblingEdges.length / childIds.length < GRID_MAX_EDGE_RATIO;
-}
-
-function orderChildrenForGrid(childIds: string[], layoutEdges: LayoutEdge[]): string[] {
-  const childSet = new Set(childIds);
-  const withOutgoing = new Set<string>();
-  for (const edge of layoutEdges) {
-    if (childSet.has(edge.source) && childSet.has(edge.target)) {
-      withOutgoing.add(edge.source);
-    }
-  }
-  return [...childIds.filter(id => withOutgoing.has(id)), ...childIds.filter(id => !withOutgoing.has(id))];
-}
-
-function layoutChildrenWithDagre(
+async function layoutChildrenWithElk(
   childIds: string[],
   childSizes: Map<string, NodeSize>,
   layoutEdges: LayoutEdge[],
-): Map<string, { x: number; y: number }> {
+): Promise<Map<string, { x: number; y: number }>> {
   const spacing = getLayoutSpacing(childIds.length);
-  const graph = new dagre.graphlib.Graph();
-  graph.setDefaultEdgeLabel(() => ({}));
-  graph.setGraph({ rankdir: 'LR', ...spacing });
-
-  for (const childId of childIds) {
-    const size = childSizes.get(childId)!;
-    graph.setNode(childId, { width: size.width, height: size.height });
-  }
-
   const childSet = new Set(childIds);
-  for (const edge of layoutEdges) {
-    if (childSet.has(edge.source) && childSet.has(edge.target)) {
-      graph.setEdge(edge.source, edge.target);
-    }
-  }
+  const edges = layoutEdges
+    .filter(edge => childSet.has(edge.source) && childSet.has(edge.target))
+    .map((edge, index) => ({
+      id: `e${index}-${edge.source}->${edge.target}`,
+      sources: [edge.source],
+      targets: [edge.target],
+    }));
 
-  dagre.layout(graph);
+  const layouted = await elk.layout({
+    id: 'root',
+    layoutOptions: {
+      'elk.algorithm': 'layered',
+      'elk.direction': 'RIGHT',
+      'elk.separateConnectedComponents': 'true',
+      'elk.spacing.nodeNode': String(spacing.nodesep),
+      'elk.layered.spacing.nodeNodeBetweenLayers': String(spacing.ranksep),
+    },
+    children: childIds.map(childId => {
+      const size = childSizes.get(childId)!;
+      return { id: childId, width: size.width, height: size.height };
+    }),
+    edges,
+  });
 
   const positions = new Map<string, { x: number; y: number }>();
-  for (const childId of childIds) {
-    const dagreNode = graph.node(childId);
-    const size = childSizes.get(childId)!;
-    positions.set(childId, {
-      x: dagreNode.x - size.width / 2 + GROUP_PADDING,
-      y: dagreNode.y - size.height / 2 + GROUP_HEADER + GROUP_PADDING,
+  for (const child of layouted.children ?? []) {
+    positions.set(child.id, {
+      x: (child.x ?? 0) + GROUP_PADDING,
+      y: (child.y ?? 0) + GROUP_HEADER + GROUP_PADDING,
     });
   }
-  return positions;
-}
-
-// Square-ish grid for groups where dagre would stack unrelated nodes vertically.
-function layoutChildrenAsGrid(
-  childIds: string[],
-  childSizes: Map<string, NodeSize>,
-  layoutEdges: LayoutEdge[],
-): Map<string, { x: number; y: number }> {
-  const columns = Math.ceil(Math.sqrt(childIds.length));
-  const orderedIds = orderChildrenForGrid(childIds, layoutEdges);
-  const positions = new Map<string, { x: number; y: number }>();
-
-  let currentX = GROUP_PADDING;
-  let currentY = GROUP_HEADER + GROUP_PADDING;
-  let rowHeight = 0;
-  let col = 0;
-
-  for (const childId of orderedIds) {
-    const size = childSizes.get(childId)!;
-
-    if (col >= columns) {
-      currentX = GROUP_PADDING;
-      currentY += rowHeight + GRID_GAP_Y;
-      rowHeight = 0;
-      col = 0;
-    }
-
-    positions.set(childId, { x: currentX, y: currentY });
-    rowHeight = Math.max(rowHeight, size.height);
-    currentX += size.width + GRID_GAP_X;
-    col++;
-  }
-
   return positions;
 }
 
@@ -417,19 +365,15 @@ function applyChildPositions(
  *
  * 1. Collect direct children of the current folder (or root when folderId is null).
  * 2. Recurse into expanded subfolders first to compute their sizes.
- * 3. Place direct children using one of two strategies:
- *    - dagre (LR): when the group is small or sibling dependencies are dense enough
- *      to form a meaningful left-to-right flow. Spacing scales with child count.
- *    - grid: when there are many children (>= GRID_MIN_CHILDREN) but few sibling
- *      edges (< GRID_MAX_EDGE_RATIO per node). Dagre with rankdir LR would stack
- *      unrelated nodes in a single vertical column; a sqrt-based grid spreads them
- *      into multiple columns instead.
+ * 3. Place direct children with ELK layered (RIGHT). Spacing scales with child count.
+ *    Disconnected components are packed separately (`elk.separateConnectedComponents`)
+ *    so sparse sibling sets do not collapse into a single column.
  *
  * Only virtual layout edges between direct siblings at the current level influence layout.
  * Cross-group dependencies (e.g. file in src/foo -> file in src/bar) do not
  * affect positions — React Flow draws visual edges after layout.
  */
-function layoutGroup(
+async function layoutGroup(
   folderId: string | null,
   nodeMap: Map<string, Node>,
   groupSizes: Map<string, NodeSize>,
@@ -439,7 +383,7 @@ function layoutGroup(
   parentByNode: Map<string, string | null>,
   modules: readonly IModule[],
   selectedSet: Set<string>,
-): NodeSize {
+): Promise<NodeSize> {
   const childIds = getDirectChildren(folderId, visibleNodeIds, parentByNode);
 
   if (childIds.length === 0) {
@@ -457,7 +401,7 @@ function layoutGroup(
 
   for (const childId of childIds) {
     if (isExpandedFolder(childId, visibleNodes, expandedFolders)) {
-      const size = layoutGroup(
+      const size = await layoutGroup(
         childId,
         nodeMap,
         groupSizes,
@@ -475,10 +419,7 @@ function layoutGroup(
   }
 
   const layoutEdges = buildVirtualLayoutEdges(folderId, childIds, modules, selectedSet);
-
-  const positions = shouldUseGridLayout(childIds, layoutEdges)
-    ? layoutChildrenAsGrid(childIds, childSizes, layoutEdges)
-    : layoutChildrenWithDagre(childIds, childSizes, layoutEdges);
+  const positions = await layoutChildrenWithElk(childIds, childSizes, layoutEdges);
 
   return applyChildPositions(childIds, childSizes, positions, folderId, nodeMap, groupSizes);
 }
@@ -508,7 +449,7 @@ function sortNodesForReactFlow(nodes: Node[]): Node[] {
   return [...nodes].sort((a, b) => (depthById.get(a.id) ?? 0) - (depthById.get(b.id) ?? 0));
 }
 
-export function buildGraph({
+export async function buildGraph({
   modules,
   selectedPaths,
   expandedFolders,
@@ -517,7 +458,7 @@ export function buildGraph({
   onExpandRecursive,
   onShowInFileTree,
   onShowDependencies,
-}: BuildGraphInput): BuildGraphResult {
+}: BuildGraphInput): Promise<BuildGraphResult> {
   const selectedSet = new Set(selectedPaths);
   const moduleSources = new Set(modules.map(m => m.source));
   const childrenIndex = buildChildrenIndex(modules.map(m => m.source));
@@ -685,7 +626,7 @@ export function buildGraph({
     }
   }
 
-  layoutGroup(
+  await layoutGroup(
     null,
     nodeMap,
     groupSizes,

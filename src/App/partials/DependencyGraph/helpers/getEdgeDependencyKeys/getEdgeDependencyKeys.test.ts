@@ -28,16 +28,16 @@ describe('getEdgeDependencyKeys', () => {
 
   const selectedPaths = ['src/foo', 'src/foo/a.ts', 'src/foo/b.ts', 'src/bar/c.ts'];
 
-  it('returns stable file-level keys regardless of expanded folders', () => {
+  it('returns stable file-level keys regardless of expanded folders', async () => {
     const collapsedFolders = new Set(['src', 'src/bar']);
     const expandedFolders = new Set(['src', 'src/foo', 'src/bar']);
-    const collapsedGraph = buildGraph({
+    const collapsedGraph = await buildGraph({
       modules,
       selectedPaths,
       expandedFolders: collapsedFolders,
       ...graphArgs,
     });
-    const expandedGraph = buildGraph({
+    const expandedGraph = await buildGraph({
       modules,
       selectedPaths,
       expandedFolders,
@@ -77,9 +77,9 @@ describe('getEdgeDependencyKeys', () => {
     expect(expandedKeysB).toEqual([makeDependencyKey('src/foo/b.ts', 'src/bar/c.ts')]);
   });
 
-  it('aggregates multiple file-level pairs into one visual edge', () => {
+  it('aggregates multiple file-level pairs into one visual edge', async () => {
     const expandedFolders = new Set(['src', 'src/bar']);
-    const { edges, visibleNodeIds } = buildGraph({
+    const { edges, visibleNodeIds } = await buildGraph({
       modules,
       selectedPaths,
       expandedFolders,
@@ -103,9 +103,9 @@ describe('getEdgeDependencyKeys', () => {
     expect(keys).toContain(makeDependencyKey('src/foo/b.ts', 'src/bar/c.ts'));
   });
 
-  it('builds a map from visual edge ids to dependency keys', () => {
+  it('builds a map from visual edge ids to dependency keys', async () => {
     const expandedFolders = new Set(['src', 'src/foo', 'src/bar']);
-    const { edges, visibleNodeIds } = buildGraph({
+    const { edges, visibleNodeIds } = await buildGraph({
       modules,
       selectedPaths,
       expandedFolders,
