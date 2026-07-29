@@ -3,6 +3,7 @@ import { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState,
 import { useTranslation } from 'react-i18next';
 
 import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
 import { useColorScheme, useTheme } from '@mui/material/styles';
 import {
   Background,
@@ -118,9 +119,13 @@ function DependencyGraphInner({
   const expandedFolders = useMemo(() => new Set(expandedKeys), [expandedKeys]);
 
   const [graphResult, setGraphResult] = useState<BuildGraphResult>(EMPTY_GRAPH_RESULT);
+  const [isBuildingGraph, setIsBuildingGraph] = useState(selectedPaths.length > 0);
 
   useEffect(() => {
     let cancelled = false;
+    //synchronous update is fine here
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIsBuildingGraph(true);
 
     void buildGraph({
       modules,
@@ -132,7 +137,9 @@ function DependencyGraphInner({
       onShowInFileTree,
       onShowDependencies,
     }).then(result => {
-      if (!cancelled) setGraphResult(result);
+      if (cancelled) return;
+      setGraphResult(result);
+      setIsBuildingGraph(false);
     });
 
     return () => {
@@ -308,7 +315,7 @@ function DependencyGraphInner({
   }
 
   return (
-    <>
+    <Box sx={{ position: 'relative', height: '100%', minHeight: 0 }}>
       <ReactFlow
         nodes={displayNodes}
         edges={displayEdges}
@@ -348,8 +355,22 @@ function DependencyGraphInner({
         />
         <Controls position="bottom-right" showInteractive={false} />
       </ReactFlow>
+      {isBuildingGraph && (
+        <Box
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            display: 'grid',
+            placeItems: 'center',
+            bgcolor: 'action.disabledBackground',
+            zIndex: 5,
+          }}
+        >
+          <CircularProgress />
+        </Box>
+      )}
       {edgeContextMenu}
-    </>
+    </Box>
   );
 }
 
