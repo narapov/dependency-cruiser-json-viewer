@@ -24,6 +24,7 @@ import type {
 } from '../../types';
 import { buildVirtualLayoutEdges, type LayoutEdge } from '../buildVirtualLayoutEdges';
 import { getLeafNodeSize, LEAF_NODE_HEIGHT, LEAF_NODE_MIN_WIDTH } from '../getLeafNodeSize';
+import { sortNodesByDepth } from '../sortNodesByDepth';
 
 export const GROUP_PADDING = 16;
 export const GROUP_HEADER = 36;
@@ -458,31 +459,6 @@ async function layoutGroup(
   return applyChildPositions(childIds, childSizes, positions, folderId, nodeMap, groupSizes);
 }
 
-function sortNodesForReactFlow(nodes: Node[]): Node[] {
-  const depthById = new Map<string, number>();
-
-  function getDepth(id: string): number {
-    const cached = depthById.get(id);
-    if (cached !== undefined) return cached;
-
-    const node = nodes.find(n => n.id === id);
-    if (!node?.parentId) {
-      depthById.set(id, 0);
-      return 0;
-    }
-
-    const depth = getDepth(node.parentId) + 1;
-    depthById.set(id, depth);
-    return depth;
-  }
-
-  for (const node of nodes) {
-    getDepth(node.id);
-  }
-
-  return [...nodes].sort((a, b) => (depthById.get(a.id) ?? 0) - (depthById.get(b.id) ?? 0));
-}
-
 export async function buildGraph({
   modules,
   selectedPaths,
@@ -576,6 +552,7 @@ export async function buildGraph({
       data: {
         title: `${sourceRep} → ${targetRep}${titleSuffix}`,
         typeOnly,
+        circular: valueCircular || typeOnlyCircular,
       },
       markerEnd: {
         type: MarkerType.ArrowClosed,
@@ -685,7 +662,7 @@ export async function buildGraph({
   profiler.end('layout');
 
   profiler.start('sort');
-  const nodes = sortNodesForReactFlow([...nodeMap.values()]);
+  const nodes = sortNodesByDepth([...nodeMap.values()]);
   profiler.end('sort');
 
   profiler.end('total');

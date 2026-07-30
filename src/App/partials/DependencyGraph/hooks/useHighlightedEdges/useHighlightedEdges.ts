@@ -1,5 +1,5 @@
 import type { IModule } from 'dependency-cruiser';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState, type MouseEvent } from 'react';
 
 import type { Edge } from '@xyflow/react';
 
@@ -26,7 +26,7 @@ interface UseHighlightedEdgesResult {
   getEdgeHighlight: (edgeId: string) => string | undefined;
   setUserEdgeHighlight: (edgeId: string, color: string | null) => void;
   clearAllHighlights: () => void;
-  onEdgeClick: (_: React.MouseEvent, edge: Edge) => void;
+  onEdgeClick: (_: MouseEvent, edge: Edge) => void;
   clearSelectedEdge: () => void;
 }
 
@@ -64,10 +64,14 @@ export function useHighlightedEdges({
     return next;
   }, [userEdgeHighlights, validDependencyKeys]);
 
-  const highlightedEdges = applyUserEdgeHighlightStyle(
-    applySelectedEdgeStyle(applyActivePathEdgeStyle(baseEdges, activePath ?? null), activeEdgeId),
-    effectiveUserEdgeHighlights,
-    edgeDependencyKeyMap,
+  const highlightedEdges = useMemo(
+    () =>
+      applyUserEdgeHighlightStyle(
+        applySelectedEdgeStyle(applyActivePathEdgeStyle(baseEdges, activePath ?? null), activeEdgeId),
+        effectiveUserEdgeHighlights,
+        edgeDependencyKeyMap,
+      ),
+    [baseEdges, activePath, activeEdgeId, effectiveUserEdgeHighlights, edgeDependencyKeyMap],
   );
 
   const setUserEdgeHighlight = useCallback(
@@ -102,7 +106,7 @@ export function useHighlightedEdges({
     setUserEdgeHighlights(new Map());
   }, []);
 
-  const onEdgeClick = (_: React.MouseEvent, edge: Edge) => {
+  const onEdgeClick = (_: MouseEvent, edge: Edge) => {
     setSelectedEdgeId(edge.id);
   };
 

@@ -15,13 +15,7 @@ import {
   invalidateGroupPositionCacheRecursive,
   invalidatePositionCache,
 } from './invalidatePositionCache';
-import {
-  collectNodeSizes,
-  compactAfterDrag,
-  reflowForDrag,
-  reflowParentSiblings,
-  resizeGroupsForNode,
-} from './reflowParentSiblings';
+import { collectNodeSizes, compactAfterDrag, reflowForDrag, reflowParentSiblings } from './reflowParentSiblings';
 import type { PositionCache } from './types';
 
 function node(id: string, overrides: Partial<Node> = {}): Node {
@@ -216,40 +210,6 @@ describe('applyPositionCache', () => {
     );
 
     expect(result.find(n => n.id === 'parent/folder-a/child-b/file-2')?.position).toEqual({ x: 30, y: 40 });
-  });
-});
-
-describe('resizeGroupsForNode', () => {
-  it('expands nested folder groups hierarchically when child moves near edge', () => {
-    const parentByNode = new Map<string, string | null>([
-      ['parent', null],
-      ['parent/child', 'parent'],
-      ['parent/child/file', 'parent/child'],
-    ]);
-    const nodes = [
-      node('parent', { type: 'folderGroup', width: 200, height: 200 }),
-      node('parent/child', {
-        type: 'folderGroup',
-        parentId: 'parent',
-        width: 150,
-        height: 150,
-        position: { x: 10, y: 50 },
-      }),
-      node('parent/child/file', {
-        parentId: 'parent/child',
-        width: 120,
-        height: 32,
-        position: { x: 200, y: 100 },
-      }),
-    ];
-
-    const result = resizeGroupsForNode(nodes, parentByNode, 'parent/child/file');
-
-    const inner = result.find(n => n.id === 'parent/child');
-    const outer = result.find(n => n.id === 'parent');
-
-    expect(inner!.width!).toBeGreaterThan(150);
-    expect(outer!.width!).toBeGreaterThan(200);
   });
 });
 

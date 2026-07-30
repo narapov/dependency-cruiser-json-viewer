@@ -105,7 +105,3 @@ export function parsePastelHsl(color: string): {
     lightness: Number(match[3]),
   };
 }
-
-export function hueDistanceForTest(a: number, b: number): number {
-  return hueDistance(a, b);
-}

@@ -1,34 +1,13 @@
-import { MarkerType, type Edge } from '@xyflow/react';
+import type { Edge } from '@xyflow/react';
 
-import { CIRCULAR_EDGE_COLOR, INCOMING_EDGE_COLOR, OUTGOING_EDGE_COLOR, TYPE_ONLY_CIRCULAR_EDGE_COLOR } from '@/Shared';
+import { INCOMING_EDGE_COLOR, OUTGOING_EDGE_COLOR } from '@/Shared';
+
+import type { DependencyEdgeData } from '../../types';
+import { withEdgeStrokeStyle } from '../withEdgeStrokeStyle';
 
 function isCircularEdge(edge: Edge): boolean {
-  const stroke = edge.style?.stroke;
-  return stroke === CIRCULAR_EDGE_COLOR || stroke === TYPE_ONLY_CIRCULAR_EDGE_COLOR;
-}
-
-function withEdgeColor(edge: Edge, color: string): Edge {
-  const markerEnd =
-    typeof edge.markerEnd === 'object' && edge.markerEnd !== null
-      ? {
-          ...edge.markerEnd,
-          type: MarkerType.ArrowClosed,
-          color,
-        }
-      : {
-          type: MarkerType.ArrowClosed,
-          color,
-        };
-
-  return {
-    ...edge,
-    markerEnd,
-    style: {
-      ...edge.style,
-      stroke: color,
-      strokeWidth: 2,
-    },
-  };
+  const data = edge.data as DependencyEdgeData | undefined;
+  return data?.circular === true;
 }
 
 export function applyActivePathEdgeStyle(edges: Edge[], activePath: string | null): Edge[] {
@@ -38,11 +17,11 @@ export function applyActivePathEdgeStyle(edges: Edge[], activePath: string | nul
     if (isCircularEdge(edge)) return edge;
 
     if (edge.target === activePath) {
-      return withEdgeColor(edge, INCOMING_EDGE_COLOR);
+      return withEdgeStrokeStyle(edge, { color: INCOMING_EDGE_COLOR, strokeWidth: 2 });
     }
 
     if (edge.source === activePath) {
-      return withEdgeColor(edge, OUTGOING_EDGE_COLOR);
+      return withEdgeStrokeStyle(edge, { color: OUTGOING_EDGE_COLOR, strokeWidth: 2 });
     }
 
     return edge;

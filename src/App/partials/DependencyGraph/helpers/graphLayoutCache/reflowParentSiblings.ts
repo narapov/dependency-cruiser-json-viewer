@@ -1,6 +1,7 @@
 import type { Node } from '@xyflow/react';
 
 import { getDirectChildren, GRID_GAP_X, GRID_GAP_Y, GROUP_HEADER, GROUP_PADDING } from '../buildGraph';
+import { sortNodesByDepth } from '../sortNodesByDepth';
 import { updateGroupCacheFromNodes } from './applyPositionCache';
 import { applyGroupSizeToNode, getNodeSizeFromNode, resolveGroupSize } from './resolveGroupSize';
 import type { GroupFingerprints, GroupId, NodeSize, PositionCache } from './types';
@@ -373,41 +374,6 @@ function resizeFolderGroups(nodeById: Map<string, Node>, parentByNode: ReadonlyM
   }
 }
 
-export function resizeGroupsForNode(
-  nodes: Node[],
-  parentByNode: ReadonlyMap<string, string | null>,
-  nodeId: string,
-): Node[] {
-  const nodeById = new Map(nodes.map(node => [node.id, { ...node }]));
-
-  const ancestorGroupIds: string[] = [];
-  let current: string | null = parentByNode.get(nodeId) ?? null;
-
-  while (current !== null) {
-    const groupNode = nodeById.get(current);
-    if (groupNode?.type === 'folderGroup') {
-      ancestorGroupIds.push(current);
-    }
-    current = parentByNode.get(current) ?? null;
-  }
-
-  if (ancestorGroupIds.length === 0) {
-    return nodes;
-  }
-
-  ancestorGroupIds.sort((a, b) => getGroupDepth(b, parentByNode) - getGroupDepth(a, parentByNode));
-
-  for (const groupId of ancestorGroupIds) {
-    const size = resolveGroupSize(groupId, [...nodeById.values()], parentByNode);
-    const groupNode = nodeById.get(groupId);
-    if (groupNode) {
-      nodeById.set(groupId, applyGroupSizeToNode(groupNode, size));
-    }
-  }
-
-  return [...nodeById.values()];
-}
-
 export interface ReflowInput {
   nodes: Node[];
   parentByNode: ReadonlyMap<string, string | null>;
@@ -544,29 +510,6 @@ function hasSizeGrown(
   return currentSize.width > previousSize.width || currentSize.height > previousSize.height;
 }
 
-function sortNodesByDepth(nodeById: Map<string, Node>, nodeIds: ReadonlySet<string>): Node[] {
-  const depthById = new Map<string, number>();
-
-  function getDepth(id: string): number {
-    const cached = depthById.get(id);
-    if (cached !== undefined) return cached;
-    const node = nodeById.get(id);
-    if (!node?.parentId) {
-      depthById.set(id, 0);
-      return 0;
-    }
-    const depth = getDepth(node.parentId) + 1;
-    depthById.set(id, depth);
-    return depth;
-  }
-
-  for (const id of nodeIds) {
-    getDepth(id);
-  }
-
-  return [...nodeById.values()].sort((a, b) => (depthById.get(a.id) ?? 0) - (depthById.get(b.id) ?? 0));
-}
-
 function compactGroupChildren(
   groupId: GroupId,
   nodeById: Map<string, Node>,
@@ -633,7 +576,6 @@ export function compactAfterDrag(
   draggedNodeId: string,
 ): Node[] {
   const nodeById = new Map(nodes.map(node => [node.id, { ...node }]));
-  const nodeIds = new Set(nodes.map(node => node.id));
 
   for (const groupId of collectGroupsToCompact(draggedNodeId, nodeById, parentByNode)) {
     compactGroupChildren(groupId, nodeById, parentByNode);
@@ -641,7 +583,7 @@ export function compactAfterDrag(
 
   resizeFolderGroups(nodeById, parentByNode);
 
-  return sortNodesByDepth(nodeById, nodeIds);
+  return sortNodesByDepth([...nodeById.values()]);
 }
 
 export function reflowForDrag(
@@ -652,7 +594,6 @@ export function reflowForDrag(
   previousSizes: ReadonlyMap<string, NodeSize>,
 ): Node[] {
   const nodeById = new Map(nodes.map(node => [node.id, { ...node }]));
-  const nodeIds = new Set(nodes.map(node => node.id));
 
   const dragged = nodeById.get(draggedNodeId);
   if (dragged) {
@@ -672,7 +613,7 @@ export function reflowForDrag(
     resizeFolderGroups(nodeById, parentByNode);
   }
 
-  return sortNodesByDepth(nodeById, nodeIds);
+  return sortNodesByDepth([...nodeById.values()]);
 }
 
 export function collectNodeSizes(nodes: readonly Node[]): Map<string, NodeSize> {

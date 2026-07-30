@@ -58,4 +58,28 @@ describe('applyUserEdgeHighlightStyle', () => {
 
     expect(unhighlighted).toEqual(edges[1]);
   });
+
+  it('paints with the first color when dependency keys have mixed colors', () => {
+    const mixedMap = new Map<string, string[]>([['edge-1', [DEP_KEY, 'src/c.ts->src/d.ts']]]);
+    const highlights = new Map([
+      [DEP_KEY, USER_COLOR],
+      ['src/c.ts->src/d.ts', '#3cb44b'],
+    ]);
+
+    const result = applyUserEdgeHighlightStyle(edges, highlights, mixedMap);
+    const highlighted = result.find(edge => edge.id === 'edge-1');
+
+    expect(highlighted?.style?.stroke).toBe(USER_COLOR);
+  });
+
+  it('paints collapsed folder edge when only one inner dependency is highlighted', () => {
+    const collapsedMap = new Map<string, string[]>([['edge-1', [DEP_KEY, 'src/foo/b.ts->src/bar/c.ts']]]);
+    const highlights = new Map([[DEP_KEY, USER_COLOR]]);
+
+    const result = applyUserEdgeHighlightStyle(edges, highlights, collapsedMap);
+    const highlighted = result.find(edge => edge.id === 'edge-1');
+
+    expect(highlighted?.style?.stroke).toBe(USER_COLOR);
+    expect(highlighted?.zIndex).toBe(USER_HIGHLIGHT_EDGE_Z_INDEX);
+  });
 });

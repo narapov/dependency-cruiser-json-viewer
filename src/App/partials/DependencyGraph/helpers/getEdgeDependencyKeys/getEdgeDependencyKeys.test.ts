@@ -2,7 +2,13 @@ import type { IModule } from 'dependency-cruiser';
 import { describe, expect, it } from 'vitest';
 
 import { buildGraph } from '../buildGraph';
-import { buildEdgeDependencyKeyMap, getEdgeDependencyKeys, makeDependencyKey } from './getEdgeDependencyKeys';
+import {
+  buildEdgeDependencyKeyMap,
+  collectValidDependencyKeys,
+  getEdgeDependencyKeys,
+  getEdgeHighlightColor,
+  makeDependencyKey,
+} from './getEdgeDependencyKeys';
 
 function moduleAt(source: string, dependencies: IModule['dependencies'] = []): IModule {
   return { source, dependencies, dependents: [], valid: true } as IModule;
@@ -118,5 +124,50 @@ describe('getEdgeDependencyKeys', () => {
 
     expect(map.get(edgeA!.id)).toEqual([makeDependencyKey('src/foo/a.ts', 'src/bar/c.ts')]);
     expect(map.get(edgeB!.id)).toEqual([makeDependencyKey('src/foo/b.ts', 'src/bar/c.ts')]);
+  });
+});
+
+describe('getEdgeHighlightColor', () => {
+  const keyA = makeDependencyKey('src/foo/a.ts', 'src/bar/c.ts');
+  const keyB = makeDependencyKey('src/foo/b.ts', 'src/bar/c.ts');
+
+  it('returns undefined when no keys are highlighted', () => {
+    expect(getEdgeHighlightColor([keyA, keyB], new Map())).toBeUndefined();
+  });
+
+  it('returns the shared color when all highlighted keys agree', () => {
+    const highlights = new Map([
+      [keyA, '#e6194b'],
+      [keyB, '#e6194b'],
+    ]);
+    expect(getEdgeHighlightColor([keyA, keyB], highlights)).toBe('#e6194b');
+  });
+
+  it('returns undefined when highlighted keys have mixed colors', () => {
+    const highlights = new Map([
+      [keyA, '#e6194b'],
+      [keyB, '#3cb44b'],
+    ]);
+    expect(getEdgeHighlightColor([keyA, keyB], highlights)).toBeUndefined();
+  });
+
+  it('returns the color when only some keys are highlighted and they agree', () => {
+    const highlights = new Map([[keyA, '#e6194b']]);
+    expect(getEdgeHighlightColor([keyA, keyB], highlights)).toBe('#e6194b');
+  });
+});
+
+describe('collectValidDependencyKeys', () => {
+  it('collects file-level dependency keys within the selection', () => {
+    const modules = [
+      moduleAt('src/foo/a.ts', [{ resolved: 'src/bar/c.ts' } as IModule['dependencies'][0]]),
+      moduleAt('src/foo/b.ts', [{ resolved: 'src/outside.ts' } as IModule['dependencies'][0]]),
+      moduleAt('src/bar/c.ts'),
+      moduleAt('src/outside.ts'),
+    ];
+
+    const keys = collectValidDependencyKeys(modules, ['src/foo/a.ts', 'src/foo/b.ts', 'src/bar/c.ts']);
+
+    expect(keys).toEqual(new Set([makeDependencyKey('src/foo/a.ts', 'src/bar/c.ts')]));
   });
 });

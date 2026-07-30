@@ -1,5 +1,5 @@
 import type { IModule } from 'dependency-cruiser';
-import { useImperativeHandle, useState, type Ref } from 'react';
+import { useImperativeHandle, useState, type MouseEvent as ReactMouseEvent, type Ref } from 'react';
 
 import Box from '@mui/material/Box';
 import { useColorScheme, useTheme } from '@mui/material/styles';
@@ -158,11 +158,11 @@ function DependencyGraphInner({
     clearSelectedEdge();
   };
 
-  const onPaneContextMenu = (event: React.MouseEvent | MouseEvent) => {
+  const onPaneContextMenu = (event: ReactMouseEvent | MouseEvent) => {
     event.preventDefault();
   };
 
-  const onNodeClick = (_: React.MouseEvent, node: Node) => {
+  const onNodeClick = (_: ReactMouseEvent, node: Node) => {
     clearSelectedEdge();
     if (activePath === node.id) {
       return;

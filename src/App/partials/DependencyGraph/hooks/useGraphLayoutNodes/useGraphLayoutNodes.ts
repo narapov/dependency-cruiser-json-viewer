@@ -21,7 +21,7 @@ import {
   type GroupFingerprints,
   type NodeSize,
   type PositionCache,
-} from '../../helpers/graphLayoutCache';
+} from '../../helpers';
 import type { BuildGraphResult } from '../../types';
 
 interface UseGraphLayoutNodesInput {
@@ -46,8 +46,14 @@ export function useGraphLayoutNodes({
   const prevFingerprintsRef = useRef<GroupFingerprints | null>(null);
   const prevSizesRef = useRef<Map<string, NodeSize>>(new Map());
   const prevNodesRef = useRef<Node[] | null>(null);
-  const hasUserLayoutRef = useRef(false);
   const [hasUserLayout, setHasUserLayout] = useState(false);
+
+  useEffect(() => {
+    if (!autoLayoutOnly) return;
+    // Reset drag-layout flag when switching to auto layout only.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setHasUserLayout(false);
+  }, [autoLayoutOnly]);
 
   useEffect(() => {
     const { nodes: layoutNodes, parentByNode, visibleNodeIds } = graphResult;
@@ -56,7 +62,6 @@ export function useGraphLayoutNodes({
 
     if (autoLayoutOnly) {
       positionCacheRef.current.clear();
-      hasUserLayoutRef.current = false;
     }
 
     invalidatePositionCache(positionCacheRef.current, currentFingerprints, prevFingerprintsRef.current, visibleNodeIds);
@@ -110,7 +115,6 @@ export function useGraphLayoutNodes({
     (_, draggedNode) => {
       if (autoLayoutOnly) return;
 
-      hasUserLayoutRef.current = true;
       setHasUserLayout(true);
 
       setNodes(currentNodes => {

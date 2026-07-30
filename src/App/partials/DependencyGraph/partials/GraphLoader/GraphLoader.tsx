@@ -1,7 +1,11 @@
+import { useTranslation } from 'react-i18next';
+
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 
 export function GraphLoader() {
+  const { t } = useTranslation();
+
   return (
     <Box
       sx={{
@@ -13,7 +17,7 @@ export function GraphLoader() {
         zIndex: 100,
       }}
     >
-      <CircularProgress />
+      <CircularProgress aria-label={t('graph.loading')} />
     </Box>
   );
 }
