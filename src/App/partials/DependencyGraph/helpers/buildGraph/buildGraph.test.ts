@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { CIRCULAR_EDGE_COLOR, TYPE_ONLY_CIRCULAR_EDGE_COLOR } from '@/Shared';
 
 import { LEAF_NODE_MIN_WIDTH } from '../getLeafNodeSize';
-import { buildGraph, getDirectChildren } from './buildGraph';
+import { buildGraph } from './buildGraph';
 
 function moduleAt(source: string, dependencies: IModule['dependencies'] = []): IModule {
   return { source, dependencies, dependents: [], valid: true } as IModule;
@@ -438,52 +438,5 @@ describe('buildGraph layout', () => {
 
     expect(collapsedInner.edges.some(edge => edge.source === 'lib' && edge.target === 'src/foo/bar')).toBe(true);
     expect(collapsedInner.edges.some(edge => edge.target === 'src/foo/bar/c.ts')).toBe(false);
-  });
-});
-
-describe('getDirectChildren', () => {
-  it('returns only nodes whose parent matches folderId', () => {
-    const parentByNode = new Map<string, string | null>([
-      ['folder', null],
-      ['a', 'folder'],
-      ['b', 'folder'],
-      ['c', 'a'],
-    ]);
-    const visibleNodeIds = new Set(['folder', 'a', 'b', 'c']);
-
-    expect(getDirectChildren('folder', visibleNodeIds, parentByNode)).toEqual(['a', 'b']);
-  });
-
-  it('supports null root parent', () => {
-    const parentByNode = new Map<string, string | null>([
-      ['a', null],
-      ['b', null],
-      ['c', 'a'],
-    ]);
-    const visibleNodeIds = new Set(['a', 'b', 'c']);
-
-    expect(getDirectChildren(null, visibleNodeIds, parentByNode)).toEqual(['a', 'b']);
-  });
-
-  it('returns sorted ids', () => {
-    const parentByNode = new Map<string, string | null>([
-      ['z', null],
-      ['a', null],
-      ['m', null],
-    ]);
-    const visibleNodeIds = new Set(['z', 'a', 'm']);
-
-    expect(getDirectChildren(null, visibleNodeIds, parentByNode)).toEqual(['a', 'm', 'z']);
-  });
-
-  it('ignores nodes not in visibleNodeIds', () => {
-    const parentByNode = new Map<string, string | null>([
-      ['a', null],
-      ['b', null],
-      ['hidden', null],
-    ]);
-    const visibleNodeIds = new Set(['a', 'b']);
-
-    expect(getDirectChildren(null, visibleNodeIds, parentByNode)).toEqual(['a', 'b']);
   });
 });
