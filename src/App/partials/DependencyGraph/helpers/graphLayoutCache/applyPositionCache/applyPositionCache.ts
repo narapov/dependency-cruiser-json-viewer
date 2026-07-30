@@ -1,8 +1,8 @@
 import type { Node } from '@xyflow/react';
 
-import { getDirectChildren } from '../buildGraph';
-import { isDescendantOf } from './isDescendantOf';
-import type { GroupFingerprints, GroupId, PositionCache } from './types';
+import { getDirectChildren } from '../../buildGraph';
+import { isDescendantOf } from '../isDescendantOf';
+import type { GroupFingerprints, GroupId, PositionCache } from '../types';
 
 export function applyAutoLayoutGroupLevel(
   nodes: Node[],

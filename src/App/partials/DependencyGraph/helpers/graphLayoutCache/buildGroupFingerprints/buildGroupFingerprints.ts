@@ -1,5 +1,5 @@
-import { getDirectChildren } from '../buildGraph';
-import type { GroupFingerprints, GroupId } from './types';
+import { getDirectChildren } from '../../buildGraph';
+import type { GroupFingerprints, GroupId } from '../types';
 
 export function buildGroupFingerprints(
   nodeIds: ReadonlySet<string>,

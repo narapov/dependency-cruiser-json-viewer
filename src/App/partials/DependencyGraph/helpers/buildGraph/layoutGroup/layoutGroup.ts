@@ -3,13 +3,13 @@ import ELK from 'elkjs/lib/elk.bundled.js';
 
 import type { Node } from '@xyflow/react';
 
-import { buildVirtualLayoutEdges, type LayoutEdge } from '../buildVirtualLayoutEdges';
-import { LEAF_NODE_HEIGHT, LEAF_NODE_MIN_WIDTH } from '../getLeafNodeSize';
-import type { BuildGraphProfiler } from './createBuildGraphProfiler';
-import { getDirectChildren } from './getDirectChildren';
-import { GROUP_HEADER, GROUP_PADDING } from './layoutConstants';
-import { applyNodeDimensions, getLeafSizeForPath } from './nodeDimensions';
-import type { NodeSize } from './types';
+import { buildVirtualLayoutEdges, type LayoutEdge } from '../../buildVirtualLayoutEdges';
+import { LEAF_NODE_HEIGHT, LEAF_NODE_MIN_WIDTH } from '../../getLeafNodeSize';
+import type { BuildGraphProfiler } from '../createBuildGraphProfiler';
+import { getDirectChildren } from '../getDirectChildren';
+import { GROUP_HEADER, GROUP_PADDING } from '../layoutConstants';
+import { applyNodeDimensions, getLeafSizeForPath } from '../nodeDimensions';
+import type { NodeSize } from '../types';
 
 const NODE_HEIGHT = LEAF_NODE_HEIGHT;
 

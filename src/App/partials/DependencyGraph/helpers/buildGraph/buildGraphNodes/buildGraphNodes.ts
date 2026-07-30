@@ -2,10 +2,10 @@ import type { Node } from '@xyflow/react';
 
 import { getBaseName } from '@/domain';
 
-import type { FileNodeData, FolderChildren, FolderGroupNodeData, FolderNodeData } from '../../types';
-import { getLeafNodeSize } from '../getLeafNodeSize';
-import { folderHasCircularDescendant } from './buildVisibleNodes';
-import { toNodeDimensions } from './nodeDimensions';
+import type { FileNodeData, FolderChildren, FolderGroupNodeData, FolderNodeData } from '../../../types';
+import { getLeafNodeSize } from '../../getLeafNodeSize';
+import { folderHasCircularDescendant } from '../buildVisibleNodes';
+import { toNodeDimensions } from '../nodeDimensions';
 
 export interface BuildGraphNodesInput {
   visibleNodes: Map<string, 'folder' | 'file'>;

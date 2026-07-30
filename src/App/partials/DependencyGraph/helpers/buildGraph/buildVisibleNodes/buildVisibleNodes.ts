@@ -2,7 +2,7 @@ import type { IModule } from 'dependency-cruiser';
 
 import { getParentPath, isTypeOnlyDependency } from '@/domain';
 
-import type { FolderChildren } from '../../types';
+import type { FolderChildren } from '../../../types';
 
 function buildChildrenIndex(sources: string[]): Map<string, FolderChildren> {
   const index = new Map<string, { folders: Set<string>; files: Set<string> }>();

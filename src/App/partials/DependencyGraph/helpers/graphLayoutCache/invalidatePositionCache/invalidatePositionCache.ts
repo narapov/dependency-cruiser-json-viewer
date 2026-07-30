@@ -1,7 +1,7 @@
 import { getParentPath } from '@/domain';
 
-import { isDescendantOf } from './isDescendantOf';
-import type { GroupFingerprints, GroupId, PositionCache } from './types';
+import { isDescendantOf } from '../isDescendantOf';
+import type { GroupFingerprints, GroupId, PositionCache } from '../types';
 
 export function invalidateGroupPositionCache(
   cache: PositionCache,

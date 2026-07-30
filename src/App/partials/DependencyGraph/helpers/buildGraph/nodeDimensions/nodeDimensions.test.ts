@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { Node } from '@xyflow/react';
 
-import { getLeafNodeSize } from '../getLeafNodeSize';
+import { getLeafNodeSize } from '../../getLeafNodeSize';
 import { applyNodeDimensions, getLeafSizeForPath, toNodeDimensions } from './nodeDimensions';
 
 describe('getLeafSizeForPath', () => {

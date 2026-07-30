@@ -1,8 +1,6 @@
 import type { ICruiseResult, IModule } from 'dependency-cruiser';
 import { describe, expect, it } from 'vitest';
 
-import { isIgnoredPath } from '../isIgnoredPath';
-import { matchesIgnorePattern } from '../matchesIgnorePattern';
 import { filterCruiseResult } from './filterCruiseResult';
 
 function moduleAt(source: string, dependencies: IModule['dependencies'] = []): IModule {
@@ -23,29 +21,6 @@ function cruiseResult(modules: IModule[]): ICruiseResult {
     },
   } as ICruiseResult;
 }
-
-describe('matchesIgnorePattern', () => {
-  it('matches test files with glob pattern', () => {
-    expect(matchesIgnorePattern('src/foo/bar.test.ts', '**/*.test.ts')).toBe(true);
-    expect(matchesIgnorePattern('src/foo/bar.ts', '**/*.test.ts')).toBe(false);
-  });
-
-  it('ignores empty patterns', () => {
-    expect(matchesIgnorePattern('src/foo/bar.test.ts', '')).toBe(false);
-    expect(matchesIgnorePattern('src/foo/bar.test.ts', '   ')).toBe(false);
-  });
-
-  it('returns false for invalid glob patterns', () => {
-    expect(matchesIgnorePattern('src/foo/bar.ts', '[')).toBe(false);
-  });
-});
-
-describe('isIgnoredPath', () => {
-  it('matches if any pattern matches', () => {
-    expect(isIgnoredPath('src/foo/bar.stories.tsx', ['**/*.test.ts', '**/*.stories.tsx'])).toBe(true);
-    expect(isIgnoredPath('src/foo/bar.ts', ['**/*.test.ts', '**/*.stories.tsx'])).toBe(false);
-  });
-});
 
 describe('filterCruiseResult', () => {
   it('returns the same result when patterns are empty', () => {

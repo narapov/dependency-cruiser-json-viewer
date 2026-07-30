@@ -1,10 +1,10 @@
 import type { Node } from '@xyflow/react';
 
-import { getDirectChildren, GRID_GAP_X, GRID_GAP_Y, GROUP_HEADER, GROUP_PADDING } from '../buildGraph';
-import { sortNodesByDepth } from '../sortNodesByDepth';
-import { updateGroupCacheFromNodes } from './applyPositionCache';
-import { applyGroupSizeToNode, getNodeSizeFromNode, resolveGroupSize } from './resolveGroupSize';
-import type { GroupFingerprints, GroupId, NodeSize, PositionCache } from './types';
+import { getDirectChildren, GRID_GAP_X, GRID_GAP_Y, GROUP_HEADER, GROUP_PADDING } from '../../buildGraph';
+import { sortNodesByDepth } from '../../sortNodesByDepth';
+import { updateGroupCacheFromNodes } from '../applyPositionCache';
+import { applyGroupSizeToNode, getNodeSizeFromNode, resolveGroupSize } from '../resolveGroupSize';
+import type { GroupFingerprints, GroupId, NodeSize, PositionCache } from '../types';
 
 function getGroupDepth(groupId: GroupId, parentByNode: ReadonlyMap<string, string | null>): number {
   if (groupId === null) return 0;

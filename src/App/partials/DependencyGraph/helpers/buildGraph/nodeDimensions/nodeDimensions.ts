@@ -2,8 +2,8 @@ import type { Node } from '@xyflow/react';
 
 import { getBaseName } from '@/domain';
 
-import { getLeafNodeSize } from '../getLeafNodeSize';
-import type { NodeSize } from './types';
+import { getLeafNodeSize } from '../../getLeafNodeSize';
+import type { NodeSize } from '../types';
 
 export function getLeafSizeForPath(path: string, visibleNodes: Map<string, 'folder' | 'file'>): NodeSize {
   const label = getBaseName(path);

@@ -1,8 +1,8 @@
 import type { Node } from '@xyflow/react';
 
-import { getDirectChildren, GROUP_HEADER, GROUP_PADDING } from '../buildGraph';
-import { LEAF_NODE_HEIGHT, LEAF_NODE_MIN_WIDTH } from '../getLeafNodeSize';
-import type { GroupId, NodeSize } from './types';
+import { getDirectChildren, GROUP_HEADER, GROUP_PADDING } from '../../buildGraph';
+import { LEAF_NODE_HEIGHT, LEAF_NODE_MIN_WIDTH } from '../../getLeafNodeSize';
+import type { GroupId, NodeSize } from '../types';
 
 const NODE_HEIGHT = LEAF_NODE_HEIGHT;
 
