@@ -41,6 +41,7 @@ function mapToSortedArray(map: Map<string, DependencyRelationFlags>): ModuleRela
     .sort((a, b) => a.path.localeCompare(b.path));
 }
 
+/** Incoming and outgoing relations for a folder node, collapsed to visible representatives. */
 export function getFolderRelations(
   folderPath: string,
   modules: IModule[],

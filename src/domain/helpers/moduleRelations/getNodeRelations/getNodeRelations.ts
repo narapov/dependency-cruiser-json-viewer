@@ -4,6 +4,7 @@ import type { ModuleRelations } from '../../../types';
 import { getFolderRelations } from '../getFolderRelations';
 import { getModuleRelations } from '../getModuleRelations';
 
+/** Relations for a graph node: module relations for files, folder relations otherwise. */
 export function getNodeRelations(
   path: string,
   modules: IModule[],

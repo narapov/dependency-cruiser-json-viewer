@@ -2,6 +2,7 @@ import type { ICruiseResult } from 'dependency-cruiser';
 
 import { isIgnoredPath } from '../isIgnoredPath';
 
+/** Drop ignored modules and edges that target them from a cruise result. */
 export function filterCruiseResult(result: ICruiseResult, patterns: string[]): ICruiseResult {
   if (patterns.length === 0) {
     return result;
