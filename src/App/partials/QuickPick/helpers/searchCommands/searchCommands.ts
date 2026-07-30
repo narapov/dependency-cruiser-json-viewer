@@ -2,6 +2,7 @@ import fuzzysort from 'fuzzysort';
 
 import type { QuickPickCommand } from '../../types';
 
+/** Fuzzy-filters commands by label; empty query returns all commands. */
 export function searchCommands(commands: QuickPickCommand[], query: string): QuickPickCommand[] {
   const trimmed = query.trim();
 

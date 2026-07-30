@@ -1,3 +1,4 @@
+/** Sorted ids of nodes whose parent is the given folder (or root when null). */
 export function getDirectChildren(
   folderId: string | null,
   visibleNodeIds: ReadonlySet<string>,

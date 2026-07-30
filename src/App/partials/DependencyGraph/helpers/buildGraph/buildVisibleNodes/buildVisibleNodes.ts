@@ -71,6 +71,7 @@ function collectCircularModules(modules: IModule[]): Set<string> {
   return circularModules;
 }
 
+/** Whether any selected circular module lives under this folder. */
 export function folderHasCircularDescendant(
   folderPath: string,
   selectedSet: Set<string>,
@@ -178,6 +179,7 @@ function buildParentByNode(
   return parentByNode;
 }
 
+/** Indexes and maps describing which nodes are visible for the current selection. */
 export interface BuildVisibleNodesResult {
   selectedSet: Set<string>;
   childrenIndex: Map<string, FolderChildren>;
@@ -187,6 +189,7 @@ export interface BuildVisibleNodesResult {
   parentByNode: Map<string, string | null>;
 }
 
+/** Collects visible file/folder nodes, circular modules, and parent links. */
 export function buildVisibleNodes(
   modules: readonly IModule[],
   selectedPaths: string[],

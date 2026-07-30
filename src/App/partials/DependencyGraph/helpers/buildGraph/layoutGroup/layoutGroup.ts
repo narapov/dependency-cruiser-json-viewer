@@ -121,7 +121,9 @@ function applyChildPositions(
   return groupSize;
 }
 
-/*
+/**
+ * Recursively layout for folder group (or root) with ELK and updates node sizes.
+ *
  * Layout algorithm (recursive, per folder level):
  *
  * 1. Collect direct children of the current folder (or root when folderId is null).

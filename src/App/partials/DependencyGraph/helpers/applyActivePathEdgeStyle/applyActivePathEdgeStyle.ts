@@ -10,6 +10,7 @@ function isCircularEdge(edge: Edge): boolean {
   return data?.circular === true;
 }
 
+/** Styles non-circular edges that enter or leave the active path node. */
 export function applyActivePathEdgeStyle(edges: Edge[], activePath: string | null): Edge[] {
   if (activePath == null) return edges;
 

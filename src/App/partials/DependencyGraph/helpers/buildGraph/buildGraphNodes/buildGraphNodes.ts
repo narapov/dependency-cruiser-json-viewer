@@ -7,6 +7,7 @@ import { getLeafNodeSize } from '../../getLeafNodeSize';
 import { folderHasCircularDescendant } from '../buildVisibleNodes';
 import { toNodeDimensions } from '../nodeDimensions';
 
+/** Inputs needed to create React Flow nodes for visible files and folders. */
 export interface BuildGraphNodesInput {
   visibleNodes: Map<string, 'folder' | 'file'>;
   parentByNode: Map<string, string | null>;
@@ -21,6 +22,7 @@ export interface BuildGraphNodesInput {
   onShowDependencies?: (path: string) => void;
 }
 
+/** Creates folder, folder-group, and file React Flow nodes for the visible set. */
 export function buildGraphNodes({
   visibleNodes,
   parentByNode,

@@ -374,6 +374,7 @@ function resizeFolderGroups(nodeById: Map<string, Node>, parentByNode: ReadonlyM
   }
 }
 
+/** Inputs for sibling reflow after size or membership changes. */
 export interface ReflowInput {
   nodes: Node[];
   parentByNode: ReadonlyMap<string, string | null>;
@@ -384,6 +385,7 @@ export interface ReflowInput {
   previousNodes?: readonly Node[] | null;
 }
 
+/** Separates overlapping siblings and resizes ancestor folder groups as needed. */
 export function reflowParentSiblings({
   nodes,
   parentByNode,
@@ -570,6 +572,7 @@ function collectGroupsToCompact(
   return [...groups].sort((a, b) => getGroupDepth(b, parentByNode) - getGroupDepth(a, parentByNode));
 }
 
+/** Shifts children so the dragged node's groups hug their content padding again. */
 export function compactAfterDrag(
   nodes: Node[],
   parentByNode: ReadonlyMap<string, string | null>,
@@ -586,6 +589,7 @@ export function compactAfterDrag(
   return sortNodesByDepth([...nodeById.values()]);
 }
 
+/** Places a dragged node and reflows siblings so fixed content does not overlap. */
 export function reflowForDrag(
   nodes: Node[],
   parentByNode: ReadonlyMap<string, string | null>,
@@ -616,6 +620,7 @@ export function reflowForDrag(
   return sortNodesByDepth([...nodeById.values()]);
 }
 
+/** Snapshot of each node's width and height keyed by id. */
 export function collectNodeSizes(nodes: readonly Node[]): Map<string, NodeSize> {
   return new Map(nodes.map(node => [node.id, getNodeSizeFromNode(node)]));
 }

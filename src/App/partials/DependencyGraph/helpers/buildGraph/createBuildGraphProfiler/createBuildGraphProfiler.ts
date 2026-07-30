@@ -1,3 +1,4 @@
+/** Creates a no-op or timing profiler for `buildGraph` stages. */
 export function createBuildGraphProfiler(enabled: boolean) {
   const marks = new Map<string, number>();
   const totals = new Map<string, number>();
@@ -22,4 +23,5 @@ export function createBuildGraphProfiler(enabled: boolean) {
   };
 }
 
+/** Profiler returned by `createBuildGraphProfiler`. */
 export type BuildGraphProfiler = ReturnType<typeof createBuildGraphProfiler>;

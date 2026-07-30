@@ -6,6 +6,7 @@ interface WithEdgeStrokeStyleOptions {
   zIndex?: number;
 }
 
+/** Clones an edge with updated stroke color, width, marker, and optional z-index. */
 export function withEdgeStrokeStyle(edge: Edge, { color, strokeWidth, zIndex }: WithEdgeStrokeStyleOptions): Edge {
   const markerEnd =
     typeof edge.markerEnd === 'object' && edge.markerEnd !== null

@@ -1,6 +1,7 @@
 import { getDirectChildren } from '../../buildGraph';
 import type { GroupFingerprints, GroupId } from '../types';
 
+/** Fingerprints each group by the sorted list of its direct child ids. */
 export function buildGroupFingerprints(
   nodeIds: ReadonlySet<string>,
   parentByNode: ReadonlyMap<string, string | null>,

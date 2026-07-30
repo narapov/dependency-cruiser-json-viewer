@@ -3,6 +3,7 @@ import { getParentPath } from '@/domain';
 import { isDescendantOf } from '../isDescendantOf';
 import type { GroupFingerprints, GroupId, PositionCache } from '../types';
 
+/** Drops a group's cache and its entry in the parent group's child map. */
 export function invalidateGroupPositionCache(
   cache: PositionCache,
   groupId: string,
@@ -20,6 +21,7 @@ export function invalidateGroupPositionCache(
   }
 }
 
+/** Clears cache for a group and every folder-group descendant. */
 export function invalidateGroupPositionCacheRecursive(
   cache: PositionCache,
   groupId: string,
@@ -51,6 +53,7 @@ function hasVisibleAncestor(groupId: string, visibleNodeIds: ReadonlySet<string>
   return false;
 }
 
+/** Removes stale or fingerprint-changed group entries from the position cache. */
 export function invalidatePositionCache(
   cache: PositionCache,
   currentFingerprints: GroupFingerprints,

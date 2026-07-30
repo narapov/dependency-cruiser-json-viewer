@@ -21,6 +21,7 @@ interface EdgeBuildInfo {
   typeOnlyCircular: boolean;
 }
 
+/** Aggregates module dependencies into React Flow edges between visible representatives. */
 export function buildGraphEdges(
   modules: readonly IModule[],
   selectedSet: Set<string>,

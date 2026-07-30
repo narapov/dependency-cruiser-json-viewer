@@ -1,5 +1,6 @@
 import type { Node } from '@xyflow/react';
 
+/** Sorts nodes so parents appear before their descendants. */
 export function sortNodesByDepth(nodes: readonly Node[]): Node[] {
   const nodeById = new Map(nodes.map(node => [node.id, node]));
   const depthById = new Map<string, number>();

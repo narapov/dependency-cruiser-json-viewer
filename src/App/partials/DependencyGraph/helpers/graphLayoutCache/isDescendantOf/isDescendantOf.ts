@@ -1,3 +1,4 @@
+/** Whether `nodeId` sits under `ancestorId` in the parent map. */
 export function isDescendantOf(
   nodeId: string,
   ancestorId: string,

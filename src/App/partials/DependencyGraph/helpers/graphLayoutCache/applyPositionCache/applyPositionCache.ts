@@ -4,6 +4,7 @@ import { getDirectChildren } from '../../buildGraph';
 import { isDescendantOf } from '../isDescendantOf';
 import type { GroupFingerprints, GroupId, PositionCache } from '../types';
 
+/** Overwrites positions and sizes for a group and its direct children from a layout pass. */
 export function applyAutoLayoutGroupLevel(
   nodes: Node[],
   layoutNodes: Node[],
@@ -31,6 +32,7 @@ export function applyAutoLayoutGroupLevel(
   });
 }
 
+/** Overwrites positions and sizes for a group and all of its descendants from a layout pass. */
 export function applyAutoLayoutSubtree(
   nodes: Node[],
   layoutNodes: Node[],
@@ -57,6 +59,7 @@ export function applyAutoLayoutSubtree(
   });
 }
 
+/** Stores child positions for a group and its parent after a layout change. */
 export function updateGroupPositionCache(
   cache: PositionCache,
   nodes: Node[],
@@ -67,6 +70,7 @@ export function updateGroupPositionCache(
   updateGroupCacheFromNodes(cache, nodes, parentByNode, parentByNode.get(groupId) ?? null);
 }
 
+/** Refreshes position caches for every folder group under (and including) a group. */
 export function updateSubtreeGroupCaches(
   cache: PositionCache,
   nodes: Node[],
@@ -83,6 +87,7 @@ export function updateSubtreeGroupCaches(
   updateGroupCacheFromNodes(cache, nodes, parentByNode, parentByNode.get(groupId) ?? null);
 }
 
+/** Keeps a newly expanded folder group at the prior collapsed-folder position. */
 export function preserveExpandedGroupPositions(nodes: Node[], previousNodes: readonly Node[] | null): Node[] {
   if (!previousNodes) return nodes;
 
@@ -97,6 +102,7 @@ export function preserveExpandedGroupPositions(nodes: Node[], previousNodes: rea
   });
 }
 
+/** Restores cached child positions for groups whose fingerprint is unchanged. */
 export function applyPositionCache(
   nodes: Node[],
   parentByNode: ReadonlyMap<string, string | null>,
@@ -130,6 +136,7 @@ export function applyPositionCache(
   return [...nodeById.values()];
 }
 
+/** Writes current direct-child positions into the cache entry for a group. */
 export function updateGroupCacheFromNodes(
   cache: PositionCache,
   nodes: Node[],

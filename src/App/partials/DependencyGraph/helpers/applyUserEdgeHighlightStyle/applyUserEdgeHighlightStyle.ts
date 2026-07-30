@@ -4,6 +4,7 @@ import { withEdgeStrokeStyle } from '../withEdgeStrokeStyle';
 
 const USER_HIGHLIGHT_EDGE_Z_INDEX = 1001;
 
+/** Applies user-chosen highlight colors to edges that match dependency keys. */
 export function applyUserEdgeHighlightStyle(
   edges: Edge[],
   userEdgeHighlights: ReadonlyMap<string, string>,

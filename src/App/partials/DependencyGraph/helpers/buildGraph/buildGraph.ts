@@ -9,6 +9,7 @@ import { createBuildGraphProfiler } from './createBuildGraphProfiler';
 import { layoutGroup } from './layoutGroup';
 import type { NodeSize } from './types';
 
+/** Builds visible nodes, edges, and ELK layout for the dependency graph. */
 export async function buildGraph({
   modules,
   selectedPaths,

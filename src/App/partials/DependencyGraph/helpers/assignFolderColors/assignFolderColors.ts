@@ -1,3 +1,4 @@
+/** Theme mode used when picking pastel folder background hues. */
 export type FolderColorMode = 'light' | 'dark';
 
 const FOLDER_COLOR_PALETTE = {
@@ -85,6 +86,7 @@ function assignColorsRecursive(
   }
 }
 
+/** Assigns distinct pastel HSL colors to each folder path in the source tree. */
 export function assignFolderColors(sources: string[], mode: FolderColorMode = 'light'): ReadonlyMap<string, string> {
   const childrenIndex = buildChildrenIndex(sources);
   const colors = new Map<string, string>();
@@ -92,6 +94,7 @@ export function assignFolderColors(sources: string[], mode: FolderColorMode = 'l
   return colors;
 }
 
+/** Parses an `hsl(h, s%, l%)` string into numeric components, or null if invalid. */
 export function parsePastelHsl(color: string): {
   hue: number;
   saturation: number;

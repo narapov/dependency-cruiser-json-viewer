@@ -6,6 +6,7 @@ import { withEdgeStrokeStyle } from '../withEdgeStrokeStyle';
 
 const SELECTED_EDGE_Z_INDEX = 1000;
 
+/** Emphasizes the selected edge with a thicker stroke and raised z-index. */
 export function applySelectedEdgeStyle(edges: Edge[], selectedEdgeId: string | null): Edge[] {
   if (selectedEdgeId == null) return edges;
 

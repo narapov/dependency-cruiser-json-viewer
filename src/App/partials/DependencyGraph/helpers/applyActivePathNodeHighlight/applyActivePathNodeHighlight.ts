@@ -1,5 +1,6 @@
 import type { Node } from '@xyflow/react';
 
+/** Marks the active path node as highlighted when it is not already. */
 export function applyActivePathNodeHighlight(nodes: Node[], activePath: string | null): Node[] {
   if (activePath == null) return nodes;
 
