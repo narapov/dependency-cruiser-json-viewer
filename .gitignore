@@ -23,3 +23,6 @@ depcruise.json
 *.njsproj
 *.sln
 *.sw?
+
+# Coverage
+coverage
