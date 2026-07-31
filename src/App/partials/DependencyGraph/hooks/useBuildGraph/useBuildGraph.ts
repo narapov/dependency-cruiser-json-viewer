@@ -72,15 +72,21 @@ export function useBuildGraph({
       onShowDependencies,
     })
       .then(result => {
-        if (cancelled) return;
+        if (cancelled) {
+          return;
+        }
         setGraphResult(result);
       })
       .catch(() => {
-        if (cancelled) return;
+        if (cancelled) {
+          return;
+        }
         setGraphResult(createEmptyGraphResult());
       })
       .finally(() => {
-        if (!cancelled) setIsBuildingGraph(false);
+        if (!cancelled) {
+          setIsBuildingGraph(false);
+        }
       });
 
     return () => {

@@ -83,7 +83,9 @@ export const FileTreeItem = forwardRef<HTMLLIElement, TreeItemProps>(function Fi
         slotProps={{
           root: {
             onKeyDown: (event: KeyboardEvent<HTMLLIElement> & TreeViewCancellableEvent) => {
-              if (event.key !== 'Enter') return;
+              if (event.key !== 'Enter') {
+                return;
+              }
               event.defaultMuiPrevented = true;
               event.preventDefault();
               event.stopPropagation();

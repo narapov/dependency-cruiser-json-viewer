@@ -12,19 +12,18 @@ export function makeDependencyKey(source: string, target: string): string {
 /** All dependency keys between currently selected modules. */
 export function collectValidDependencyKeys(modules: IModule[], selectedPaths: string[]): Set<string> {
   const selectedSet = new Set(selectedPaths);
-  const keys = new Set<string>();
 
-  for (const module of modules) {
-    if (!selectedSet.has(module.source)) continue;
-
-    for (const dep of module.dependencies) {
-      const resolved = dep.resolved;
-      if (!resolved || !selectedSet.has(resolved)) continue;
-      keys.add(makeDependencyKey(module.source, resolved));
-    }
-  }
-
-  return keys;
+  return new Set(
+    modules
+      .filter(module => selectedSet.has(module.source))
+      .flatMap(module =>
+        module.dependencies
+          .filter(
+            (dep): dep is typeof dep & { resolved: string } => Boolean(dep.resolved) && selectedSet.has(dep.resolved),
+          )
+          .map(dep => makeDependencyKey(module.source, dep.resolved)),
+      ),
+  );
 }
 
 /** Module dependency keys that collapse onto a visible edge between representatives. */
@@ -37,25 +36,21 @@ export function getEdgeDependencyKeys(
   targetRep: string,
 ): string[] {
   const selectedSet = new Set(selectedPaths);
-  const keys: string[] = [];
 
-  for (const module of modules) {
-    if (!selectedSet.has(module.source)) continue;
-
-    for (const dep of module.dependencies) {
-      const resolved = dep.resolved;
-      if (!resolved || !selectedSet.has(resolved)) continue;
-
-      const source = getVisibleRepresentative(module.source, selectedSet, expandedFolders, visibleNodeIds);
-      const target = getVisibleRepresentative(resolved, selectedSet, expandedFolders, visibleNodeIds);
-
-      if (source === sourceRep && target === targetRep) {
-        keys.push(makeDependencyKey(module.source, resolved));
-      }
-    }
-  }
-
-  return keys;
+  return modules
+    .filter(module => selectedSet.has(module.source))
+    .flatMap(module =>
+      module.dependencies
+        .filter(
+          (dep): dep is typeof dep & { resolved: string } => Boolean(dep.resolved) && selectedSet.has(dep.resolved),
+        )
+        .filter(dep => {
+          const source = getVisibleRepresentative(module.source, selectedSet, expandedFolders, visibleNodeIds);
+          const target = getVisibleRepresentative(dep.resolved, selectedSet, expandedFolders, visibleNodeIds);
+          return source === sourceRep && target === targetRep;
+        })
+        .map(dep => makeDependencyKey(module.source, dep.resolved)),
+    );
 }
 
 /** Maps each graph edge id to the module dependency keys it represents. */
@@ -66,16 +61,12 @@ export function buildEdgeDependencyKeyMap(
   visibleNodeIds: ReadonlySet<string>,
   edges: Edge[],
 ): Map<string, string[]> {
-  const map = new Map<string, string[]>();
-
-  for (const edge of edges) {
-    map.set(
+  return new Map(
+    edges.map(edge => [
       edge.id,
       getEdgeDependencyKeys(modules, selectedPaths, expandedFolders, visibleNodeIds, edge.source, edge.target),
-    );
-  }
-
-  return map;
+    ]),
+  );
 }
 
 /** Shared highlight color for dependency keys, or undefined if mixed or missing. */
@@ -83,13 +74,19 @@ export function getEdgeHighlightColor(
   dependencyKeys: readonly string[],
   userEdgeHighlights: ReadonlyMap<string, string>,
 ): string | undefined {
-  if (dependencyKeys.length === 0) return undefined;
+  if (dependencyKeys.length === 0) {
+    return undefined;
+  }
 
   const colors = dependencyKeys
     .map(key => userEdgeHighlights.get(key))
     .filter((color): color is string => color != null);
 
-  if (colors.length === 0) return undefined;
-  if (colors.every(color => color === colors[0])) return colors[0];
+  if (colors.length === 0) {
+    return undefined;
+  }
+  if (colors.every(color => color === colors[0])) {
+    return colors[0];
+  }
   return undefined;
 }

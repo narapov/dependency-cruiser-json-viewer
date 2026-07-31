@@ -17,10 +17,14 @@ export function applyAutoLayoutGroupLevel(
   levelNodeIds.add(groupId);
 
   return nodes.map(node => {
-    if (!levelNodeIds.has(node.id)) return node;
+    if (!levelNodeIds.has(node.id)) {
+      return node;
+    }
 
     const layoutNode = layoutById.get(node.id);
-    if (!layoutNode) return node;
+    if (!layoutNode) {
+      return node;
+    }
 
     return {
       ...node,
@@ -47,7 +51,9 @@ export function applyAutoLayoutSubtree(
     }
 
     const layoutNode = layoutById.get(node.id);
-    if (!layoutNode) return node;
+    if (!layoutNode) {
+      return node;
+    }
 
     return {
       ...node,
@@ -77,19 +83,23 @@ export function updateSubtreeGroupCaches(
   parentByNode: ReadonlyMap<string, string | null>,
   groupId: string,
 ): void {
-  for (const node of nodes) {
-    if (node.type !== 'folderGroup') continue;
-    if (node.id === groupId || isDescendantOf(node.id, groupId, parentByNode)) {
+  nodes
+    .filter(
+      node => node.type === 'folderGroup' && (node.id === groupId || isDescendantOf(node.id, groupId, parentByNode)),
+    )
+    .reduce((_, node) => {
       updateGroupCacheFromNodes(cache, nodes, parentByNode, node.id);
-    }
-  }
+      return null;
+    }, null);
 
   updateGroupCacheFromNodes(cache, nodes, parentByNode, parentByNode.get(groupId) ?? null);
 }
 
 /** Keeps a newly expanded folder group at the prior collapsed-folder position. */
 export function preserveExpandedGroupPositions(nodes: Node[], previousNodes: readonly Node[] | null): Node[] {
-  if (!previousNodes) return nodes;
+  if (!previousNodes) {
+    return nodes;
+  }
 
   const previousById = new Map(previousNodes.map(node => [node.id, node]));
 
@@ -110,30 +120,39 @@ export function applyPositionCache(
   currentFingerprints: GroupFingerprints,
   previousFingerprints: GroupFingerprints | null,
 ): Node[] {
-  const nodeById = new Map(nodes.map(node => [node.id, { ...node }]));
   const nodeIds = new Set(nodes.map(node => node.id));
 
-  for (const [groupId, fingerprint] of currentFingerprints) {
-    const groupCache = cache.get(groupId);
-    if (!groupCache) continue;
-
-    const previous = previousFingerprints?.get(groupId);
-    if (previous !== undefined && previous !== fingerprint) continue;
-
-    const childIds = getDirectChildren(groupId, nodeIds, parentByNode);
-    const allCached = childIds.every(childId => groupCache.has(childId));
-    if (!allCached) continue;
-
-    for (const childId of childIds) {
-      const cachedPosition = groupCache.get(childId);
-      const node = nodeById.get(childId);
-      if (cachedPosition && node) {
-        node.position = { ...cachedPosition };
+  const restoredById = [...currentFingerprints.entries()]
+    .filter(([groupId, fingerprint]) => {
+      const groupCache = cache.get(groupId);
+      if (!groupCache) {
+        return false;
       }
-    }
-  }
+      const previous = previousFingerprints?.get(groupId);
+      if (previous !== undefined && previous !== fingerprint) {
+        return false;
+      }
+      const childIds = getDirectChildren(groupId, nodeIds, parentByNode);
+      return childIds.every(childId => groupCache.has(childId));
+    })
+    .flatMap(([groupId]) => {
+      const groupCache = cache.get(groupId)!;
+      return getDirectChildren(groupId, nodeIds, parentByNode)
+        .map(childId => {
+          const cachedPosition = groupCache.get(childId);
+          return cachedPosition ? ([childId, cachedPosition] as const) : null;
+        })
+        .filter((entry): entry is readonly [string, { x: number; y: number }] => entry != null);
+    })
+    .reduce((map, [childId, position]) => {
+      map.set(childId, position);
+      return map;
+    }, new Map<string, { x: number; y: number }>());
 
-  return [...nodeById.values()];
+  return nodes.map(node => {
+    const cachedPosition = restoredById.get(node.id);
+    return cachedPosition ? { ...node, position: { ...cachedPosition } } : { ...node };
+  });
 }
 
 /** Writes current direct-child positions into the cache entry for a group. */
@@ -147,16 +166,19 @@ export function updateGroupCacheFromNodes(
   const childIds = getDirectChildren(groupId, nodeIds, parentByNode);
   const nodeById = new Map(nodes.map(node => [node.id, node]));
 
-  let groupCache = cache.get(groupId);
-  if (!groupCache) {
-    groupCache = new Map();
-    cache.set(groupId, groupCache);
-  }
+  const groupCache =
+    cache.get(groupId) ??
+    (() => {
+      const created = new Map();
+      cache.set(groupId, created);
+      return created;
+    })();
 
-  for (const childId of childIds) {
-    const node = nodeById.get(childId);
-    if (node) {
-      groupCache.set(childId, { ...node.position });
-    }
-  }
+  childIds
+    .map(childId => nodeById.get(childId))
+    .filter((node): node is Node => node != null)
+    .reduce((acc, node) => {
+      acc.set(node.id, { ...node.position });
+      return acc;
+    }, groupCache);
 }

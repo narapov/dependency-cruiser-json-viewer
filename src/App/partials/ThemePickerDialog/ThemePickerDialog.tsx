@@ -16,7 +16,9 @@ interface ThemePickerDialogProps {
 }
 
 function getThemeIndex(mode: ThemeOptionValue | undefined): number {
-  if (mode == null) return 0;
+  if (mode == null) {
+    return 0;
+  }
   const index = THEME_OPTIONS.findIndex(option => option.value === mode);
   return index === -1 ? 0 : index;
 }
@@ -36,7 +38,9 @@ export function ThemePickerDialog({ open, onClose }: ThemePickerDialogProps) {
   };
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      return;
+    }
 
     const highlighted = listRef.current?.children[highlightedIndex];
     if (highlighted instanceof HTMLElement) {
@@ -71,7 +75,9 @@ export function ThemePickerDialog({ open, onClose }: ThemePickerDialogProps) {
     if (event.key === 'Enter') {
       event.preventDefault();
       const option = THEME_OPTIONS[highlightedIndex];
-      if (option) handleSelect(option.value);
+      if (option) {
+        handleSelect(option.value);
+      }
     }
   };
 

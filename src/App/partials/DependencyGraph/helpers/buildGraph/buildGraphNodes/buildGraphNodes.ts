@@ -22,99 +22,98 @@ export interface BuildGraphNodesInput {
   onShowDependencies?: (path: string) => void;
 }
 
-/** Creates folder, folder-group, and file React Flow nodes for the visible set. */
-export function buildGraphNodes({
-  visibleNodes,
-  parentByNode,
-  expandedFolders,
-  selectedSet,
-  childrenIndex,
-  circularModules,
-  folderColors,
-  onToggleFolder,
-  onExpandRecursive,
-  onShowInFileTree,
-  onShowDependencies,
-}: BuildGraphNodesInput): Map<string, Node> {
-  const nodeMap = new Map<string, Node>();
+function createVisibleNode(path: string, type: 'folder' | 'file', input: BuildGraphNodesInput): Node {
+  const {
+    parentByNode,
+    expandedFolders,
+    selectedSet,
+    childrenIndex,
+    circularModules,
+    folderColors,
+    onToggleFolder,
+    onExpandRecursive,
+    onShowInFileTree,
+    onShowDependencies,
+  } = input;
+  const parentId = parentByNode.get(path) ?? undefined;
 
-  for (const [path, type] of visibleNodes) {
-    const parentId = parentByNode.get(path) ?? undefined;
+  if (type === 'folder') {
+    const expanded = expandedFolders.has(path);
 
-    if (type === 'folder') {
-      const expanded = expandedFolders.has(path);
-
-      if (expanded) {
-        const data: FolderGroupNodeData = {
-          label: getBaseName(path),
-          path,
-          expanded: true,
-          backgroundColor: folderColors.get(path) ?? 'rgba(0, 0, 0, 0.02)',
-          onToggle: onToggleFolder,
-          onExpandRecursive,
-          onShowInFileTree,
-          onShowDependencies,
-        };
-        nodeMap.set(path, {
-          id: path,
-          type: 'folderGroup',
-          position: { x: 0, y: 0 },
-          data,
-          parentId,
-          draggable: true,
-          dragHandle: '.folder-group-header',
-          extent: parentId ? 'parent' : undefined,
-          zIndex: -1,
-          style: { pointerEvents: 'none' },
-        });
-      } else {
-        const label = getBaseName(path);
-        const circular = folderHasCircularDescendant(path, selectedSet, childrenIndex, circularModules);
-        const leafSize = getLeafNodeSize(label, 'folder');
-        const data: FolderNodeData = {
-          label,
-          path,
-          expanded: false,
-          circular,
-          backgroundColor: folderColors.get(path) ?? 'rgba(0, 0, 0, 0.02)',
-          onToggle: onToggleFolder,
-          onExpandRecursive,
-          onShowInFileTree,
-          onShowDependencies,
-        };
-        nodeMap.set(path, {
-          id: path,
-          type: 'folder',
-          position: { x: 0, y: 0 },
-          data,
-          parentId,
-          draggable: true,
-          extent: parentId ? 'parent' : undefined,
-          ...toNodeDimensions(leafSize),
-        });
-      }
-    } else {
-      const label = getBaseName(path);
-      const leafSize = getLeafNodeSize(label, 'file');
-      const data: FileNodeData = {
-        label,
+    if (expanded) {
+      const data: FolderGroupNodeData = {
+        label: getBaseName(path),
         path,
-        circular: circularModules.has(path),
+        expanded: true,
+        backgroundColor: folderColors.get(path) ?? 'rgba(0, 0, 0, 0.02)',
+        onToggle: onToggleFolder,
+        onExpandRecursive,
         onShowInFileTree,
         onShowDependencies,
       };
-      nodeMap.set(path, {
+
+      return {
         id: path,
-        type: 'file',
+        type: 'folderGroup',
         position: { x: 0, y: 0 },
         data,
         parentId,
         draggable: true,
+        dragHandle: '.folder-group-header',
         extent: parentId ? 'parent' : undefined,
-        ...toNodeDimensions(leafSize),
-      });
+        zIndex: -1,
+        style: { pointerEvents: 'none' },
+      };
     }
+
+    const label = getBaseName(path);
+    const circular = folderHasCircularDescendant(path, selectedSet, childrenIndex, circularModules);
+    const leafSize = getLeafNodeSize(label, 'folder');
+    const data: FolderNodeData = {
+      label,
+      path,
+      expanded: false,
+      circular,
+      backgroundColor: folderColors.get(path) ?? 'rgba(0, 0, 0, 0.02)',
+      onToggle: onToggleFolder,
+      onExpandRecursive,
+      onShowInFileTree,
+      onShowDependencies,
+    };
+    return {
+      id: path,
+      type: 'folder',
+      position: { x: 0, y: 0 },
+      data,
+      parentId,
+      draggable: true,
+      extent: parentId ? 'parent' : undefined,
+      ...toNodeDimensions(leafSize),
+    };
   }
 
-  return nodeMap;
+  const label = getBaseName(path);
+  const leafSize = getLeafNodeSize(label, 'file');
+  const data: FileNodeData = {
+    label,
+    path,
+    circular: circularModules.has(path),
+    onShowInFileTree,
+    onShowDependencies,
+  };
+  return {
+    id: path,
+    type: 'file',
+    position: { x: 0, y: 0 },
+    data,
+    parentId,
+    draggable: true,
+    extent: parentId ? 'parent' : undefined,
+    ...toNodeDimensions(leafSize),
+  };
+}
+
+/** Creates folder, folder-group, and file React Flow nodes for the visible set. */
+export function buildGraphNodes(input: BuildGraphNodesInput): Map<string, Node> {
+  return new Map([...input.visibleNodes.entries()].map(([path, type]) => [path, createVisibleNode(path, type, input)]));
 }

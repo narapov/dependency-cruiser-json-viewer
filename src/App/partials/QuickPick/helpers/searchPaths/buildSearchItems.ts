@@ -9,55 +9,48 @@ function isFolderPath(path: string, sources: string[]): boolean {
 }
 
 function collectPaths(sources: string[]): Set<string> {
-  const paths = new Set<string>();
+  return new Set(sources.flatMap(source => [source, ...getAncestorKeys(source)]));
+}
 
-  for (const source of sources) {
-    paths.add(source);
-    for (const ancestor of getAncestorKeys(source)) {
-      paths.add(ancestor);
+function buildChildrenByParent(pathSet: Set<string>): Map<string, string[]> {
+  return [...pathSet].reduce((childrenByParent, path) => {
+    const parent = getParentPath(path);
+    const parentKey = parent && pathSet.has(parent) ? parent : ROOT_KEY;
+    const siblings = childrenByParent.get(parentKey) ?? [];
+    return childrenByParent.set(parentKey, [...siblings, path]);
+  }, new Map<string, string[]>());
+}
+
+function sortSiblings(siblings: string[], sources: string[]): string[] {
+  return [...siblings].sort((a, b) => {
+    const aIsFolder = isFolderPath(a, sources);
+    const bIsFolder = isFolderPath(b, sources);
+    if (aIsFolder !== bIsFolder) {
+      return aIsFolder ? -1 : 1;
     }
-  }
+    return getBaseName(a).localeCompare(getBaseName(b));
+  });
+}
 
-  return paths;
+function walkItems(parentKey: string, childrenByParent: Map<string, string[]>, sources: string[]): QuickPickFileItem[] {
+  return (childrenByParent.get(parentKey) ?? []).flatMap(path => {
+    const isFolder = isFolderPath(path, sources);
+    const item: QuickPickFileItem = {
+      key: path,
+      name: getBaseName(path),
+      isFolder,
+    };
+    return isFolder ? [item, ...walkItems(path, childrenByParent, sources)] : [item];
+  });
 }
 
 /** Builds sorted file and folder quick-pick items from source paths. */
 export function buildSearchItems(sources: string[]): QuickPickFileItem[] {
   const pathSet = collectPaths(sources);
-  const childrenByParent = new Map<string, string[]>();
+  const childrenByParent = [...buildChildrenByParent(pathSet).entries()].reduce(
+    (acc, [parentKey, siblings]) => acc.set(parentKey, sortSiblings(siblings, sources)),
+    new Map<string, string[]>(),
+  );
 
-  for (const path of pathSet) {
-    const parent = getParentPath(path);
-    const parentKey = parent && pathSet.has(parent) ? parent : ROOT_KEY;
-    const siblings = childrenByParent.get(parentKey) ?? [];
-    siblings.push(path);
-    childrenByParent.set(parentKey, siblings);
-  }
-
-  for (const siblings of childrenByParent.values()) {
-    siblings.sort((a, b) => {
-      const aIsFolder = isFolderPath(a, sources);
-      const bIsFolder = isFolderPath(b, sources);
-      if (aIsFolder !== bIsFolder) return aIsFolder ? -1 : 1;
-      return getBaseName(a).localeCompare(getBaseName(b));
-    });
-  }
-
-  const items: QuickPickFileItem[] = [];
-
-  function walk(parentKey: string) {
-    for (const path of childrenByParent.get(parentKey) ?? []) {
-      items.push({
-        key: path,
-        name: getBaseName(path),
-        isFolder: isFolderPath(path, sources),
-      });
-      if (isFolderPath(path, sources)) {
-        walk(path);
-      }
-    }
-  }
-
-  walk(ROOT_KEY);
-  return items;
+  return walkItems(ROOT_KEY, childrenByParent, sources);
 }

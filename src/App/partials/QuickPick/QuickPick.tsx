@@ -5,10 +5,10 @@ import Box from '@mui/material/Box';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
 
 import { useQuickPickShortcut, useQuickPickState } from './hooks';
 import { QuickPickCommandResultsList } from './partials/QuickPickCommandResultsList';
+import { QuickPickEmptyMessage } from './partials/QuickPickEmptyMessage';
 import { QuickPickFileResultsList } from './partials/QuickPickFileResultsList';
 import type { QuickPickCommand, QuickPickHandle } from './types';
 
@@ -27,8 +27,7 @@ export function QuickPick({ ref, sources, commands, onSelectPath }: QuickPickPro
     open,
     query,
     setQuery,
-    deferredQuery,
-    deferredCommandQuery,
+    normalizedDeferredQuery,
     isCommandMode,
     fileResults,
     commandResults,
@@ -55,7 +54,9 @@ export function QuickPick({ ref, sources, commands, onSelectPath }: QuickPickPro
   };
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      return;
+    }
 
     const highlighted = listRef.current?.children[highlightedIndex];
     if (highlighted instanceof HTMLElement) {
@@ -74,33 +75,44 @@ export function QuickPick({ ref, sources, commands, onSelectPath }: QuickPickPro
   };
 
   const handleKeyDown = (event: KeyboardEvent) => {
-    if (event.key === 'Tab') {
-      event.preventDefault();
-      return;
-    }
-
-    if (event.key === 'ArrowDown') {
-      event.preventDefault();
-      if (results.length === 0) return;
-      setHighlightedIndex(index => Math.min(index + 1, results.length - 1));
-      return;
-    }
-
-    if (event.key === 'ArrowUp') {
-      event.preventDefault();
-      if (results.length === 0) return;
-      setHighlightedIndex(index => Math.max(index - 1, 0));
-      return;
-    }
-
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      if (isCommandMode) {
-        const command = commandResults[highlightedIndex];
-        if (command) handleSelectCommand(command);
-      } else {
-        const item = fileResults[highlightedIndex];
-        if (item) handleSelectPath(item.key);
+    switch (event.key) {
+      case 'Tab': {
+        event.preventDefault();
+        return;
+      }
+      case 'ArrowDown': {
+        event.preventDefault();
+        if (results.length === 0) {
+          return;
+        }
+        setHighlightedIndex(index => Math.min(index + 1, results.length - 1));
+        return;
+      }
+      case 'ArrowUp': {
+        event.preventDefault();
+        if (results.length === 0) {
+          return;
+        }
+        setHighlightedIndex(index => Math.max(index - 1, 0));
+        return;
+      }
+      case 'Enter': {
+        event.preventDefault();
+        if (isCommandMode) {
+          const command = commandResults[highlightedIndex];
+          if (command) {
+            handleSelectCommand(command);
+          }
+        } else {
+          const item = fileResults[highlightedIndex];
+          if (item) {
+            handleSelectPath(item.key);
+          }
+        }
+        return;
+      }
+      default: {
+        return;
       }
     }
   };
@@ -118,13 +130,35 @@ export function QuickPick({ ref, sources, commands, onSelectPath }: QuickPickPro
 
   const placeholder = isCommandMode ? t('quickPick.commandPlaceholder') : t('quickPick.filePlaceholder');
 
-  const emptyMessage = isCommandMode
-    ? deferredCommandQuery.trim()
-      ? t('quickPick.noMatchingCommands')
-      : t('quickPick.typeToFilterCommands')
-    : query.trim()
-      ? t('quickPick.noMatchingFiles')
-      : t('quickPick.startTyping');
+  const renderResults = () => {
+    if (results.length === 0) {
+      return <QuickPickEmptyMessage isCommandMode={isCommandMode} normalizedDeferredQuery={normalizedDeferredQuery} />;
+    }
+
+    if (isCommandMode) {
+      return (
+        <QuickPickCommandResultsList
+          results={commandResults}
+          query={normalizedDeferredQuery}
+          highlightedIndex={highlightedIndex}
+          listRef={listRef}
+          onHighlightIndex={setHighlightedIndex}
+          onSelect={handleSelectCommand}
+        />
+      );
+    }
+
+    return (
+      <QuickPickFileResultsList
+        results={fileResults}
+        query={normalizedDeferredQuery}
+        highlightedIndex={highlightedIndex}
+        listRef={listRef}
+        onHighlightIndex={setHighlightedIndex}
+        onSelect={handleSelectPath}
+      />
+    );
+  };
 
   return (
     <Dialog
@@ -157,29 +191,7 @@ export function QuickPick({ ref, sources, commands, onSelectPath }: QuickPickPro
               slotProps={{ htmlInput: { spellCheck: 'false', style: { fontSize: 14 } } }}
             />
           </Box>
-          {results.length === 0 ? (
-            <Typography sx={{ px: 1.5, py: 2, color: 'text.secondary', fontSize: 13, textAlign: 'center' }}>
-              {emptyMessage}
-            </Typography>
-          ) : isCommandMode ? (
-            <QuickPickCommandResultsList
-              results={commandResults}
-              query={deferredCommandQuery}
-              highlightedIndex={highlightedIndex}
-              listRef={listRef}
-              onHighlightIndex={setHighlightedIndex}
-              onSelect={handleSelectCommand}
-            />
-          ) : (
-            <QuickPickFileResultsList
-              results={fileResults}
-              query={deferredQuery}
-              highlightedIndex={highlightedIndex}
-              listRef={listRef}
-              onHighlightIndex={setHighlightedIndex}
-              onSelect={handleSelectPath}
-            />
-          )}
+          {renderResults()}
         </Box>
       </DialogContent>
     </Dialog>

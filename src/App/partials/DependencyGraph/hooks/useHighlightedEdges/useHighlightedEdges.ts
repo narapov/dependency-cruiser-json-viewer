@@ -54,15 +54,10 @@ export function useHighlightedEdges({
     [modules, selectedPaths],
   );
 
-  const effectiveUserEdgeHighlights = useMemo(() => {
-    const next = new Map<string, string>();
-    for (const [key, color] of userEdgeHighlights) {
-      if (validDependencyKeys.has(key)) {
-        next.set(key, color);
-      }
-    }
-    return next;
-  }, [userEdgeHighlights, validDependencyKeys]);
+  const effectiveUserEdgeHighlights = useMemo(
+    () => new Map([...userEdgeHighlights.entries()].filter(([key]) => validDependencyKeys.has(key))),
+    [userEdgeHighlights, validDependencyKeys],
+  );
 
   const highlightedEdges = useMemo(
     () =>
@@ -77,19 +72,20 @@ export function useHighlightedEdges({
   const setUserEdgeHighlight = useCallback(
     (edgeId: string, color: string | null) => {
       const dependencyKeys = edgeDependencyKeyMap.get(edgeId) ?? [];
-      if (dependencyKeys.length === 0) return;
+      if (dependencyKeys.length === 0) {
+        return;
+      }
 
-      setUserEdgeHighlights(prev => {
-        const next = new Map(prev);
-        for (const key of dependencyKeys) {
+      setUserEdgeHighlights(prev =>
+        dependencyKeys.reduce((next, key) => {
           if (color == null) {
             next.delete(key);
           } else {
             next.set(key, color);
           }
-        }
-        return next;
-      });
+          return next;
+        }, new Map(prev)),
+      );
     },
     [edgeDependencyKeyMap],
   );

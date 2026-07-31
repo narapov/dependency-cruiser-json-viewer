@@ -3,6 +3,7 @@ import type { ICruiseResult } from 'dependency-cruiser';
 
 import { validateCruiseResult } from '@/domain';
 
+/** Fetch and validate the cruise-result JSON served with the app. */
 export async function fetchCruiseResult(signal?: AbortSignal): Promise<ICruiseResult> {
   const { data } = await axios.get<ICruiseResult>(`${import.meta.env.BASE_URL}cruise-result.json`, {
     signal,

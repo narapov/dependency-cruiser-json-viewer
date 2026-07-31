@@ -1,7 +1,9 @@
 import { useEffect } from 'react';
 
 function isEditableTarget(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) return false;
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
   const tag = target.tagName;
   return (
     tag === 'INPUT' ||
@@ -27,7 +29,9 @@ export function useQuickPickShortcut({ open, onToggleFileMode, onOpenCommandMode
       }
 
       if ((event.metaKey || event.ctrlKey) && event.key === 'p') {
-        if (!open && isEditableTarget(event.target)) return;
+        if (!open && isEditableTarget(event.target)) {
+          return;
+        }
         event.preventDefault();
         onToggleFileMode();
       }

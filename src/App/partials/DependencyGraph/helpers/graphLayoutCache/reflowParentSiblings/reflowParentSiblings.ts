@@ -7,7 +7,9 @@ import { applyGroupSizeToNode, getNodeSizeFromNode, resolveGroupSize } from '../
 import type { GroupFingerprints, GroupId, NodeSize, PositionCache } from '../types';
 
 function getGroupDepth(groupId: GroupId, parentByNode: ReadonlyMap<string, string | null>): number {
-  if (groupId === null) return 0;
+  if (groupId === null) {
+    return 0;
+  }
 
   let depth = 0;
   let current: string | null = groupId;
@@ -37,14 +39,11 @@ function getFixedChildIdsInGroup(
   parentByNode: ReadonlyMap<string, string | null>,
   fixedNodeIds?: ReadonlySet<string>,
 ): ReadonlySet<string> | undefined {
-  if (!fixedNodeIds || fixedNodeIds.size === 0) return undefined;
-
-  const childFixed = new Set<string>();
-  for (const id of fixedNodeIds) {
-    if ((parentByNode.get(id) ?? null) === groupId) {
-      childFixed.add(id);
-    }
+  if (!fixedNodeIds || fixedNodeIds.size === 0) {
+    return undefined;
   }
+
+  const childFixed = new Set([...fixedNodeIds].filter(id => (parentByNode.get(id) ?? null) === groupId));
 
   return childFixed.size > 0 ? childFixed : undefined;
 }
@@ -54,44 +53,55 @@ function pushAwayFromFixedNodes(
   nodeById: Map<string, Node>,
   fixedNodeIds: ReadonlySet<string>,
 ): boolean {
-  let changed = false;
-
-  for (let i = 0; i < siblings.length; i++) {
+  const indices = Array.from({ length: siblings.length }, (_, index) => index);
+  return indices.reduce((changed, i) => {
     const current = siblings[i];
-    if (fixedNodeIds.has(current.id)) continue;
+    if (fixedNodeIds.has(current.id)) {
+      return changed;
+    }
 
     const currentSize = getNodeSizeFromNode(current);
-    let { x, y } = current.position;
+    const verticallyPushed = siblings.reduce(
+      (position, fixed) => {
+        if (!fixedNodeIds.has(fixed.id)) {
+          return position;
+        }
 
-    for (const fixed of siblings) {
-      if (!fixedNodeIds.has(fixed.id)) continue;
+        const fixedSize = getNodeSizeFromNode(fixed);
+        return nodesOverlap(position, currentSize, fixed.position, fixedSize)
+          ? {
+              x: position.x,
+              y: fixed.position.y + fixedSize.height + GRID_GAP_Y,
+              changed: true,
+            }
+          : position;
+      },
+      { ...current.position, changed: false },
+    );
+    const pushed = siblings.reduce((position, fixed) => {
+      if (!fixedNodeIds.has(fixed.id)) {
+        return position;
+      }
 
       const fixedSize = getNodeSizeFromNode(fixed);
-      if (nodesOverlap({ x, y }, currentSize, fixed.position, fixedSize)) {
-        y = fixed.position.y + fixedSize.height + GRID_GAP_Y;
-        changed = true;
-      }
-    }
-
-    for (const fixed of siblings) {
-      if (!fixedNodeIds.has(fixed.id)) continue;
-
-      const fixedSize = getNodeSizeFromNode(fixed);
-      if (nodesOverlap({ x, y }, currentSize, fixed.position, fixedSize)) {
-        x = fixed.position.x + fixedSize.width + GRID_GAP_X;
-        y = Math.max(y, fixed.position.y);
-        changed = true;
-      }
-    }
+      return nodesOverlap(position, currentSize, fixed.position, fixedSize)
+        ? {
+            x: fixed.position.x + fixedSize.width + GRID_GAP_X,
+            y: Math.max(position.y, fixed.position.y),
+            changed: true,
+          }
+        : position;
+    }, verticallyPushed);
+    const { x, y } = pushed;
 
     if (x !== current.position.x || y !== current.position.y) {
       nodeById.set(current.id, { ...current, position: { x, y } });
       siblings[i] = nodeById.get(current.id)!;
-      changed = true;
+      return true;
     }
-  }
 
-  return changed;
+    return changed || pushed.changed;
+  }, false);
 }
 
 function checkHorizontalOverlapWithFixedNodes(
@@ -107,24 +117,29 @@ function checkHorizontalOverlapWithFixedNodes(
     return { x, y, changed: false };
   }
 
-  let changed = false;
+  return [...fixedNodeIds].reduce<{ x: number; y: number; changed: boolean }>(
+    (result, fixedNodeId) => {
+      const fixedIndex = siblings.findIndex(sibling => sibling.id === fixedNodeId);
+      if (fixedIndex < 0 || fixedIndex < index) {
+        return result;
+      }
 
-  for (const fixedNodeId of fixedNodeIds) {
-    const fixedIndex = siblings.findIndex(sibling => sibling.id === fixedNodeId);
-    if (fixedIndex < 0 || fixedIndex < index) continue;
+      const fixed = nodeById.get(fixedNodeId);
+      if (!fixed) {
+        return result;
+      }
 
-    const fixed = nodeById.get(fixedNodeId);
-    if (!fixed) continue;
-
-    const fixedSize = getNodeSizeFromNode(fixed);
-    if (nodesOverlap({ x, y }, size, fixed.position, fixedSize)) {
-      x = fixed.position.x + fixedSize.width + GRID_GAP_X;
-      y = Math.max(y, fixed.position.y);
-      changed = true;
-    }
-  }
-
-  return { x, y, changed };
+      const fixedSize = getNodeSizeFromNode(fixed);
+      return nodesOverlap(result, size, fixed.position, fixedSize)
+        ? {
+            x: fixed.position.x + fixedSize.width + GRID_GAP_X,
+            y: Math.max(result.y, fixed.position.y),
+            changed: true,
+          }
+        : result;
+    },
+    { x, y, changed: false },
+  );
 }
 
 function checkVerticalOverlapWithFixedNodes(
@@ -140,23 +155,28 @@ function checkVerticalOverlapWithFixedNodes(
     return { y, changed: false };
   }
 
-  let changed = false;
+  return [...fixedNodeIds].reduce<{ y: number; changed: boolean }>(
+    (result, fixedNodeId) => {
+      const fixedIndex = siblings.findIndex(sibling => sibling.id === fixedNodeId);
+      if (fixedIndex < 0 || fixedIndex < index) {
+        return result;
+      }
 
-  for (const fixedNodeId of fixedNodeIds) {
-    const fixedIndex = siblings.findIndex(sibling => sibling.id === fixedNodeId);
-    if (fixedIndex < 0 || fixedIndex < index) continue;
+      const fixed = nodeById.get(fixedNodeId);
+      if (!fixed) {
+        return result;
+      }
 
-    const fixed = nodeById.get(fixedNodeId);
-    if (!fixed) continue;
-
-    const fixedSize = getNodeSizeFromNode(fixed);
-    if (nodesOverlap({ x, y }, size, fixed.position, fixedSize)) {
-      y = fixed.position.y + fixedSize.height + GRID_GAP_Y;
-      changed = true;
-    }
-  }
-
-  return { y, changed };
+      const fixedSize = getNodeSizeFromNode(fixed);
+      return nodesOverlap({ x, y: result.y }, size, fixed.position, fixedSize)
+        ? {
+            y: fixed.position.y + fixedSize.height + GRID_GAP_Y,
+            changed: true,
+          }
+        : result;
+    },
+    { y, changed: false },
+  );
 }
 
 function collectFixedNodesForReflow(
@@ -165,44 +185,48 @@ function collectFixedNodesForReflow(
   previousNodes: readonly Node[] | null,
   parentByNode: ReadonlyMap<string, string | null>,
 ): ReadonlySet<string> {
-  const fixed = new Set<string>();
   const previousById = previousNodes ? new Map(previousNodes.map(node => [node.id, node])) : null;
-  const expandedAtParent = new Map<GroupId, string[]>();
-
-  for (const node of nodes) {
+  const expandedAtParent = nodes.reduce((expanded, node) => {
     const previous = previousById?.get(node.id);
-    if (previous?.type === 'folder' && node.type === 'folderGroup') {
-      const parentId = parentByNode.get(node.id) ?? null;
-      const siblings = expandedAtParent.get(parentId) ?? [];
-      siblings.push(node.id);
-      expandedAtParent.set(parentId, siblings);
+    if (previous?.type !== 'folder' || node.type !== 'folderGroup') {
+      return expanded;
     }
-  }
 
-  const multiExpandChildIds = new Set<string>();
-  for (const childIds of expandedAtParent.values()) {
-    if (childIds.length === 1) {
-      fixed.add(childIds[0]);
-    } else {
-      for (const childId of childIds) {
-        multiExpandChildIds.add(childId);
+    const parentId = parentByNode.get(node.id) ?? null;
+    const siblings = expanded.get(parentId) ?? [];
+    siblings.push(node.id);
+    expanded.set(parentId, siblings);
+    return expanded;
+  }, new Map<GroupId, string[]>());
+
+  const expansionSets = [...expandedAtParent.values()].reduce(
+    (sets, childIds) => {
+      if (childIds.length === 1) {
+        sets.fixed.add(childIds[0]);
+      } else {
+        childIds.reduce((multiExpandChildIds, childId) => multiExpandChildIds.add(childId), sets.multi);
       }
-    }
-  }
+      return sets;
+    },
+    { fixed: new Set<string>(), multi: new Set<string>() },
+  );
 
-  for (const node of nodes) {
-    if (fixed.has(node.id) || multiExpandChildIds.has(node.id)) continue;
+  return nodes.reduce((fixed, node) => {
+    if (fixed.has(node.id) || expansionSets.multi.has(node.id)) {
+      return fixed;
+    }
 
     const previousSize = previousSizes.get(node.id);
-    if (!previousSize) continue;
+    if (!previousSize) {
+      return fixed;
+    }
 
     const currentSize = getNodeSizeFromNode(node);
     if (currentSize.width > previousSize.width || currentSize.height > previousSize.height) {
       fixed.add(node.id);
     }
-  }
-
-  return fixed;
+    return fixed;
+  }, expansionSets.fixed);
 }
 
 function groupHasOverlappingSiblings(
@@ -212,21 +236,18 @@ function groupHasOverlappingSiblings(
 ): boolean {
   const nodeIds = new Set(nodeById.keys());
   const childIds = getDirectChildren(groupId, nodeIds, parentByNode);
-  if (childIds.length <= 1) return false;
+  if (childIds.length <= 1) {
+    return false;
+  }
 
   const siblings = childIds.map(id => nodeById.get(id)!);
 
-  for (let i = 0; i < siblings.length; i++) {
-    const aSize = getNodeSizeFromNode(siblings[i]);
-    for (let j = i + 1; j < siblings.length; j++) {
-      const bSize = getNodeSizeFromNode(siblings[j]);
-      if (nodesOverlap(siblings[i].position, aSize, siblings[j].position, bSize)) {
-        return true;
-      }
-    }
-  }
-
-  return false;
+  return siblings.some((sibling, i) => {
+    const aSize = getNodeSizeFromNode(sibling);
+    return siblings.some(
+      (other, j) => j > i && nodesOverlap(sibling.position, aSize, other.position, getNodeSizeFromNode(other)),
+    );
+  });
 }
 
 function collectGroupsNeedingReflow(
@@ -236,32 +257,34 @@ function collectGroupsNeedingReflow(
   currentFingerprints: GroupFingerprints | null,
   previousFingerprints: GroupFingerprints | null,
 ): Set<GroupId> {
-  const groups = new Set<GroupId>();
   const nodeById = new Map(nodes.map(node => [node.id, node]));
 
-  for (const node of nodes) {
+  const groups = nodes.reduce((changedGroups, node) => {
     const currentSize = getNodeSizeFromNode(node);
     const previousSize = previousSizes.get(node.id);
     if (previousSize && (previousSize.width !== currentSize.width || previousSize.height !== currentSize.height)) {
-      groups.add(node.parentId ?? null);
+      changedGroups.add(node.parentId ?? null);
     }
-  }
+    return changedGroups;
+  }, new Set<GroupId>());
 
   if (previousFingerprints !== null && currentFingerprints !== null) {
-    for (const [groupId, fingerprint] of currentFingerprints) {
+    [...currentFingerprints].reduce((changedGroups, [groupId, fingerprint]) => {
       const previous = previousFingerprints.get(groupId);
       if (previous !== fingerprint) {
-        groups.add(groupId);
+        changedGroups.add(groupId);
       }
-    }
+      return changedGroups;
+    }, groups);
   }
 
   if (currentFingerprints !== null) {
-    for (const groupId of currentFingerprints.keys()) {
+    [...currentFingerprints.keys()].reduce((changedGroups, groupId) => {
       if (groupHasOverlappingSiblings(groupId, nodeById, parentByNode)) {
-        groups.add(groupId);
+        changedGroups.add(groupId);
       }
-    }
+      return changedGroups;
+    }, groups);
   }
 
   return groups;
@@ -275,7 +298,9 @@ function reflowSiblingsInGroup(
 ): boolean {
   const nodeIds = new Set(nodeById.keys());
   const childIds = getDirectChildren(groupId, nodeIds, parentByNode);
-  if (childIds.length <= 1) return false;
+  if (childIds.length <= 1) {
+    return false;
+  }
 
   const childFixedIds = getFixedChildIdsInGroup(groupId, parentByNode, fixedNodeIds);
 
@@ -283,34 +308,38 @@ function reflowSiblingsInGroup(
     .map(id => nodeById.get(id)!)
     .sort((a, b) => a.position.y - b.position.y || a.position.x - b.position.x);
 
-  let changed = false;
-
-  if (childFixedIds) {
-    changed = pushAwayFromFixedNodes(siblings, nodeById, childFixedIds) || changed;
-  }
+  const initiallyChanged = childFixedIds ? pushAwayFromFixedNodes(siblings, nodeById, childFixedIds) : false;
+  const indices = Array.from({ length: siblings.length }, (_, index) => index);
 
   // First pass: push down when siblings overlap.
-  for (let i = 0; i < siblings.length; i++) {
+  const verticallyChanged = indices.reduce((changed, i) => {
     const current = siblings[i];
-    if (childFixedIds?.has(current.id)) continue;
+    if (childFixedIds?.has(current.id)) {
+      return changed;
+    }
 
     const currentSize = getNodeSizeFromNode(current);
     const { x } = current.position;
-    let { y } = current.position;
+    const verticalResult = siblings.slice(0, i).reduce(
+      (result, other) => {
+        const otherSize = getNodeSizeFromNode(other);
+        return nodesOverlap({ x, y: result.y }, currentSize, other.position, otherSize)
+          ? { y: other.position.y + otherSize.height + GRID_GAP_Y, changed: true }
+          : result;
+      },
+      { y: current.position.y, changed: false },
+    );
 
-    for (let j = 0; j < i; j++) {
-      const other = siblings[j];
-      const otherSize = getNodeSizeFromNode(other);
-
-      if (nodesOverlap({ x, y }, currentSize, other.position, otherSize)) {
-        y = other.position.y + otherSize.height + GRID_GAP_Y;
-        changed = true;
-      }
-    }
-
-    const fixedCheck = checkVerticalOverlapWithFixedNodes(childFixedIds, siblings, i, nodeById, x, y, currentSize);
-    y = fixedCheck.y;
-    if (fixedCheck.changed) changed = true;
+    const fixedCheck = checkVerticalOverlapWithFixedNodes(
+      childFixedIds,
+      siblings,
+      i,
+      nodeById,
+      x,
+      verticalResult.y,
+      currentSize,
+    );
+    const y = fixedCheck.y;
 
     if (y !== current.position.y) {
       nodeById.set(current.id, {
@@ -318,33 +347,43 @@ function reflowSiblingsInGroup(
         position: { x, y },
       });
       siblings[i] = nodeById.get(current.id)!;
-      changed = true;
+      return true;
     }
-  }
+    return changed || verticalResult.changed || fixedCheck.changed;
+  }, initiallyChanged);
 
   // Second pass: push right when vertical overflow still causes overlap.
-  for (let i = 0; i < siblings.length; i++) {
+  return indices.reduce((changed, i) => {
     const current = siblings[i];
-    if (childFixedIds?.has(current.id)) continue;
-
-    const currentSize = getNodeSizeFromNode(current);
-    let { x, y } = current.position;
-
-    for (let j = 0; j < i; j++) {
-      const other = siblings[j];
-      const otherSize = getNodeSizeFromNode(other);
-
-      if (nodesOverlap({ x, y }, currentSize, other.position, otherSize)) {
-        x = other.position.x + otherSize.width + GRID_GAP_X;
-        y = Math.max(y, other.position.y);
-        changed = true;
-      }
+    if (childFixedIds?.has(current.id)) {
+      return changed;
     }
 
-    const fixedCheck = checkHorizontalOverlapWithFixedNodes(childFixedIds, siblings, i, nodeById, x, y, currentSize);
-    x = fixedCheck.x;
-    y = fixedCheck.y;
-    if (fixedCheck.changed) changed = true;
+    const currentSize = getNodeSizeFromNode(current);
+    const horizontalResult = siblings.slice(0, i).reduce(
+      (result, other) => {
+        const otherSize = getNodeSizeFromNode(other);
+        return nodesOverlap(result, currentSize, other.position, otherSize)
+          ? {
+              x: other.position.x + otherSize.width + GRID_GAP_X,
+              y: Math.max(result.y, other.position.y),
+              changed: true,
+            }
+          : result;
+      },
+      { ...current.position, changed: false },
+    );
+
+    const fixedCheck = checkHorizontalOverlapWithFixedNodes(
+      childFixedIds,
+      siblings,
+      i,
+      nodeById,
+      horizontalResult.x,
+      horizontalResult.y,
+      currentSize,
+    );
+    const { x, y } = fixedCheck;
 
     if (x !== current.position.x || y !== current.position.y) {
       nodeById.set(current.id, {
@@ -352,11 +391,10 @@ function reflowSiblingsInGroup(
         position: { x, y },
       });
       siblings[i] = nodeById.get(current.id)!;
-      changed = true;
+      return true;
     }
-  }
-
-  return changed;
+    return changed || horizontalResult.changed || fixedCheck.changed;
+  }, verticallyChanged);
 }
 
 function resizeFolderGroups(nodeById: Map<string, Node>, parentByNode: ReadonlyMap<string, string | null>): void {
@@ -365,13 +403,14 @@ function resizeFolderGroups(nodeById: Map<string, Node>, parentByNode: ReadonlyM
     .map(node => node.id)
     .sort((a, b) => getGroupDepth(b, parentByNode) - getGroupDepth(a, parentByNode));
 
-  for (const groupId of folderGroupIds) {
+  folderGroupIds.reduce<null>((result, groupId) => {
     const size = resolveGroupSize(groupId, [...nodeById.values()], parentByNode);
     const groupNode = nodeById.get(groupId);
     if (groupNode) {
       nodeById.set(groupId, applyGroupSizeToNode(groupNode, size));
     }
-  }
+    return result;
+  }, null);
 }
 
 /** Inputs for sibling reflow after size or membership changes. */
@@ -415,32 +454,36 @@ export function reflowParentSiblings({
     (a, b) => getGroupDepth(b, parentByNode) - getGroupDepth(a, parentByNode),
   );
 
-  for (const groupId of sortedGroups) {
+  sortedGroups.reduce<null>((result, groupId) => {
     reflowSiblingsInGroup(groupId, nodeById, parentByNode, fixedNodeIds);
     const updatedNodes = [...nodeById.values()];
     updateGroupCacheFromNodes(cache, updatedNodes, parentByNode, groupId);
-  }
+    return result;
+  }, null);
 
   resizeFolderGroups(nodeById, parentByNode);
 
   // Propagate size changes up: if a folderGroup resized, reflow its parent too.
-  const parentGroupsToReflow = new Set<GroupId>();
-  for (const groupId of sortedGroups) {
+  const parentGroupsToReflow = sortedGroups.reduce((parentGroups, groupId) => {
     if (groupId !== null) {
-      parentGroupsToReflow.add(parentByNode.get(groupId) ?? null);
+      parentGroups.add(parentByNode.get(groupId) ?? null);
     }
-  }
+    return parentGroups;
+  }, new Set<GroupId>());
 
   const sortedParentGroups = [...parentGroupsToReflow].sort(
     (a, b) => getGroupDepth(b, parentByNode) - getGroupDepth(a, parentByNode),
   );
 
-  for (const groupId of sortedParentGroups) {
-    if (groupId === null && sortedGroups.includes(null)) continue;
+  sortedParentGroups.reduce<null>((result, groupId) => {
+    if (groupId === null && sortedGroups.includes(null)) {
+      return result;
+    }
     reflowSiblingsInGroup(groupId, nodeById, parentByNode, fixedNodeIds);
     const updatedNodes = [...nodeById.values()];
     updateGroupCacheFromNodes(cache, updatedNodes, parentByNode, groupId);
-  }
+    return result;
+  }, null);
 
   resizeFolderGroups(nodeById, parentByNode);
 
@@ -448,7 +491,9 @@ export function reflowParentSiblings({
   const depthById = new Map<string, number>();
   function getDepth(id: string): number {
     const cached = depthById.get(id);
-    if (cached !== undefined) return cached;
+    if (cached !== undefined) {
+      return cached;
+    }
     const node = nodeById.get(id);
     if (!node?.parentId) {
       depthById.set(id, 0);
@@ -459,9 +504,10 @@ export function reflowParentSiblings({
     return depth;
   }
 
-  for (const id of nodeIds) {
+  [...nodeIds].reduce<null>((result, id) => {
     getDepth(id);
-  }
+    return result;
+  }, null);
 
   return [...nodeById.values()].sort((a, b) => (depthById.get(a.id) ?? 0) - (depthById.get(b.id) ?? 0));
 }
@@ -490,13 +536,14 @@ function resizeAncestorGroups(
   parentByNode: ReadonlyMap<string, string | null>,
   nodeId: string,
 ): void {
-  for (const groupId of getAncestorFolderGroupIds(nodeId, nodeById, parentByNode)) {
+  getAncestorFolderGroupIds(nodeId, nodeById, parentByNode).reduce<null>((result, groupId) => {
     const size = resolveGroupSize(groupId, [...nodeById.values()], parentByNode);
     const groupNode = nodeById.get(groupId);
     if (groupNode) {
       nodeById.set(groupId, applyGroupSizeToNode(groupNode, size));
     }
-  }
+    return result;
+  }, null);
 }
 
 function hasSizeGrown(
@@ -506,7 +553,9 @@ function hasSizeGrown(
 ): boolean {
   const node = nodeById.get(nodeId);
   const previousSize = previousSizes.get(nodeId);
-  if (!node || !previousSize) return false;
+  if (!node || !previousSize) {
+    return false;
+  }
 
   const currentSize = getNodeSizeFromNode(node);
   return currentSize.width > previousSize.width || currentSize.height > previousSize.height;
@@ -519,25 +568,34 @@ function compactGroupChildren(
 ): boolean {
   const nodeIds = new Set(nodeById.keys());
   const childIds = getDirectChildren(groupId, nodeIds, parentByNode);
-  if (childIds.length === 0) return false;
-
-  let minX = Infinity;
-  let minY = Infinity;
-
-  for (const childId of childIds) {
-    const child = nodeById.get(childId);
-    if (!child) continue;
-    minX = Math.min(minX, child.position.x);
-    minY = Math.min(minY, child.position.y);
+  if (childIds.length === 0) {
+    return false;
   }
 
-  const shiftX = GROUP_PADDING - minX;
-  const shiftY = GROUP_HEADER + GROUP_PADDING - minY;
-  if (shiftX === 0 && shiftY === 0) return false;
+  const minimums = childIds.reduce(
+    (currentMinimums, childId) => {
+      const child = nodeById.get(childId);
+      return child
+        ? {
+            minX: Math.min(currentMinimums.minX, child.position.x),
+            minY: Math.min(currentMinimums.minY, child.position.y),
+          }
+        : currentMinimums;
+    },
+    { minX: Infinity, minY: Infinity },
+  );
 
-  for (const childId of childIds) {
+  const shiftX = GROUP_PADDING - minimums.minX;
+  const shiftY = GROUP_HEADER + GROUP_PADDING - minimums.minY;
+  if (shiftX === 0 && shiftY === 0) {
+    return false;
+  }
+
+  childIds.reduce<null>((result, childId) => {
     const child = nodeById.get(childId);
-    if (!child) continue;
+    if (!child) {
+      return result;
+    }
     nodeById.set(childId, {
       ...child,
       position: {
@@ -545,7 +603,8 @@ function compactGroupChildren(
         y: child.position.y + shiftY,
       },
     });
-  }
+    return result;
+  }, null);
 
   return true;
 }
@@ -560,7 +619,9 @@ function collectGroupsToCompact(
   let current: string | null = parentByNode.get(draggedNodeId) ?? null;
   while (true) {
     groups.add(current);
-    if (current === null) break;
+    if (current === null) {
+      break;
+    }
     current = parentByNode.get(current) ?? null;
   }
 
@@ -580,9 +641,10 @@ export function compactAfterDrag(
 ): Node[] {
   const nodeById = new Map(nodes.map(node => [node.id, { ...node }]));
 
-  for (const groupId of collectGroupsToCompact(draggedNodeId, nodeById, parentByNode)) {
+  collectGroupsToCompact(draggedNodeId, nodeById, parentByNode).reduce<null>((result, groupId) => {
     compactGroupChildren(groupId, nodeById, parentByNode);
-  }
+    return result;
+  }, null);
 
   resizeFolderGroups(nodeById, parentByNode);
 
@@ -609,13 +671,16 @@ export function reflowForDrag(
   reflowSiblingsInGroup(groupId, nodeById, parentByNode, fixedNodeIds);
   resizeAncestorGroups(nodeById, parentByNode, draggedNodeId);
 
-  for (const ancestorId of getAncestorFolderGroupIds(draggedNodeId, nodeById, parentByNode)) {
-    if (!hasSizeGrown(ancestorId, nodeById, previousSizes)) continue;
+  getAncestorFolderGroupIds(draggedNodeId, nodeById, parentByNode).reduce<null>((result, ancestorId) => {
+    if (!hasSizeGrown(ancestorId, nodeById, previousSizes)) {
+      return result;
+    }
 
     const parentGroupId = parentByNode.get(ancestorId) ?? null;
     reflowSiblingsInGroup(parentGroupId, nodeById, parentByNode, new Set([ancestorId]));
     resizeFolderGroups(nodeById, parentByNode);
-  }
+    return result;
+  }, null);
 
   return sortNodesByDepth([...nodeById.values()]);
 }

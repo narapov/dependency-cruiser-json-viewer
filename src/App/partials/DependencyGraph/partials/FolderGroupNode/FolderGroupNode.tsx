@@ -1,3 +1,5 @@
+import clsx from 'clsx';
+
 import Box from '@mui/material/Box';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 
@@ -55,7 +57,7 @@ export function FolderGroupNode({ data }: NodeProps) {
         onAutoLayoutRecursive={onAutoLayoutGroupRecursive}
       >
         <Box
-          className={`folder-group-header ${styles.groupHeader}`}
+          className={clsx('folder-group-header', styles.groupHeader)}
           sx={{
             display: 'flex',
             alignItems: 'center',

@@ -15,15 +15,11 @@ const WIDE_CHAR_WIDTH = 8.5;
 export type LeafNodeKind = 'file' | 'folder';
 
 function measureLabelWidth(label: string): number {
-  let width = 0;
-
-  for (const char of label) {
+  return [...label].reduce((width, char) => {
     const code = char.codePointAt(0) ?? 0;
     // 0x7f (127) is the last ASCII code point — Latin vs wider scripts (e.g. Cyrillic).
-    width += code <= 0x7f ? ASCII_CHAR_WIDTH : WIDE_CHAR_WIDTH;
-  }
-
-  return width;
+    return width + (code <= 0x7f ? ASCII_CHAR_WIDTH : WIDE_CHAR_WIDTH);
+  }, 0);
 }
 
 function getLeafChromeWidth(kind: LeafNodeKind): number {

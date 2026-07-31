@@ -13,6 +13,7 @@ const cruiseResultPath = path.resolve('test-data/cruise-result.json');
 
 function getGitCommitHash(): string {
   try {
+    // eslint-disable-next-line sonarjs/no-os-command-from-path
     return execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim();
   } catch {
     return 'unknown';

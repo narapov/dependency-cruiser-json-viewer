@@ -8,10 +8,14 @@ const SELECTED_EDGE_Z_INDEX = 1000;
 
 /** Emphasizes the selected edge with a thicker stroke and raised z-index. */
 export function applySelectedEdgeStyle(edges: Edge[], selectedEdgeId: string | null): Edge[] {
-  if (selectedEdgeId == null) return edges;
+  if (selectedEdgeId == null) {
+    return edges;
+  }
 
   return edges.map(edge => {
-    if (edge.id !== selectedEdgeId) return edge;
+    if (edge.id !== selectedEdgeId) {
+      return edge;
+    }
 
     return withEdgeStrokeStyle(edge, {
       color: SELECTED_EDGE_COLOR,

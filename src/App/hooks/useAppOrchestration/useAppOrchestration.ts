@@ -34,8 +34,12 @@ function isPathInSources(path: string, sources: string[]): boolean {
 }
 
 function resolveActiveFolderPath(activePath: string | null, sources: string[]): string | null {
-  if (activePath == null) return null;
-  if (isFolderPath(activePath, sources)) return activePath;
+  if (activePath == null) {
+    return null;
+  }
+  if (isFolderPath(activePath, sources)) {
+    return activePath;
+  }
   return getParentPath(activePath);
 }
 
@@ -152,56 +156,65 @@ export function useAppOrchestration({
   };
 
   const focusActivePath = () => {
-    if (resolvedActivePath == null) return;
+    if (resolvedActivePath == null) {
+      return;
+    }
     activatePath(resolvedActivePath);
     focusPath(resolvedActivePath);
   };
 
   const clearLocalStorage = () => {
-    const keysToRemove: string[] = [];
-    for (let index = 0; index < localStorage.length; index++) {
-      const key = localStorage.key(index);
-      if (key?.startsWith(`${APP_STORAGE_PREFIX}.`)) {
-        keysToRemove.push(key);
-      }
-    }
-    for (const key of keysToRemove) {
-      localStorage.removeItem(key);
-    }
+    Array.from({ length: localStorage.length }, (_, index) => localStorage.key(index))
+      .filter((key): key is string => key?.startsWith(`${APP_STORAGE_PREFIX}.`) === true)
+      .forEach(key => {
+        localStorage.removeItem(key);
+      });
     window.location.reload();
   };
 
   const copyActive = () => {
-    if (resolvedActivePath == null) return;
+    if (resolvedActivePath == null) {
+      return;
+    }
     void copyToClipboard(resolvedActivePath);
   };
 
   const viewActiveDependencies = () => {
-    if (resolvedActivePath == null) return;
+    if (resolvedActivePath == null) {
+      return;
+    }
     handleShowDependencies(resolvedActivePath);
   };
 
   const expandActive = () => {
     const folderPath = resolveActiveFolderPath(resolvedActivePath, sources);
-    if (folderPath == null) return;
+    if (folderPath == null) {
+      return;
+    }
     updateExpandedKeys(keys => (keys.includes(folderPath) ? keys : [...keys, folderPath]));
   };
 
   const expandActiveRecursive = () => {
     const folderPath = resolveActiveFolderPath(resolvedActivePath, sources);
-    if (folderPath == null) return;
+    if (folderPath == null) {
+      return;
+    }
     expandRecursive(folderPath);
   };
 
   const collapseActive = () => {
     const folderPath = resolveActiveFolderPath(resolvedActivePath, sources);
-    if (folderPath == null) return;
+    if (folderPath == null) {
+      return;
+    }
     updateExpandedKeys(keys => (keys.includes(folderPath) ? keys.filter(key => key !== folderPath) : keys));
   };
 
   const collapseActiveRecursive = () => {
     const folderPath = resolveActiveFolderPath(resolvedActivePath, sources);
-    if (folderPath == null) return;
+    if (folderPath == null) {
+      return;
+    }
     updateExpandedKeys(keys => removeSubtreeFolderKeys(keys, folderPath, sources));
   };
 

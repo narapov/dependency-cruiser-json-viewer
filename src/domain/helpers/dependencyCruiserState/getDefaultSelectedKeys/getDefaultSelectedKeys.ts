@@ -1,46 +1,35 @@
 import { getAncestorKeys, isNodeModulesPath } from '../../pathUtils';
 
 function collectAllPaths(sources: string[]): Set<string> {
-  const paths = new Set<string>();
-
-  for (const source of sources) {
-    paths.add(source);
-    for (const ancestor of getAncestorKeys(source)) {
-      paths.add(ancestor);
-    }
-  }
-
-  return paths;
+  return new Set(sources.flatMap(source => [source, ...getAncestorKeys(source)]));
 }
 
 function getTopLevelFolderKeys(sources: string[]): string[] {
-  const keys = new Set<string>();
-
-  for (const source of sources) {
-    const slash = source.indexOf('/');
-    if (slash === -1) continue;
-    keys.add(source.slice(0, slash));
-  }
-
-  return [...keys].sort();
+  return [
+    ...new Set(
+      sources
+        .map(source => {
+          const slash = source.indexOf('/');
+          return slash === -1 ? null : source.slice(0, slash);
+        })
+        .filter((folder): folder is string => folder != null),
+    ),
+  ].sort();
 }
 
 /** Default selection: all paths under top-level folders except `node_modules`. */
 export function getDefaultSelectedKeys(sources: string[]): string[] {
   const allPaths = collectAllPaths(sources);
-  const selected = new Set<string>();
+  const nonNodeModulesPaths = [...allPaths].filter(path => !isNodeModulesPath(path));
 
-  for (const folder of getTopLevelFolderKeys(sources)) {
-    if (isNodeModulesPath(folder)) continue;
-
-    selected.add(folder);
-    for (const path of allPaths) {
-      if (isNodeModulesPath(path)) continue;
-      if (path === folder || path.startsWith(`${folder}/`)) {
-        selected.add(path);
-      }
-    }
-  }
-
-  return [...selected];
+  return [
+    ...new Set(
+      getTopLevelFolderKeys(sources)
+        .filter(folder => !isNodeModulesPath(folder))
+        .flatMap(folder => [
+          folder,
+          ...nonNodeModulesPaths.filter(path => path === folder || path.startsWith(`${folder}/`)),
+        ]),
+    ),
+  ];
 }

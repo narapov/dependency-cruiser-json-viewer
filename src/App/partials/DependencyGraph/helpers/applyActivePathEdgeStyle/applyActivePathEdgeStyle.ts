@@ -12,10 +12,14 @@ function isCircularEdge(edge: Edge): boolean {
 
 /** Styles non-circular edges that enter or leave the active path node. */
 export function applyActivePathEdgeStyle(edges: Edge[], activePath: string | null): Edge[] {
-  if (activePath == null) return edges;
+  if (activePath == null) {
+    return edges;
+  }
 
   return edges.map(edge => {
-    if (isCircularEdge(edge)) return edge;
+    if (isCircularEdge(edge)) {
+      return edge;
+    }
 
     if (edge.target === activePath) {
       return withEdgeStrokeStyle(edge, { color: INCOMING_EDGE_COLOR, strokeWidth: 2 });

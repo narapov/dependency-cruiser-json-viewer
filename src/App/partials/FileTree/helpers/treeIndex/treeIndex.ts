@@ -6,54 +6,32 @@ export interface TreeIndex {
   descendantsByKey: Map<string, string[]>;
 }
 
+function collectDescendants(node: TreeNodeData): string[] {
+  return (node.children ?? []).flatMap(child => [child.key, ...collectDescendants(child)]);
+}
+
 /** Indexes every node key to the full list of keys under it. */
 export function buildTreeIndex(treeData: TreeNodeData[]): TreeIndex {
-  const descendantsByKey = new Map<string, string[]>();
-
-  function indexNode(node: TreeNodeData): string[] {
-    const descendantKeys: string[] = [];
-
-    if (node.children) {
-      for (const child of node.children) {
-        descendantKeys.push(child.key, ...indexNode(child));
-      }
-    }
-
+  function indexNode(node: TreeNodeData, descendantsByKey: Map<string, string[]>): Map<string, string[]> {
+    const descendantKeys = collectDescendants(node);
     descendantsByKey.set(node.key, descendantKeys);
-    return descendantKeys;
+    return (node.children ?? []).reduce((acc, child) => indexNode(child, acc), descendantsByKey);
   }
 
-  for (const node of treeData) {
-    indexNode(node);
-  }
-
-  return { descendantsByKey };
+  return {
+    descendantsByKey: treeData.reduce((acc, node) => indexNode(node, acc), new Map<string, string[]>()),
+  };
 }
 
 /** Collects every node key in the tree in depth-first order. */
 export function getAllKeys(treeData: TreeNodeData[]): string[] {
-  const keys: string[] = [];
-
-  function walk(node: TreeNodeData) {
-    keys.push(node.key);
-    node.children?.forEach(walk);
-  }
-
-  treeData.forEach(walk);
-  return keys;
+  return treeData.flatMap(node => [node.key, ...getAllKeys(node.children ?? [])]);
 }
 
 /** Collects keys of folder (branch) nodes only. */
 export function getAllFolderKeys(treeData: TreeNodeData[]): string[] {
-  const keys: string[] = [];
-
-  function walk(node: TreeNodeData) {
-    if (isTreeBranch(node)) {
-      keys.push(node.key);
-    }
-    node.children?.forEach(walk);
-  }
-
-  treeData.forEach(walk);
-  return keys;
+  return treeData.flatMap(node => [
+    ...(isTreeBranch(node) ? [node.key] : []),
+    ...getAllFolderKeys(node.children ?? []),
+  ]);
 }

@@ -1,3 +1,4 @@
+export * from './clampWidth';
 export * from './copyToClipboard';
 export * from './formatShortcut';
 export * from './graphTheme';

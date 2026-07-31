@@ -71,6 +71,7 @@ The CLI serves the built viewer from `dist` and streams your JSON file at `/crui
 | `npm run preview`                     | Preview production build                                                               |
 | `npm run test`                        | Run Vitest suite                                                                       |
 | `npm run lint`                        | Run ESLint                                                                             |
+| `npm run lint:fix`                    | Run ESLint with autofix                                                                |
 | `npm run format`                      | Format all files with Prettier                                                         |
 | `npm run format:check`                | Check formatting (CI-friendly)                                                         |
 | `npm run depcruise`                   | Run dependency-cruiser on `src` (validate layer rules)                                 |

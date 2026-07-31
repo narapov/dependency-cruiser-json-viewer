@@ -10,21 +10,24 @@ import {
 } from '../../dependencyUtils';
 import { getRepresentative, isUnderFolder } from '../../pathUtils';
 
+type ModuleDep = IModule['dependencies'][number];
+
 function mergeRelation(
   map: Map<string, DependencyRelationFlags>,
   path: string,
-  dep: IModule['dependencies'][number],
-): void {
+  dep: ModuleDep,
+): Map<string, DependencyRelationFlags> {
   const isTypeOnly = isTypeOnlyDependency(dep);
   const isCircular = dep.circular === true;
   const existing = map.get(path);
 
   if (!existing) {
     map.set(path, createDependencyRelationFlags(isTypeOnly, isCircular));
-    return;
+  } else {
+    mergeDependencyRelationFlags(existing, isTypeOnly, isCircular);
   }
 
-  mergeDependencyRelationFlags(existing, isTypeOnly, isCircular);
+  return map;
 }
 
 function mapToSortedArray(map: Map<string, DependencyRelationFlags>): ModuleRelation[] {
@@ -41,6 +44,54 @@ function mapToSortedArray(map: Map<string, DependencyRelationFlags>): ModuleRela
     .sort((a, b) => a.path.localeCompare(b.path));
 }
 
+interface RelationCandidate {
+  mapKey: 'dependencies' | 'dependents';
+  path: string;
+  dep: ModuleDep;
+}
+
+function collectRelationCandidates(
+  folderPath: string,
+  modules: IModule[],
+  selectedSet: Set<string>,
+  expandedFolders: Set<string>,
+  expanded: boolean,
+): RelationCandidate[] {
+  return modules
+    .filter(module => selectedSet.has(module.source) && Array.isArray(module.dependencies))
+    .flatMap(module => {
+      const sourceRep = getRepresentative(module.source, selectedSet, expandedFolders);
+      const sourceUnder = isUnderFolder(module.source, folderPath);
+
+      return module.dependencies
+        .filter(
+          (dep): dep is ModuleDep & { resolved: string } => Boolean(dep.resolved) && selectedSet.has(dep.resolved),
+        )
+        .flatMap(dep => {
+          const targetRep = getRepresentative(dep.resolved, selectedSet, expandedFolders);
+          const targetUnder = isUnderFolder(dep.resolved, folderPath);
+          const candidates: RelationCandidate[] = [];
+
+          if (sourceRep === folderPath && targetRep !== folderPath) {
+            candidates.push({ mapKey: 'dependencies', path: targetRep, dep });
+          }
+          if (targetRep === folderPath && sourceRep !== folderPath) {
+            candidates.push({ mapKey: 'dependents', path: sourceRep, dep });
+          }
+          if (expanded) {
+            if (sourceUnder && !targetUnder && targetRep !== folderPath) {
+              candidates.push({ mapKey: 'dependencies', path: targetRep, dep });
+            }
+            if (!sourceUnder && targetUnder && sourceRep !== folderPath) {
+              candidates.push({ mapKey: 'dependents', path: sourceRep, dep });
+            }
+          }
+
+          return candidates;
+        });
+    });
+}
+
 /** Incoming and outgoing relations for a folder node, collapsed to visible representatives. */
 export function getFolderRelations(
   folderPath: string,
@@ -50,40 +101,23 @@ export function getFolderRelations(
 ): ModuleRelations {
   const selectedSet = new Set(selectedPaths);
   const expanded = expandedFolders.has(folderPath);
-  const dependencies = new Map<string, DependencyRelationFlags>();
-  const dependents = new Map<string, DependencyRelationFlags>();
 
-  for (const module of modules) {
-    if (!selectedSet.has(module.source)) continue;
-    if (!Array.isArray(module.dependencies)) continue;
-
-    const sourceRep = getRepresentative(module.source, selectedSet, expandedFolders);
-    const sourceUnder = isUnderFolder(module.source, folderPath);
-
-    for (const dep of module.dependencies) {
-      const resolved = dep.resolved;
-      if (!resolved || !selectedSet.has(resolved)) continue;
-
-      const targetRep = getRepresentative(resolved, selectedSet, expandedFolders);
-      const targetUnder = isUnderFolder(resolved, folderPath);
-
-      if (sourceRep === folderPath && targetRep !== folderPath) {
-        mergeRelation(dependencies, targetRep, dep);
-      }
-      if (targetRep === folderPath && sourceRep !== folderPath) {
-        mergeRelation(dependents, sourceRep, dep);
-      }
-
-      if (expanded) {
-        if (sourceUnder && !targetUnder && targetRep !== folderPath) {
-          mergeRelation(dependencies, targetRep, dep);
-        }
-        if (!sourceUnder && targetUnder && sourceRep !== folderPath) {
-          mergeRelation(dependents, sourceRep, dep);
-        }
-      }
-    }
-  }
+  const { dependencies, dependents } = collectRelationCandidates(
+    folderPath,
+    modules,
+    selectedSet,
+    expandedFolders,
+    expanded,
+  ).reduce(
+    (acc, candidate) => {
+      mergeRelation(acc[candidate.mapKey], candidate.path, candidate.dep);
+      return acc;
+    },
+    {
+      dependencies: new Map<string, DependencyRelationFlags>(),
+      dependents: new Map<string, DependencyRelationFlags>(),
+    },
+  );
 
   return {
     dependencies: mapToSortedArray(dependencies),

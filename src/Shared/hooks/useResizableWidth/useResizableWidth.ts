@@ -7,6 +7,8 @@ import {
 } from 'react';
 import { useLocalStorage, useWindowSize } from 'react-use';
 
+import { clampWidth } from '../../helpers';
+
 export const MIN_MAIN_WIDTH = 200;
 
 export type ResizableSide = 'left' | 'right';
@@ -15,10 +17,6 @@ const RESIZING_CLASSES: Record<ResizableSide, string> = {
   left: 'resizingSidebar',
   right: 'resizingPanel',
 };
-
-export function clampWidth(width: number, minWidth: number, maxWidth: number): number {
-  return Math.min(Math.max(width, minWidth), maxWidth);
-}
 
 interface UseResizableWidthOptions {
   storageKey: string;
@@ -44,7 +42,9 @@ export function useResizableWidth({
   const resizingClass = RESIZING_CLASSES[side];
 
   useEffect(() => {
-    if (windowWidth === 0 || width == null) return;
+    if (windowWidth === 0 || width == null) {
+      return;
+    }
     const clamped = clampWidth(width, minWidth, maxWidth);
     if (clamped !== width) {
       setWidth(clamped);
@@ -65,7 +65,9 @@ export function useResizableWidth({
       document.body.classList.add(resizingClass);
 
       const onPointerMove = (moveEvent: globalThis.PointerEvent) => {
-        if (!dragRef.current || moveEvent.pointerId !== dragRef.current.pointerId) return;
+        if (!dragRef.current || moveEvent.pointerId !== dragRef.current.pointerId) {
+          return;
+        }
         moveEvent.preventDefault();
         const delta =
           side === 'left' ? moveEvent.clientX - dragRef.current.startX : dragRef.current.startX - moveEvent.clientX;
@@ -73,7 +75,9 @@ export function useResizableWidth({
       };
 
       const onPointerUp = (upEvent: globalThis.PointerEvent) => {
-        if (!dragRef.current || upEvent.pointerId !== dragRef.current.pointerId) return;
+        if (!dragRef.current || upEvent.pointerId !== dragRef.current.pointerId) {
+          return;
+        }
         dragRef.current = null;
         document.body.classList.remove(resizingClass);
         document.removeEventListener('pointermove', onPointerMove);

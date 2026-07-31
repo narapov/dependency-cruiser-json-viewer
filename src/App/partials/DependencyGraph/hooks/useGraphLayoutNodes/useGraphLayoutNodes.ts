@@ -49,7 +49,9 @@ export function useGraphLayoutNodes({
   const [hasUserLayout, setHasUserLayout] = useState(false);
 
   useEffect(() => {
-    if (!autoLayoutOnly) return;
+    if (!autoLayoutOnly) {
+      return;
+    }
     // Reset drag-layout flag when switching to auto layout only.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setHasUserLayout(false);
@@ -96,7 +98,9 @@ export function useGraphLayoutNodes({
 
   const onNodeDrag = useCallback<OnNodeDrag<Node>>(
     (_, draggedNode) => {
-      if (autoLayoutOnly) return;
+      if (autoLayoutOnly) {
+        return;
+      }
 
       setNodes(currentNodes =>
         reflowForDrag(
@@ -113,7 +117,9 @@ export function useGraphLayoutNodes({
 
   const onNodeDragStop = useCallback<OnNodeDrag<Node>>(
     (_, draggedNode) => {
-      if (autoLayoutOnly) return;
+      if (autoLayoutOnly) {
+        return;
+      }
 
       setHasUserLayout(true);
 
@@ -133,7 +139,9 @@ export function useGraphLayoutNodes({
         let groupId: string | null = draggedNode.parentId ?? null;
         while (true) {
           updateGroupCacheFromNodes(positionCacheRef.current, reflowed, graphResult.parentByNode, groupId);
-          if (groupId === null) break;
+          if (groupId === null) {
+            break;
+          }
           groupId = graphResult.parentByNode.get(groupId) ?? null;
         }
 

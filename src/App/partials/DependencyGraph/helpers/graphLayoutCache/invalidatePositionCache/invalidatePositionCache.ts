@@ -28,12 +28,14 @@ export function invalidateGroupPositionCacheRecursive(
   nodes: readonly { id: string; type?: string }[],
   parentByNode: ReadonlyMap<string, string | null>,
 ): void {
-  for (const node of nodes) {
-    if (node.type !== 'folderGroup') continue;
-    if (node.id === groupId || isDescendantOf(node.id, groupId, parentByNode)) {
+  nodes
+    .filter(
+      node => node.type === 'folderGroup' && (node.id === groupId || isDescendantOf(node.id, groupId, parentByNode)),
+    )
+    .reduce((_, node) => {
       cache.delete(node.id);
-    }
-  }
+      return null;
+    }, null);
 
   invalidateGroupPositionCache(cache, groupId, parentByNode);
 }
@@ -62,21 +64,29 @@ export function invalidatePositionCache(
 ): void {
   const validGroupKeys = new Set([...currentFingerprints.keys()].map(groupCacheKey));
 
-  for (const key of [...cache.keys()]) {
-    if (!validGroupKeys.has(groupCacheKey(key))) {
-      if (key !== null && (visibleNodeIds.has(key) || hasVisibleAncestor(key, visibleNodeIds))) {
-        continue;
+  [...cache.keys()]
+    .filter(key => {
+      if (validGroupKeys.has(groupCacheKey(key))) {
+        return false;
       }
+      return !(key !== null && (visibleNodeIds.has(key) || hasVisibleAncestor(key, visibleNodeIds)));
+    })
+    .reduce((_, key) => {
       cache.delete(key);
-    }
+      return null;
+    }, null);
+
+  if (previousFingerprints == null) {
+    return;
   }
 
-  if (previousFingerprints == null) return;
-
-  for (const [groupId, fingerprint] of currentFingerprints) {
-    const previous = previousFingerprints.get(groupId);
-    if (previous !== undefined && previous !== fingerprint) {
+  [...currentFingerprints.entries()]
+    .filter(([groupId, fingerprint]) => {
+      const previous = previousFingerprints.get(groupId);
+      return previous !== undefined && previous !== fingerprint;
+    })
+    .reduce((_, [groupId]) => {
       cache.delete(groupId);
-    }
-  }
+      return null;
+    }, null);
 }

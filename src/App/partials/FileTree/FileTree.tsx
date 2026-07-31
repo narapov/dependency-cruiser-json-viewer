@@ -77,14 +77,20 @@ export function FileTree({
   };
 
   const handleShowInGraph = (itemId: string) => {
-    if (!canShowNodeInGraph(itemId)) return;
+    if (!canShowNodeInGraph(itemId)) {
+      return;
+    }
     onShowInGraph?.(itemId);
   };
 
   const handleItemClick = (_event: SyntheticEvent, itemId: string) => {
-    if (!canShowNodeInGraph(itemId)) return;
+    if (!canShowNodeInGraph(itemId)) {
+      return;
+    }
 
-    if (clickTimerRef.current) clearTimeout(clickTimerRef.current);
+    if (clickTimerRef.current) {
+      clearTimeout(clickTimerRef.current);
+    }
     clickTimerRef.current = setTimeout(() => {
       clickTimerRef.current = null;
       handleShowInGraph(itemId);
@@ -104,7 +110,9 @@ export function FileTree({
   };
 
   useEffect(() => {
-    if (!activePath) return;
+    if (!activePath) {
+      return;
+    }
 
     const frame = requestAnimationFrame(() => {
       apiRef.current?.getItemDOMElement(activePath)?.scrollIntoView({ block: 'nearest' });

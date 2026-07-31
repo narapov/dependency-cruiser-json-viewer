@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import type { IModule } from 'dependency-cruiser';
 import { useImperativeHandle, useState, type MouseEvent as ReactMouseEvent, type Ref } from 'react';
 
@@ -137,7 +138,9 @@ function DependencyGraphInner({
   });
 
   const runFocusNode = (path: string) => {
-    if (!getNode(path)) return;
+    if (!getNode(path)) {
+      return;
+    }
     void fitView({ nodes: [{ id: path }], padding: 0.5, duration: 300 });
   };
 
@@ -234,7 +237,7 @@ export function DependencyGraph({ ref, ...props }: DependencyGraphProps) {
   const [autoLayoutOnly, setAutoLayoutOnly] = useState(true);
 
   return (
-    <div className={`${styles.container}${autoLayoutOnly ? ` ${styles.layoutLocked}` : ''}`}>
+    <div className={clsx(styles.container, autoLayoutOnly && styles.layoutLocked)}>
       <ReactFlowProvider>
         <DependencyGraphInner
           imperativeRef={ref}

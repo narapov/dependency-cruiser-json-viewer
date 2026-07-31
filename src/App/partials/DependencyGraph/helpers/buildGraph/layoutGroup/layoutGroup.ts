@@ -69,14 +69,15 @@ async function layoutChildrenWithElk(
   });
   profiler?.end('elk.layout');
 
-  const positions = new Map<string, { x: number; y: number }>();
-  for (const child of layouted.children ?? []) {
-    positions.set(child.id, {
-      x: (child.x ?? 0) + GROUP_PADDING,
-      y: (child.y ?? 0) + GROUP_HEADER + GROUP_PADDING,
-    });
-  }
-  return positions;
+  return new Map(
+    (layouted.children ?? []).map(child => [
+      child.id,
+      {
+        x: (child.x ?? 0) + GROUP_PADDING,
+        y: (child.y ?? 0) + GROUP_HEADER + GROUP_PADDING,
+      },
+    ]),
+  );
 }
 
 function applyChildPositions(
@@ -87,22 +88,24 @@ function applyChildPositions(
   nodeMap: Map<string, Node>,
   groupSizes: Map<string, NodeSize>,
 ): NodeSize {
-  let maxX = 0;
-  let maxY = 0;
+  const { maxX, maxY } = childIds.reduce(
+    (bounds, childId) => {
+      const size = childSizes.get(childId)!;
+      const position = positions.get(childId)!;
+      const node = nodeMap.get(childId)!;
+      node.position = position;
+      if (folderId !== null) {
+        node.parentId = folderId;
+        node.extent = 'parent';
+      }
 
-  for (const childId of childIds) {
-    const size = childSizes.get(childId)!;
-    const position = positions.get(childId)!;
-    const node = nodeMap.get(childId)!;
-    node.position = position;
-    if (folderId !== null) {
-      node.parentId = folderId;
-      node.extent = 'parent';
-    }
-
-    maxX = Math.max(maxX, position.x + size.width);
-    maxY = Math.max(maxY, position.y + size.height);
-  }
+      return {
+        maxX: Math.max(bounds.maxX, position.x + size.width),
+        maxY: Math.max(bounds.maxY, position.y + size.height),
+      };
+    },
+    { maxX: 0, maxY: 0 },
+  );
 
   const groupSize = {
     width: Math.max(maxX + GROUP_PADDING, LEAF_NODE_MIN_WIDTH + GROUP_PADDING * 2),
@@ -161,9 +164,8 @@ export async function layoutGroup(
     return emptySize;
   }
 
-  const childSizes = new Map<string, NodeSize>();
-
-  for (const childId of childIds) {
+  const childSizes = await childIds.reduce<Promise<Map<string, NodeSize>>>(async (accPromise, childId) => {
+    const acc = await accPromise;
     if (isExpandedFolder(childId, visibleNodes, expandedFolders)) {
       const size = await layoutGroup(
         childId,
@@ -177,11 +179,12 @@ export async function layoutGroup(
         selectedSet,
         profiler,
       );
-      childSizes.set(childId, size);
+      acc.set(childId, size);
     } else {
-      childSizes.set(childId, getLeafSizeForPath(childId, visibleNodes));
+      acc.set(childId, getLeafSizeForPath(childId, visibleNodes));
     }
-  }
+    return acc;
+  }, Promise.resolve(new Map<string, NodeSize>()));
 
   const layoutEdges = buildVirtualLayoutEdges(folderId, childIds, modules, selectedSet);
   const positions = await layoutChildrenWithElk(childIds, childSizes, layoutEdges, profiler);

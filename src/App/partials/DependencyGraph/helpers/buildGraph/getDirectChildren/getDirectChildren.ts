@@ -4,12 +4,5 @@ export function getDirectChildren(
   visibleNodeIds: ReadonlySet<string>,
   parentByNode: ReadonlyMap<string, string | null>,
 ): string[] {
-  const children: string[] = [];
-  for (const id of visibleNodeIds) {
-    const parent = parentByNode.get(id) ?? null;
-    if (parent === folderId) {
-      children.push(id);
-    }
-  }
-  return children.sort();
+  return [...visibleNodeIds].filter(id => (parentByNode.get(id) ?? null) === folderId).sort();
 }

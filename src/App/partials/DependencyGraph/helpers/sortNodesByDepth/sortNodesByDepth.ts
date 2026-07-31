@@ -7,7 +7,9 @@ export function sortNodesByDepth(nodes: readonly Node[]): Node[] {
 
   function getDepth(id: string): number {
     const cached = depthById.get(id);
-    if (cached !== undefined) return cached;
+    if (cached !== undefined) {
+      return cached;
+    }
 
     const node = nodeById.get(id);
     if (!node?.parentId) {
@@ -20,9 +22,8 @@ export function sortNodesByDepth(nodes: readonly Node[]): Node[] {
     return depth;
   }
 
-  for (const node of nodes) {
-    getDepth(node.id);
-  }
-
-  return [...nodes].sort((a, b) => (depthById.get(a.id) ?? 0) - (depthById.get(b.id) ?? 0));
+  return [...nodes]
+    .map(node => ({ node, depth: getDepth(node.id) }))
+    .sort((a, b) => a.depth - b.depth)
+    .map(({ node }) => node);
 }

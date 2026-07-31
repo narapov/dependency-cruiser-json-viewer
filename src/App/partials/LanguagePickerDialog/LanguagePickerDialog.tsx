@@ -15,7 +15,9 @@ interface LanguagePickerDialogProps {
 }
 
 function getLanguageIndex(language: LanguageOptionValue | undefined): number {
-  if (language == null) return 0;
+  if (language == null) {
+    return 0;
+  }
   const index = LANGUAGE_OPTIONS.findIndex(option => option.value === language);
   return index === -1 ? 0 : index;
 }
@@ -35,7 +37,9 @@ export function LanguagePickerDialog({ open, onClose }: LanguagePickerDialogProp
   };
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      return;
+    }
 
     const highlighted = listRef.current?.children[highlightedIndex];
     if (highlighted instanceof HTMLElement) {
@@ -70,7 +74,9 @@ export function LanguagePickerDialog({ open, onClose }: LanguagePickerDialogProp
     if (event.key === 'Enter') {
       event.preventDefault();
       const option = LANGUAGE_OPTIONS[highlightedIndex];
-      if (option) handleSelect(option.value);
+      if (option) {
+        handleSelect(option.value);
+      }
     }
   };
 

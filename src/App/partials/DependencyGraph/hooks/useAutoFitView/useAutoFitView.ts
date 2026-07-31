@@ -20,7 +20,9 @@ export function useAutoFitView({
   const prevSelectedPathsKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (layoutNodesLength === 0 || hasUserLayout || autoLayoutOnly) return;
+    if (layoutNodesLength === 0 || hasUserLayout || autoLayoutOnly) {
+      return;
+    }
 
     const isInitialLayout = prevSelectedPathsKeyRef.current === null;
     const selectionChanged = prevSelectedPathsKeyRef.current !== selectedPathsKey;

@@ -6,7 +6,9 @@ export function isDescendantOf(
 ): boolean {
   let current: string | null = parentByNode.get(nodeId) ?? null;
   while (current !== null) {
-    if (current === ancestorId) return true;
+    if (current === ancestorId) {
+      return true;
+    }
     current = parentByNode.get(current) ?? null;
   }
   return false;

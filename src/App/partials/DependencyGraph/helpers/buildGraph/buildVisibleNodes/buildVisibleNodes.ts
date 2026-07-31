@@ -4,37 +4,42 @@ import { getParentPath, isTypeOnlyDependency } from '@/domain';
 
 import type { FolderChildren } from '../../../types';
 
-function buildChildrenIndex(sources: string[]): Map<string, FolderChildren> {
-  const index = new Map<string, { folders: Set<string>; files: Set<string> }>();
+type IndexEntry = { folders: Set<string>; files: Set<string> };
 
-  function ensure(folder: string) {
-    if (!index.has(folder)) {
-      index.set(folder, { folders: new Set(), files: new Set() });
-    }
-    return index.get(folder)!;
+function ensureIndexEntry(index: Map<string, IndexEntry>, folder: string): IndexEntry {
+  const existing = index.get(folder);
+  if (existing) {
+    return existing;
   }
+  const created: IndexEntry = { folders: new Set(), files: new Set() };
+  index.set(folder, created);
+  return created;
+}
 
-  for (const source of sources) {
+function buildChildrenIndex(sources: string[]): Map<string, FolderChildren> {
+  const index = sources.reduce((acc, source) => {
     const parts = source.split('/');
-    for (let i = 0; i < parts.length - 1; i++) {
+    return parts.slice(0, -1).reduce((innerAcc, _, i) => {
       const folder = parts.slice(0, i + 1).join('/');
       if (i + 1 === parts.length - 1) {
-        ensure(folder).files.add(source);
+        ensureIndexEntry(innerAcc, folder).files.add(source);
       } else {
         const subfolder = parts.slice(0, i + 2).join('/');
-        ensure(folder).folders.add(subfolder);
+        ensureIndexEntry(innerAcc, folder).folders.add(subfolder);
       }
-    }
-  }
+      return innerAcc;
+    }, acc);
+  }, new Map<string, IndexEntry>());
 
-  const result = new Map<string, FolderChildren>();
-  for (const [folder, children] of index) {
-    result.set(folder, {
-      folders: [...children.folders].sort(),
-      files: [...children.files].sort(),
-    });
-  }
-  return result;
+  return new Map(
+    [...index.entries()].map(([folder, children]) => [
+      folder,
+      {
+        folders: [...children.folders].sort(),
+        files: [...children.files].sort(),
+      },
+    ]),
+  );
 }
 
 function isFilePath(path: string, moduleSources: Set<string>): boolean {
@@ -46,29 +51,31 @@ function hasSelectedDescendants(
   selectedSet: Set<string>,
   childrenIndex: Map<string, FolderChildren>,
 ): boolean {
-  if (selectedSet.has(folderPath)) return true;
+  if (selectedSet.has(folderPath)) {
+    return true;
+  }
 
   const children = childrenIndex.get(folderPath);
-  if (!children) return false;
+  if (!children) {
+    return false;
+  }
 
-  for (const file of children.files) {
-    if (selectedSet.has(file)) return true;
-  }
-  for (const subfolder of children.folders) {
-    if (hasSelectedDescendants(subfolder, selectedSet, childrenIndex)) return true;
-  }
-  return false;
+  return (
+    children.files.some(file => selectedSet.has(file)) ||
+    children.folders.some(subfolder => hasSelectedDescendants(subfolder, selectedSet, childrenIndex))
+  );
 }
 
 function collectCircularModules(modules: IModule[]): Set<string> {
-  const circularModules = new Set<string>();
-  for (const module of modules) {
-    if (!Array.isArray(module.dependencies)) continue;
-    if (module.dependencies.some(dep => dep.circular === true && !isTypeOnlyDependency(dep))) {
-      circularModules.add(module.source);
-    }
-  }
-  return circularModules;
+  return new Set(
+    modules
+      .filter(
+        module =>
+          Array.isArray(module.dependencies) &&
+          module.dependencies.some(dep => dep.circular === true && !isTypeOnlyDependency(dep)),
+      )
+      .map(module => module.source),
+  );
 }
 
 /** Whether any selected circular module lives under this folder. */
@@ -79,19 +86,18 @@ export function folderHasCircularDescendant(
   circularModules: Set<string>,
 ): boolean {
   const children = childrenIndex.get(folderPath);
-  if (!children) return false;
+  if (!children) {
+    return false;
+  }
 
-  for (const file of children.files) {
-    if (selectedSet.has(file) && circularModules.has(file)) return true;
-  }
-  for (const subfolder of children.folders) {
-    if (hasSelectedDescendants(subfolder, selectedSet, childrenIndex)) {
-      if (folderHasCircularDescendant(subfolder, selectedSet, childrenIndex, circularModules)) {
-        return true;
-      }
-    }
-  }
-  return false;
+  return (
+    children.files.some(file => selectedSet.has(file) && circularModules.has(file)) ||
+    children.folders.some(
+      subfolder =>
+        hasSelectedDescendants(subfolder, selectedSet, childrenIndex) &&
+        folderHasCircularDescendant(subfolder, selectedSet, childrenIndex, circularModules),
+    )
+  );
 }
 
 function getEffectiveRoot(path: string, selectedSet: Set<string>, childrenIndex: Map<string, FolderChildren>): string {
@@ -113,11 +119,7 @@ function getRootSelectedPaths(
   selectedSet: Set<string>,
   childrenIndex: Map<string, FolderChildren>,
 ): string[] {
-  const roots = new Set<string>();
-  for (const path of selectedPaths) {
-    roots.add(getEffectiveRoot(path, selectedSet, childrenIndex));
-  }
-  return [...roots].sort();
+  return [...new Set(selectedPaths.map(path => getEffectiveRoot(path, selectedSet, childrenIndex)))].sort();
 }
 
 function collectVisibleNodes(
@@ -126,57 +128,62 @@ function collectVisibleNodes(
   expandedFolders: Set<string>,
   moduleSources: Set<string>,
   childrenIndex: Map<string, FolderChildren>,
-  visibleNodes: Map<string, 'folder' | 'file'>,
-): void {
-  for (const path of paths) {
-    if (!selectedSet.has(path) && !hasSelectedDescendants(path, selectedSet, childrenIndex)) {
-      continue;
-    }
-
-    if (isFilePath(path, moduleSources)) {
-      if (selectedSet.has(path)) {
-        visibleNodes.set(path, 'file');
+): Map<string, 'folder' | 'file'> {
+  return paths
+    .filter(path => selectedSet.has(path) || hasSelectedDescendants(path, selectedSet, childrenIndex))
+    .reduce((visibleNodes, path) => {
+      if (isFilePath(path, moduleSources)) {
+        if (selectedSet.has(path)) {
+          visibleNodes.set(path, 'file');
+        }
+        return visibleNodes;
       }
-      continue;
-    }
 
-    visibleNodes.set(path, 'folder');
+      visibleNodes.set(path, 'folder');
 
-    if (!expandedFolders.has(path)) continue;
-
-    const children = childrenIndex.get(path);
-    if (!children) continue;
-
-    for (const subfolder of children.folders) {
-      if (hasSelectedDescendants(subfolder, selectedSet, childrenIndex)) {
-        collectVisibleNodes([subfolder], selectedSet, expandedFolders, moduleSources, childrenIndex, visibleNodes);
+      if (!expandedFolders.has(path)) {
+        return visibleNodes;
       }
-    }
 
-    for (const file of children.files) {
-      if (selectedSet.has(file)) {
-        visibleNodes.set(file, 'file');
+      const children = childrenIndex.get(path);
+      if (!children) {
+        return visibleNodes;
       }
-    }
-  }
+
+      const nested = collectVisibleNodes(
+        children.folders.filter(subfolder => hasSelectedDescendants(subfolder, selectedSet, childrenIndex)),
+        selectedSet,
+        expandedFolders,
+        moduleSources,
+        childrenIndex,
+      );
+
+      [...nested.entries()].reduce((acc, [nestedPath, type]) => {
+        acc.set(nestedPath, type);
+        return acc;
+      }, visibleNodes);
+
+      return children.files
+        .filter(file => selectedSet.has(file))
+        .reduce((acc, file) => {
+          acc.set(file, 'file');
+          return acc;
+        }, visibleNodes);
+    }, new Map<string, 'folder' | 'file'>());
 }
 
 function buildParentByNode(
   visibleNodes: Map<string, 'folder' | 'file'>,
   expandedFolders: Set<string>,
 ): Map<string, string | null> {
-  const parentByNode = new Map<string, string | null>();
-
-  for (const path of visibleNodes.keys()) {
-    const directParent = getParentPath(path);
-    if (directParent && visibleNodes.has(directParent) && expandedFolders.has(directParent)) {
-      parentByNode.set(path, directParent);
-    } else {
-      parentByNode.set(path, null);
-    }
-  }
-
-  return parentByNode;
+  return new Map(
+    [...visibleNodes.keys()].map(path => {
+      const directParent = getParentPath(path);
+      const parent =
+        directParent && visibleNodes.has(directParent) && expandedFolders.has(directParent) ? directParent : null;
+      return [path, parent] as const;
+    }),
+  );
 }
 
 /** Indexes and maps describing which nodes are visible for the current selection. */
@@ -200,9 +207,8 @@ export function buildVisibleNodes(
   const childrenIndex = buildChildrenIndex(modules.map(m => m.source));
   const circularModules = collectCircularModules([...modules]);
 
-  const visibleNodes = new Map<string, 'folder' | 'file'>();
   const roots = getRootSelectedPaths(selectedPaths, selectedSet, childrenIndex);
-  collectVisibleNodes(roots, selectedSet, expandedFolders, moduleSources, childrenIndex, visibleNodes);
+  const visibleNodes = collectVisibleNodes(roots, selectedSet, expandedFolders, moduleSources, childrenIndex);
 
   const visibleNodeIds = new Set(visibleNodes.keys());
   const parentByNode = buildParentByNode(visibleNodes, expandedFolders);

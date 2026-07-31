@@ -1,5 +1,4 @@
 export {
-  clampSidebarWidth,
   DEFAULT_WIDTH as SIDEBAR_DEFAULT_WIDTH,
   MIN_WIDTH as SIDEBAR_MIN_WIDTH,
   useSidebarWidth,

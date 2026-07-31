@@ -29,16 +29,19 @@ export function resolveGroupSize(
     };
   }
 
-  let maxX = 0;
-  let maxY = 0;
-
-  for (const childId of childIds) {
-    const node = nodeById.get(childId);
-    if (!node) continue;
-    const size = getNodeSize(node);
-    maxX = Math.max(maxX, node.position.x + size.width);
-    maxY = Math.max(maxY, node.position.y + size.height);
-  }
+  const { maxX, maxY } = childIds
+    .map(childId => nodeById.get(childId))
+    .filter((node): node is Node => node != null)
+    .reduce(
+      (bounds, node) => {
+        const size = getNodeSize(node);
+        return {
+          maxX: Math.max(bounds.maxX, node.position.x + size.width),
+          maxY: Math.max(bounds.maxY, node.position.y + size.height),
+        };
+      },
+      { maxX: 0, maxY: 0 },
+    );
 
   return {
     width: Math.max(maxX + GROUP_PADDING, LEAF_NODE_MIN_WIDTH + GROUP_PADDING * 2),
