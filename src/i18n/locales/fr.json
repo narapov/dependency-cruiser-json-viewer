@@ -8,6 +8,9 @@
     "loadCruiseResult": "Charger un fichier JSON",
     "invalidCruiseResultJson": "Le fichier sélectionné n'est pas un JSON valide.",
     "invalidCruiseResultFormat": "Le fichier sélectionné ne ressemble pas à un résultat cruise dependency-cruiser.",
+    "errorBoundaryTitle": "Une erreur s'est produite",
+    "errorBoundaryMessage": "Une erreur inattendue s'est produite. Rechargez la page pour continuer.",
+    "errorBoundaryReload": "Recharger",
     "searchFiles": "Rechercher des fichiers ({{shortcut}})",
     "commandPalette": "Palette de commandes (F1)",
     "hideFileTree": "Masquer l'arborescence ({{shortcut}})",
@@ -96,6 +99,7 @@
     },
     "emptySelection": "Sélectionnez des fichiers ou des dossiers pour afficher les dépendances",
     "loading": "Chargement du graphe de dépendances",
+    "buildError": "Échec de la construction du graphe de dépendances.",
     "autoLayoutOnly": "Mise en page automatique uniquement",
     "autoLayoutOnlyHint": "Toujours utiliser la mise en page automatique et désactiver le glisser-déposer. Désactivé, le glisser-déposer est disponible ; le pliage et le dépliage des dossiers ne repositionnent pas les voisins ; utilisez « Mise en page automatique » dans le menu contextuel du dossier pour réorganiser son contenu."
   },

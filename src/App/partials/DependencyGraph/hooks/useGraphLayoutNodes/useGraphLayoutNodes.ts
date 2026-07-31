@@ -24,6 +24,22 @@ import {
 } from '../../helpers';
 import type { BuildGraphResult } from '../../types';
 
+/**
+ * Applies ELK-built graph nodes onto React Flow state with a position cache.
+ *
+ * Invariants:
+ * - Fingerprints (`buildGroupFingerprints`) identify each group's direct children.
+ *   When a group's fingerprint changes, its cached relative child positions are
+ *   invalidated via `invalidatePositionCache`.
+ * - `positionCacheRef` stores relative child positions per group. Cleared entirely
+ *   when `autoLayoutOnly` is true (drag layout is disabled).
+ * - On each `graphResult` change: optionally preserve expanded folder positions,
+ *   apply cache, then `reflowParentSiblings` so grown/overlapping siblings push apart.
+ * - Drag (`reflowForDrag` / `compactAfterDrag`) updates live positions and writes
+ *   ancestor group caches on drag stop; `hasUserLayout` then suppresses auto fit-view.
+ * - Manual "Auto layout" on a folder invalidates that group's cache (or subtree)
+ *   and re-applies ELK layout for that scope before reflow.
+ */
 interface UseGraphLayoutNodesInput {
   graphResult: BuildGraphResult;
   autoLayoutOnly?: boolean;

@@ -8,6 +8,9 @@
     "loadCruiseResult": "JSON-Datei laden",
     "invalidCruiseResultJson": "Die ausgewählte Datei ist kein gültiges JSON.",
     "invalidCruiseResultFormat": "Die ausgewählte Datei ist kein dependency-cruiser-Cruise-Ergebnis.",
+    "errorBoundaryTitle": "Etwas ist schiefgelaufen",
+    "errorBoundaryMessage": "Ein unerwarteter Fehler ist aufgetreten. Laden Sie die Seite neu, um fortzufahren.",
+    "errorBoundaryReload": "Neu laden",
     "searchFiles": "Dateien suchen ({{shortcut}})",
     "commandPalette": "Befehlspalette (F1)",
     "hideFileTree": "Dateibaum ausblenden ({{shortcut}})",
@@ -96,6 +99,7 @@
     },
     "emptySelection": "Dateien oder Ordner auswählen, um Abhängigkeiten anzuzeigen",
     "loading": "Abhängigkeitsgraph wird geladen",
+    "buildError": "Abhängigkeitsgraph konnte nicht erstellt werden.",
     "autoLayoutOnly": "Nur automatisches Layout",
     "autoLayoutOnlyHint": "Immer automatisches Layout verwenden und Drag-and-drop deaktivieren. Wenn aus, ist Drag-and-drop möglich; Nachbarn verschieben sich beim Ein- und Ausklappen von Ordnern nicht zurück; verwenden Sie „Automatisches Layout“ im Ordner-Kontextmenü, um den Ordnerinhalt neu anzuordnen."
   },

@@ -8,6 +8,9 @@
     "loadCruiseResult": "Load JSON file",
     "invalidCruiseResultJson": "The selected file is not valid JSON.",
     "invalidCruiseResultFormat": "The selected file is not a dependency-cruiser cruise result.",
+    "errorBoundaryTitle": "Something went wrong",
+    "errorBoundaryMessage": "An unexpected error occurred. Reload the page to continue.",
+    "errorBoundaryReload": "Reload",
     "searchFiles": "Search Files ({{shortcut}})",
     "commandPalette": "Command Palette (F1)",
     "hideFileTree": "Hide file tree ({{shortcut}})",
@@ -96,6 +99,7 @@
     },
     "emptySelection": "Select files or folders to view dependencies",
     "loading": "Loading dependency graph",
+    "buildError": "Failed to build the dependency graph.",
     "autoLayoutOnly": "Auto layout only",
     "autoLayoutOnlyHint": "Always use automatic layout and disable drag-and-drop. When off, drag-and-drop is enabled; collapsing or expanding folders does not shift neighbors back; use Auto layout in the folder context menu to relayout a folder's contents."
   },

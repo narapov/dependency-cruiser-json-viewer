@@ -1,8 +1,11 @@
 import clsx from 'clsx';
 import type { IModule } from 'dependency-cruiser';
 import { useImperativeHandle, useState, type MouseEvent as ReactMouseEvent, type Ref } from 'react';
+import { useTranslation } from 'react-i18next';
 
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
+import Snackbar from '@mui/material/Snackbar';
 import { useColorScheme, useTheme } from '@mui/material/styles';
 import {
   Background,
@@ -77,6 +80,7 @@ function DependencyGraphInner({
   autoLayoutOnly,
   onAutoLayoutOnlyChange,
 }: DependencyGraphInnerProps) {
+  const { t } = useTranslation();
   const theme = useTheme();
   const { mode, systemMode } = useColorScheme();
   const resolvedMode = mode === 'system' ? systemMode : mode;
@@ -85,7 +89,7 @@ function DependencyGraphInner({
 
   const colorMode = resolvedMode ?? 'light';
 
-  const { graphResult, isBuildingGraph, expandedFolders } = useBuildGraph({
+  const { graphResult, isBuildingGraph, buildFailed, clearBuildFailed, expandedFolders } = useBuildGraph({
     modules,
     selectedPaths,
     expandedKeys,
@@ -222,6 +226,16 @@ function DependencyGraphInner({
       </ReactFlow>
       {isBuildingGraph && <GraphLoader />}
       {edgeContextMenu}
+      <Snackbar
+        open={buildFailed}
+        autoHideDuration={6000}
+        onClose={clearBuildFailed}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="error" onClose={clearBuildFailed} sx={{ width: '100%' }}>
+          {t('graph.buildError')}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

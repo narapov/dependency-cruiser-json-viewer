@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { GROUP_HEADER, GROUP_PADDING } from '../../buildGraph';
 import { LEAF_NODE_HEIGHT, LEAF_NODE_MIN_WIDTH } from '../../getLeafNodeSize';
 import { createTestNode as node } from '../createTestNode';
-import { applyGroupSizeToNode, getNodeSizeFromNode, resolveGroupSize } from './resolveGroupSize';
+import { applyGroupSizeToNode, getNodeSize, resolveGroupSize } from './resolveGroupSize';
 
 describe('resolveGroupSize', () => {
   it('returns empty-group minimum size when group has no children', () => {
@@ -86,10 +86,10 @@ describe('applyGroupSizeToNode', () => {
   });
 });
 
-describe('getNodeSizeFromNode', () => {
+describe('getNodeSize', () => {
   it('falls back to leaf defaults when dimensions are absent', () => {
     expect(
-      getNodeSizeFromNode(
+      getNodeSize(
         node('a', {
           width: undefined,
           height: undefined,

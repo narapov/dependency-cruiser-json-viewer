@@ -13,7 +13,7 @@ export function getVisibleRepresentative(
   while (!visibleNodeIds.has(current)) {
     const parent = getParentPath(current);
     if (!parent) {
-      break;
+      return current;
     }
 
     current = parent;

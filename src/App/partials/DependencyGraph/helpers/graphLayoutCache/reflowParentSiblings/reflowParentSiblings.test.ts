@@ -382,7 +382,7 @@ describe('collectNodeSizes', () => {
     expect(sizes.get('b')).toEqual({ width: 200, height: 60 });
   });
 
-  it('falls back via getNodeSizeFromNode when dimensions are missing', () => {
+  it('falls back via getNodeSize when dimensions are missing', () => {
     const sizes = collectNodeSizes([
       node('styled', {
         width: undefined,

@@ -27,6 +27,8 @@ interface UseBuildGraphInput {
 interface UseBuildGraphResult {
   graphResult: BuildGraphResult;
   isBuildingGraph: boolean;
+  buildFailed: boolean;
+  clearBuildFailed: () => void;
   expandedFolders: Set<string>;
 }
 
@@ -46,6 +48,7 @@ export function useBuildGraph({
 
   const [graphResult, setGraphResult] = useState<BuildGraphResult>(createEmptyGraphResult);
   const [isBuildingGraph, setIsBuildingGraph] = useState(() => selectedPaths.length > 0);
+  const [buildFailed, setBuildFailed] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -55,6 +58,7 @@ export function useBuildGraph({
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setGraphResult(createEmptyGraphResult());
       setIsBuildingGraph(false);
+      setBuildFailed(false);
       return;
     }
 
@@ -76,12 +80,14 @@ export function useBuildGraph({
           return;
         }
         setGraphResult(result);
+        setBuildFailed(false);
       })
       .catch(() => {
         if (cancelled) {
           return;
         }
         setGraphResult(createEmptyGraphResult());
+        setBuildFailed(true);
       })
       .finally(() => {
         if (!cancelled) {
@@ -103,5 +109,9 @@ export function useBuildGraph({
     onShowDependencies,
   ]);
 
-  return { graphResult, isBuildingGraph, expandedFolders };
+  const clearBuildFailed = () => {
+    setBuildFailed(false);
+  };
+
+  return { graphResult, isBuildingGraph, buildFailed, clearBuildFailed, expandedFolders };
 }

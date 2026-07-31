@@ -6,7 +6,8 @@ import type { GroupId, NodeSize } from '../types';
 
 const NODE_HEIGHT = LEAF_NODE_HEIGHT;
 
-function getNodeSize(node: Node): NodeSize {
+/** Reads a node's width and height from props or style, with leaf defaults. */
+export function getNodeSize(node: Node): NodeSize {
   const width = node.width ?? (typeof node.style?.width === 'number' ? node.style.width : LEAF_NODE_MIN_WIDTH);
   const height = node.height ?? (typeof node.style?.height === 'number' ? node.style.height : NODE_HEIGHT);
   return { width, height };
@@ -61,9 +62,4 @@ export function applyGroupSizeToNode(node: Node, size: NodeSize): Node {
       height: size.height,
     },
   };
-}
-
-/** Reads a node's width and height from props or style, with leaf defaults. */
-export function getNodeSizeFromNode(node: Node): NodeSize {
-  return getNodeSize(node);
 }

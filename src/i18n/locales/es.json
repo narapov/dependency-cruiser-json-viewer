@@ -8,6 +8,9 @@
     "loadCruiseResult": "Cargar archivo JSON",
     "invalidCruiseResultJson": "El archivo seleccionado no es un JSON válido.",
     "invalidCruiseResultFormat": "El archivo seleccionado no parece un resultado cruise de dependency-cruiser.",
+    "errorBoundaryTitle": "Algo salió mal",
+    "errorBoundaryMessage": "Se produjo un error inesperado. Recarga la página para continuar.",
+    "errorBoundaryReload": "Recargar",
     "searchFiles": "Buscar archivos ({{shortcut}})",
     "commandPalette": "Paleta de comandos (F1)",
     "hideFileTree": "Ocultar árbol de archivos ({{shortcut}})",
@@ -96,6 +99,7 @@
     },
     "emptySelection": "Seleccione archivos o carpetas para ver las dependencias",
     "loading": "Cargando el grafo de dependencias",
+    "buildError": "No se pudo construir el grafo de dependencias.",
     "autoLayoutOnly": "Solo diseño automático",
     "autoLayoutOnlyHint": "Usar siempre el diseño automático y desactivar arrastrar y soltar. Con la opción desactivada, arrastrar y soltar está disponible; al contraer o expandir carpetas los vecinos no vuelven a moverse; use «Diseño automático» en el menú contextual de la carpeta para reorganizar su contenido."
   },

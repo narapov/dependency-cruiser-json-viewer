@@ -112,7 +112,7 @@ Feature/
 ## Testing
 
 - **Runner:** Vitest (`vitest run`), config inline in `vite.config.ts`.
-- **Environment:** `node` (no jsdom).
+- **Environment:** `node` by default; hook tests that need a DOM may opt into jsdom via `// @vitest-environment jsdom`.
 - **Location:** co-located `*.test.ts` next to source — no `__tests__/` folders.
 - **Focus:** domain helpers (primary), component helpers, Shared helpers, selected hooks.
 - **Style:** `describe`/`it`/`expect` from `vitest`; inline test factories where needed.
