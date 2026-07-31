@@ -3,6 +3,8 @@ import type { ComponentType, ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import type { SxProps, Theme } from '@mui/material/styles';
 
+import { mergeHighlightRanges } from '../../helpers/mergeHighlightRanges';
+
 export type QuickPickHighlightComponent = ComponentType<{ children: ReactNode }>;
 
 interface QuickPickHighlightedTextProps {
@@ -10,21 +12,6 @@ interface QuickPickHighlightedTextProps {
   indexes: number[];
   Highlight: QuickPickHighlightComponent;
   sx?: SxProps<Theme>;
-}
-
-interface HighlightRange {
-  start: number;
-  end: number;
-}
-
-function mergeHighlightRanges(sortedIndexes: number[]): HighlightRange[] {
-  return sortedIndexes.reduce<HighlightRange[]>((ranges, index) => {
-    const last = ranges.at(-1);
-    if (last && last.end === index) {
-      return [...ranges.slice(0, -1), { start: last.start, end: index + 1 }];
-    }
-    return [...ranges, { start: index, end: index + 1 }];
-  }, []);
 }
 
 export function QuickPickHighlightedText({ text, indexes, Highlight, sx }: QuickPickHighlightedTextProps) {
