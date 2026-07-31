@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.2.0](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v0.1.5...v0.2.0) (2026-07-31)
+
+### Features
+
+- add about app modal ([8fd64de](https://github.com/narapov/dependency-cruiser-json-viewer/commit/8fd64de1372817d0f8dbec7a70c7f4098a79ae79))
+- replace dagre to elk ([#2](https://github.com/narapov/dependency-cruiser-json-viewer/issues/2)) ([c64f928](https://github.com/narapov/dependency-cruiser-json-viewer/commit/c64f92894857ec712a5dd5c5c3ef4b2c7aeb6850))
+
+### Bug Fixes
+
+- add environment to ICruiseResult in tests ([7cd9db3](https://github.com/narapov/dependency-cruiser-json-viewer/commit/7cd9db30b478dad013a629d5689bf1872d5f3f1d))
+
 ## [0.1.5](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v0.1.4...v0.1.5) (2026-07-06)
 
 ## [0.1.4](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v0.1.2...v0.1.4) (2026-07-06)
