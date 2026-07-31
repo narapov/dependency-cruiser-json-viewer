@@ -11,7 +11,8 @@
     "searchFiles": "Buscar archivos ({{shortcut}})",
     "commandPalette": "Paleta de comandos (F1)",
     "hideFileTree": "Ocultar árbol de archivos ({{shortcut}})",
-    "showFileTree": "Mostrar árbol de archivos ({{shortcut}})"
+    "showFileTree": "Mostrar árbol de archivos ({{shortcut}})",
+    "about": "Acerca de"
   },
   "actions": {
     "copyPath": "Copiar ruta",
@@ -48,7 +49,8 @@
     "setIgnorePatterns": "Configurar patrones de exclusión",
     "loadCruiseResult": "Cargar JSON de dependency-cruiser",
     "toggleFileTree": "Mostrar/Ocultar árbol de archivos",
-    "unselectAll": "Deseleccionar todo"
+    "unselectAll": "Deseleccionar todo",
+    "about": "Acerca de"
   },
   "quickPick": {
     "commandPlaceholder": "Escribe el nombre de un comando para ejecutar...",
@@ -112,5 +114,10 @@
     "examples": "Ejemplos",
     "save": "Guardar",
     "cancel": "Cancelar"
+  },
+  "about": {
+    "title": "Acerca de",
+    "version": "Versión {{version}}",
+    "commit": "Commit {{hash}}"
   }
 }

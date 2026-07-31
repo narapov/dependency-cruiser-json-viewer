@@ -24,6 +24,7 @@ interface UseAppCommandsOptions {
   openLanguagePicker: () => void;
   openIgnorePatterns: () => void;
   openLoadCruiseResult: () => void;
+  openAbout: () => void;
   toggleFileTree: () => void;
 }
 
@@ -33,6 +34,7 @@ export function useAppCommands({
   openLanguagePicker,
   openIgnorePatterns,
   openLoadCruiseResult,
+  openAbout,
   toggleFileTree,
 }: UseAppCommandsOptions): QuickPickCommand[] {
   const { t } = useTranslation();
@@ -101,6 +103,7 @@ export function useAppCommands({
       label: t('commands.loadCruiseResult'),
       onExecute: openLoadCruiseResult,
     },
+    { id: 'about', label: t('commands.about'), onExecute: openAbout },
     { id: 'toggleFileTree', label: t('commands.toggleFileTree'), onExecute: toggleFileTree },
     { id: 'unselectAll', label: t('commands.unselectAll'), onExecute: unselectAll },
   ].sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: 'base' }));

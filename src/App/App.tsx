@@ -19,6 +19,7 @@ import {
   useInitialDependencyCruiserState,
   useLoadCruiseResultFromFile,
 } from './hooks';
+import { AboutDialog } from './partials/AboutDialog';
 import { AppHeader } from './partials/AppHeader';
 import { AppLayout, useSidebarOpen, useSidebarShortcut } from './partials/AppLayout';
 import { AppStatusBar } from './partials/AppStatusBar';
@@ -45,6 +46,7 @@ function App() {
   const [themePickerOpen, setThemePickerOpen] = useState(false);
   const [languagePickerOpen, setLanguagePickerOpen] = useState(false);
   const [ignorePatternsOpen, setIgnorePatternsOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
 
   const filteredData = useMemo(() => (data ? filterCruiseResult(data, patterns) : undefined), [data, patterns]);
 
@@ -62,6 +64,7 @@ function App() {
     openLanguagePicker: () => setLanguagePickerOpen(true),
     openIgnorePatterns: () => setIgnorePatternsOpen(true),
     openLoadCruiseResult: openFilePicker,
+    openAbout: () => setAboutOpen(true),
     toggleFileTree: toggleSidebarOpen,
   });
 
@@ -117,6 +120,7 @@ function App() {
           onOpenFileSearch={() => quickPickRef.current?.openFileMode()}
           onOpenCommandPalette={() => quickPickRef.current?.openCommandMode()}
           onOpenIgnorePatterns={() => setIgnorePatternsOpen(true)}
+          onOpenAbout={() => setAboutOpen(true)}
         />
       }
       sidebar={
@@ -190,6 +194,7 @@ function App() {
             onClose={() => setIgnorePatternsOpen(false)}
             onSave={setPatterns}
           />
+          <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} />
         </>
       }
       footer={

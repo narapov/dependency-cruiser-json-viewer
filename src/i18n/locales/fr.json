@@ -11,7 +11,8 @@
     "searchFiles": "Rechercher des fichiers ({{shortcut}})",
     "commandPalette": "Palette de commandes (F1)",
     "hideFileTree": "Masquer l'arborescence ({{shortcut}})",
-    "showFileTree": "Afficher l'arborescence ({{shortcut}})"
+    "showFileTree": "Afficher l'arborescence ({{shortcut}})",
+    "about": "À propos"
   },
   "actions": {
     "copyPath": "Copier le chemin",
@@ -48,7 +49,8 @@
     "setIgnorePatterns": "Définir les motifs d'exclusion",
     "loadCruiseResult": "Charger le JSON dependency-cruiser",
     "toggleFileTree": "Afficher/Masquer l'arborescence",
-    "unselectAll": "Tout désélectionner"
+    "unselectAll": "Tout désélectionner",
+    "about": "À propos"
   },
   "quickPick": {
     "commandPlaceholder": "Tapez le nom d'une commande à exécuter...",
@@ -112,5 +114,10 @@
     "examples": "Exemples",
     "save": "Enregistrer",
     "cancel": "Annuler"
+  },
+  "about": {
+    "title": "À propos",
+    "version": "Version {{version}}",
+    "commit": "Commit {{hash}}"
   }
 }

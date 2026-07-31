@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 
 import FilterAltOutlined from '@mui/icons-material/FilterAltOutlined';
+import InfoOutlined from '@mui/icons-material/InfoOutlined';
 import SearchOutlined from '@mui/icons-material/SearchOutlined';
 import TerminalOutlined from '@mui/icons-material/TerminalOutlined';
 import Box from '@mui/material/Box';
@@ -55,6 +56,7 @@ interface AppHeaderProps {
   onOpenFileSearch: () => void;
   onOpenCommandPalette: () => void;
   onOpenIgnorePatterns: () => void;
+  onOpenAbout: () => void;
 }
 
 export function AppHeader({
@@ -64,11 +66,13 @@ export function AppHeader({
   onOpenFileSearch,
   onOpenCommandPalette,
   onOpenIgnorePatterns,
+  onOpenAbout,
 }: AppHeaderProps) {
   const { t } = useTranslation();
   const searchFilesLabel = t('app.searchFiles', { shortcut: formatShortcut('P') });
   const commandPaletteLabel = t('app.commandPalette');
   const ignorePatternsLabel = t('ignorePatterns.setIgnorePatterns');
+  const aboutLabel = t('app.about');
 
   return (
     <Box sx={headerGridSx}>
@@ -135,6 +139,11 @@ export function AppHeader({
         </Tooltip>
         <LanguageSelector />
         <ThemeSelector />
+        <Tooltip title={aboutLabel}>
+          <IconButton size="small" aria-label={aboutLabel} onClick={onOpenAbout} sx={headerIconButtonSx}>
+            <InfoOutlined sx={{ fontSize: 18 }} />
+          </IconButton>
+        </Tooltip>
       </Stack>
     </Box>
   );

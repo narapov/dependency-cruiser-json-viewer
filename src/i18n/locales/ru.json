@@ -11,7 +11,8 @@
     "searchFiles": "Поиск файлов ({{shortcut}})",
     "commandPalette": "Палитра команд (F1)",
     "hideFileTree": "Скрыть дерево файлов ({{shortcut}})",
-    "showFileTree": "Показать дерево файлов ({{shortcut}})"
+    "showFileTree": "Показать дерево файлов ({{shortcut}})",
+    "about": "О приложении"
   },
   "actions": {
     "copyPath": "Копировать путь",
@@ -48,7 +49,8 @@
     "setIgnorePatterns": "Настроить игнорируемые паттерны",
     "loadCruiseResult": "Загрузить JSON dependency-cruiser",
     "toggleFileTree": "Переключить дерево файлов",
-    "unselectAll": "Снять выделение"
+    "unselectAll": "Снять выделение",
+    "about": "О приложении"
   },
   "quickPick": {
     "commandPlaceholder": "Введите название команды...",
@@ -112,5 +114,10 @@
     "examples": "Примеры",
     "save": "Сохранить",
     "cancel": "Отмена"
+  },
+  "about": {
+    "title": "О приложении",
+    "version": "Версия {{version}}",
+    "commit": "Коммит {{hash}}"
   }
 }

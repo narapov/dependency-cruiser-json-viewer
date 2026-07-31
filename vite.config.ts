@@ -1,3 +1,4 @@
+import { execSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -10,10 +11,20 @@ import packageJson from './package.json' with { type: 'json' };
 
 const cruiseResultPath = path.resolve('test-data/cruise-result.json');
 
+function getGitCommitHash(): string {
+  try {
+    return execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim();
+  } catch {
+    return 'unknown';
+  }
+}
+
 // https://vite.dev/config/
 export default defineConfig({
   define: {
     __PACKAGE_NAME__: JSON.stringify(packageJson.name),
+    __APP_VERSION__: JSON.stringify(packageJson.version),
+    __APP_COMMIT_HASH__: JSON.stringify(getGitCommitHash()),
   },
   resolve: {
     alias: {

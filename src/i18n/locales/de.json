@@ -11,7 +11,8 @@
     "searchFiles": "Dateien suchen ({{shortcut}})",
     "commandPalette": "Befehlspalette (F1)",
     "hideFileTree": "Dateibaum ausblenden ({{shortcut}})",
-    "showFileTree": "Dateibaum einblenden ({{shortcut}})"
+    "showFileTree": "Dateibaum einblenden ({{shortcut}})",
+    "about": "Über"
   },
   "actions": {
     "copyPath": "Pfad kopieren",
@@ -48,7 +49,8 @@
     "setIgnorePatterns": "Ignorier-Muster festlegen",
     "loadCruiseResult": "dependency-cruiser-JSON laden",
     "toggleFileTree": "Dateibaum ein-/ausblenden",
-    "unselectAll": "Auswahl aufheben"
+    "unselectAll": "Auswahl aufheben",
+    "about": "Über"
   },
   "quickPick": {
     "commandPlaceholder": "Geben Sie den Namen eines Befehls ein...",
@@ -112,5 +114,10 @@
     "examples": "Beispiele",
     "save": "Speichern",
     "cancel": "Abbrechen"
+  },
+  "about": {
+    "title": "Über",
+    "version": "Version {{version}}",
+    "commit": "Commit {{hash}}"
   }
 }
