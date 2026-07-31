@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState, type Ref } from 'react';
-import { useTranslation } from 'react-i18next';
+import type { IModule } from 'dependency-cruiser';
+import { useImperativeHandle, useState, type MouseEvent as ReactMouseEvent, type Ref } from 'react';
 
 import Box from '@mui/material/Box';
 import { useColorScheme, useTheme } from '@mui/material/styles';
@@ -11,33 +11,28 @@ import {
   ReactFlow,
   ReactFlowProvider,
   useReactFlow,
-  type Edge,
   type Node,
 } from '@xyflow/react';
 
 import '@xyflow/react/dist/style.css';
 
-import type { IModule } from 'dependency-cruiser';
-
+import { getMinimapNodeColor } from './helpers';
 import {
-  applyActivePathEdgeStyle,
-  applyActivePathNodeHighlight,
-  applySelectedEdgeStyle,
-  applyUserEdgeHighlightStyle,
-  assignFolderColors,
-  buildEdgeDependencyKeyMap,
-  buildGraph,
-  collectValidDependencyKeys,
-  getEdgeHighlightColor,
-  getMinimapNodeColor,
-} from './helpers';
-import { useEdgeContextMenu, useGraphLayoutNodes } from './hooks';
+  useAutoFitView,
+  useBuildGraph,
+  useEdgeContextMenu,
+  useGraphLayoutNodes,
+  useHighlightedEdges,
+  useHighlightedNodes,
+} from './hooks';
 import { DependencyEdge } from './partials/DependencyEdge';
 import { FileNode } from './partials/FileNode';
 import { FolderGroupNode } from './partials/FolderGroupNode';
 import { FolderNode } from './partials/FolderNode';
+import { GraphEmptySelection } from './partials/GraphEmptySelection';
 import { GraphLayoutToggle } from './partials/GraphLayoutToggle';
 import { GraphLegend } from './partials/GraphLegend';
+import { GraphLoader } from './partials/GraphLoader';
 import type { DependencyGraphHandle } from './types';
 
 import styles from './DependencyGraph.module.css';
@@ -81,50 +76,30 @@ function DependencyGraphInner({
   autoLayoutOnly,
   onAutoLayoutOnlyChange,
 }: DependencyGraphInnerProps) {
-  const { t } = useTranslation();
   const theme = useTheme();
   const { mode, systemMode } = useColorScheme();
   const resolvedMode = mode === 'system' ? systemMode : mode;
+
   const { fitView, getNode } = useReactFlow();
-  const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
-  const [userEdgeHighlights, setUserEdgeHighlights] = useState<ReadonlyMap<string, string>>(() => new Map());
 
-  const sources = modules.map(module => module.source);
   const colorMode = resolvedMode ?? 'light';
-  const folderColors = useMemo(() => assignFolderColors(sources, colorMode), [sources, colorMode]);
-  const expandedFolders = useMemo(() => new Set(expandedKeys), [expandedKeys]);
 
-  const graphResult = useMemo(
-    () =>
-      buildGraph({
-        modules,
-        selectedPaths,
-        expandedFolders,
-        folderColors,
-        onToggleFolder,
-        onExpandRecursive,
-        onShowInFileTree,
-        onShowDependencies,
-      }),
-    [
-      modules,
-      selectedPaths,
-      expandedFolders,
-      folderColors,
-      onToggleFolder,
-      onExpandRecursive,
-      onShowInFileTree,
-      onShowDependencies,
-    ],
-  );
+  const { graphResult, isBuildingGraph, expandedFolders } = useBuildGraph({
+    modules,
+    selectedPaths,
+    expandedKeys,
+    colorMode,
+    onToggleFolder,
+    onExpandRecursive,
+    onShowInFileTree,
+    onShowDependencies,
+  });
 
   const {
     nodes: layoutNodes,
     onNodesChange,
     onNodeDrag,
     onNodeDragStop,
-    onAutoLayoutGroup,
-    onAutoLayoutGroupRecursive,
     hasUserLayout,
   } = useGraphLayoutNodes({
     graphResult,
@@ -133,90 +108,33 @@ function DependencyGraphInner({
 
   const { edges: baseEdges, visibleNodeIds } = graphResult;
 
-  const displayNodes = useMemo(() => {
-    const nodesWithAutoLayout = layoutNodes.map(node => {
-      const withCallbacks =
-        !autoLayoutOnly && node.type === 'folderGroup'
-          ? { ...node, data: { ...node.data, onAutoLayoutGroup, onAutoLayoutGroupRecursive } }
-          : node;
+  const { highlightedNodes } = useHighlightedNodes({
+    nodes: layoutNodes,
+    activePath,
+  });
 
-      return autoLayoutOnly ? { ...withCallbacks, draggable: false, dragHandle: undefined } : withCallbacks;
-    });
-    return applyActivePathNodeHighlight(nodesWithAutoLayout, activePath ?? null);
-  }, [layoutNodes, autoLayoutOnly, onAutoLayoutGroup, onAutoLayoutGroupRecursive, activePath]);
+  const {
+    highlightedEdges,
+    getEdgeHighlight,
+    setUserEdgeHighlight,
+    clearAllHighlights,
+    onEdgeClick,
+    clearSelectedEdge,
+  } = useHighlightedEdges({
+    modules,
+    selectedPaths,
+    expandedFolders,
+    baseEdges,
+    visibleNodeIds,
+    activePath,
+  });
 
-  const selectedPathsKey = selectedPaths.join('\0');
-  const prevSelectedPathsKeyRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (layoutNodes.length === 0 || hasUserLayout || autoLayoutOnly) return;
-
-    const isInitialLayout = prevSelectedPathsKeyRef.current === null;
-    const selectionChanged = prevSelectedPathsKeyRef.current !== selectedPathsKey;
-
-    if (isInitialLayout || selectionChanged) {
-      void fitView({ padding: 0.2, duration: 300 });
-    }
-
-    prevSelectedPathsKeyRef.current = selectedPathsKey;
-  }, [selectedPathsKey, hasUserLayout, autoLayoutOnly, layoutNodes.length, fitView]);
-
-  const activeEdgeId =
-    selectedEdgeId != null && baseEdges.some(edge => edge.id === selectedEdgeId) ? selectedEdgeId : null;
-
-  const edgeDependencyKeyMap = useMemo(
-    () => buildEdgeDependencyKeyMap(modules, selectedPaths, expandedFolders, visibleNodeIds, baseEdges),
-    [modules, selectedPaths, expandedFolders, visibleNodeIds, baseEdges],
-  );
-
-  const validDependencyKeys = useMemo(
-    () => collectValidDependencyKeys(modules, selectedPaths),
-    [modules, selectedPaths],
-  );
-
-  const effectiveUserEdgeHighlights = useMemo(() => {
-    const next = new Map<string, string>();
-    for (const [key, color] of userEdgeHighlights) {
-      if (validDependencyKeys.has(key)) {
-        next.set(key, color);
-      }
-    }
-    return next;
-  }, [userEdgeHighlights, validDependencyKeys]);
-
-  const displayEdges = applyUserEdgeHighlightStyle(
-    applySelectedEdgeStyle(applyActivePathEdgeStyle(baseEdges, activePath ?? null), activeEdgeId),
-    effectiveUserEdgeHighlights,
-    edgeDependencyKeyMap,
-  );
-
-  const setUserEdgeHighlight = useCallback(
-    (edgeId: string, color: string | null) => {
-      const dependencyKeys = edgeDependencyKeyMap.get(edgeId) ?? [];
-      if (dependencyKeys.length === 0) return;
-
-      setUserEdgeHighlights(prev => {
-        const next = new Map(prev);
-        for (const key of dependencyKeys) {
-          if (color == null) {
-            next.delete(key);
-          } else {
-            next.set(key, color);
-          }
-        }
-        return next;
-      });
-    },
-    [edgeDependencyKeyMap],
-  );
-
-  const getEdgeHighlight = useCallback(
-    (edgeId: string) => {
-      const dependencyKeys = edgeDependencyKeyMap.get(edgeId) ?? [];
-      return getEdgeHighlightColor(dependencyKeys, effectiveUserEdgeHighlights);
-    },
-    [edgeDependencyKeyMap, effectiveUserEdgeHighlights],
-  );
+  useAutoFitView({
+    selectedPaths,
+    layoutNodesLength: layoutNodes.length,
+    hasUserLayout,
+    autoLayoutOnly,
+  });
 
   const runFocusNode = (path: string) => {
     if (!getNode(path)) return;
@@ -233,25 +151,19 @@ function DependencyGraphInner({
     focusNode(path: string) {
       runFocusNode(path);
     },
-    clearAllHighlights() {
-      setUserEdgeHighlights(new Map());
-    },
+    clearAllHighlights,
   }));
 
-  const onEdgeClick = (_: React.MouseEvent, edge: Edge) => {
-    setSelectedEdgeId(edge.id);
-  };
-
   const onPaneClick = () => {
-    setSelectedEdgeId(null);
+    clearSelectedEdge();
   };
 
-  const onPaneContextMenu = (event: React.MouseEvent | MouseEvent) => {
+  const onPaneContextMenu = (event: ReactMouseEvent | MouseEvent) => {
     event.preventDefault();
   };
 
-  const onNodeClick = (_: React.MouseEvent, node: Node) => {
-    setSelectedEdgeId(null);
+  const onNodeClick = (_: ReactMouseEvent, node: Node) => {
+    clearSelectedEdge();
     if (activePath === node.id) {
       return;
     }
@@ -261,26 +173,14 @@ function DependencyGraphInner({
   const miniMapNodeColor = (graphNode: Node) => getMinimapNodeColor(graphNode, colorMode);
 
   if (selectedPaths.length === 0) {
-    return (
-      <Box
-        sx={{
-          display: 'grid',
-          placeItems: 'center',
-          height: '100%',
-          color: 'text.secondary',
-          fontSize: 14,
-        }}
-      >
-        {t('graph.emptySelection')}
-      </Box>
-    );
+    return <GraphEmptySelection />;
   }
 
   return (
-    <>
+    <Box sx={{ position: 'relative', height: '100%', minHeight: 0 }}>
       <ReactFlow
-        nodes={displayNodes}
-        edges={displayEdges}
+        nodes={highlightedNodes}
+        edges={highlightedEdges}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         colorMode={mode ?? 'system'}
@@ -317,8 +217,9 @@ function DependencyGraphInner({
         />
         <Controls position="bottom-right" showInteractive={false} />
       </ReactFlow>
+      {isBuildingGraph && <GraphLoader />}
       {edgeContextMenu}
-    </>
+    </Box>
   );
 }
 

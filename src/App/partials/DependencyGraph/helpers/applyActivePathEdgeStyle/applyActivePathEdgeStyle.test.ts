@@ -54,14 +54,14 @@ describe('applyActivePathEdgeStyle', () => {
     expect(outgoing?.markerEnd).toMatchObject({ color: OUTGOING_EDGE_COLOR });
   });
 
-  it('keeps circular edge red when node is highlighted', () => {
+  it('keeps circular edge red when node is highlighted', async () => {
     const circularDep = {
       resolved: 'src/foo/b.ts',
       circular: true,
     } as IModule['dependencies'][0];
 
     const modules = [moduleAt('src/foo/a.ts', [circularDep]), moduleAt('src/foo/b.ts')];
-    const { edges } = buildGraph({
+    const { edges } = await buildGraph({
       modules,
       selectedPaths: ['src/foo/a.ts', 'src/foo/b.ts'],
       expandedFolders: new Set(['src', 'src/foo']),

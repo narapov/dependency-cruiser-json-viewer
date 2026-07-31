@@ -1,7 +1,10 @@
-import { MarkerType, type Edge } from '@xyflow/react';
+import type { Edge } from '@xyflow/react';
+
+import { withEdgeStrokeStyle } from '../withEdgeStrokeStyle';
 
 const USER_HIGHLIGHT_EDGE_Z_INDEX = 1001;
 
+/** Applies user-chosen highlight colors to edges that match dependency keys. */
 export function applyUserEdgeHighlightStyle(
   edges: Edge[],
   userEdgeHighlights: ReadonlyMap<string, string>,
@@ -17,27 +20,10 @@ export function applyUserEdgeHighlightStyle(
 
     if (color == null) return edge;
 
-    const markerEnd =
-      typeof edge.markerEnd === 'object' && edge.markerEnd !== null
-        ? {
-            ...edge.markerEnd,
-            type: MarkerType.ArrowClosed,
-            color,
-          }
-        : {
-            type: MarkerType.ArrowClosed,
-            color,
-          };
-
-    return {
-      ...edge,
+    return withEdgeStrokeStyle(edge, {
+      color,
+      strokeWidth: 3,
       zIndex: USER_HIGHLIGHT_EDGE_Z_INDEX,
-      markerEnd,
-      style: {
-        ...edge.style,
-        stroke: color,
-        strokeWidth: 3,
-      },
-    };
+    });
   });
 }

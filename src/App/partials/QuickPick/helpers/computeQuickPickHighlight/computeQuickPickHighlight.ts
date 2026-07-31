@@ -1,10 +1,12 @@
 import fuzzysort from 'fuzzysort';
 
+/** Character indexes to highlight in a quick-pick item's name and path. */
 export interface QuickPickHighlight {
   nameIndexes: number[];
   pathIndexes: number[];
 }
 
+/** Fuzzy-matches a query against name and path, returning highlight indexes. */
 export function computeQuickPickHighlight(query: string, name: string, key: string): QuickPickHighlight {
   const trimmed = query.trim();
   if (!trimmed) {

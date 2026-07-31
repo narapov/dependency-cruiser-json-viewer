@@ -93,6 +93,7 @@
       "viewTarget": "Ver destino"
     },
     "emptySelection": "Seleccione archivos o carpetas para ver las dependencias",
+    "loading": "Cargando el grafo de dependencias",
     "autoLayoutOnly": "Solo diseño automático",
     "autoLayoutOnlyHint": "Usar siempre el diseño automático y desactivar arrastrar y soltar. Con la opción desactivada, arrastrar y soltar está disponible; al contraer o expandir carpetas los vecinos no vuelven a moverse; use «Diseño automático» en el menú contextual de la carpeta para reorganizar su contenido."
   },

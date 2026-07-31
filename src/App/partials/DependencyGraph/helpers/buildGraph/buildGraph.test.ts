@@ -19,8 +19,8 @@ describe('buildGraph half-checked folders', () => {
 
   const modules = sources.map(source => moduleAt(source));
 
-  it('includes half-checked ancestor folders when only a nested file is selected', () => {
-    const { nodes } = buildGraph({
+  it('includes half-checked ancestor folders when only a nested file is selected', async () => {
+    const { nodes } = await buildGraph({
       modules,
       selectedPaths: ['src/foo/a.ts'],
       expandedFolders: new Set(['src']),
@@ -37,8 +37,8 @@ describe('buildGraph half-checked folders', () => {
     expect(nodes.some(node => node.id === 'src/foo/a.ts')).toBe(false);
   });
 
-  it('shows selected files inside expanded half-checked folders', () => {
-    const { nodes } = buildGraph({
+  it('shows selected files inside expanded half-checked folders', async () => {
+    const { nodes } = await buildGraph({
       modules,
       selectedPaths: ['src/foo/a.ts'],
       expandedFolders: new Set(['src', 'src/foo']),
@@ -52,10 +52,10 @@ describe('buildGraph half-checked folders', () => {
     expect(nodes.some(node => node.id === 'src/foo/b.ts')).toBe(false);
   });
 
-  it('keeps fully selected folder behavior', () => {
+  it('keeps fully selected folder behavior', async () => {
     const selectedPaths = sources.filter(source => source.startsWith('src/'));
 
-    const { nodes } = buildGraph({
+    const { nodes } = await buildGraph({
       modules,
       selectedPaths,
       expandedFolders: new Set(['src', 'src/foo', 'src/bar']),
@@ -73,8 +73,8 @@ describe('buildGraph half-checked folders', () => {
     expect(nodeIds).not.toContain('lib/y.ts');
   });
 
-  it('uses separate container roots for unrelated branches', () => {
-    const { nodes } = buildGraph({
+  it('uses separate container roots for unrelated branches', async () => {
+    const { nodes } = await buildGraph({
       modules,
       selectedPaths: ['src/foo/a.ts', 'lib/y.ts'],
       expandedFolders: new Set(['src', 'src/foo', 'lib']),
@@ -101,8 +101,8 @@ describe('buildGraph circular dependencies', () => {
 
   const modules = [moduleAt('src/foo/a.ts', [circularDep]), moduleAt('src/foo/b.ts')];
 
-  it('marks file nodes with circular dependencies', () => {
-    const { nodes } = buildGraph({
+  it('marks file nodes with circular dependencies', async () => {
+    const { nodes } = await buildGraph({
       modules,
       selectedPaths: ['src/foo/a.ts', 'src/foo/b.ts'],
       expandedFolders: new Set(['src', 'src/foo']),
@@ -116,8 +116,8 @@ describe('buildGraph circular dependencies', () => {
     expect(fileNode?.data.circular).toBe(true);
   });
 
-  it('marks collapsed folders containing circular files', () => {
-    const { nodes } = buildGraph({
+  it('marks collapsed folders containing circular files', async () => {
+    const { nodes } = await buildGraph({
       modules,
       selectedPaths: ['src/foo/a.ts', 'src/foo/b.ts'],
       expandedFolders: new Set(['src']),
@@ -131,8 +131,8 @@ describe('buildGraph circular dependencies', () => {
     expect(folderNode?.data.circular).toBe(true);
   });
 
-  it('does not mark expanded folder groups as circular', () => {
-    const { nodes } = buildGraph({
+  it('does not mark expanded folder groups as circular', async () => {
+    const { nodes } = await buildGraph({
       modules,
       selectedPaths: ['src/foo/a.ts', 'src/foo/b.ts'],
       expandedFolders: new Set(['src', 'src/foo']),
@@ -146,8 +146,8 @@ describe('buildGraph circular dependencies', () => {
     expect(groupNode?.data.circular).toBeUndefined();
   });
 
-  it('colors circular edges red', () => {
-    const { edges } = buildGraph({
+  it('colors circular edges red', async () => {
+    const { edges } = await buildGraph({
       modules,
       selectedPaths: ['src/foo/a.ts', 'src/foo/b.ts'],
       expandedFolders: new Set(['src', 'src/foo']),
@@ -184,10 +184,10 @@ describe('buildGraph type-only dependencies', () => {
       dependencyTypes: ['local', 'import'],
     }) as IModule['dependencies'][0];
 
-  it('renders type-only edges as dashed', () => {
+  it('renders type-only edges as dashed', async () => {
     const modules = [moduleAt('src/foo/a.ts', [typeOnlyDep('src/foo/b.ts')]), moduleAt('src/foo/b.ts')];
 
-    const { edges } = buildGraph({
+    const { edges } = await buildGraph({
       modules,
       selectedPaths: ['src/foo/a.ts', 'src/foo/b.ts'],
       expandedFolders: new Set(['src', 'src/foo']),
@@ -199,13 +199,13 @@ describe('buildGraph type-only dependencies', () => {
     expect(edge?.data?.typeOnly).toBe(true);
   });
 
-  it('renders mixed type-only and value imports as solid', () => {
+  it('renders mixed type-only and value imports as solid', async () => {
     const modules = [
       moduleAt('src/foo/a.ts', [typeOnlyDep('src/foo/b.ts'), valueDep('src/foo/b.ts')]),
       moduleAt('src/foo/b.ts'),
     ];
 
-    const { edges } = buildGraph({
+    const { edges } = await buildGraph({
       modules,
       selectedPaths: ['src/foo/a.ts', 'src/foo/b.ts'],
       expandedFolders: new Set(['src', 'src/foo']),
@@ -217,13 +217,13 @@ describe('buildGraph type-only dependencies', () => {
     expect(edge?.data?.typeOnly).toBe(false);
   });
 
-  it('does not mark nodes red for type-only circular dependencies', () => {
+  it('does not mark nodes red for type-only circular dependencies', async () => {
     const modules = [
       moduleAt('src/foo/a.ts', [typeOnlyDep('src/foo/b.ts', true)]),
       moduleAt('src/foo/b.ts', [typeOnlyDep('src/foo/a.ts', true)]),
     ];
 
-    const { nodes, edges } = buildGraph({
+    const { nodes, edges } = await buildGraph({
       modules,
       selectedPaths: ['src/foo/a.ts', 'src/foo/b.ts'],
       expandedFolders: new Set(['src', 'src/foo']),
@@ -238,10 +238,10 @@ describe('buildGraph type-only dependencies', () => {
     expect(edge?.style?.strokeDasharray).toBe('6 4');
   });
 
-  it('uses bright red for value circular and dashed light red for type-only circular', () => {
+  it('uses bright red for value circular and dashed light red for type-only circular', async () => {
     const modules = [moduleAt('src/foo/a.ts', [valueDep('src/foo/b.ts', true)]), moduleAt('src/foo/b.ts')];
 
-    const { nodes, edges } = buildGraph({
+    const { nodes, edges } = await buildGraph({
       modules,
       selectedPaths: ['src/foo/a.ts', 'src/foo/b.ts'],
       expandedFolders: new Set(['src', 'src/foo']),
@@ -266,11 +266,11 @@ describe('buildGraph layout', () => {
     return Array.from({ length: count }, (_, index) => `src/foo/f${index}.ts`);
   }
 
-  it('many siblings without edges use grid layout', () => {
+  it('many siblings without edges spread across columns', async () => {
     const sources = manySiblingSources(8);
     const modules = sources.map(source => moduleAt(source));
 
-    const { nodes } = buildGraph({
+    const { nodes } = await buildGraph({
       modules,
       selectedPaths: sources,
       expandedFolders: new Set(['src', 'src/foo']),
@@ -283,12 +283,12 @@ describe('buildGraph layout', () => {
     expect(xValues.size).toBeGreaterThan(1);
   });
 
-  it('connected siblings keep dagre layout', () => {
+  it('connected siblings keep elk layout', async () => {
     const depB = { resolved: 'src/foo/b.ts' } as IModule['dependencies'][0];
     const depC = { resolved: 'src/foo/c.ts' } as IModule['dependencies'][0];
     const modules = [moduleAt('src/foo/a.ts', [depB]), moduleAt('src/foo/b.ts', [depC]), moduleAt('src/foo/c.ts')];
 
-    const { nodes } = buildGraph({
+    const { nodes } = await buildGraph({
       modules,
       selectedPaths: ['src/foo/a.ts', 'src/foo/b.ts', 'src/foo/c.ts'],
       expandedFolders: new Set(['src', 'src/foo']),
@@ -300,19 +300,19 @@ describe('buildGraph layout', () => {
     expect(pos('src/foo/b.ts').x).toBeLessThan(pos('src/foo/c.ts').x);
   });
 
-  it('group size grows with child count', () => {
+  it('group size grows with child count', async () => {
     const mediumSources = manySiblingSources(6);
     const largeSources = manySiblingSources(12);
     const mediumModules = mediumSources.map(source => moduleAt(source));
     const largeModules = largeSources.map(source => moduleAt(source));
 
-    const mediumGraph = buildGraph({
+    const mediumGraph = await buildGraph({
       modules: mediumModules,
       selectedPaths: mediumSources,
       expandedFolders: new Set(['src', 'src/foo']),
       ...noopArgs,
     });
-    const largeGraph = buildGraph({
+    const largeGraph = await buildGraph({
       modules: largeModules,
       selectedPaths: largeSources,
       expandedFolders: new Set(['src', 'src/foo']),
@@ -321,16 +321,17 @@ describe('buildGraph layout', () => {
 
     const mediumGroup = mediumGraph.nodes.find(node => node.id === 'src/foo' && node.type === 'folderGroup');
     const largeGroup = largeGraph.nodes.find(node => node.id === 'src/foo' && node.type === 'folderGroup');
+    const mediumArea = (mediumGroup?.style?.width as number) * (mediumGroup?.style?.height as number);
+    const largeArea = (largeGroup?.style?.width as number) * (largeGroup?.style?.height as number);
 
-    expect(largeGroup?.style?.width).toBeGreaterThan(mediumGroup?.style?.width as number);
-    expect(largeGroup?.style?.height).toBeGreaterThan(mediumGroup?.style?.height as number);
+    expect(largeArea).toBeGreaterThan(mediumArea);
   });
 
-  it('assigns explicit width to leaf nodes based on label length', () => {
+  it('assigns explicit width to leaf nodes based on label length', async () => {
     const longPath = 'src/foo/very-long-file-name-that-exceeds-minimum-width.ts';
     const modules = [moduleAt(longPath)];
 
-    const { nodes } = buildGraph({
+    const { nodes } = await buildGraph({
       modules,
       selectedPaths: [longPath],
       expandedFolders: new Set(['src', 'src/foo']),
@@ -344,7 +345,7 @@ describe('buildGraph layout', () => {
     expect(fileNode?.style?.height).toBe(fileNode?.height);
   });
 
-  it('group size grows when children have longer names', () => {
+  it('group size grows when children have longer names', async () => {
     const shortSources = ['src/foo/a.ts', 'src/foo/b.ts'];
     const longSources = [
       'src/foo/very-long-file-name-that-exceeds-minimum-width-a.ts',
@@ -353,13 +354,13 @@ describe('buildGraph layout', () => {
     const shortModules = shortSources.map(source => moduleAt(source));
     const longModules = longSources.map(source => moduleAt(source));
 
-    const shortGraph = buildGraph({
+    const shortGraph = await buildGraph({
       modules: shortModules,
       selectedPaths: shortSources,
       expandedFolders: new Set(['src', 'src/foo']),
       ...noopArgs,
     });
-    const longGraph = buildGraph({
+    const longGraph = await buildGraph({
       modules: longModules,
       selectedPaths: longSources,
       expandedFolders: new Set(['src', 'src/foo']),
@@ -374,7 +375,7 @@ describe('buildGraph layout', () => {
     expect(longGroup?.height).toBe(longGroup?.style?.height);
   });
 
-  it('keeps parent sibling position stable when expanding a folder', () => {
+  it('keeps parent sibling position stable when expanding a folder', async () => {
     const depToBar = { resolved: 'src/bar/c.ts' } as IModule['dependencies'][0];
     const modules = [moduleAt('src/foo/a.ts', [depToBar]), moduleAt('src/bar/c.ts'), moduleAt('src/baz/e.ts')];
     const graphArgs = {
@@ -383,11 +384,11 @@ describe('buildGraph layout', () => {
       ...noopArgs,
     };
 
-    const collapsed = buildGraph({
+    const collapsed = await buildGraph({
       ...graphArgs,
       expandedFolders: new Set(['src']),
     });
-    const expanded = buildGraph({
+    const expanded = await buildGraph({
       ...graphArgs,
       expandedFolders: new Set(['src', 'src/foo']),
     });
@@ -398,7 +399,7 @@ describe('buildGraph layout', () => {
     expect(collapsedFoo?.position).toEqual(expandedFoo?.position);
   });
 
-  it('still changes visual edges when a folder is expanded', () => {
+  it('still changes visual edges when a folder is expanded', async () => {
     const depToBar = { resolved: 'src/bar/c.ts' } as IModule['dependencies'][0];
     const modules = [moduleAt('src/foo/a.ts', [depToBar]), moduleAt('src/bar/c.ts')];
     const graphArgs = {
@@ -407,11 +408,11 @@ describe('buildGraph layout', () => {
       ...noopArgs,
     };
 
-    const collapsed = buildGraph({
+    const collapsed = await buildGraph({
       ...graphArgs,
       expandedFolders: new Set(['src', 'src/bar']),
     });
-    const expanded = buildGraph({
+    const expanded = await buildGraph({
       ...graphArgs,
       expandedFolders: new Set(['src', 'src/foo', 'src/bar']),
     });
@@ -421,7 +422,7 @@ describe('buildGraph layout', () => {
     expect(expanded.edges.some(edge => edge.source === 'src/foo' && edge.target === 'src/bar/c.ts')).toBe(false);
   });
 
-  it('keeps visual edges on collapsed inner folders for half-checked file selections', () => {
+  it('keeps visual edges on collapsed inner folders for half-checked file selections', async () => {
     const depToBar = { resolved: 'src/foo/bar/c.ts' } as IModule['dependencies'][0];
     const modules = [moduleAt('src/foo/bar/c.ts'), moduleAt('lib/x.ts', [depToBar])];
     const graphArgs = {
@@ -430,7 +431,7 @@ describe('buildGraph layout', () => {
       ...noopArgs,
     };
 
-    const collapsedInner = buildGraph({
+    const collapsedInner = await buildGraph({
       ...graphArgs,
       expandedFolders: new Set(['src', 'src/foo']),
     });

@@ -25,6 +25,7 @@ function getTopLevelFolderKeys(sources: string[]): string[] {
   return [...keys].sort();
 }
 
+/** Default selection: all paths under top-level folders except `node_modules`. */
 export function getDefaultSelectedKeys(sources: string[]): string[] {
   const allPaths = collectAllPaths(sources);
   const selected = new Set<string>();

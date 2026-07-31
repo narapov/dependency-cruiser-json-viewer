@@ -36,6 +36,7 @@ function mergeRelation(
   mergeDependencyRelationFlags(existing, isTypeOnly, isCircular);
 }
 
+/** Incoming and outgoing relations for a single module path among selected paths. */
 export function getModuleRelations(path: string, modules: IModule[], selectedPaths: string[]): ModuleRelations {
   const selectedSet = new Set(selectedPaths);
   const module = modules.find(m => m.source === path);

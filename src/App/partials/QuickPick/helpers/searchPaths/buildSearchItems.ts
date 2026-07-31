@@ -21,6 +21,7 @@ function collectPaths(sources: string[]): Set<string> {
   return paths;
 }
 
+/** Builds sorted file and folder quick-pick items from source paths. */
 export function buildSearchItems(sources: string[]): QuickPickFileItem[] {
   const pathSet = collectPaths(sources);
   const childrenByParent = new Map<string, string[]>();

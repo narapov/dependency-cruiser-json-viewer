@@ -93,6 +93,7 @@
       "viewTarget": "View target"
     },
     "emptySelection": "Select files or folders to view dependencies",
+    "loading": "Loading dependency graph",
     "autoLayoutOnly": "Auto layout only",
     "autoLayoutOnlyHint": "Always use automatic layout and disable drag-and-drop. When off, drag-and-drop is enabled; collapsing or expanding folders does not shift neighbors back; use Auto layout in the folder context menu to relayout a folder's contents."
   },

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { assignFolderColors, hueDistanceForTest, parsePastelHsl, type FolderColorMode } from './assignFolderColors';
+import { assignFolderColors, parsePastelHsl, type FolderColorMode } from './assignFolderColors';
 
 const SAMPLE_SOURCES = [
   'src/App.tsx',
@@ -13,6 +13,10 @@ const SAMPLE_SOURCES = [
   'packages/bar/util.ts',
 ];
 
+function hueDistance(a: number, b: number): number {
+  const diff = Math.abs(a - b) % 360;
+  return Math.min(diff, 360 - diff);
+}
 function getParentPath(path: string): string | null {
   const slash = path.lastIndexOf('/');
   return slash === -1 ? null : path.slice(0, slash);
@@ -37,7 +41,7 @@ function expectSiblingHueSeparation(colors: ReadonlyMap<string, string>, folderP
 
   for (let i = 0; i < hues.length; i++) {
     for (let j = i + 1; j < hues.length; j++) {
-      expect(hueDistanceForTest(hues[i], hues[j])).toBeGreaterThanOrEqual(25);
+      expect(hueDistance(hues[i], hues[j])).toBeGreaterThanOrEqual(25);
     }
   }
 }
@@ -50,7 +54,7 @@ function expectParentChildHueSeparation(colors: ReadonlyMap<string, string>) {
 
   const parentHue = parsePastelHsl(parentColor!)!.hue;
   const childHue = parsePastelHsl(childColor!)!.hue;
-  expect(hueDistanceForTest(parentHue, childHue)).toBeGreaterThanOrEqual(40);
+  expect(hueDistance(parentHue, childHue)).toBeGreaterThanOrEqual(40);
 }
 
 describe('assignFolderColors', () => {

@@ -1,8 +1,8 @@
 import type { Node } from '@xyflow/react';
 
-import { getDirectChildren, GROUP_HEADER, GROUP_PADDING } from '../buildGraph';
-import { LEAF_NODE_HEIGHT, LEAF_NODE_MIN_WIDTH } from '../getLeafNodeSize';
-import type { GroupId, NodeSize } from './types';
+import { getDirectChildren, GROUP_HEADER, GROUP_PADDING } from '../../buildGraph';
+import { LEAF_NODE_HEIGHT, LEAF_NODE_MIN_WIDTH } from '../../getLeafNodeSize';
+import type { GroupId, NodeSize } from '../types';
 
 const NODE_HEIGHT = LEAF_NODE_HEIGHT;
 
@@ -12,6 +12,7 @@ function getNodeSize(node: Node): NodeSize {
   return { width, height };
 }
 
+/** Computes folder group size from the bounding box of its direct children. */
 export function resolveGroupSize(
   groupId: GroupId,
   nodes: Node[],
@@ -45,6 +46,7 @@ export function resolveGroupSize(
   };
 }
 
+/** Returns a copy of the node with width and height applied to style. */
 export function applyGroupSizeToNode(node: Node, size: NodeSize): Node {
   return {
     ...node,
@@ -58,6 +60,7 @@ export function applyGroupSizeToNode(node: Node, size: NodeSize): Node {
   };
 }
 
+/** Reads a node's width and height from props or style, with leaf defaults. */
 export function getNodeSizeFromNode(node: Node): NodeSize {
   return getNodeSize(node);
 }

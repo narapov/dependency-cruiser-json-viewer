@@ -93,6 +93,7 @@
       "viewTarget": "Ziel anzeigen"
     },
     "emptySelection": "Dateien oder Ordner auswählen, um Abhängigkeiten anzuzeigen",
+    "loading": "Abhängigkeitsgraph wird geladen",
     "autoLayoutOnly": "Nur automatisches Layout",
     "autoLayoutOnlyHint": "Immer automatisches Layout verwenden und Drag-and-drop deaktivieren. Wenn aus, ist Drag-and-drop möglich; Nachbarn verschieben sich beim Ein- und Ausklappen von Ordnern nicht zurück; verwenden Sie „Automatisches Layout“ im Ordner-Kontextmenü, um den Ordnerinhalt neu anzuordnen."
   },

@@ -2,7 +2,13 @@ import type { IModule } from 'dependency-cruiser';
 import { describe, expect, it } from 'vitest';
 
 import { buildGraph } from '../buildGraph';
-import { buildEdgeDependencyKeyMap, getEdgeDependencyKeys, makeDependencyKey } from './getEdgeDependencyKeys';
+import {
+  buildEdgeDependencyKeyMap,
+  collectValidDependencyKeys,
+  getEdgeDependencyKeys,
+  getEdgeHighlightColor,
+  makeDependencyKey,
+} from './getEdgeDependencyKeys';
 
 function moduleAt(source: string, dependencies: IModule['dependencies'] = []): IModule {
   return { source, dependencies, dependents: [], valid: true } as IModule;
@@ -28,16 +34,16 @@ describe('getEdgeDependencyKeys', () => {
 
   const selectedPaths = ['src/foo', 'src/foo/a.ts', 'src/foo/b.ts', 'src/bar/c.ts'];
 
-  it('returns stable file-level keys regardless of expanded folders', () => {
+  it('returns stable file-level keys regardless of expanded folders', async () => {
     const collapsedFolders = new Set(['src', 'src/bar']);
     const expandedFolders = new Set(['src', 'src/foo', 'src/bar']);
-    const collapsedGraph = buildGraph({
+    const collapsedGraph = await buildGraph({
       modules,
       selectedPaths,
       expandedFolders: collapsedFolders,
       ...graphArgs,
     });
-    const expandedGraph = buildGraph({
+    const expandedGraph = await buildGraph({
       modules,
       selectedPaths,
       expandedFolders,
@@ -77,9 +83,9 @@ describe('getEdgeDependencyKeys', () => {
     expect(expandedKeysB).toEqual([makeDependencyKey('src/foo/b.ts', 'src/bar/c.ts')]);
   });
 
-  it('aggregates multiple file-level pairs into one visual edge', () => {
+  it('aggregates multiple file-level pairs into one visual edge', async () => {
     const expandedFolders = new Set(['src', 'src/bar']);
-    const { edges, visibleNodeIds } = buildGraph({
+    const { edges, visibleNodeIds } = await buildGraph({
       modules,
       selectedPaths,
       expandedFolders,
@@ -103,9 +109,9 @@ describe('getEdgeDependencyKeys', () => {
     expect(keys).toContain(makeDependencyKey('src/foo/b.ts', 'src/bar/c.ts'));
   });
 
-  it('builds a map from visual edge ids to dependency keys', () => {
+  it('builds a map from visual edge ids to dependency keys', async () => {
     const expandedFolders = new Set(['src', 'src/foo', 'src/bar']);
-    const { edges, visibleNodeIds } = buildGraph({
+    const { edges, visibleNodeIds } = await buildGraph({
       modules,
       selectedPaths,
       expandedFolders,
@@ -118,5 +124,50 @@ describe('getEdgeDependencyKeys', () => {
 
     expect(map.get(edgeA!.id)).toEqual([makeDependencyKey('src/foo/a.ts', 'src/bar/c.ts')]);
     expect(map.get(edgeB!.id)).toEqual([makeDependencyKey('src/foo/b.ts', 'src/bar/c.ts')]);
+  });
+});
+
+describe('getEdgeHighlightColor', () => {
+  const keyA = makeDependencyKey('src/foo/a.ts', 'src/bar/c.ts');
+  const keyB = makeDependencyKey('src/foo/b.ts', 'src/bar/c.ts');
+
+  it('returns undefined when no keys are highlighted', () => {
+    expect(getEdgeHighlightColor([keyA, keyB], new Map())).toBeUndefined();
+  });
+
+  it('returns the shared color when all highlighted keys agree', () => {
+    const highlights = new Map([
+      [keyA, '#e6194b'],
+      [keyB, '#e6194b'],
+    ]);
+    expect(getEdgeHighlightColor([keyA, keyB], highlights)).toBe('#e6194b');
+  });
+
+  it('returns undefined when highlighted keys have mixed colors', () => {
+    const highlights = new Map([
+      [keyA, '#e6194b'],
+      [keyB, '#3cb44b'],
+    ]);
+    expect(getEdgeHighlightColor([keyA, keyB], highlights)).toBeUndefined();
+  });
+
+  it('returns the color when only some keys are highlighted and they agree', () => {
+    const highlights = new Map([[keyA, '#e6194b']]);
+    expect(getEdgeHighlightColor([keyA, keyB], highlights)).toBe('#e6194b');
+  });
+});
+
+describe('collectValidDependencyKeys', () => {
+  it('collects file-level dependency keys within the selection', () => {
+    const modules = [
+      moduleAt('src/foo/a.ts', [{ resolved: 'src/bar/c.ts' } as IModule['dependencies'][0]]),
+      moduleAt('src/foo/b.ts', [{ resolved: 'src/outside.ts' } as IModule['dependencies'][0]]),
+      moduleAt('src/bar/c.ts'),
+      moduleAt('src/outside.ts'),
+    ];
+
+    const keys = collectValidDependencyKeys(modules, ['src/foo/a.ts', 'src/foo/b.ts', 'src/bar/c.ts']);
+
+    expect(keys).toEqual(new Set([makeDependencyKey('src/foo/a.ts', 'src/bar/c.ts')]));
   });
 });

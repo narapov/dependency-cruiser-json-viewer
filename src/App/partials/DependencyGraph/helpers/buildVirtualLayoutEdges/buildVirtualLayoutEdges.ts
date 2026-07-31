@@ -2,11 +2,13 @@ import type { IModule } from 'dependency-cruiser';
 
 import { getParentPath } from '@/domain';
 
+/** Directed edge between sibling layout representatives. */
 export interface LayoutEdge {
   source: string;
   target: string;
 }
 
+/** Nearest ancestor (or path itself) that is a direct child of the folder. */
 export function getDirectChildOfFolder(path: string, folderId: string | null): string {
   let current = path;
 
@@ -27,6 +29,7 @@ export function getDirectChildOfFolder(path: string, folderId: string | null): s
   return current;
 }
 
+/** Builds sibling-level layout edges from module dependencies within a folder. */
 export function buildVirtualLayoutEdges(
   folderId: string | null,
   childIds: readonly string[],

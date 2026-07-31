@@ -96,7 +96,14 @@ export function useAppOrchestration({
 
   const activatePath = (path: string) => {
     const ancestors = getAncestorKeys(path);
-    setExpandedKeys(keys => [...new Set([...keys, ...ancestors])]);
+    setExpandedKeys(oldKeys => {
+      const oldKeysSet = new Set(oldKeys);
+      const newKeysSet = new Set([...oldKeys, ...ancestors]);
+      if (oldKeysSet.size !== newKeysSet.size) {
+        return Array.from(newKeysSet);
+      }
+      return oldKeys;
+    });
     setActivePath(path);
   };
 

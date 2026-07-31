@@ -4,6 +4,7 @@ function isFolderPath(path: string, sources: string[]): boolean {
   return sources.some(source => source.startsWith(`${path}/`));
 }
 
+/** Folder paths in the subtree rooted at folderPath, including the root when it is a folder. */
 export function getSubtreeFolderKeys(folderPath: string, sources: string[]): string[] {
   const folders = new Set<string>();
 

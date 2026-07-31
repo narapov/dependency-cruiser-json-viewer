@@ -93,6 +93,7 @@
       "viewTarget": "Voir la cible"
     },
     "emptySelection": "Sélectionnez des fichiers ou des dossiers pour afficher les dépendances",
+    "loading": "Chargement du graphe de dépendances",
     "autoLayoutOnly": "Mise en page automatique uniquement",
     "autoLayoutOnlyHint": "Toujours utiliser la mise en page automatique et désactiver le glisser-déposer. Désactivé, le glisser-déposer est disponible ; le pliage et le dépliage des dossiers ne repositionnent pas les voisins ; utilisez « Mise en page automatique » dans le menu contextuel du dossier pour réorganiser son contenu."
   },

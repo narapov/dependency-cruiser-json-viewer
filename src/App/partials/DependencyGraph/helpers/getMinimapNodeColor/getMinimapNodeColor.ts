@@ -24,6 +24,7 @@ function getMinimapFolderColor(color: string, mode: FolderColorMode): string {
   return `hsl(${Math.round(parsed.hue)}, ${MINIMAP_FOLDER_SATURATION[mode]}%, ${MINIMAP_FOLDER_LIGHTNESS[mode]}%)`;
 }
 
+/** Minimap fill color for a node based on type and folder pastel hue. */
 export function getMinimapNodeColor(node: Node, mode: FolderColorMode): string {
   switch (node.type) {
     case 'folderGroup':

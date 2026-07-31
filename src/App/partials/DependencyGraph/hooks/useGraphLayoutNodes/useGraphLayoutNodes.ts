@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useNodesState, type Node, type NodeChange, type OnNodeDrag } from '@xyflow/react';
 
@@ -21,7 +21,7 @@ import {
   type GroupFingerprints,
   type NodeSize,
   type PositionCache,
-} from '../../helpers/graphLayoutCache';
+} from '../../helpers';
 import type { BuildGraphResult } from '../../types';
 
 interface UseGraphLayoutNodesInput {
@@ -34,8 +34,6 @@ interface UseGraphLayoutNodesResult {
   onNodesChange: (changes: NodeChange[]) => void;
   onNodeDrag: OnNodeDrag<Node>;
   onNodeDragStop: OnNodeDrag<Node>;
-  onAutoLayoutGroup: (groupId: string) => void;
-  onAutoLayoutGroupRecursive: (groupId: string) => void;
   hasUserLayout: boolean;
 }
 
@@ -48,8 +46,14 @@ export function useGraphLayoutNodes({
   const prevFingerprintsRef = useRef<GroupFingerprints | null>(null);
   const prevSizesRef = useRef<Map<string, NodeSize>>(new Map());
   const prevNodesRef = useRef<Node[] | null>(null);
-  const hasUserLayoutRef = useRef(false);
   const [hasUserLayout, setHasUserLayout] = useState(false);
+
+  useEffect(() => {
+    if (!autoLayoutOnly) return;
+    // Reset drag-layout flag when switching to auto layout only.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setHasUserLayout(false);
+  }, [autoLayoutOnly]);
 
   useEffect(() => {
     const { nodes: layoutNodes, parentByNode, visibleNodeIds } = graphResult;
@@ -58,7 +62,6 @@ export function useGraphLayoutNodes({
 
     if (autoLayoutOnly) {
       positionCacheRef.current.clear();
-      hasUserLayoutRef.current = false;
     }
 
     invalidatePositionCache(positionCacheRef.current, currentFingerprints, prevFingerprintsRef.current, visibleNodeIds);
@@ -112,7 +115,6 @@ export function useGraphLayoutNodes({
     (_, draggedNode) => {
       if (autoLayoutOnly) return;
 
-      hasUserLayoutRef.current = true;
       setHasUserLayout(true);
 
       setNodes(currentNodes => {
@@ -187,13 +189,24 @@ export function useGraphLayoutNodes({
 
   const onAutoLayoutGroupRecursive = useCallback((groupId: string) => runAutoLayout(groupId, true), [runAutoLayout]);
 
+  const enrichedNodes = useMemo(
+    () =>
+      nodes.map(node => {
+        const withCallbacks =
+          !autoLayoutOnly && node.type === 'folderGroup'
+            ? { ...node, data: { ...node.data, onAutoLayoutGroup, onAutoLayoutGroupRecursive } }
+            : node;
+
+        return autoLayoutOnly ? { ...withCallbacks, draggable: false, dragHandle: undefined } : withCallbacks;
+      }),
+    [nodes, autoLayoutOnly, onAutoLayoutGroup, onAutoLayoutGroupRecursive],
+  );
+
   return {
-    nodes,
+    nodes: enrichedNodes,
     onNodesChange,
     onNodeDrag,
     onNodeDragStop,
-    onAutoLayoutGroup,
-    onAutoLayoutGroupRecursive,
     hasUserLayout,
   };
 }

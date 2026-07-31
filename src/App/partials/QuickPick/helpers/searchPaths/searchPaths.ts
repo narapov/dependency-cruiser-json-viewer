@@ -2,6 +2,7 @@ import fuzzysort from 'fuzzysort';
 
 import type { QuickPickFileItem } from '../../types';
 
+/** Priority tiers that boost or demote path search ranking. */
 export const PathSearchTier = {
   Src: 0,
   Lib: 1,
@@ -9,6 +10,7 @@ export const PathSearchTier = {
   NodeModules: 3,
 } as const;
 
+/** Numeric value of a path search ranking tier. */
 export type PathSearchTier = (typeof PathSearchTier)[keyof typeof PathSearchTier];
 
 const TIER_SCORE_MULTIPLIER: Record<PathSearchTier, number> = {
@@ -24,6 +26,7 @@ function pathContainsSegment(key: string, segment: string): boolean {
   return key.split('/').includes(segment);
 }
 
+/** Maps a path to its ranking tier from path segments. */
 export function getPathSearchTier(key: string): PathSearchTier {
   if (pathContainsSegment(key, 'node_modules')) {
     return PathSearchTier.NodeModules;
@@ -37,6 +40,7 @@ export function getPathSearchTier(key: string): PathSearchTier {
   return PathSearchTier.Other;
 }
 
+/** Fuzzy-searches paths with tier-weighted scores; empty query returns none. */
 export function searchPaths(items: QuickPickFileItem[], query: string): QuickPickFileItem[] {
   const trimmed = query.trim();
 

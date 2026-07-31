@@ -7,6 +7,7 @@ interface TreeNode {
   isFile: boolean;
 }
 
+/** Builds a nested file tree from flat source paths, folders before files. */
 export function buildFileTree(sources: string[]): TreeNodeData[] {
   const root = new Map<string, TreeNode>();
 

@@ -7,4 +7,6 @@ export * from './getMinimapNodeColor';
 export * from './buildVirtualLayoutEdges';
 export * from './buildGraph';
 export * from './graphLayoutCache';
-export { assignFolderColors } from './assignFolderColors';
+export * from './assignFolderColors';
+export * from './withEdgeStrokeStyle';
+export * from './sortNodesByDepth';

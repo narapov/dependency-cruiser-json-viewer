@@ -4,10 +4,12 @@ import type { Edge } from '@xyflow/react';
 
 import { getVisibleRepresentative } from '@/domain';
 
+/** Canonical `source->target` key for a module dependency. */
 export function makeDependencyKey(source: string, target: string): string {
   return `${source}->${target}`;
 }
 
+/** All dependency keys between currently selected modules. */
 export function collectValidDependencyKeys(modules: IModule[], selectedPaths: string[]): Set<string> {
   const selectedSet = new Set(selectedPaths);
   const keys = new Set<string>();
@@ -25,6 +27,7 @@ export function collectValidDependencyKeys(modules: IModule[], selectedPaths: st
   return keys;
 }
 
+/** Module dependency keys that collapse onto a visible edge between representatives. */
 export function getEdgeDependencyKeys(
   modules: IModule[],
   selectedPaths: string[],
@@ -55,6 +58,7 @@ export function getEdgeDependencyKeys(
   return keys;
 }
 
+/** Maps each graph edge id to the module dependency keys it represents. */
 export function buildEdgeDependencyKeyMap(
   modules: IModule[],
   selectedPaths: string[],
@@ -74,6 +78,7 @@ export function buildEdgeDependencyKeyMap(
   return map;
 }
 
+/** Shared highlight color for dependency keys, or undefined if mixed or missing. */
 export function getEdgeHighlightColor(
   dependencyKeys: readonly string[],
   userEdgeHighlights: ReadonlyMap<string, string>,
