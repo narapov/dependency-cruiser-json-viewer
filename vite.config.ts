@@ -59,9 +59,10 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     setupFiles: ['./src/setupTests.ts'],
+    include: ['src/**/*.{test,spec}.{ts,tsx}', '.dependency-cruiser/**/*.test.ts'],
     coverage: {
       include: ['src/**/*.{ts,tsx}'],
-      exclude: ['src/**/*.test.{ts,tsx}', 'src/**/index.{ts,tsx}', 'src/i18n/locales/**'],
+      exclude: ['src/**/*.test.{ts,tsx}', 'src/**/index.{ts,tsx}', 'src/i18n/locales/**', 'src/testsUtils/**'],
     },
   },
 });

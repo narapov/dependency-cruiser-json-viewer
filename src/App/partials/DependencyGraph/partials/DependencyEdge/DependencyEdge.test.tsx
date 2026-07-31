@@ -1,12 +1,11 @@
 // @vitest-environment jsdom
-import { type ReactElement } from 'react';
+
 import { describe, expect, it, vi } from 'vitest';
 
-import { ThemeProvider } from '@mui/material/styles';
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import type { EdgeProps, Position } from '@xyflow/react';
 
-import { muiTheme } from '@/Shared/styles/muiTheme';
+import { renderWithTheme } from '@/testsUtils';
 
 import { DependencyEdge } from './DependencyEdge';
 
@@ -14,13 +13,6 @@ vi.mock('@xyflow/react', () => ({
   BaseEdge: ({ id }: { id: string }) => <div data-testid={`base-edge-${id}`} />,
   getBezierPath: () => ['M0 0 L10 10', 0, 0],
 }));
-function renderWithTheme(ui: ReactElement) {
-  return render(
-    <ThemeProvider theme={muiTheme} defaultMode="light">
-      {ui}
-    </ThemeProvider>,
-  );
-}
 
 function edgeProps(overrides: Partial<EdgeProps> = {}): EdgeProps {
   return {

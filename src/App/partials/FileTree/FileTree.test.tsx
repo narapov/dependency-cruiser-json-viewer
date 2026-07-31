@@ -1,24 +1,15 @@
 // @vitest-environment jsdom
-import { createRef, type ReactElement } from 'react';
+import { createRef } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { ThemeProvider } from '@mui/material/styles';
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, screen } from '@testing-library/react';
 
-import { muiTheme } from '@/Shared/styles/muiTheme';
+import { renderWithTheme } from '@/testsUtils';
 
 import { FileTree } from './FileTree';
 import type { FileTreeHandle } from './types';
 
 const SOURCES = ['src/a.ts', 'src/b/c.ts'];
-
-function renderWithTheme(ui: ReactElement) {
-  return render(
-    <ThemeProvider theme={muiTheme} defaultMode="light">
-      {ui}
-    </ThemeProvider>,
-  );
-}
 
 describe('FileTree', () => {
   beforeEach(() => {

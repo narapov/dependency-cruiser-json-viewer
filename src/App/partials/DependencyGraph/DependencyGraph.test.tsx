@@ -1,12 +1,11 @@
 // @vitest-environment jsdom
-import { createRef, type ReactElement, type ReactNode } from 'react';
+import { createRef, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { ThemeProvider } from '@mui/material/styles';
-import { fireEvent, render, renderHook, screen } from '@testing-library/react';
+import { fireEvent, renderHook, screen } from '@testing-library/react';
 
-import { muiTheme } from '@/Shared/styles/muiTheme';
+import { renderWithTheme } from '@/testsUtils';
 
 import { DependencyGraph } from './DependencyGraph';
 import type { DependencyGraphHandle } from './types';
@@ -67,14 +66,6 @@ vi.mock('./hooks', () => ({
   useAutoFitView: vi.fn(),
   useEdgeContextMenu: () => ({ onEdgeContextMenu: vi.fn(), edgeContextMenu: null }),
 }));
-
-function renderWithTheme(ui: ReactElement) {
-  return render(
-    <ThemeProvider theme={muiTheme} defaultMode="light">
-      {ui}
-    </ThemeProvider>,
-  );
-}
 
 const baseProps = {
   modules: [],

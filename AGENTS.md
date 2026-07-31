@@ -42,7 +42,7 @@ Interactive browser viewer for [dependency-cruiser](https://github.com/sverweij/
 ## Architecture
 
 ```
-Feature roots: src/App, src/Shared, src/domain (excludes src/i18n, src/assets)
+Feature roots: src/App, src/Shared, src/domain (excludes src/i18n, src/assets, src/testsUtils)
 
 App                    →  domain, Shared, i18n; partials via index.ts only (from App root)
 App/partials/{Feature} →  folder rules only (no layer isolation between partials)
@@ -115,6 +115,7 @@ Feature/
 - **Globals:** `globals: true` is enabled so `@testing-library/react` can register auto-cleanup via the global `afterEach`. Still always import `describe` / `it` / `expect` / `vi` / etc. from `vitest` in test files — do not rely on bare globals in source. Do not add redundant `afterEach(() => cleanup())` for RTL `render` / `renderHook`.
 - **Environment:** `node` by default; hook tests that need a DOM may opt into jsdom via `// @vitest-environment jsdom`.
 - **Setup:** `src/setupTests.ts` (via `setupFiles`) initializes i18next with default language `en`. Do not mock `react-i18next` unless there is a clear reason.
+- **MUI render helper:** for component tests that need a theme, use `renderWithTheme` from `@/testsUtils` instead of duplicating `ThemeProvider` setup.
 - **i18n assertions:** for expected translated strings, use a separate `renderHook(() => useTranslation())` and compare via `t('key')` — do not hardcode locale text.
 - **Location:** co-located `*.test.ts` next to source — no `__tests__/` folders.
 - **Focus:** domain helpers (primary), component helpers, Shared helpers, selected hooks.

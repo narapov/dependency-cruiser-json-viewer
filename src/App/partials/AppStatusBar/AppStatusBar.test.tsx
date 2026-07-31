@@ -1,12 +1,11 @@
 // @vitest-environment jsdom
-import { type ReactElement } from 'react';
+
 import { useTranslation } from 'react-i18next';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { ThemeProvider } from '@mui/material/styles';
-import { fireEvent, render, renderHook, screen } from '@testing-library/react';
+import { fireEvent, renderHook, screen } from '@testing-library/react';
 
-import { muiTheme } from '@/Shared/styles/muiTheme';
+import { renderWithTheme } from '@/testsUtils';
 
 import { AppStatusBar } from './AppStatusBar';
 
@@ -17,14 +16,6 @@ vi.mock('@/Shared', async importOriginal => {
     copyToClipboard: vi.fn(() => Promise.resolve()),
   };
 });
-
-function renderWithTheme(ui: ReactElement) {
-  return render(
-    <ThemeProvider theme={muiTheme} defaultMode="light">
-      {ui}
-    </ThemeProvider>,
-  );
-}
 
 describe('AppStatusBar', () => {
   afterEach(() => {

@@ -1,24 +1,15 @@
 // @vitest-environment jsdom
-import { type ReactElement } from 'react';
+
 import { describe, expect, it } from 'vitest';
 
-import { ThemeProvider } from '@mui/material/styles';
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 
-import { muiTheme } from '@/Shared/styles/muiTheme';
+import { renderWithTheme } from '@/testsUtils';
 
 import { QuickPickHighlightedText } from './QuickPickHighlightedText';
 
 function Highlight({ children }: { children: React.ReactNode }) {
   return <mark data-testid="hl">{children}</mark>;
-}
-
-function renderWithTheme(ui: ReactElement) {
-  return render(
-    <ThemeProvider theme={muiTheme} defaultMode="light">
-      {ui}
-    </ThemeProvider>,
-  );
 }
 
 describe('QuickPickHighlightedText', () => {

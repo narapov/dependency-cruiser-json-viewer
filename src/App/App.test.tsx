@@ -1,14 +1,12 @@
 // @vitest-environment jsdom
 import type { ICruiseResult } from 'dependency-cruiser';
-import { type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { ThemeProvider } from '@mui/material/styles';
-import { fireEvent, render, renderHook, screen } from '@testing-library/react';
+import { fireEvent, renderHook, screen } from '@testing-library/react';
 
 import { CruiseResultParseError } from '@/domain';
-import { muiTheme } from '@/Shared/styles/muiTheme';
+import { renderWithTheme } from '@/testsUtils';
 
 import App from './App';
 
@@ -74,14 +72,6 @@ vi.mock('./partials/AppLayout', async importOriginal => {
     useSidebarShortcut: vi.fn(),
   };
 });
-
-function renderWithTheme(ui: ReactElement) {
-  return render(
-    <ThemeProvider theme={muiTheme} defaultMode="light">
-      {ui}
-    </ThemeProvider>,
-  );
-}
 
 const cruiseResult = {
   modules: [

@@ -38,9 +38,10 @@ function buildLayerImportRules() {
     // Forbids: App, components, i18n, …
     //   ✗ Shared/helpers/foo → components/Feature
     //   ✗ Shared/helpers/foo → App/hooks/useX
+    // Test files may import src/testsUtils/ (shared test helpers).
     forbidden(
       'shared-only-shared-and-domain',
-      { path: '^src/Shared/' },
+      { path: '^src/Shared/', pathNot: '\\.test\\.(ts|tsx)$' },
       {
         pathNot: ['^src/Shared/', '^src/domain/'],
       },

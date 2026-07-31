@@ -13,11 +13,19 @@
     "moduleDetection": "force",
     "noEmit": true,
 
+    "allowJs": true,
+
     /* Linting */
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["vite.config.ts", "prettier.config.ts", "eslint.config.ts", "commitlint.config.ts"]
+  "include": [
+    "vite.config.ts",
+    "prettier.config.ts",
+    "eslint.config.ts",
+    "commitlint.config.ts",
+    ".dependency-cruiser/**/*"
+  ]
 }

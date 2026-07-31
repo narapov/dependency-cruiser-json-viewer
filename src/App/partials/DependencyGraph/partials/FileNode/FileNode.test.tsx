@@ -1,13 +1,12 @@
 // @vitest-environment jsdom
-import { type ReactElement } from 'react';
+
 import { useTranslation } from 'react-i18next';
 import { describe, expect, it, vi } from 'vitest';
 
-import { ThemeProvider } from '@mui/material/styles';
-import { fireEvent, render, renderHook, screen } from '@testing-library/react';
+import { fireEvent, renderHook, screen } from '@testing-library/react';
 import type { NodeProps } from '@xyflow/react';
 
-import { muiTheme } from '@/Shared/styles/muiTheme';
+import { renderWithTheme } from '@/testsUtils';
 
 import type { FileNodeData } from '../../types';
 import { FileNode } from './FileNode';
@@ -16,14 +15,6 @@ vi.mock('@xyflow/react', () => ({
   Handle: () => null,
   Position: { Left: 'left', Right: 'right' },
 }));
-
-function renderWithTheme(ui: ReactElement) {
-  return render(
-    <ThemeProvider theme={muiTheme} defaultMode="light">
-      {ui}
-    </ThemeProvider>,
-  );
-}
 
 function fileNodeProps(data: FileNodeData): NodeProps {
   return { id: data.path, data } as unknown as NodeProps;

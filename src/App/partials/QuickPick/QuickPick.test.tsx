@@ -1,24 +1,15 @@
 // @vitest-environment jsdom
-import { createRef, type ReactElement } from 'react';
+import { createRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { ThemeProvider } from '@mui/material/styles';
-import { act, fireEvent, render, renderHook, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, renderHook, screen, waitFor, within } from '@testing-library/react';
 
-import { muiTheme } from '@/Shared/styles/muiTheme';
+import { renderWithTheme } from '@/testsUtils';
 
 import { QuickPick, type QuickPickCommand, type QuickPickHandle } from './QuickPick';
 
 const SOURCES = ['src/a.ts', 'src/b/c.ts', 'src/utils/helpers.ts'];
-
-function renderWithTheme(ui: ReactElement) {
-  return render(
-    <ThemeProvider theme={muiTheme} defaultMode="light">
-      {ui}
-    </ThemeProvider>,
-  );
-}
 
 function getKeyboardRoot(input: HTMLElement) {
   return input.closest('.MuiDialogContent-root')!.firstChild as HTMLElement;

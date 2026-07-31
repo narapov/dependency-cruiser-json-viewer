@@ -1,22 +1,13 @@
 // @vitest-environment jsdom
-import { type ReactElement } from 'react';
+
 import { useTranslation } from 'react-i18next';
 import { describe, expect, it, vi } from 'vitest';
 
-import { ThemeProvider } from '@mui/material/styles';
-import { fireEvent, render, renderHook, screen } from '@testing-library/react';
+import { fireEvent, renderHook, screen } from '@testing-library/react';
 
-import { muiTheme } from '@/Shared/styles/muiTheme';
+import { renderWithTheme } from '@/testsUtils';
 
 import { IgnorePatternsDialog } from './IgnorePatternsDialog';
-
-function renderWithTheme(ui: ReactElement) {
-  return render(
-    <ThemeProvider theme={muiTheme} defaultMode="light">
-      {ui}
-    </ThemeProvider>,
-  );
-}
 
 describe('IgnorePatternsDialog', () => {
   it('saves trimmed non-empty lines as patterns', () => {
@@ -57,11 +48,7 @@ describe('IgnorePatternsDialog', () => {
     const field = screen.getByDisplayValue('one');
     fireEvent.change(field, { target: { value: 'edited' } });
 
-    rerender(
-      <ThemeProvider theme={muiTheme} defaultMode="light">
-        <IgnorePatternsDialog open patterns={['two']} onClose={onClose} onSave={onSave} />
-      </ThemeProvider>,
-    );
+    rerender(<IgnorePatternsDialog open patterns={['two']} onClose={onClose} onSave={onSave} />);
 
     expect(screen.getByDisplayValue('two')).toBeInTheDocument();
   });

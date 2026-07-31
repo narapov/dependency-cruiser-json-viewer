@@ -1,4 +1,4 @@
-import type { IForbiddenRuleType } from 'dependency-cruiser';
+import type { IRegularForbiddenRuleType } from 'dependency-cruiser';
 import { describe, expect, it } from 'vitest';
 
 import { buildLayerImportRules } from './layer-import-rules.mjs';
@@ -7,7 +7,7 @@ function re(pattern: string) {
   return new RegExp(pattern);
 }
 
-function byName(rules: IForbiddenRuleType[]) {
+function byName(rules: IRegularForbiddenRuleType[]) {
   return new Map(rules.map(rule => [rule.name, rule]));
 }
 
@@ -37,6 +37,11 @@ describe('buildLayerImportRules', () => {
     expect(pathNot.some(pattern => re(pattern as string).test('src/Shared/hooks/useResizableWidth.ts'))).toBe(true);
     expect(pathNot.some(pattern => re(pattern as string).test('src/domain/helpers/pathUtils.ts'))).toBe(true);
     expect(pathNot.some(pattern => re(pattern as string).test('src/App/partials/FileTree/FileTree.tsx'))).toBe(false);
+    expect(
+      re(rule.from.pathNot as string).test(
+        'src/Shared/components/ErrorBoundaryFallback/ErrorBoundaryFallback.test.tsx',
+      ),
+    ).toBe(true);
   });
 
   it('app-root-only-shared-domain-and-partial-barrels allows intra-App and forbids deep partials', () => {

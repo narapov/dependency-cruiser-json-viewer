@@ -1,24 +1,16 @@
 // @vitest-environment jsdom
-import { type ReactElement } from 'react';
+
+import type { ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import { describe, expect, it, vi } from 'vitest';
 
 import Menu from '@mui/material/Menu';
-import { ThemeProvider } from '@mui/material/styles';
-import { fireEvent, render, renderHook, screen } from '@testing-library/react';
+import { fireEvent, renderHook, screen } from '@testing-library/react';
 
 import { USER_EDGE_HIGHLIGHT_COLORS } from '@/Shared';
-import { muiTheme } from '@/Shared/styles/muiTheme';
+import { renderWithTheme } from '@/testsUtils';
 
 import { EdgeHighlightSubmenu } from './EdgeHighlightSubmenu';
-
-function renderWithTheme(ui: ReactElement) {
-  return render(
-    <ThemeProvider theme={muiTheme} defaultMode="light">
-      {ui}
-    </ThemeProvider>,
-  );
-}
 
 function renderInMenu(ui: ReactElement) {
   const anchor = document.createElement('div');

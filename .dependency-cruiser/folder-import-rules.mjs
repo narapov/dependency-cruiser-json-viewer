@@ -38,7 +38,7 @@
 //   ✗ …/partials/$2/… → …/partials/{not $2}/partials/…
 //   ✗ …/partials/$2/… → …/partials/{not $2}/{subdir}/…
 //
-// Scope: src/** except src/i18n/ and src/assets/; partials branches — src/{FeatureRoot}.
+// Scope: src/** except src/i18n/, src/assets/, and src/testsUtils/; partials branches — src/{FeatureRoot}.
 // Feature roots: App, Shared, domain (see SRC_FEATURE_ROOTS).
 // =============================================================================
 
@@ -48,11 +48,11 @@ const SUBDIRS_RE = 'hooks|partials|hocs|contexts|types|constants|helpers|api';
 // npm and node built-ins are not checked by folder rules.
 const EXTERNAL_DEP_TYPES = ['npm', 'core'];
 
-// Top-level feature roots under src/ (excludes i18n, assets).
+// Top-level feature roots under src/ (excludes i18n, assets, testsUtils).
 const SRC_FEATURE_ROOTS = ['App', 'Shared', 'domain'];
 
-// src/i18n/ and src/assets/ are out of scope — separate import layout.
-const SRC_FOLDER_SCOPE_NOT = '^src/i18n/|^src/assets/';
+// src/i18n/, src/assets/, and src/testsUtils/ are out of scope — separate import layout.
+const SRC_FOLDER_SCOPE_NOT = '^src/i18n/|^src/assets/|^src/testsUtils/';
 
 // Max partials/…/partials/… nesting (no * — safe-regex).
 const MAX_PARTIALS_DEPTH = 10;

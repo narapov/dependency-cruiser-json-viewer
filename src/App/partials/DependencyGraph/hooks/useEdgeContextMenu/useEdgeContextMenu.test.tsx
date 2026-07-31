@@ -1,25 +1,16 @@
 // @vitest-environment jsdom
-import { type ReactElement } from 'react';
+
 import { useTranslation } from 'react-i18next';
 import { describe, expect, it, vi } from 'vitest';
 
-import { ThemeProvider } from '@mui/material/styles';
-import { fireEvent, render, renderHook, screen } from '@testing-library/react';
+import { fireEvent, renderHook, screen } from '@testing-library/react';
 import type { Edge } from '@xyflow/react';
 
-import { muiTheme } from '@/Shared/styles/muiTheme';
+import { renderWithTheme } from '@/testsUtils';
 
 import { useEdgeContextMenu, type UseEdgeContextMenuOptions } from './useEdgeContextMenu';
 
 const edge: Edge = { id: 'a->b', source: 'src/a.ts', target: 'src/b.ts' };
-
-function renderWithTheme(ui: ReactElement) {
-  return render(
-    <ThemeProvider theme={muiTheme} defaultMode="light">
-      {ui}
-    </ThemeProvider>,
-  );
-}
 
 function EdgeContextMenuHarness(props: UseEdgeContextMenuOptions) {
   const { onEdgeContextMenu, edgeContextMenu } = useEdgeContextMenu(props);

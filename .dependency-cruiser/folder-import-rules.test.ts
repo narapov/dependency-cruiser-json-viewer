@@ -1,4 +1,4 @@
-import type { IForbiddenRuleType } from 'dependency-cruiser';
+import type { IRegularForbiddenRuleType } from 'dependency-cruiser';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -15,7 +15,7 @@ function re(pattern: string) {
   return new RegExp(pattern);
 }
 
-function byName(rules: IForbiddenRuleType[]) {
+function byName(rules: IRegularForbiddenRuleType[]) {
   return new Map(rules.map(rule => [rule.name, rule]));
 }
 
