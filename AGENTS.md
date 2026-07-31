@@ -112,6 +112,7 @@ Feature/
 ## Testing
 
 - **Runner:** Vitest (`vitest run`), config inline in `vite.config.ts`.
+- **Globals:** `globals: true` is enabled so `@testing-library/react` can register auto-cleanup via the global `afterEach`. Still always import `describe` / `it` / `expect` / `vi` / etc. from `vitest` in test files — do not rely on bare globals in source. Do not add redundant `afterEach(() => cleanup())` for RTL `render` / `renderHook`.
 - **Environment:** `node` by default; hook tests that need a DOM may opt into jsdom via `// @vitest-environment jsdom`.
 - **Setup:** `src/setupTests.ts` (via `setupFiles`) initializes i18next with default language `en`. Do not mock `react-i18next` unless there is a clear reason.
 - **i18n assertions:** for expected translated strings, use a separate `renderHook(() => useTranslation())` and compare via `t('key')` — do not hardcode locale text.
