@@ -57,9 +57,10 @@ export default defineConfig({
   ],
   test: {
     environment: 'node',
+    setupFiles: ['./src/setupTests.ts'],
     coverage: {
       include: ['src/**/*.{ts,tsx}'],
-      exclude: ['src/**/*.test.{ts,tsx}', 'src/i18n/locales/**'],
+      exclude: ['src/**/*.test.{ts,tsx}', 'src/**/index.{ts,tsx}', 'src/i18n/locales/**'],
     },
   },
 });

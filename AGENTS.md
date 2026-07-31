@@ -113,9 +113,12 @@ Feature/
 
 - **Runner:** Vitest (`vitest run`), config inline in `vite.config.ts`.
 - **Environment:** `node` by default; hook tests that need a DOM may opt into jsdom via `// @vitest-environment jsdom`.
+- **Setup:** `src/setupTests.ts` (via `setupFiles`) initializes i18next with default language `en`. Do not mock `react-i18next` unless there is a clear reason.
+- **i18n assertions:** for expected translated strings, use a separate `renderHook(() => useTranslation())` and compare via `t('key')` — do not hardcode locale text.
 - **Location:** co-located `*.test.ts` next to source — no `__tests__/` folders.
 - **Focus:** domain helpers (primary), component helpers, Shared helpers, selected hooks.
 - **Style:** `describe`/`it`/`expect` from `vitest`; inline test factories where needed.
+- **DOM events:** prefer `fireEvent` from `@testing-library/react` (e.g. `fireEvent.keyDown`, `fireEvent.pointerMove`) over `element.dispatchEvent(new …Event(…))`. Use `fireEvent` for keyboard, pointer, and other DOM interactions in hook/component tests.
 
 ## i18n
 
