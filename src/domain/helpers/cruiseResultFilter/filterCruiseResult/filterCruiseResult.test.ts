@@ -1,4 +1,4 @@
-import type { ICruiseResult, IModule } from 'dependency-cruiser';
+import type { ICruiseResult, IModule, ISummary } from 'dependency-cruiser';
 import { describe, expect, it } from 'vitest';
 
 import { filterCruiseResult } from './filterCruiseResult';
@@ -18,6 +18,7 @@ function cruiseResult(modules: IModule[]): ICruiseResult {
       info: 0,
       ignore: 0,
       optionsUsed: { args: '' },
+      environment: {} as ISummary['environment'],
     },
   } as ICruiseResult;
 }

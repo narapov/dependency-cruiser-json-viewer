@@ -1,4 +1,4 @@
-import type { ICruiseResult } from 'dependency-cruiser';
+import type { ICruiseResult, ISummary } from 'dependency-cruiser';
 import { describe, expect, it } from 'vitest';
 
 import { CruiseResultParseError, parseCruiseResultJson, validateCruiseResult } from './parseCruiseResultJson';
@@ -13,6 +13,7 @@ const validResult: ICruiseResult = {
     info: 0,
     ignore: 0,
     optionsUsed: { args: '' },
+    environment: {} as ISummary['environment'],
   },
 } as ICruiseResult;
 
