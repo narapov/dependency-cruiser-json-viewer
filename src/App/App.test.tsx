@@ -2,10 +2,10 @@
 import type { ICruiseResult } from 'dependency-cruiser';
 import { type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ThemeProvider } from '@mui/material/styles';
-import { cleanup, fireEvent, render, renderHook, screen } from '@testing-library/react';
+import { fireEvent, render, renderHook, screen } from '@testing-library/react';
 
 import { CruiseResultParseError } from '@/domain';
 import { muiTheme } from '@/Shared/styles/muiTheme';
@@ -95,10 +95,6 @@ describe('App', () => {
   beforeEach(() => {
     localStorage.clear();
     openFilePicker.mockClear();
-  });
-
-  afterEach(() => {
-    cleanup();
   });
 
   it('shows loading state while cruise result is pending', () => {

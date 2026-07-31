@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
-import { act, cleanup, renderHook } from '@testing-library/react';
+import { act, renderHook } from '@testing-library/react';
 
 import type { QuickPickCommand } from '../../types';
 import { useQuickPickState } from './useQuickPickState';
@@ -15,10 +15,6 @@ const COMMANDS: QuickPickCommand[] = [
 ];
 
 describe('useQuickPickState', () => {
-  afterEach(() => {
-    cleanup();
-  });
-
   it('starts closed with empty query', () => {
     const { result } = renderHook(() => useQuickPickState(SOURCES, COMMANDS));
 

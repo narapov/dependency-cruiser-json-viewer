@@ -27,6 +27,7 @@ export function QuickPick({ ref, sources, commands, onSelectPath }: QuickPickPro
     open,
     query,
     setQuery,
+    normalizedQuery,
     normalizedDeferredQuery,
     isCommandMode,
     fileResults,
@@ -132,7 +133,7 @@ export function QuickPick({ ref, sources, commands, onSelectPath }: QuickPickPro
 
   const renderResults = () => {
     if (results.length === 0) {
-      return <QuickPickEmptyMessage isCommandMode={isCommandMode} normalizedDeferredQuery={normalizedDeferredQuery} />;
+      return <QuickPickEmptyMessage isCommandMode={isCommandMode} normalizedQuery={normalizedQuery} />;
     }
 
     if (isCommandMode) {

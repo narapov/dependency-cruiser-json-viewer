@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { act, cleanup, renderHook } from '@testing-library/react';
+import { act, renderHook } from '@testing-library/react';
 import type { Node } from '@xyflow/react';
 
 import type { BuildGraphResult } from '../../types';
@@ -49,7 +49,6 @@ function makeGraphResult(nodes: Node[]): BuildGraphResult {
 
 describe('useGraphLayoutNodes', () => {
   afterEach(() => {
-    cleanup();
     vi.clearAllMocks();
   });
 

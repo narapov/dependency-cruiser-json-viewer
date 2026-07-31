@@ -1,16 +1,12 @@
 // @vitest-environment jsdom
 import { createRef } from 'react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
-import { cleanup, fireEvent, render } from '@testing-library/react';
+import { fireEvent, render } from '@testing-library/react';
 
 import { CruiseResultFileInput, type CruiseResultFileInputHandle } from './CruiseResultFileInput';
 
 describe('CruiseResultFileInput', () => {
-  afterEach(() => {
-    cleanup();
-  });
-
   it('opens the file picker via imperative handle', () => {
     const ref = createRef<CruiseResultFileInputHandle>();
     const { container } = render(<CruiseResultFileInput ref={ref} onFileSelect={vi.fn()} />);

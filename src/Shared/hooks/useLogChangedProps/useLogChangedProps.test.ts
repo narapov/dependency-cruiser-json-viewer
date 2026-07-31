@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { cleanup, renderHook } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 
 import { useLogChangedProps } from './useLogChangedProps';
 
@@ -22,7 +22,6 @@ describe('useLogChangedProps', () => {
   });
 
   afterEach(() => {
-    cleanup();
     vi.restoreAllMocks();
   });
 

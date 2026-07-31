@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ThemeProvider } from '@mui/material/styles';
-import { act, cleanup, fireEvent, render, renderHook, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, renderHook, screen, waitFor, within } from '@testing-library/react';
 
 import { muiTheme } from '@/Shared/styles/muiTheme';
 
@@ -30,7 +30,6 @@ describe('QuickPick', () => {
   });
 
   afterEach(() => {
-    cleanup();
     vi.clearAllMocks();
   });
 

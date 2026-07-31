@@ -1,13 +1,12 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { cleanup, fireEvent, renderHook } from '@testing-library/react';
+import { fireEvent, renderHook } from '@testing-library/react';
 
 import { useQuickPickShortcut } from './useQuickPickShortcut';
 
 describe('useQuickPickShortcut', () => {
   afterEach(() => {
-    cleanup();
     document.body.replaceChildren();
   });
 

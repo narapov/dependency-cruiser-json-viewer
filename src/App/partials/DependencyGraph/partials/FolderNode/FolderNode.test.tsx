@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
 import { type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { ThemeProvider } from '@mui/material/styles';
-import { cleanup, fireEvent, render, renderHook, screen } from '@testing-library/react';
+import { fireEvent, render, renderHook, screen } from '@testing-library/react';
 import type { NodeProps } from '@xyflow/react';
 
 import { muiTheme } from '@/Shared/styles/muiTheme';
@@ -30,10 +30,6 @@ function folderNodeProps(data: FolderNodeData): NodeProps {
 }
 
 describe('FolderNode', () => {
-  afterEach(() => {
-    cleanup();
-  });
-
   it('renders label and toggles expand via button', () => {
     const { result: i18n } = renderHook(() => useTranslation());
     const onToggle = vi.fn();

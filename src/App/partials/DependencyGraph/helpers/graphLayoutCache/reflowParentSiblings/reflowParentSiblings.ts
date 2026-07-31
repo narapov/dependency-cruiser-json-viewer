@@ -56,12 +56,11 @@ export function reflowParentSiblings({
     (a, b) => getGroupDepth(b, parentByNode) - getGroupDepth(a, parentByNode),
   );
 
-  sortedGroups.reduce<null>((result, groupId) => {
+  sortedGroups.forEach(groupId => {
     reflowSiblingsInGroup(groupId, nodeById, parentByNode, fixedNodeIds);
     const updatedNodes = [...nodeById.values()];
     updateGroupCacheFromNodes(cache, updatedNodes, parentByNode, groupId);
-    return result;
-  }, null);
+  });
 
   resizeFolderGroups(nodeById, parentByNode);
 
@@ -77,15 +76,14 @@ export function reflowParentSiblings({
     (a, b) => getGroupDepth(b, parentByNode) - getGroupDepth(a, parentByNode),
   );
 
-  sortedParentGroups.reduce<null>((result, groupId) => {
+  sortedParentGroups.forEach(groupId => {
     if (groupId === null && sortedGroups.includes(null)) {
-      return result;
+      return;
     }
     reflowSiblingsInGroup(groupId, nodeById, parentByNode, fixedNodeIds);
     const updatedNodes = [...nodeById.values()];
     updateGroupCacheFromNodes(cache, updatedNodes, parentByNode, groupId);
-    return result;
-  }, null);
+  });
 
   resizeFolderGroups(nodeById, parentByNode);
 
@@ -100,10 +98,9 @@ export function compactAfterDrag(
 ): Node[] {
   const nodeById = new Map(nodes.map(node => [node.id, { ...node }]));
 
-  collectGroupsToCompact(draggedNodeId, nodeById, parentByNode).reduce<null>((result, groupId) => {
+  collectGroupsToCompact(draggedNodeId, nodeById, parentByNode).forEach(groupId => {
     compactGroupChildren(groupId, nodeById, parentByNode);
-    return result;
-  }, null);
+  });
 
   resizeFolderGroups(nodeById, parentByNode);
 
@@ -130,16 +127,15 @@ export function reflowForDrag(
   reflowSiblingsInGroup(groupId, nodeById, parentByNode, fixedNodeIds);
   resizeAncestorGroups(nodeById, parentByNode, draggedNodeId);
 
-  getAncestorFolderGroupIds(draggedNodeId, nodeById, parentByNode).reduce<null>((result, ancestorId) => {
+  getAncestorFolderGroupIds(draggedNodeId, nodeById, parentByNode).forEach(ancestorId => {
     if (!hasSizeGrown(ancestorId, nodeById, previousSizes)) {
-      return result;
+      return;
     }
 
     const parentGroupId = parentByNode.get(ancestorId) ?? null;
     reflowSiblingsInGroup(parentGroupId, nodeById, parentByNode, new Set([ancestorId]));
     resizeFolderGroups(nodeById, parentByNode);
-    return result;
-  }, null);
+  });
 
   return sortNodesByDepth([...nodeById.values()]);
 }

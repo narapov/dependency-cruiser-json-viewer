@@ -104,7 +104,7 @@ Feature/
 - React Compiler is enabled — avoid manual `useMemo`/`useCallback` unless there is a clear reason.
 - UI: prefer MUI components and APIs (`@mui/material`, `@mui/icons-material`, `@mui/x-tree-view`) over custom markup or third-party UI libraries. Use CSS modules (`*.module.css`) only for layout or styling that MUI does not cover.
 - Naming: PascalCase folders/files for components, `useXxx` for hooks, barrel `index.ts` in each folder.
-- Iteration: prefer `filter` / `map` / `flatMap` / `reduce` / `some` / `every` / `find` over `for` / `continue`. Use `forEach` only for pure side effects (e.g. `localStorage.removeItem`). Keep `while` for parent-path walks where there is no array to iterate.
+- Iteration: prefer `filter` / `map` / `flatMap` / `reduce` / `some` / `every` / `find` over `for` / `continue`. Use `forEach` (or `for...of`) for pure side effects (e.g. mutating a `Map`, `localStorage.removeItem`) — do not use `reduce` only to run side effects. Keep `while` for parent-path walks where there is no array to iterate.
 - Helpers: every exported helper must have a JSDoc comment with a short description. Prefer description (and optional `example`) only — do not document parameter or return types in JSDoc; TypeScript already covers those.
 - Tool config files (Prettier, commitlint, Vite, etc.): prefer `*.config.ts` when the tool supports TypeScript; use `.cjs` / `.mjs` only when the tool requires it or TS is not supported.
 - Keep diffs minimal — do not change unrelated code.

@@ -1,30 +1,21 @@
-import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Typography from '@mui/material/Typography';
 
 interface QuickPickEmptyMessageProps {
   isCommandMode: boolean;
-  normalizedDeferredQuery: string;
+  normalizedQuery: string;
 }
 
-export function QuickPickEmptyMessage({ isCommandMode, normalizedDeferredQuery }: QuickPickEmptyMessageProps) {
+export function QuickPickEmptyMessage({ isCommandMode, normalizedQuery }: QuickPickEmptyMessageProps) {
   const { t } = useTranslation();
 
-  const message = useMemo(() => {
-    if (isCommandMode) {
-      if (normalizedDeferredQuery.trim()) {
-        return t('quickPick.noMatchingCommands');
-      }
-      return t('quickPick.typeToFilterCommands');
-    }
-
-    if (normalizedDeferredQuery.trim()) {
-      return t('quickPick.noMatchingFiles');
-    }
-
-    return t('quickPick.startTyping');
-  }, [isCommandMode, normalizedDeferredQuery, t]);
+  let message = t('quickPick.startTyping');
+  if (isCommandMode) {
+    message = normalizedQuery.trim() ? t('quickPick.noMatchingCommands') : t('quickPick.typeToFilterCommands');
+  } else if (normalizedQuery.trim()) {
+    message = t('quickPick.noMatchingFiles');
+  }
 
   return (
     <Typography sx={{ px: 1.5, py: 2, color: 'text.secondary', fontSize: 13, textAlign: 'center' }}>

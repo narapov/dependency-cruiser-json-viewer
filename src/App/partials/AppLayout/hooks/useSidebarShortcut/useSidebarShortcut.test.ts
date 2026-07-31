@@ -1,15 +1,11 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
-import { cleanup, fireEvent, renderHook } from '@testing-library/react';
+import { fireEvent, renderHook } from '@testing-library/react';
 
 import { useSidebarShortcut } from './useSidebarShortcut';
 
 describe('useSidebarShortcut', () => {
-  afterEach(() => {
-    cleanup();
-  });
-
   it('toggles on Cmd+B', () => {
     const onToggle = vi.fn();
     renderHook(() => useSidebarShortcut({ onToggle }));

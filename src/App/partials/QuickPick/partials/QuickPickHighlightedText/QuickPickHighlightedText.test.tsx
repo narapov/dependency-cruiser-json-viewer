@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 import { type ReactElement } from 'react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { ThemeProvider } from '@mui/material/styles';
-import { cleanup, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 
 import { muiTheme } from '@/Shared/styles/muiTheme';
 
@@ -22,10 +22,6 @@ function renderWithTheme(ui: ReactElement) {
 }
 
 describe('QuickPickHighlightedText', () => {
-  afterEach(() => {
-    cleanup();
-  });
-
   it('renders plain text when indexes are empty', () => {
     renderWithTheme(<QuickPickHighlightedText text="hello" indexes={[]} Highlight={Highlight} />);
 

@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
 import { type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import { ThemeProvider } from '@mui/material/styles';
-import { cleanup, fireEvent, render, renderHook, screen } from '@testing-library/react';
+import { fireEvent, render, renderHook, screen } from '@testing-library/react';
 
 import { appStorageKey } from '@/Shared';
 import { muiTheme } from '@/Shared/styles/muiTheme';
@@ -24,10 +24,6 @@ function renderWithTheme(ui: ReactElement) {
 describe('GraphLegend', () => {
   beforeEach(() => {
     localStorage.clear();
-  });
-
-  afterEach(() => {
-    cleanup();
   });
 
   it('starts expanded by default and collapses on click', () => {

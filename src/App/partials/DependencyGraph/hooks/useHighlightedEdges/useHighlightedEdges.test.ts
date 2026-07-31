@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import type { IModule } from 'dependency-cruiser';
-import { afterEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
-import { act, cleanup, renderHook } from '@testing-library/react';
+import { act, renderHook } from '@testing-library/react';
 import type { Edge } from '@xyflow/react';
 
 import { useHighlightedEdges } from './useHighlightedEdges';
@@ -35,10 +35,6 @@ function renderHighlighted(overrides: Partial<Parameters<typeof useHighlightedEd
 }
 
 describe('useHighlightedEdges', () => {
-  afterEach(() => {
-    cleanup();
-  });
-
   it('selects an edge on click and clears selection', () => {
     const { result } = renderHighlighted();
 

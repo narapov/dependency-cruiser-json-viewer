@@ -1,17 +1,13 @@
 // @vitest-environment jsdom
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
-import { act, cleanup, renderHook } from '@testing-library/react';
+import { act, renderHook } from '@testing-library/react';
 
 import { STORAGE_KEY, useSidebarOpen } from './useSidebarOpen';
 
 describe('useSidebarOpen', () => {
   beforeEach(() => {
     localStorage.clear();
-  });
-
-  afterEach(() => {
-    cleanup();
   });
 
   it('defaults to open when storage is empty', () => {

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ThemeProvider } from '@mui/material/styles';
-import { cleanup, fireEvent, render, renderHook, screen } from '@testing-library/react';
+import { fireEvent, render, renderHook, screen } from '@testing-library/react';
 
 import { muiTheme } from '@/Shared/styles/muiTheme';
 
@@ -13,6 +13,15 @@ import type { DependencyGraphHandle } from './types';
 
 const fitView = vi.fn();
 const getNode = vi.fn((id: string) => (id === 'src/a.ts' ? { id } : undefined));
+const clearBuildFailed = vi.fn();
+
+const buildGraphState = {
+  graphResult: { nodes: [], edges: [], visibleNodeIds: new Set<string>() },
+  isBuildingGraph: false,
+  buildFailed: false,
+  clearBuildFailed,
+  expandedFolders: new Set<string>(),
+};
 
 vi.mock('@xyflow/react', () => ({
   ReactFlowProvider: ({ children }: { children: ReactNode }) => children,
@@ -38,13 +47,7 @@ vi.mock('@xyflow/react', () => ({
 }));
 
 vi.mock('./hooks', () => ({
-  useBuildGraph: () => ({
-    graphResult: { nodes: [], edges: [], visibleNodeIds: new Set<string>() },
-    isBuildingGraph: false,
-    buildFailed: false,
-    clearBuildFailed: vi.fn(),
-    expandedFolders: new Set<string>(),
-  }),
+  useBuildGraph: () => buildGraphState,
   useGraphLayoutNodes: () => ({
     nodes: [],
     onNodesChange: vi.fn(),
@@ -84,7 +87,7 @@ const baseProps = {
 
 describe('DependencyGraph', () => {
   afterEach(() => {
-    cleanup();
+    buildGraphState.buildFailed = false;
     vi.clearAllMocks();
   });
 
@@ -130,5 +133,17 @@ describe('DependencyGraph', () => {
     fitView.mockClear();
     ref.current?.focusNode('missing.ts');
     expect(fitView).not.toHaveBeenCalled();
+  });
+
+  it('shows build error snackbar and clears on close', () => {
+    const { result: i18n } = renderHook(() => useTranslation());
+    buildGraphState.buildFailed = true;
+
+    renderWithTheme(<DependencyGraph {...baseProps} />);
+
+    expect(screen.getByText(i18n.current.t('graph.buildError'))).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /close/i }));
+    expect(clearBuildFailed).toHaveBeenCalled();
   });
 });

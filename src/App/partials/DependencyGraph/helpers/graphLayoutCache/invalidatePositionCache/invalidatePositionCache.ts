@@ -32,10 +32,9 @@ export function invalidateGroupPositionCacheRecursive(
     .filter(
       node => node.type === 'folderGroup' && (node.id === groupId || isDescendantOf(node.id, groupId, parentByNode)),
     )
-    .reduce((_, node) => {
+    .forEach(node => {
       cache.delete(node.id);
-      return null;
-    }, null);
+    });
 
   invalidateGroupPositionCache(cache, groupId, parentByNode);
 }
@@ -71,10 +70,9 @@ export function invalidatePositionCache(
       }
       return !(key !== null && (visibleNodeIds.has(key) || hasVisibleAncestor(key, visibleNodeIds)));
     })
-    .reduce((_, key) => {
+    .forEach(key => {
       cache.delete(key);
-      return null;
-    }, null);
+    });
 
   if (previousFingerprints == null) {
     return;
@@ -85,8 +83,7 @@ export function invalidatePositionCache(
       const previous = previousFingerprints.get(groupId);
       return previous !== undefined && previous !== fingerprint;
     })
-    .reduce((_, [groupId]) => {
+    .forEach(([groupId]) => {
       cache.delete(groupId);
-      return null;
-    }, null);
+    });
 }

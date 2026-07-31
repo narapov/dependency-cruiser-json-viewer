@@ -1,11 +1,11 @@
 // @vitest-environment jsdom
 import { type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import Menu from '@mui/material/Menu';
 import { ThemeProvider } from '@mui/material/styles';
-import { cleanup, fireEvent, render, renderHook, screen } from '@testing-library/react';
+import { fireEvent, render, renderHook, screen } from '@testing-library/react';
 
 import { USER_EDGE_HIGHLIGHT_COLORS } from '@/Shared';
 import { muiTheme } from '@/Shared/styles/muiTheme';
@@ -31,10 +31,6 @@ function renderInMenu(ui: ReactElement) {
 }
 
 describe('EdgeHighlightSubmenu', () => {
-  afterEach(() => {
-    cleanup();
-  });
-
   it('opens color submenu on hover and sets highlight', () => {
     const { result: i18n } = renderHook(() => useTranslation());
     const onSetHighlight = vi.fn();

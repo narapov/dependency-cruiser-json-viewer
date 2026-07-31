@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
-import { act, cleanup, renderHook } from '@testing-library/react';
+import { act, renderHook } from '@testing-library/react';
 
 import { useFileTreeContextMenu } from './useFileTreeContextMenu';
 
@@ -14,10 +14,6 @@ vi.mock('@/Shared', async importOriginal => {
 });
 
 describe('useFileTreeContextMenu', () => {
-  afterEach(() => {
-    cleanup();
-  });
-
   it('opens menu from onContextMenu', () => {
     const { result } = renderHook(() =>
       useFileTreeContextMenu({

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
-import { act, cleanup, renderHook } from '@testing-library/react';
+import { act, renderHook } from '@testing-library/react';
 
 import { IGNORE_PATTERNS_STORAGE_KEY } from '../../partials/IgnorePatternsDialog';
 import { useIgnorePatterns } from './useIgnorePatterns';
@@ -9,10 +9,6 @@ import { useIgnorePatterns } from './useIgnorePatterns';
 describe('useIgnorePatterns', () => {
   beforeEach(() => {
     localStorage.clear();
-  });
-
-  afterEach(() => {
-    cleanup();
   });
 
   it('returns empty patterns when storage is missing', () => {

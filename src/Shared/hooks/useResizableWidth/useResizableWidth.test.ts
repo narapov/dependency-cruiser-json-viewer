@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { act, cleanup, fireEvent, renderHook } from '@testing-library/react';
+import { act, fireEvent, renderHook } from '@testing-library/react';
 
 import { MIN_MAIN_WIDTH, useResizableWidth } from './useResizableWidth';
 
@@ -56,7 +56,6 @@ describe('useResizableWidth', () => {
   });
 
   afterEach(() => {
-    cleanup();
     document.body.replaceChildren();
     document.body.className = '';
     vi.restoreAllMocks();

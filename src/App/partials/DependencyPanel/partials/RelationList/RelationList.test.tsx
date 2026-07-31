@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ThemeProvider } from '@mui/material/styles';
-import { cleanup, fireEvent, render, renderHook, screen } from '@testing-library/react';
+import { fireEvent, render, renderHook, screen } from '@testing-library/react';
 
 import type { ModuleRelation } from '@/domain';
 import { muiTheme } from '@/Shared/styles/muiTheme';
@@ -34,7 +34,6 @@ const items: ModuleRelation[] = [
 
 describe('RelationList', () => {
   afterEach(() => {
-    cleanup();
     vi.clearAllMocks();
   });
 

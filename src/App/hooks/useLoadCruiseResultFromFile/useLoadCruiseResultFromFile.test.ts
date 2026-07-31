@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { act, cleanup, renderHook } from '@testing-library/react';
+import { act, renderHook } from '@testing-library/react';
 
 import { CruiseResultParseError } from '@/domain';
 
@@ -40,7 +40,6 @@ function getT() {
 
 describe('useLoadCruiseResultFromFile', () => {
   afterEach(() => {
-    cleanup();
     vi.clearAllMocks();
   });
 

@@ -24,11 +24,11 @@ function pushAwayFromFixedNodes(
   nodeById: Map<string, Node>,
   fixedNodeIds: ReadonlySet<string>,
 ): boolean {
-  const indices = Array.from({ length: siblings.length }, (_, index) => index);
-  return indices.reduce((changed, i) => {
-    const current = siblings[i];
+  let changed = false;
+
+  siblings.forEach((current, i) => {
     if (fixedNodeIds.has(current.id)) {
-      return changed;
+      return;
     }
 
     const currentSize = getNodeSize(current);
@@ -68,11 +68,14 @@ function pushAwayFromFixedNodes(
     if (x !== current.position.x || y !== current.position.y) {
       nodeById.set(current.id, { ...current, position: { x, y } });
       siblings[i] = nodeById.get(current.id)!;
-      return true;
+      changed = true;
+      return;
     }
 
-    return changed || pushed.changed;
-  }, false);
+    changed = changed || pushed.changed;
+  });
+
+  return changed;
 }
 
 function checkHorizontalOverlapWithFixedNodes(
@@ -169,14 +172,12 @@ export function reflowSiblingsInGroup(
     .map(id => nodeById.get(id)!)
     .sort((a, b) => a.position.y - b.position.y || a.position.x - b.position.x);
 
-  const initiallyChanged = childFixedIds ? pushAwayFromFixedNodes(siblings, nodeById, childFixedIds) : false;
-  const indices = Array.from({ length: siblings.length }, (_, index) => index);
+  let changed = childFixedIds ? pushAwayFromFixedNodes(siblings, nodeById, childFixedIds) : false;
 
   // First pass: push down when siblings overlap.
-  const verticallyChanged = indices.reduce((changed, i) => {
-    const current = siblings[i];
+  siblings.forEach((current, i) => {
     if (childFixedIds?.has(current.id)) {
-      return changed;
+      return;
     }
 
     const currentSize = getNodeSize(current);
@@ -208,16 +209,16 @@ export function reflowSiblingsInGroup(
         position: { x, y },
       });
       siblings[i] = nodeById.get(current.id)!;
-      return true;
+      changed = true;
+      return;
     }
-    return changed || verticalResult.changed || fixedCheck.changed;
-  }, initiallyChanged);
+    changed = changed || verticalResult.changed || fixedCheck.changed;
+  });
 
   // Second pass: push right when vertical overflow still causes overlap.
-  return indices.reduce((changed, i) => {
-    const current = siblings[i];
+  siblings.forEach((current, i) => {
     if (childFixedIds?.has(current.id)) {
-      return changed;
+      return;
     }
 
     const currentSize = getNodeSize(current);
@@ -252,8 +253,11 @@ export function reflowSiblingsInGroup(
         position: { x, y },
       });
       siblings[i] = nodeById.get(current.id)!;
-      return true;
+      changed = true;
+      return;
     }
-    return changed || horizontalResult.changed || fixedCheck.changed;
-  }, verticallyChanged);
+    changed = changed || horizontalResult.changed || fixedCheck.changed;
+  });
+
+  return changed;
 }

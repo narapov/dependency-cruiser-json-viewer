@@ -43,6 +43,7 @@ export function useQuickPickState(sources: string[], commands: QuickPickCommand[
     open,
     query,
     setQuery,
+    normalizedQuery,
     normalizedDeferredQuery,
     isCommandMode,
     fileResults,

@@ -14,14 +14,13 @@ export function resizeFolderGroups(
     .map(node => node.id)
     .sort((a, b) => getGroupDepth(b, parentByNode) - getGroupDepth(a, parentByNode));
 
-  folderGroupIds.reduce<null>((result, groupId) => {
+  folderGroupIds.forEach(groupId => {
     const size = resolveGroupSize(groupId, [...nodeById.values()], parentByNode);
     const groupNode = nodeById.get(groupId);
     if (groupNode) {
       nodeById.set(groupId, applyGroupSizeToNode(groupNode, size));
     }
-    return result;
-  }, null);
+  });
 }
 
 /** Ancestor folderGroup ids for a node, deepest first. */
@@ -50,14 +49,13 @@ export function resizeAncestorGroups(
   parentByNode: ReadonlyMap<string, string | null>,
   nodeId: string,
 ): void {
-  getAncestorFolderGroupIds(nodeId, nodeById, parentByNode).reduce<null>((result, groupId) => {
+  getAncestorFolderGroupIds(nodeId, nodeById, parentByNode).forEach(groupId => {
     const size = resolveGroupSize(groupId, [...nodeById.values()], parentByNode);
     const groupNode = nodeById.get(groupId);
     if (groupNode) {
       nodeById.set(groupId, applyGroupSizeToNode(groupNode, size));
     }
-    return result;
-  }, null);
+  });
 }
 
 /** True when the node's current size exceeds its previous snapshot. */

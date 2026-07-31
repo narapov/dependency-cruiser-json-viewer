@@ -2,7 +2,7 @@
 import { createRef } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { act, cleanup, renderHook } from '@testing-library/react';
+import { act, renderHook } from '@testing-library/react';
 
 import { APP_STORAGE_PREFIX, copyToClipboard } from '@/Shared';
 
@@ -73,7 +73,6 @@ describe('useAppOrchestration', () => {
   });
 
   afterEach(() => {
-    cleanup();
     vi.useRealTimers();
     vi.clearAllMocks();
   });

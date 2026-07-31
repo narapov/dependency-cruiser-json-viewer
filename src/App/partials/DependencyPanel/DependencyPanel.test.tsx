@@ -2,10 +2,10 @@
 import type { IModule } from 'dependency-cruiser';
 import { type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { ThemeProvider } from '@mui/material/styles';
-import { cleanup, fireEvent, render, renderHook, screen } from '@testing-library/react';
+import { fireEvent, render, renderHook, screen } from '@testing-library/react';
 
 import { muiTheme } from '@/Shared/styles/muiTheme';
 
@@ -43,10 +43,6 @@ const modules = [
 const selectedPaths = ['src/foo/a.ts', 'src/foo/b.ts', 'src/bar/c.ts'];
 
 describe('DependencyPanel', () => {
-  afterEach(() => {
-    cleanup();
-  });
-
   it('renders sections, relations, and wires header actions', () => {
     const { result: i18n } = renderHook(() => useTranslation());
     const onClose = vi.fn();

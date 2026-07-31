@@ -87,10 +87,9 @@ export function updateSubtreeGroupCaches(
     .filter(
       node => node.type === 'folderGroup' && (node.id === groupId || isDescendantOf(node.id, groupId, parentByNode)),
     )
-    .reduce((_, node) => {
+    .forEach(node => {
       updateGroupCacheFromNodes(cache, nodes, parentByNode, node.id);
-      return null;
-    }, null);
+    });
 
   updateGroupCacheFromNodes(cache, nodes, parentByNode, parentByNode.get(groupId) ?? null);
 }

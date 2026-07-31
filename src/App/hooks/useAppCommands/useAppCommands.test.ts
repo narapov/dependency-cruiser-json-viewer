@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
-import { cleanup, renderHook } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 
 import { useAppCommands, type AppCommandsOrchestration } from './useAppCommands';
 
@@ -24,10 +24,6 @@ function createOrch(): AppCommandsOrchestration {
 }
 
 describe('useAppCommands', () => {
-  afterEach(() => {
-    cleanup();
-  });
-
   it('returns sorted commands with expected ids', () => {
     const orch = createOrch();
     const openThemePicker = vi.fn();

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 
 import type { BuildGraphResult } from '../../types';
 import { useBuildGraph } from './useBuildGraph';
@@ -40,7 +40,6 @@ const onShowInFileTree = vi.fn();
 
 describe('useBuildGraph', () => {
   afterEach(() => {
-    cleanup();
     vi.clearAllMocks();
   });
 

@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
 import { type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
-import { afterEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { ThemeProvider } from '@mui/material/styles';
-import { cleanup, fireEvent, render, renderHook, screen } from '@testing-library/react';
+import { fireEvent, render, renderHook, screen } from '@testing-library/react';
 
 import { muiTheme } from '@/Shared/styles/muiTheme';
 
@@ -19,10 +19,6 @@ function renderWithTheme(ui: ReactElement) {
 }
 
 describe('ThemeSelector', () => {
-  afterEach(() => {
-    cleanup();
-  });
-
   it('renders theme options and selects dark mode', () => {
     const { result: i18n } = renderHook(() => useTranslation());
 

@@ -3,7 +3,7 @@ import { createRef, type ReactElement } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ThemeProvider } from '@mui/material/styles';
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 
 import { muiTheme } from '@/Shared/styles/muiTheme';
 
@@ -27,7 +27,6 @@ describe('FileTree', () => {
   });
 
   afterEach(() => {
-    cleanup();
     vi.useRealTimers();
     vi.clearAllMocks();
   });

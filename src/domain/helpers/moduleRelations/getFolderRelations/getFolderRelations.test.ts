@@ -68,4 +68,23 @@ describe('getFolderRelations', () => {
 
     expect(dependencies).toEqual([{ path: 'src/bar/c.ts', circular: false, typeOnly: true, typeOnlyCircular: false }]);
   });
+
+  it('merges flags when expanded folder emits dual candidates for the same path', () => {
+    const typeOnlyCircularDep = {
+      resolved: 'src/bar/c.ts',
+      circular: true,
+      dependencyTypes: ['local', 'type-only', 'import'],
+    } as IModule['dependencies'][0];
+
+    // Module keyed at the folder path: when the folder is selected and expanded,
+    // both the representative and under-folder branches push the same candidate.
+    const { dependencies } = getFolderRelations(
+      'src/foo',
+      [moduleAt('src/foo', [typeOnlyCircularDep]), moduleAt('src/bar/c.ts')],
+      ['src/foo', 'src/bar/c.ts'],
+      new Set(['src/foo']),
+    );
+
+    expect(dependencies).toEqual([{ path: 'src/bar/c.ts', circular: false, typeOnly: true, typeOnlyCircular: true }]);
+  });
 });

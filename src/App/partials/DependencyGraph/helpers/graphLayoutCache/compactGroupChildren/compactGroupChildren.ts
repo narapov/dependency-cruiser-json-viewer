@@ -35,10 +35,10 @@ export function compactGroupChildren(
     return false;
   }
 
-  childIds.reduce<null>((result, childId) => {
+  childIds.forEach(childId => {
     const child = nodeById.get(childId);
     if (!child) {
-      return result;
+      return;
     }
     nodeById.set(childId, {
       ...child,
@@ -47,8 +47,7 @@ export function compactGroupChildren(
         y: child.position.y + shiftY,
       },
     });
-    return result;
-  }, null);
+  });
 
   return true;
 }
