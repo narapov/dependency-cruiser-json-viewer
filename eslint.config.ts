@@ -43,4 +43,32 @@ export default defineConfig([
       'react-refresh/only-export-components': 'off',
     },
   },
+  {
+    files: ['**/index.ts', '**/index.tsx'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'VariableDeclaration',
+          message: 'No variable declarations allowed in index files',
+        },
+        {
+          selector: 'FunctionDeclaration',
+          message: 'No function declarations allowed in index files',
+        },
+        {
+          selector: 'ClassDeclaration',
+          message: 'No class declarations allowed in index files',
+        },
+        {
+          selector: 'TSInterfaceDeclaration',
+          message: 'No interface declarations allowed in index files',
+        },
+        {
+          selector: 'TSTypeAliasDeclaration',
+          message: 'No type declarations allowed in index files',
+        },
+      ],
+    },
+  },
 ]);

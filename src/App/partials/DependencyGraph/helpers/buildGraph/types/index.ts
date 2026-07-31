@@ -1,4 +1,1 @@
-export interface NodeSize {
-  width: number;
-  height: number;
-}
+export * from './NodeSize';
