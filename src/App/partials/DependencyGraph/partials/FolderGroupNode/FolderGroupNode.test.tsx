@@ -26,7 +26,7 @@ function renderWithTheme(ui: ReactElement) {
 }
 
 function groupNodeProps(data: FolderGroupNodeData): NodeProps {
-  return { data } as NodeProps;
+  return { id: data.path, data } as unknown as NodeProps;
 }
 
 describe('FolderGroupNode', () => {
