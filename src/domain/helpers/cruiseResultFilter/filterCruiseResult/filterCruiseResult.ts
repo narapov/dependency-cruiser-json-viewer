@@ -1,15 +1,16 @@
 import type { ICruiseResult } from 'dependency-cruiser';
 
-import { isIgnoredPath } from '../isIgnoredPath';
+import { compileIgnoreMatchers } from '../compileIgnoreMatchers';
 
 /** Drop ignored modules and edges that target them from a cruise result. */
 export function filterCruiseResult(result: ICruiseResult, patterns: string[]): ICruiseResult {
-  if (patterns.length === 0) {
+  const matchers = compileIgnoreMatchers(patterns);
+  if (matchers.length === 0) {
     return result;
   }
 
   const excluded = new Set(
-    result.modules.filter(module => isIgnoredPath(module.source, patterns)).map(module => module.source),
+    result.modules.filter(module => matchers.some(matcher => matcher(module.source))).map(module => module.source),
   );
 
   if (excluded.size === 0) {
