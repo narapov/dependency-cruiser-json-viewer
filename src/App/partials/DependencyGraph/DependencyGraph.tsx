@@ -7,18 +7,11 @@ import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Snackbar from '@mui/material/Snackbar';
 import { useColorScheme, useTheme } from '@mui/material/styles';
-import {
-  Background,
-  Controls,
-  MiniMap,
-  Panel,
-  ReactFlow,
-  ReactFlowProvider,
-  useReactFlow,
-  type Node,
-} from '@xyflow/react';
+import { Background, Controls, MiniMap, Panel, ReactFlow, ReactFlowProvider, type Node } from '@xyflow/react';
 
 import '@xyflow/react/dist/style.css';
+
+import { useLogChangedProps } from '@/Shared';
 
 import { getMinimapNodeColor } from './helpers';
 import {
@@ -28,6 +21,7 @@ import {
   useGraphLayoutNodes,
   useHighlightedEdges,
   useHighlightedNodes,
+  usePendingFocusNode,
 } from './hooks';
 import { DependencyEdge } from './partials/DependencyEdge';
 import { FileNode } from './partials/FileNode';
@@ -85,8 +79,6 @@ function DependencyGraphInner({
   const { mode, systemMode } = useColorScheme();
   const resolvedMode = mode === 'system' ? systemMode : mode;
 
-  const { fitView, getNode } = useReactFlow();
-
   const colorMode = resolvedMode ?? 'light';
 
   const { graphResult, isBuildingGraph, buildFailed, clearBuildFailed, expandedFolders } = useBuildGraph({
@@ -141,23 +133,20 @@ function DependencyGraphInner({
     autoLayoutOnly,
   });
 
-  const runFocusNode = (path: string) => {
-    if (!getNode(path)) {
-      return;
-    }
-    void fitView({ nodes: [{ id: path }], padding: 0.5, duration: 300 });
-  };
+  const { focusNode } = usePendingFocusNode({
+    isBuildingGraph,
+    graphResult,
+    layoutNodes,
+  });
 
   const { onEdgeContextMenu, edgeContextMenu } = useEdgeContextMenu({
-    onFocusNode: runFocusNode,
+    onFocusNode: focusNode,
     getEdgeHighlight,
     onSetUserEdgeHighlight: setUserEdgeHighlight,
   });
 
   useImperativeHandle(imperativeRef, () => ({
-    focusNode(path: string) {
-      runFocusNode(path);
-    },
+    focusNode,
     clearAllHighlights,
   }));
 
@@ -249,6 +238,7 @@ interface DependencyGraphProps extends Omit<
 
 export function DependencyGraph({ ref, ...props }: DependencyGraphProps) {
   const [autoLayoutOnly, setAutoLayoutOnly] = useState(true);
+  useLogChangedProps('DependencyGraph', props);
 
   return (
     <div className={clsx(styles.container, autoLayoutOnly && styles.layoutLocked)}>

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type RefObject } from 'react';
+import { useMemo, useState, type RefObject } from 'react';
 
 import {
   getAncestorKeys,
@@ -65,17 +65,6 @@ export function useAppOrchestration({
     setPrevExpandedKeys(initialDependencyCruiserState.expandedKeys);
     setExpandedKeys(initialDependencyCruiserState.expandedKeys);
   }
-
-  const focusPathTimeoutRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (focusPathTimeoutRef.current) {
-        clearTimeout(focusPathTimeoutRef.current);
-        focusPathTimeoutRef.current = null;
-      }
-    };
-  }, []);
 
   const resolvedActivePath = activePath != null && isPathInSources(activePath, sources) ? activePath : null;
   const resolvedDependenciesPath =
@@ -146,13 +135,7 @@ export function useAppOrchestration({
 
   const handleQuickPickSelect = (path: string) => {
     activatePath(path);
-    if (focusPathTimeoutRef.current) {
-      clearTimeout(focusPathTimeoutRef.current);
-    }
-    focusPathTimeoutRef.current = setTimeout(() => {
-      focusPath(path);
-      focusPathTimeoutRef.current = null;
-    }, 100);
+    focusPath(path);
   };
 
   const focusActivePath = () => {

@@ -70,11 +70,9 @@ function renderOrchestration(
 describe('useAppOrchestration', () => {
   beforeEach(() => {
     localStorage.clear();
-    vi.useFakeTimers();
   });
 
   afterEach(() => {
-    vi.useRealTimers();
     vi.clearAllMocks();
   });
 
@@ -194,7 +192,7 @@ describe('useAppOrchestration', () => {
     expect(result.current.activePath).toBeNull();
   });
 
-  it('handleQuickPickSelect activates and focuses after delay', () => {
+  it('handleQuickPickSelect activates and focuses immediately', () => {
     const { result, graph, fileTree } = renderOrchestration({
       selectedKeys: SOURCES,
       expandedKeys: [],
@@ -203,13 +201,8 @@ describe('useAppOrchestration', () => {
     act(() => {
       result.current.handleQuickPickSelect('src/a.ts');
     });
+
     expect(result.current.activePath).toBe('src/a.ts');
-    expect(graph.focusNode).not.toHaveBeenCalled();
-
-    act(() => {
-      vi.advanceTimersByTime(100);
-    });
-
     expect(graph.focusNode).toHaveBeenCalledWith('src/a.ts');
     expect(fileTree.focusPath).toHaveBeenCalledWith('src/a.ts');
   });

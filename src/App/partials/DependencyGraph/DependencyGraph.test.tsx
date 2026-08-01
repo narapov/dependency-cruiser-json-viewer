@@ -15,7 +15,7 @@ const getNode = vi.fn((id: string) => (id === 'src/a.ts' ? { id } : undefined));
 const clearBuildFailed = vi.fn();
 
 const buildGraphState = {
-  graphResult: { nodes: [], edges: [], visibleNodeIds: new Set<string>() },
+  graphResult: { nodes: [], edges: [], visibleNodeIds: new Set<string>(), parentByNode: new Map() },
   isBuildingGraph: false,
   buildFailed: false,
   clearBuildFailed,
@@ -45,27 +45,31 @@ vi.mock('@xyflow/react', () => ({
   useReactFlow: () => ({ fitView, getNode }),
 }));
 
-vi.mock('./hooks', () => ({
-  useBuildGraph: () => buildGraphState,
-  useGraphLayoutNodes: () => ({
-    nodes: [],
-    onNodesChange: vi.fn(),
-    onNodeDrag: vi.fn(),
-    onNodeDragStop: vi.fn(),
-    hasUserLayout: false,
-  }),
-  useHighlightedNodes: () => ({ highlightedNodes: [] }),
-  useHighlightedEdges: () => ({
-    highlightedEdges: [],
-    getEdgeHighlight: vi.fn(),
-    setUserEdgeHighlight: vi.fn(),
-    clearAllHighlights: vi.fn(),
-    onEdgeClick: vi.fn(),
-    clearSelectedEdge: vi.fn(),
-  }),
-  useAutoFitView: vi.fn(),
-  useEdgeContextMenu: () => ({ onEdgeContextMenu: vi.fn(), edgeContextMenu: null }),
-}));
+vi.mock('./hooks', async importOriginal => {
+  const actual = await importOriginal<typeof import('./hooks')>();
+  return {
+    ...actual,
+    useBuildGraph: () => buildGraphState,
+    useGraphLayoutNodes: () => ({
+      nodes: [],
+      onNodesChange: vi.fn(),
+      onNodeDrag: vi.fn(),
+      onNodeDragStop: vi.fn(),
+      hasUserLayout: false,
+    }),
+    useHighlightedNodes: () => ({ highlightedNodes: [] }),
+    useHighlightedEdges: () => ({
+      highlightedEdges: [],
+      getEdgeHighlight: vi.fn(),
+      setUserEdgeHighlight: vi.fn(),
+      clearAllHighlights: vi.fn(),
+      onEdgeClick: vi.fn(),
+      clearSelectedEdge: vi.fn(),
+    }),
+    useAutoFitView: vi.fn(),
+    useEdgeContextMenu: () => ({ onEdgeContextMenu: vi.fn(), edgeContextMenu: null }),
+  };
+});
 
 const baseProps = {
   modules: [],
