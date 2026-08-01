@@ -42,15 +42,43 @@ export function QuickPick({ ref, sources, commands, onSelectPath }: QuickPickPro
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
 
+  const resetHighlight = () => {
+    setHighlightedIndex(0);
+  };
+
+  const handleClose = () => {
+    resetHighlight();
+    close();
+  };
+
+  const handleOpenFileMode = () => {
+    resetHighlight();
+    openFileMode();
+  };
+
+  const handleOpenCommandMode = () => {
+    resetHighlight();
+    openCommandMode();
+  };
+
+  const handleToggleFileMode = () => {
+    resetHighlight();
+    toggleFileMode();
+  };
+
   useImperativeHandle(ref, () => ({
-    openFileMode,
-    openCommandMode,
+    openFileMode: handleOpenFileMode,
+    openCommandMode: handleOpenCommandMode,
   }));
 
-  useQuickPickShortcut({ open, onToggleFileMode: toggleFileMode, onOpenCommandMode: openCommandMode });
+  useQuickPickShortcut({
+    open,
+    onToggleFileMode: handleToggleFileMode,
+    onOpenCommandMode: handleOpenCommandMode,
+  });
 
   const handleQueryChange = (value: string) => {
-    setHighlightedIndex(0);
+    resetHighlight();
     setQuery(value);
   };
 
@@ -67,12 +95,12 @@ export function QuickPick({ ref, sources, commands, onSelectPath }: QuickPickPro
 
   const handleSelectPath = (path: string) => {
     onSelectPath(path);
-    close();
+    handleClose();
   };
 
   const handleSelectCommand = (command: QuickPickCommand) => {
     command.onExecute();
-    close();
+    handleClose();
   };
 
   const handleKeyDown = (event: KeyboardEvent) => {
@@ -164,7 +192,7 @@ export function QuickPick({ ref, sources, commands, onSelectPath }: QuickPickPro
   return (
     <Dialog
       open={open}
-      onClose={close}
+      onClose={handleClose}
       maxWidth="sm"
       fullWidth
       sx={{ '& .MuiDialog-container': { alignItems: 'flex-start', pt: '12vh' } }}

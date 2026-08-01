@@ -145,4 +145,86 @@ describe('useLoadCruiseResultFromFile', () => {
     expect(result.current.fileLoadError).toBeNull();
     expect(open).toHaveBeenCalled();
   });
+
+  it('ignores a stale load when a newer file is selected', async () => {
+    const resultA = { modules: [{ source: 'a.ts' }], summary: {} };
+    const resultB = { modules: [{ source: 'b.ts' }], summary: {} };
+    parseCruiseResultJson.mockImplementation((text: string) => {
+      if (text === 'A') {
+        return resultA;
+      }
+      if (text === 'B') {
+        return resultB;
+      }
+      throw new CruiseResultParseError('invalidFormat');
+    });
+
+    let resolveA!: (value: string) => void;
+    const deferredA = new Promise<string>(resolve => {
+      resolveA = resolve;
+    });
+
+    const textSpy = vi.spyOn(File.prototype, 'text').mockImplementation(function (this: File) {
+      if (this.name === 'a.json') {
+        return deferredA;
+      }
+      return Promise.resolve('B');
+    });
+
+    try {
+      const { queryClient, wrapper } = createWrapper();
+      const { result } = renderHook(() => useLoadCruiseResultFromFile(), { wrapper });
+
+      const fileA = new File(['A'], 'a.json', { type: 'application/json' });
+      const fileB = new File(['B'], 'b.json', { type: 'application/json' });
+
+      let loadA: Promise<void> = Promise.resolve();
+      await act(async () => {
+        loadA = result.current.handleFileSelect(fileA);
+        await result.current.handleFileSelect(fileB);
+      });
+
+      expect(queryClient.getQueryData(['cruise-result'])).toEqual(resultB);
+      expect(result.current.fileLoadError).toBeNull();
+
+      await act(async () => {
+        resolveA('A');
+        await loadA;
+      });
+
+      expect(queryClient.getQueryData(['cruise-result'])).toEqual(resultB);
+      expect(result.current.fileLoadError).toBeNull();
+    } finally {
+      textSpy.mockRestore();
+    }
+  });
+
+  it('aborts an in-flight load on unmount', async () => {
+    const cruiseResult = { modules: [{ source: 'a.ts' }], summary: {} };
+    parseCruiseResultJson.mockReturnValue(cruiseResult);
+
+    const { promise: deferredText, resolve: resolveText } = Promise.withResolvers<string>();
+    const textSpy = vi.spyOn(File.prototype, 'text').mockReturnValue(deferredText);
+
+    try {
+      const { queryClient, wrapper } = createWrapper();
+      const { result, unmount } = renderHook(() => useLoadCruiseResultFromFile(), { wrapper });
+
+      let load: Promise<void> = Promise.resolve();
+      await act(async () => {
+        load = result.current.handleFileSelect(new File(['A'], 'a.json'));
+      });
+
+      unmount();
+
+      await act(async () => {
+        resolveText('A');
+        await load;
+      });
+
+      expect(queryClient.getQueryData(['cruise-result'])).toBeUndefined();
+    } finally {
+      textSpy.mockRestore();
+    }
+  });
 });

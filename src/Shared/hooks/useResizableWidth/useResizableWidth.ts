@@ -39,6 +39,7 @@ export function useResizableWidth({
     windowWidth > 0 ? Math.max(minWidth, windowWidth - oppositeWidth - MIN_MAIN_WIDTH) : Number.POSITIVE_INFINITY;
 
   const dragRef = useRef<{ startX: number; startWidth: number; pointerId: number } | null>(null);
+  const cleanupDragRef = useRef<(() => void) | null>(null);
   const resizingClass = RESIZING_CLASSES[side];
 
   useEffect(() => {
@@ -51,9 +52,17 @@ export function useResizableWidth({
     }
   }, [maxWidth, minWidth, setWidth, width, windowWidth]);
 
+  useEffect(() => {
+    return () => {
+      cleanupDragRef.current?.();
+    };
+  }, []);
+
   const onResizePointerDown = useCallback(
     (event: ReactPointerEvent<HTMLDivElement>) => {
       event.preventDefault();
+      cleanupDragRef.current?.();
+
       const handle = event.currentTarget;
       const pointerId = event.pointerId;
       dragRef.current = {
@@ -74,20 +83,26 @@ export function useResizableWidth({
         setWidth(clampWidth(dragRef.current.startWidth + delta, minWidth, maxWidth));
       };
 
-      const onPointerUp = (upEvent: globalThis.PointerEvent) => {
-        if (!dragRef.current || upEvent.pointerId !== dragRef.current.pointerId) {
-          return;
-        }
+      const cleanup = () => {
         dragRef.current = null;
         document.body.classList.remove(resizingClass);
         document.removeEventListener('pointermove', onPointerMove);
         document.removeEventListener('pointerup', onPointerUp);
         document.removeEventListener('pointercancel', onPointerUp);
-        if (handle.hasPointerCapture(upEvent.pointerId)) {
-          handle.releasePointerCapture(upEvent.pointerId);
+        if (handle.hasPointerCapture(pointerId)) {
+          handle.releasePointerCapture(pointerId);
         }
+        cleanupDragRef.current = null;
       };
 
+      const onPointerUp = (upEvent: globalThis.PointerEvent) => {
+        if (!dragRef.current || upEvent.pointerId !== dragRef.current.pointerId) {
+          return;
+        }
+        cleanup();
+      };
+
+      cleanupDragRef.current = cleanup;
       document.addEventListener('pointermove', onPointerMove, { passive: false });
       document.addEventListener('pointerup', onPointerUp);
       document.addEventListener('pointercancel', onPointerUp);

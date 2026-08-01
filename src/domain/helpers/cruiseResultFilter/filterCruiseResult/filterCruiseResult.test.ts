@@ -64,4 +64,15 @@ describe('filterCruiseResult', () => {
 
     expect(filterCruiseResult(result, ['**/*.test.ts'])).toBe(result);
   });
+
+  it('treats missing dependencies as an empty list', () => {
+    const result = cruiseResult([
+      { source: 'src/foo/a.ts', dependents: [], valid: true } as unknown as IModule,
+      moduleAt('src/foo/a.test.ts'),
+    ]);
+
+    const filtered = filterCruiseResult(result, ['**/*.test.ts']);
+
+    expect(filtered.modules).toEqual([{ source: 'src/foo/a.ts', dependents: [], valid: true, dependencies: [] }]);
+  });
 });

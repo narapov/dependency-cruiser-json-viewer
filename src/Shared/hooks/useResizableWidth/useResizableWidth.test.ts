@@ -235,4 +235,29 @@ describe('useResizableWidth', () => {
 
     expect(event.preventDefault).toHaveBeenCalled();
   });
+
+  it('removes document listeners and resizing class on unmount mid-drag', () => {
+    const handle = createHandle();
+    const removeEventListener = vi.spyOn(document, 'removeEventListener');
+    const { result, unmount } = renderHook(() =>
+      useResizableWidth({
+        storageKey: 'test-width',
+        defaultWidth: 280,
+        minWidth: 200,
+        side: 'left',
+      }),
+    );
+
+    pointerDown(result.current.onResizePointerDown, handle, { clientX: 100 });
+    expect(document.body.classList.contains('resizingSidebar')).toBe(true);
+    expect(handle.hasPointerCapture(1)).toBe(true);
+
+    unmount();
+
+    expect(document.body.classList.contains('resizingSidebar')).toBe(false);
+    expect(handle.hasPointerCapture(1)).toBe(false);
+    expect(removeEventListener).toHaveBeenCalledWith('pointermove', expect.any(Function));
+    expect(removeEventListener).toHaveBeenCalledWith('pointerup', expect.any(Function));
+    expect(removeEventListener).toHaveBeenCalledWith('pointercancel', expect.any(Function));
+  });
 });

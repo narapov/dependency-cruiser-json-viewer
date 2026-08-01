@@ -124,4 +124,40 @@ describe('QuickPick', () => {
     const options = within(screen.getByRole('listbox')).getAllByRole('option');
     expect(options[0]).toHaveAttribute('aria-selected', 'true');
   });
+
+  it('resets highlight index when reopened after close', async () => {
+    const { result: i18n } = renderHook(() => useTranslation());
+    const ref = createRef<QuickPickHandle>();
+    const commands: QuickPickCommand[] = [
+      { id: 'selectAll', label: 'Select All', onExecute: vi.fn() },
+      { id: 'setTheme', label: 'Set Theme', onExecute: vi.fn() },
+      { id: 'about', label: 'About', onExecute: vi.fn() },
+    ];
+
+    renderWithTheme(<QuickPick ref={ref} sources={SOURCES} commands={commands} onSelectPath={vi.fn()} />);
+
+    act(() => {
+      ref.current?.openCommandMode();
+    });
+
+    const input = screen.getByPlaceholderText(i18n.current.t('quickPick.commandPlaceholder'));
+    const keyboardRoot = getKeyboardRoot(input);
+    fireEvent.keyDown(keyboardRoot, { key: 'ArrowDown' });
+    fireEvent.keyDown(keyboardRoot, { key: 'ArrowDown' });
+
+    const optionsBeforeClose = within(screen.getByRole('listbox')).getAllByRole('option');
+    expect(optionsBeforeClose[2]).toHaveAttribute('aria-selected', 'true');
+
+    fireEvent.keyDown(keyboardRoot, { key: 'Escape' });
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    act(() => {
+      ref.current?.openCommandMode();
+    });
+
+    const optionsAfterOpen = within(screen.getByRole('listbox')).getAllByRole('option');
+    expect(optionsAfterOpen[0]).toHaveAttribute('aria-selected', 'true');
+  });
 });

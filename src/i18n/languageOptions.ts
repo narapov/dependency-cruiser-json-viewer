@@ -1,3 +1,5 @@
+import { appStorageKey } from '../Shared/constants/appStoragePrefix';
+
 export const LANGUAGE_OPTIONS = [
   { value: 'en', labelKey: 'language.en' },
   { value: 'fr', labelKey: 'language.fr' },
@@ -10,4 +12,4 @@ export type LanguageOptionValue = (typeof LANGUAGE_OPTIONS)[number]['value'];
 
 export const SUPPORTED_LANGUAGES = LANGUAGE_OPTIONS.map(option => option.value);
 
-export const LANGUAGE_STORAGE_KEY = 'language';
+export const LANGUAGE_STORAGE_KEY = appStorageKey('language');

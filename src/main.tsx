@@ -10,14 +10,14 @@ import './i18n';
 import './Shared/styles/graphTheme.css';
 import './index.css';
 
-import { ErrorBoundaryFallback, queryClient } from '@/Shared';
+import { ErrorBoundaryFallback, queryClient, THEME_STORAGE_KEY } from '@/Shared';
 import { muiTheme } from '@/Shared/styles/muiTheme';
 
 import App from './App';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ThemeProvider theme={muiTheme} modeStorageKey="theme" defaultMode="system">
+    <ThemeProvider theme={muiTheme} modeStorageKey={THEME_STORAGE_KEY} defaultMode="system">
       <CssBaseline />
       <QueryClientProvider client={queryClient}>
         <ErrorBoundary

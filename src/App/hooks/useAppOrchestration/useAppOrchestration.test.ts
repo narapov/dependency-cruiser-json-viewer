@@ -4,7 +4,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { act, renderHook } from '@testing-library/react';
 
-import { APP_STORAGE_PREFIX, copyToClipboard } from '@/Shared';
+import { LANGUAGE_STORAGE_KEY } from '@/i18n';
+import { APP_STORAGE_PREFIX, copyToClipboard, THEME_STORAGE_KEY } from '@/Shared';
 
 import type { DependencyGraphHandle } from '../../partials/DependencyGraph';
 import type { FileTreeHandle } from '../../partials/FileTree';
@@ -337,6 +338,8 @@ describe('useAppOrchestration', () => {
   it('clearLocalStorage removes app keys and reloads', () => {
     localStorage.setItem(`${APP_STORAGE_PREFIX}.sidebar-open`, 'true');
     localStorage.setItem(`${APP_STORAGE_PREFIX}.ignore-patterns`, '[]');
+    localStorage.setItem(THEME_STORAGE_KEY, 'dark');
+    localStorage.setItem(LANGUAGE_STORAGE_KEY, 'ru');
     localStorage.setItem('other-app.key', 'keep');
 
     const reload = vi.fn();
@@ -353,6 +356,8 @@ describe('useAppOrchestration', () => {
 
     expect(localStorage.getItem(`${APP_STORAGE_PREFIX}.sidebar-open`)).toBeNull();
     expect(localStorage.getItem(`${APP_STORAGE_PREFIX}.ignore-patterns`)).toBeNull();
+    expect(localStorage.getItem(THEME_STORAGE_KEY)).toBeNull();
+    expect(localStorage.getItem(LANGUAGE_STORAGE_KEY)).toBeNull();
     expect(localStorage.getItem('other-app.key')).toBe('keep');
     expect(reload).toHaveBeenCalled();
   });

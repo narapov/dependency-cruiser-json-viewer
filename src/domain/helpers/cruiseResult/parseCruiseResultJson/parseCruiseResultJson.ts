@@ -1,5 +1,5 @@
 import type { ICruiseResult } from 'dependency-cruiser';
-import { array, object, string } from 'zod';
+import { array, boolean, object, string, type ZodType } from 'zod';
 
 /** Why cruise-result JSON parsing failed. */
 export type CruiseResultParseErrorCode = 'invalidJson' | 'invalidFormat';
@@ -15,14 +15,44 @@ export class CruiseResultParseError extends Error {
   }
 }
 
-const cruiseModuleSchema = object({
-  source: string(),
+/**
+ * Runtime gate aligned with the required spine of {@link ICruiseResult} / {@link IModule}.
+ *
+ * Nested dependency and summary fields stay loose: dependency-cruiser's TypeScript types
+ * (e.g. `IDependency.protocol`, `instability`) are stricter than real cruise JSON, and the
+ * viewer only reads a few edge fields (`resolved`, `circular`, `dependencyTypes`).
+ *
+ * Canonical wire format (not used here — too heavy for the viewer load path):
+ * https://github.com/sverweij/dependency-cruiser/blob/main/src/schema/cruise-result.schema.json
+ */
+export type CruiseResultGate = {
+  modules: Array<{
+    source: string;
+    valid: boolean;
+    dependencies: Array<Record<string, unknown>>;
+    dependents: string[];
+  }>;
+  summary: Record<string, unknown>;
+};
+
+const cruiseDependencySchema = object({
+  resolved: string().optional(),
+  circular: boolean().optional(),
+  dependencyTypes: array(string()).optional(),
 }).loose();
 
-/** Minimal Zod schema requiring a modules array on a cruise result. */
+const cruiseModuleSchema = object({
+  source: string(),
+  valid: boolean(),
+  dependencies: array(cruiseDependencySchema),
+  dependents: array(string()),
+}).loose();
+
+/** Structural Zod schema for cruise-result JSON consumed by the viewer. */
 export const cruiseResultSchema = object({
   modules: array(cruiseModuleSchema),
-}).loose();
+  summary: object({}).loose(),
+}).loose() satisfies ZodType<CruiseResultGate>;
 
 /** Validate a parsed value as an ICruiseResult or throw CruiseResultParseError. */
 export function validateCruiseResult(parsed: unknown): ICruiseResult {
@@ -31,6 +61,7 @@ export function validateCruiseResult(parsed: unknown): ICruiseResult {
     throw new CruiseResultParseError('invalidFormat');
   }
 
+  // Full ICruiseResult / IDependency cannot be mirrored in Zod without rejecting real cruise exports.
   return result.data as unknown as ICruiseResult;
 }
 

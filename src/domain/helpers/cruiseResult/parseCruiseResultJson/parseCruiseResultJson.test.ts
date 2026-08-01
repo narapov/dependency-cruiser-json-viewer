@@ -41,10 +41,44 @@ describe('parseCruiseResultJson', () => {
     }
   });
 
+  it('throws invalidFormat when summary is missing', () => {
+    expect(() =>
+      parseCruiseResultJson(
+        JSON.stringify({ modules: [{ source: 'src/a.ts', dependencies: [], dependents: [], valid: true }] }),
+      ),
+    ).toThrow(CruiseResultParseError);
+  });
+
   it('throws invalidFormat when a module has no source', () => {
-    expect(() => parseCruiseResultJson(JSON.stringify({ modules: [{ dependencies: [] }] }))).toThrow(
-      CruiseResultParseError,
-    );
+    expect(() =>
+      parseCruiseResultJson(
+        JSON.stringify({ modules: [{ dependencies: [], dependents: [], valid: true }], summary: {} }),
+      ),
+    ).toThrow(CruiseResultParseError);
+  });
+
+  it('throws invalidFormat when a module has no dependencies', () => {
+    expect(() =>
+      parseCruiseResultJson(
+        JSON.stringify({ modules: [{ source: 'src/a.ts', dependents: [], valid: true }], summary: {} }),
+      ),
+    ).toThrow(CruiseResultParseError);
+  });
+
+  it('throws invalidFormat when a module has no dependents', () => {
+    expect(() =>
+      parseCruiseResultJson(
+        JSON.stringify({ modules: [{ source: 'src/a.ts', dependencies: [], valid: true }], summary: {} }),
+      ),
+    ).toThrow(CruiseResultParseError);
+  });
+
+  it('throws invalidFormat when a module has no valid flag', () => {
+    expect(() =>
+      parseCruiseResultJson(
+        JSON.stringify({ modules: [{ source: 'src/a.ts', dependencies: [], dependents: [] }], summary: {} }),
+      ),
+    ).toThrow(CruiseResultParseError);
   });
 });
 
@@ -63,6 +97,14 @@ describe('validateCruiseResult', () => {
   });
 
   it('throws invalidFormat when a module has no source', () => {
-    expect(() => validateCruiseResult({ modules: [{ dependencies: [] }] })).toThrow(CruiseResultParseError);
+    expect(() =>
+      validateCruiseResult({ modules: [{ dependencies: [], dependents: [], valid: true }], summary: {} }),
+    ).toThrow(CruiseResultParseError);
+  });
+
+  it('throws invalidFormat when a module has no dependencies', () => {
+    expect(() =>
+      validateCruiseResult({ modules: [{ source: 'src/a.ts', dependents: [], valid: true }], summary: {} }),
+    ).toThrow(CruiseResultParseError);
   });
 });

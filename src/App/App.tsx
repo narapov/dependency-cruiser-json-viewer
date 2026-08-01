@@ -1,5 +1,5 @@
 import type { IModule } from 'dependency-cruiser';
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Alert from '@mui/material/Alert';
@@ -54,9 +54,19 @@ function App() {
 
   const sources = useMemo(() => filteredData?.modules.map(module => module.source) ?? [], [filteredData?.modules]);
   const initialDependencyCruiserState = useInitialDependencyCruiserState(sources);
-  const { sidebarOpen, toggleSidebarOpen } = useSidebarOpen();
+  const { sidebarOpen, setSidebarOpen, toggleSidebarOpen } = useSidebarOpen();
   useSidebarShortcut({ onToggle: toggleSidebarOpen });
   const orch = useAppOrchestration({ sources, fileTreeRef, graphRef, initialDependencyCruiserState });
+
+  const { showInFileTree } = orch;
+
+  const handleShowInFileTree = useCallback(
+    (path: string) => {
+      setSidebarOpen(true);
+      showInFileTree(path);
+    },
+    [showInFileTree, setSidebarOpen],
+  );
 
   const commands = useAppCommands({
     orch,
@@ -145,11 +155,7 @@ function App() {
           expandedKeys={orch.expandedKeys}
           onToggleFolder={orch.toggleFolder}
           onExpandRecursive={orch.expandRecursive}
-          // onShowInFileTree={path => {
-          //   setSidebarOpen(true);
-          //   orch.showInFileTree(path);
-          // }}
-          onShowInFileTree={orch.showInFileTree}
+          onShowInFileTree={handleShowInFileTree}
           onShowDependencies={orch.handleShowDependencies}
           onActivePathChange={orch.activatePath}
           activePath={orch.activePath}

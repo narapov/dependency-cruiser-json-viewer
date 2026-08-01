@@ -68,7 +68,7 @@ vi.mock('./partials/AppLayout', async importOriginal => {
   const actual = await importOriginal<typeof import('./partials/AppLayout')>();
   return {
     ...actual,
-    useSidebarOpen: () => ({ sidebarOpen: true, toggleSidebarOpen: vi.fn() }),
+    useSidebarOpen: () => ({ sidebarOpen: true, setSidebarOpen: vi.fn(), toggleSidebarOpen: vi.fn() }),
     useSidebarShortcut: vi.fn(),
   };
 });
