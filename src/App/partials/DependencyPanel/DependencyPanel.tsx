@@ -44,12 +44,22 @@ export function DependencyPanel({
         <Typography variant="subtitle1" gutterBottom>
           {t('dependencyPanel.dependencies')}
         </Typography>
-        <RelationList items={relations.dependencies} onShowInGraph={onShowInGraph} />
+        <RelationList
+          key={`${path}-dependencies`}
+          items={relations.dependencies}
+          hiddenItems={relations.hiddenDependencies}
+          onShowInGraph={onShowInGraph}
+        />
 
         <Typography variant="subtitle1" gutterBottom sx={{ mt: 3 }}>
           {t('dependencyPanel.dependents')}
         </Typography>
-        <RelationList items={relations.dependents} onShowInGraph={onShowInGraph} />
+        <RelationList
+          key={`${path}-dependents`}
+          items={relations.dependents}
+          hiddenItems={relations.hiddenDependents}
+          onShowInGraph={onShowInGraph}
+        />
       </Box>
     </Box>
   );

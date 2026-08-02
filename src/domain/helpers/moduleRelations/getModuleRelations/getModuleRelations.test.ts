@@ -27,32 +27,92 @@ describe('getModuleRelations', () => {
 
   const selectedPaths = ['src/foo/a.ts', 'src/foo/b.ts', 'src/bar/c.ts'];
 
-  it('returns outgoing dependencies filtered by selected paths', () => {
+  it('returns outgoing dependencies as a nested path tree', () => {
     const { dependencies } = getModuleRelations('src/foo/a.ts', modules, selectedPaths);
 
     expect(dependencies).toEqual([
-      { path: 'src/bar/c.ts', circular: false, ...emptyFlags },
-      { path: 'src/foo/b.ts', circular: true, ...emptyFlags },
+      {
+        path: 'src',
+        circular: true,
+        ...emptyFlags,
+        children: [
+          {
+            path: 'src/bar',
+            circular: false,
+            ...emptyFlags,
+            children: [{ path: 'src/bar/c.ts', circular: false, ...emptyFlags }],
+          },
+          {
+            path: 'src/foo',
+            circular: true,
+            ...emptyFlags,
+            children: [{ path: 'src/foo/b.ts', circular: true, ...emptyFlags }],
+          },
+        ],
+      },
     ]);
   });
 
-  it('returns incoming dependents filtered by selected paths', () => {
+  it('returns incoming dependents as a nested path tree', () => {
     const { dependents } = getModuleRelations('src/foo/a.ts', modules, selectedPaths);
 
-    expect(dependents).toEqual([{ path: 'src/foo/b.ts', circular: true, ...emptyFlags }]);
+    expect(dependents).toEqual([
+      {
+        path: 'src',
+        circular: true,
+        ...emptyFlags,
+        children: [
+          {
+            path: 'src/foo',
+            circular: true,
+            ...emptyFlags,
+            children: [{ path: 'src/foo/b.ts', circular: true, ...emptyFlags }],
+          },
+        ],
+      },
+    ]);
   });
 
-  it('excludes relations outside selected paths', () => {
-    const { dependents } = getModuleRelations('src/foo/a.ts', modules, ['src/foo/a.ts', 'src/foo/b.ts']);
+  it('puts unselected relations into hidden path trees', () => {
+    const { dependents, hiddenDependents } = getModuleRelations('src/foo/a.ts', modules, [
+      'src/foo/a.ts',
+      'src/foo/b.ts',
+    ]);
 
-    expect(dependents).toEqual([{ path: 'src/foo/b.ts', circular: true, ...emptyFlags }]);
-    expect(dependents.some(d => d.path === 'lib/y.ts')).toBe(false);
+    expect(dependents).toEqual([
+      {
+        path: 'src',
+        circular: true,
+        ...emptyFlags,
+        children: [
+          {
+            path: 'src/foo',
+            circular: true,
+            ...emptyFlags,
+            children: [{ path: 'src/foo/b.ts', circular: true, ...emptyFlags }],
+          },
+        ],
+      },
+    ]);
+    expect(hiddenDependents).toEqual([
+      {
+        path: 'lib',
+        circular: false,
+        ...emptyFlags,
+        children: [{ path: 'lib/y.ts', circular: false, ...emptyFlags }],
+      },
+    ]);
   });
 
   it('returns empty lists for unknown module', () => {
     const relations = getModuleRelations('missing.ts', modules, selectedPaths);
 
-    expect(relations).toEqual({ dependencies: [], dependents: [] });
+    expect(relations).toEqual({
+      dependencies: [],
+      dependents: [],
+      hiddenDependencies: [],
+      hiddenDependents: [],
+    });
   });
 
   it('marks type-only dependencies', () => {
@@ -67,7 +127,23 @@ describe('getModuleRelations', () => {
       selectedPaths,
     );
 
-    expect(dependencies).toEqual([{ path: 'src/bar/c.ts', circular: false, typeOnly: true, typeOnlyCircular: false }]);
+    expect(dependencies).toEqual([
+      {
+        path: 'src',
+        circular: false,
+        typeOnly: true,
+        typeOnlyCircular: false,
+        children: [
+          {
+            path: 'src/bar',
+            circular: false,
+            typeOnly: true,
+            typeOnlyCircular: false,
+            children: [{ path: 'src/bar/c.ts', circular: false, typeOnly: true, typeOnlyCircular: false }],
+          },
+        ],
+      },
+    ]);
   });
 
   it('marks type-only circular dependencies without value circular flag', () => {
@@ -85,10 +161,26 @@ describe('getModuleRelations', () => {
 
     expect(dependencies).toEqual([
       {
-        path: 'src/foo/b.ts',
+        path: 'src',
         circular: false,
         typeOnly: true,
         typeOnlyCircular: true,
+        children: [
+          {
+            path: 'src/foo',
+            circular: false,
+            typeOnly: true,
+            typeOnlyCircular: true,
+            children: [
+              {
+                path: 'src/foo/b.ts',
+                circular: false,
+                typeOnly: true,
+                typeOnlyCircular: true,
+              },
+            ],
+          },
+        ],
       },
     ]);
   });
@@ -109,6 +201,56 @@ describe('getModuleRelations', () => {
       selectedPaths,
     );
 
-    expect(dependencies).toEqual([{ path: 'src/foo/b.ts', circular: false, typeOnly: false, typeOnlyCircular: false }]);
+    expect(dependencies).toEqual([
+      {
+        path: 'src',
+        circular: false,
+        typeOnly: false,
+        typeOnlyCircular: false,
+        children: [
+          {
+            path: 'src/foo',
+            circular: false,
+            typeOnly: false,
+            typeOnlyCircular: false,
+            children: [{ path: 'src/foo/b.ts', circular: false, typeOnly: false, typeOnlyCircular: false }],
+          },
+        ],
+      },
+    ]);
+  });
+
+  it('nests dependencies under shared folders regardless of graph expansion', () => {
+    const { dependencies } = getModuleRelations(
+      'src/bar/c.ts',
+      [
+        moduleAt('src/bar/c.ts', [
+          { resolved: 'src/foo/a.ts' } as IModule['dependencies'][0],
+          { resolved: 'src/foo/b.ts' } as IModule['dependencies'][0],
+        ]),
+        moduleAt('src/foo/a.ts'),
+        moduleAt('src/foo/b.ts'),
+      ],
+      ['src/bar/c.ts', 'src/foo', 'src/foo/a.ts', 'src/foo/b.ts'],
+    );
+
+    expect(dependencies).toEqual([
+      {
+        path: 'src',
+        circular: false,
+        ...emptyFlags,
+        children: [
+          {
+            path: 'src/foo',
+            circular: false,
+            ...emptyFlags,
+            children: [
+              { path: 'src/foo/a.ts', circular: false, ...emptyFlags },
+              { path: 'src/foo/b.ts', circular: false, ...emptyFlags },
+            ],
+          },
+        ],
+      },
+    ]);
   });
 });

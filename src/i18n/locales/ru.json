@@ -106,7 +106,8 @@
   "dependencyPanel": {
     "dependencies": "Зависимости",
     "dependents": "Зависимые",
-    "noDependencies": "Нет зависимостей"
+    "noDependencies": "Нет зависимостей",
+    "hidden": "Скрытые ({{count}})"
   },
   "statusBar": {
     "noSelection": "Ничего не выбрано"

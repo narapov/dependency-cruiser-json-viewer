@@ -28,12 +28,13 @@ const modules = [
   ]),
   moduleAt('src/foo/b.ts', [{ resolved: 'src/foo/a.ts', circular: true } as IModule['dependencies'][0]]),
   moduleAt('src/bar/c.ts'),
+  moduleAt('lib/y.ts', [{ resolved: 'src/foo/a.ts' } as IModule['dependencies'][0]]),
 ];
 
 const selectedPaths = ['src/foo/a.ts', 'src/foo/b.ts', 'src/bar/c.ts'];
 
 describe('DependencyPanel', () => {
-  it('renders sections, relations, and wires header actions', () => {
+  it('renders sections, nested relations, and wires header actions', () => {
     const { result: i18n } = renderHook(() => useTranslation());
     const onClose = vi.fn();
     const onShowInGraph = vi.fn();
@@ -52,8 +53,8 @@ describe('DependencyPanel', () => {
     expect(screen.getByText('src/foo/a.ts')).toBeInTheDocument();
     expect(screen.getByText(i18n.current.t('dependencyPanel.dependencies'))).toBeInTheDocument();
     expect(screen.getByText(i18n.current.t('dependencyPanel.dependents'))).toBeInTheDocument();
-    expect(screen.getAllByText('src/foo/b.ts').length).toBeGreaterThan(0);
-    expect(screen.getByText('src/bar/c.ts')).toBeInTheDocument();
+    expect(screen.getAllByText('b.ts').length).toBeGreaterThan(0);
+    expect(screen.getByText('c.ts')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: i18n.current.t('actions.close') }));
     expect(onClose).toHaveBeenCalled();
@@ -78,5 +79,24 @@ describe('DependencyPanel', () => {
     );
 
     expect(screen.getAllByText(i18n.current.t('dependencyPanel.noDependencies'))).toHaveLength(2);
+  });
+
+  it('shows hidden dependents for unselected modules', () => {
+    const { result: i18n } = renderHook(() => useTranslation());
+
+    renderWithTheme(
+      <DependencyPanel
+        path="src/foo/a.ts"
+        modules={modules}
+        selectedPaths={selectedPaths}
+        expandedKeys={[]}
+        onClose={vi.fn()}
+        onShowInGraph={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText(i18n.current.t('dependencyPanel.hidden', { count: 1 }))).toBeInTheDocument();
+    fireEvent.click(screen.getByText(i18n.current.t('dependencyPanel.hidden', { count: 1 })));
+    expect(screen.getByText('y.ts')).toBeInTheDocument();
   });
 });

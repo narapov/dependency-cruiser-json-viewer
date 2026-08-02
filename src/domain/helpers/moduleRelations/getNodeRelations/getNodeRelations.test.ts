@@ -17,7 +17,21 @@ describe('getNodeRelations', () => {
     const relations = getNodeRelations('src/foo/a.ts', modules, ['src/foo/a.ts', 'src/bar/c.ts'], new Set());
 
     expect(relations.dependencies).toEqual([
-      { path: 'src/bar/c.ts', circular: false, typeOnly: false, typeOnlyCircular: false },
+      {
+        path: 'src',
+        circular: false,
+        typeOnly: false,
+        typeOnlyCircular: false,
+        children: [
+          {
+            path: 'src/bar',
+            circular: false,
+            typeOnly: false,
+            typeOnlyCircular: false,
+            children: [{ path: 'src/bar/c.ts', circular: false, typeOnly: false, typeOnlyCircular: false }],
+          },
+        ],
+      },
     ]);
   });
 
@@ -25,7 +39,21 @@ describe('getNodeRelations', () => {
     const relations = getNodeRelations('src/foo', modules, ['src/foo', 'src/foo/a.ts', 'src/bar/c.ts'], new Set());
 
     expect(relations.dependencies).toEqual([
-      { path: 'src/bar/c.ts', circular: false, typeOnly: false, typeOnlyCircular: false },
+      {
+        path: 'src',
+        circular: false,
+        typeOnly: false,
+        typeOnlyCircular: false,
+        children: [
+          {
+            path: 'src/bar',
+            circular: false,
+            typeOnly: false,
+            typeOnlyCircular: false,
+            children: [{ path: 'src/bar/c.ts', circular: false, typeOnly: false, typeOnlyCircular: false }],
+          },
+        ],
+      },
     ]);
   });
 });

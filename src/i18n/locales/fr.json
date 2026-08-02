@@ -106,7 +106,8 @@
   "dependencyPanel": {
     "dependencies": "Dépendances",
     "dependents": "Dépendants",
-    "noDependencies": "Aucune dépendance"
+    "noDependencies": "Aucune dépendance",
+    "hidden": "Masquées ({{count}})"
   },
   "statusBar": {
     "noSelection": "Aucune sélection"
