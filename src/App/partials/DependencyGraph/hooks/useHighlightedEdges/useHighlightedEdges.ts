@@ -3,13 +3,14 @@ import { useCallback, useMemo, useState, type MouseEvent } from 'react';
 
 import type { Edge } from '@xyflow/react';
 
+import { applyHighlightKeys, getEdgeHighlightColor } from '@/domain';
+
 import {
   applyActivePathEdgeStyle,
   applySelectedEdgeStyle,
   applyUserEdgeHighlightStyle,
   buildEdgeDependencyKeyMap,
   collectValidDependencyKeys,
-  getEdgeHighlightColor,
 } from '../../helpers';
 
 interface UseHighlightedEdgesInput {
@@ -19,13 +20,14 @@ interface UseHighlightedEdgesInput {
   baseEdges: Edge[];
   visibleNodeIds: ReadonlySet<string>;
   activePath?: string | null;
+  userEdgeHighlights: ReadonlyMap<string, string>;
+  onUserEdgeHighlightsChange: (next: ReadonlyMap<string, string>) => void;
 }
 
 interface UseHighlightedEdgesResult {
   highlightedEdges: Edge[];
   getEdgeHighlight: (edgeId: string) => string | undefined;
   setUserEdgeHighlight: (edgeId: string, color: string | null) => void;
-  clearAllHighlights: () => void;
   onEdgeClick: (_: MouseEvent, edge: Edge) => void;
   clearSelectedEdge: () => void;
 }
@@ -37,9 +39,10 @@ export function useHighlightedEdges({
   baseEdges,
   visibleNodeIds,
   activePath,
+  userEdgeHighlights,
+  onUserEdgeHighlightsChange,
 }: UseHighlightedEdgesInput): UseHighlightedEdgesResult {
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
-  const [userEdgeHighlights, setUserEdgeHighlights] = useState<ReadonlyMap<string, string>>(() => new Map());
 
   const activeEdgeId =
     selectedEdgeId != null && baseEdges.some(edge => edge.id === selectedEdgeId) ? selectedEdgeId : null;
@@ -76,18 +79,9 @@ export function useHighlightedEdges({
         return;
       }
 
-      setUserEdgeHighlights(prev =>
-        dependencyKeys.reduce((next, key) => {
-          if (color == null) {
-            next.delete(key);
-          } else {
-            next.set(key, color);
-          }
-          return next;
-        }, new Map(prev)),
-      );
+      onUserEdgeHighlightsChange(applyHighlightKeys(userEdgeHighlights, dependencyKeys, color));
     },
-    [edgeDependencyKeyMap],
+    [edgeDependencyKeyMap, onUserEdgeHighlightsChange, userEdgeHighlights],
   );
 
   const getEdgeHighlight = useCallback(
@@ -97,10 +91,6 @@ export function useHighlightedEdges({
     },
     [edgeDependencyKeyMap, effectiveUserEdgeHighlights],
   );
-
-  const clearAllHighlights = useCallback(() => {
-    setUserEdgeHighlights(new Map());
-  }, []);
 
   const onEdgeClick = (_: MouseEvent, edge: Edge) => {
     setSelectedEdgeId(edge.id);
@@ -114,7 +104,6 @@ export function useHighlightedEdges({
     highlightedEdges,
     getEdgeHighlight,
     setUserEdgeHighlight,
-    clearAllHighlights,
     onEdgeClick,
     clearSelectedEdge,
   };

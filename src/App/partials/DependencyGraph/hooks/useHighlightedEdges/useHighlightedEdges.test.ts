@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import type { IModule } from 'dependency-cruiser';
+import { useState } from 'react';
 import { describe, expect, it } from 'vitest';
 
 import { act, renderHook } from '@testing-library/react';
@@ -20,18 +21,24 @@ const modules = [
 
 const baseEdges: Edge[] = [{ id: 'a.ts->b.ts', source: 'a.ts', target: 'b.ts' }];
 
+function useHighlightedEdgesHarness(overrides: Partial<Parameters<typeof useHighlightedEdges>[0]> = {}) {
+  const [userEdgeHighlights, setUserEdgeHighlights] = useState<ReadonlyMap<string, string>>(() => new Map());
+
+  return useHighlightedEdges({
+    modules,
+    selectedPaths: ['a.ts', 'b.ts'],
+    expandedFolders: new Set(),
+    baseEdges,
+    visibleNodeIds: new Set(['a.ts', 'b.ts']),
+    activePath: null,
+    userEdgeHighlights,
+    onUserEdgeHighlightsChange: setUserEdgeHighlights,
+    ...overrides,
+  });
+}
+
 function renderHighlighted(overrides: Partial<Parameters<typeof useHighlightedEdges>[0]> = {}) {
-  return renderHook(() =>
-    useHighlightedEdges({
-      modules,
-      selectedPaths: ['a.ts', 'b.ts'],
-      expandedFolders: new Set(),
-      baseEdges,
-      visibleNodeIds: new Set(['a.ts', 'b.ts']),
-      activePath: null,
-      ...overrides,
-    }),
-  );
+  return renderHook(() => useHighlightedEdgesHarness(overrides));
 }
 
 describe('useHighlightedEdges', () => {
@@ -53,17 +60,9 @@ describe('useHighlightedEdges', () => {
   });
 
   it('drops selectedEdgeId when the edge leaves baseEdges', () => {
-    const { result, rerender } = renderHook(
-      ({ edges }) =>
-        useHighlightedEdges({
-          modules,
-          selectedPaths: ['a.ts', 'b.ts'],
-          expandedFolders: new Set(),
-          baseEdges: edges,
-          visibleNodeIds: new Set(['a.ts', 'b.ts']),
-        }),
-      { initialProps: { edges: baseEdges } },
-    );
+    const { result, rerender } = renderHook(({ edges }) => useHighlightedEdgesHarness({ baseEdges: edges }), {
+      initialProps: { edges: baseEdges },
+    });
 
     act(() => {
       result.current.onEdgeClick({} as never, baseEdges[0]);
@@ -90,21 +89,6 @@ describe('useHighlightedEdges', () => {
     expect(result.current.getEdgeHighlight('a.ts->b.ts')).toBeUndefined();
   });
 
-  it('clearAllHighlights removes user highlights', () => {
-    const { result } = renderHighlighted();
-
-    act(() => {
-      result.current.setUserEdgeHighlight('a.ts->b.ts', '#00ff00');
-    });
-    expect(result.current.getEdgeHighlight('a.ts->b.ts')).toBe('#00ff00');
-
-    act(() => {
-      result.current.clearAllHighlights();
-    });
-
-    expect(result.current.getEdgeHighlight('a.ts->b.ts')).toBeUndefined();
-  });
-
   it('ignores highlight for unknown edge ids', () => {
     const { result } = renderHighlighted();
 
@@ -118,11 +102,8 @@ describe('useHighlightedEdges', () => {
   it('filters stale user highlights when selection shrinks', () => {
     const { result, rerender } = renderHook(
       ({ selectedPaths }) =>
-        useHighlightedEdges({
-          modules,
+        useHighlightedEdgesHarness({
           selectedPaths,
-          expandedFolders: new Set(),
-          baseEdges,
           visibleNodeIds: new Set(selectedPaths),
         }),
       { initialProps: { selectedPaths: ['a.ts', 'b.ts'] } },

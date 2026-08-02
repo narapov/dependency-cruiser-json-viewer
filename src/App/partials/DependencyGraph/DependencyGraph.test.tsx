@@ -62,7 +62,6 @@ vi.mock('./hooks', async importOriginal => {
       highlightedEdges: [],
       getEdgeHighlight: vi.fn(),
       setUserEdgeHighlight: vi.fn(),
-      clearAllHighlights: vi.fn(),
       onEdgeClick: vi.fn(),
       clearSelectedEdge: vi.fn(),
     }),
@@ -78,6 +77,9 @@ const baseProps = {
   onToggleFolder: vi.fn(),
   onExpandRecursive: vi.fn(),
   onShowInFileTree: vi.fn(),
+  userEdgeHighlights: new Map<string, string>(),
+  onUserEdgeHighlightsChange: vi.fn(),
+  onClearAllHighlights: vi.fn(),
 };
 
 describe('DependencyGraph', () => {

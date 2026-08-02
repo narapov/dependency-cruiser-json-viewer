@@ -2,12 +2,9 @@ import type { IModule } from 'dependency-cruiser';
 
 import type { Edge } from '@xyflow/react';
 
-import { getVisibleRepresentative } from '@/domain';
+import { getEdgeHighlightColor, getVisibleRepresentative, makeDependencyKey } from '@/domain';
 
-/** Canonical `source->target` key for a module dependency. */
-export function makeDependencyKey(source: string, target: string): string {
-  return `${source}->${target}`;
-}
+export { getEdgeHighlightColor, makeDependencyKey };
 
 /** All dependency keys between currently selected modules. */
 export function collectValidDependencyKeys(modules: IModule[], selectedPaths: string[]): Set<string> {
@@ -67,26 +64,4 @@ export function buildEdgeDependencyKeyMap(
       getEdgeDependencyKeys(modules, selectedPaths, expandedFolders, visibleNodeIds, edge.source, edge.target),
     ]),
   );
-}
-
-/** Shared highlight color for dependency keys, or undefined if mixed or missing. */
-export function getEdgeHighlightColor(
-  dependencyKeys: readonly string[],
-  userEdgeHighlights: ReadonlyMap<string, string>,
-): string | undefined {
-  if (dependencyKeys.length === 0) {
-    return undefined;
-  }
-
-  const colors = dependencyKeys
-    .map(key => userEdgeHighlights.get(key))
-    .filter((color): color is string => color != null);
-
-  if (colors.length === 0) {
-    return undefined;
-  }
-  if (colors.every(color => color === colors[0])) {
-    return colors[0];
-  }
-  return undefined;
 }

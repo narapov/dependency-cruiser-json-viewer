@@ -54,6 +54,9 @@ interface DependencyGraphInnerProps {
   onShowDependencies?: (path: string) => void;
   onActivePathChange?: (path: string) => void;
   activePath?: string | null;
+  userEdgeHighlights: ReadonlyMap<string, string>;
+  onUserEdgeHighlightsChange: (next: ReadonlyMap<string, string>) => void;
+  onClearAllHighlights: () => void;
   autoLayoutOnly: boolean;
   onAutoLayoutOnlyChange: (value: boolean) => void;
 }
@@ -69,6 +72,9 @@ function DependencyGraphInner({
   onShowDependencies,
   onActivePathChange,
   activePath,
+  userEdgeHighlights,
+  onUserEdgeHighlightsChange,
+  onClearAllHighlights,
   autoLayoutOnly,
   onAutoLayoutOnlyChange,
 }: DependencyGraphInnerProps) {
@@ -108,21 +114,17 @@ function DependencyGraphInner({
     activePath,
   });
 
-  const {
-    highlightedEdges,
-    getEdgeHighlight,
-    setUserEdgeHighlight,
-    clearAllHighlights,
-    onEdgeClick,
-    clearSelectedEdge,
-  } = useHighlightedEdges({
-    modules,
-    selectedPaths,
-    expandedFolders,
-    baseEdges,
-    visibleNodeIds,
-    activePath,
-  });
+  const { highlightedEdges, getEdgeHighlight, setUserEdgeHighlight, onEdgeClick, clearSelectedEdge } =
+    useHighlightedEdges({
+      modules,
+      selectedPaths,
+      expandedFolders,
+      baseEdges,
+      visibleNodeIds,
+      activePath,
+      userEdgeHighlights,
+      onUserEdgeHighlightsChange,
+    });
 
   useAutoFitView({
     selectedPaths,
@@ -145,7 +147,7 @@ function DependencyGraphInner({
 
   useImperativeHandle(imperativeRef, () => ({
     focusNode,
-    clearAllHighlights,
+    clearAllHighlights: onClearAllHighlights,
   }));
 
   const onPaneClick = () => {

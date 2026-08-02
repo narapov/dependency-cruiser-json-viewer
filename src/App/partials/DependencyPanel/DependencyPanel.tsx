@@ -18,6 +18,8 @@ interface DependencyPanelProps {
   expandedKeys: string[];
   onClose: () => void;
   onShowInGraph: (path: string) => void;
+  userEdgeHighlights: ReadonlyMap<string, string>;
+  onSetUserDependencyHighlight: (dependencyKeys: readonly string[], color: string | null) => void;
 }
 
 export function DependencyPanel({
@@ -27,6 +29,8 @@ export function DependencyPanel({
   expandedKeys,
   onClose,
   onShowInGraph,
+  userEdgeHighlights,
+  onSetUserDependencyHighlight,
 }: DependencyPanelProps) {
   const { t } = useTranslation();
   const expandedFolders = useMemo(() => new Set(expandedKeys), [expandedKeys]);
@@ -48,6 +52,11 @@ export function DependencyPanel({
           key={`${path}-dependencies`}
           items={relations.dependencies}
           hiddenItems={relations.hiddenDependencies}
+          panelPath={path}
+          modules={modules}
+          direction="dependencies"
+          userEdgeHighlights={userEdgeHighlights}
+          onSetUserDependencyHighlight={onSetUserDependencyHighlight}
           onShowInGraph={onShowInGraph}
         />
 
@@ -58,6 +67,11 @@ export function DependencyPanel({
           key={`${path}-dependents`}
           items={relations.dependents}
           hiddenItems={relations.hiddenDependents}
+          panelPath={path}
+          modules={modules}
+          direction="dependents"
+          userEdgeHighlights={userEdgeHighlights}
+          onSetUserDependencyHighlight={onSetUserDependencyHighlight}
           onShowInGraph={onShowInGraph}
         />
       </Box>

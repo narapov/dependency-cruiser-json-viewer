@@ -302,14 +302,19 @@ describe('useAppOrchestration', () => {
     expect(result.current.dependenciesPath).toBe('src/a.ts');
   });
 
-  it('clearAllHighlights delegates to graph ref', () => {
-    const { result, graph } = renderOrchestration();
+  it('clearAllHighlights clears user edge highlights', () => {
+    const { result } = renderOrchestration();
+
+    act(() => {
+      result.current.setUserDependencyHighlight(['a.ts->b.ts'], '#ff0000');
+    });
+    expect(result.current.userEdgeHighlights.get('a.ts->b.ts')).toBe('#ff0000');
 
     act(() => {
       result.current.clearAllHighlights();
     });
 
-    expect(graph.clearAllHighlights).toHaveBeenCalled();
+    expect(result.current.userEdgeHighlights.size).toBe(0);
   });
 
   it('focusActivePath focuses tree and graph when path is selected', () => {

@@ -159,6 +159,9 @@ function App() {
           onShowDependencies={orch.handleShowDependencies}
           onActivePathChange={orch.activatePath}
           activePath={orch.activePath}
+          userEdgeHighlights={orch.userEdgeHighlights}
+          onUserEdgeHighlightsChange={orch.setUserEdgeHighlights}
+          onClearAllHighlights={orch.clearAllHighlights}
         />
       }
       panel={
@@ -170,6 +173,8 @@ function App() {
             expandedKeys={orch.expandedKeys}
             onClose={orch.handleClosePanel}
             onShowInGraph={orch.showInGraph}
+            userEdgeHighlights={orch.userEdgeHighlights}
+            onSetUserDependencyHighlight={orch.setUserDependencyHighlight}
           />
         ) : null
       }

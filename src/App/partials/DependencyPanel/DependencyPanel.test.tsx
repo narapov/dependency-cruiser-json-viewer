@@ -33,6 +33,11 @@ const modules = [
 
 const selectedPaths = ['src/foo/a.ts', 'src/foo/b.ts', 'src/bar/c.ts'];
 
+const highlightProps = {
+  userEdgeHighlights: new Map<string, string>(),
+  onSetUserDependencyHighlight: vi.fn(),
+};
+
 describe('DependencyPanel', () => {
   it('renders sections, nested relations, and wires header actions', () => {
     const { result: i18n } = renderHook(() => useTranslation());
@@ -47,6 +52,7 @@ describe('DependencyPanel', () => {
         expandedKeys={[]}
         onClose={onClose}
         onShowInGraph={onShowInGraph}
+        {...highlightProps}
       />,
     );
 
@@ -75,6 +81,7 @@ describe('DependencyPanel', () => {
         expandedKeys={[]}
         onClose={vi.fn()}
         onShowInGraph={vi.fn()}
+        {...highlightProps}
       />,
     );
 
@@ -92,6 +99,7 @@ describe('DependencyPanel', () => {
         expandedKeys={[]}
         onClose={vi.fn()}
         onShowInGraph={vi.fn()}
+        {...highlightProps}
       />,
     );
 

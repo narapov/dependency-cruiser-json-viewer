@@ -5,8 +5,9 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import type { Edge, EdgeMouseHandler } from '@xyflow/react';
 
+import { EdgeHighlightSubmenu } from '@/Shared';
+
 import { EdgeContextMenuHeader } from '../../partials/EdgeContextMenuHeader';
-import { EdgeHighlightSubmenu } from '../../partials/EdgeHighlightSubmenu';
 
 export interface UseEdgeContextMenuOptions {
   onFocusNode: (path: string) => void;

@@ -1,3 +1,4 @@
+import type { IModule } from 'dependency-cruiser';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -11,16 +12,34 @@ import Typography from '@mui/material/Typography';
 
 import type { ModuleRelation } from '@/domain';
 
-import { countRelationLeaves, initialExpandedKeys, toggleExpandedKey } from '../../helpers';
+import {
+  countRelationLeaves,
+  initialExpandedKeys,
+  toggleExpandedKey,
+  type PanelRelationDirection,
+} from '../../helpers';
 import { RelationRow } from '../RelationRow';
 
 interface HiddenRelationsSectionProps {
   hiddenItems: ModuleRelation[];
+  panelPath: string;
+  modules: IModule[];
+  direction: PanelRelationDirection;
+  userEdgeHighlights: ReadonlyMap<string, string>;
+  onSetUserDependencyHighlight: (dependencyKeys: readonly string[], color: string | null) => void;
   onShowInGraph: (path: string) => void;
 }
 
 /** Collapsible section listing relations filtered out of the main list. */
-export function HiddenRelationsSection({ hiddenItems, onShowInGraph }: HiddenRelationsSectionProps) {
+export function HiddenRelationsSection({
+  hiddenItems,
+  panelPath,
+  modules,
+  direction,
+  userEdgeHighlights,
+  onSetUserDependencyHighlight,
+  onShowInGraph,
+}: HiddenRelationsSectionProps) {
   const { t } = useTranslation();
   const [hiddenExpandedKeys, setHiddenExpandedKeys] = useState(() => initialExpandedKeys(hiddenItems, 'hidden:'));
   const [hiddenSectionOpen, setHiddenSectionOpen] = useState(false);
@@ -64,6 +83,11 @@ export function HiddenRelationsSection({ hiddenItems, onShowInGraph }: HiddenRel
                 expandKey={expandKey}
                 expandedKeys={hiddenExpandedKeys}
                 onToggleExpand={key => setHiddenExpandedKeys(prev => toggleExpandedKey(prev, key))}
+                panelPath={panelPath}
+                modules={modules}
+                direction={direction}
+                userEdgeHighlights={userEdgeHighlights}
+                onSetUserDependencyHighlight={onSetUserDependencyHighlight}
                 onShowInGraph={onShowInGraph}
                 depth={0}
               />

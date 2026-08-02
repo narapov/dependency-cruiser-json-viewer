@@ -1,6 +1,7 @@
 import { useMemo, useState, type RefObject } from 'react';
 
 import {
+  applyHighlightKeys,
   getAncestorKeys,
   getParentPath,
   getSubtreeFolderKeys,
@@ -55,6 +56,7 @@ export function useAppOrchestration({
   const [prevExpandedKeys, setPrevExpandedKeys] = useState(initialDependencyCruiserState.expandedKeys);
   const [activePath, setActivePath] = useState<string | null>(null);
   const [dependenciesPath, setDependenciesPath] = useState<string | null>(null);
+  const [userEdgeHighlights, setUserEdgeHighlights] = useState<ReadonlyMap<string, string>>(() => new Map());
 
   if (initialDependencyCruiserState.selectedKeys !== prevSelectedKeys) {
     setPrevSelectedKeys(initialDependencyCruiserState.selectedKeys);
@@ -201,8 +203,12 @@ export function useAppOrchestration({
     updateExpandedKeys(keys => removeSubtreeFolderKeys(keys, folderPath, sources));
   };
 
+  const setUserDependencyHighlight = (dependencyKeys: readonly string[], color: string | null) => {
+    setUserEdgeHighlights(prev => applyHighlightKeys(prev, dependencyKeys, color));
+  };
+
   const clearAllHighlights = () => {
-    graphRef.current?.clearAllHighlights();
+    setUserEdgeHighlights(new Map());
   };
 
   const expandAllRecursive = () => {
@@ -227,6 +233,9 @@ export function useAppOrchestration({
     expandedKeys,
     activePath: resolvedActivePath,
     dependenciesPath: resolvedDependenciesPath,
+    userEdgeHighlights,
+    setUserEdgeHighlights,
+    setUserDependencyHighlight,
     setSelectedPaths,
     updateExpandedKeys,
     activatePath,

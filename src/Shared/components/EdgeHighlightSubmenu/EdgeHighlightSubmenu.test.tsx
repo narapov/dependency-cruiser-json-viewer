@@ -7,9 +7,9 @@ import { describe, expect, it, vi } from 'vitest';
 import Menu from '@mui/material/Menu';
 import { fireEvent, renderHook, screen } from '@testing-library/react';
 
-import { USER_EDGE_HIGHLIGHT_COLORS } from '@/Shared';
 import { renderWithTheme } from '@/testsUtils';
 
+import { USER_EDGE_HIGHLIGHT_COLORS } from '../../helpers/graphTheme';
 import { EdgeHighlightSubmenu } from './EdgeHighlightSubmenu';
 
 function renderInMenu(ui: ReactElement) {

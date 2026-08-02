@@ -62,6 +62,14 @@ const hiddenItems: ModuleRelation[] = [
   },
 ];
 
+const listProps = {
+  panelPath: 'src/panel.ts',
+  modules: [{ source: 'src/panel.ts', dependencies: [], dependents: [], valid: true }],
+  direction: 'dependencies' as const,
+  userEdgeHighlights: new Map<string, string>(),
+  onSetUserDependencyHighlight: vi.fn(),
+};
+
 describe('RelationList', () => {
   afterEach(() => {
     vi.clearAllMocks();
@@ -70,7 +78,7 @@ describe('RelationList', () => {
   it('shows empty state when there are no items', () => {
     const { result: i18n } = renderHook(() => useTranslation());
 
-    renderWithTheme(<RelationList items={[]} onShowInGraph={vi.fn()} />);
+    renderWithTheme(<RelationList items={[]} onShowInGraph={vi.fn()} {...listProps} />);
 
     expect(screen.getByText(i18n.current.t('dependencyPanel.noDependencies'))).toBeInTheDocument();
   });
@@ -80,7 +88,7 @@ describe('RelationList', () => {
     const onShowInGraph = vi.fn();
     const { copyToClipboard } = await import('@/Shared');
 
-    renderWithTheme(<RelationList items={items} onShowInGraph={onShowInGraph} />);
+    renderWithTheme(<RelationList items={items} onShowInGraph={onShowInGraph} {...listProps} />);
 
     expect(screen.getByText('a.ts')).toBeInTheDocument();
     expect(screen.getByText('b.ts')).toBeInTheDocument();
@@ -95,7 +103,7 @@ describe('RelationList', () => {
   });
 
   it('expands nested path tree by default', () => {
-    renderWithTheme(<RelationList items={nested} onShowInGraph={vi.fn()} />);
+    renderWithTheme(<RelationList items={nested} onShowInGraph={vi.fn()} {...listProps} />);
 
     expect(screen.getByText('src')).toBeInTheDocument();
     expect(screen.getByText('foo')).toBeInTheDocument();
@@ -106,7 +114,7 @@ describe('RelationList', () => {
   it('shows hidden section and reveals nested items on expand', () => {
     const { result: i18n } = renderHook(() => useTranslation());
 
-    renderWithTheme(<RelationList items={items} hiddenItems={hiddenItems} onShowInGraph={vi.fn()} />);
+    renderWithTheme(<RelationList items={items} hiddenItems={hiddenItems} onShowInGraph={vi.fn()} {...listProps} />);
 
     expect(screen.getByText(i18n.current.t('dependencyPanel.hidden', { count: 1 }))).toBeInTheDocument();
     expect(screen.queryByText('vendor')).not.toBeInTheDocument();
@@ -121,7 +129,7 @@ describe('RelationList', () => {
   it('omits hidden section when there are no hidden items', () => {
     const { result: i18n } = renderHook(() => useTranslation());
 
-    renderWithTheme(<RelationList items={items} hiddenItems={[]} onShowInGraph={vi.fn()} />);
+    renderWithTheme(<RelationList items={items} hiddenItems={[]} onShowInGraph={vi.fn()} {...listProps} />);
 
     expect(screen.queryByText(i18n.current.t('dependencyPanel.hidden', { count: 0 }))).not.toBeInTheDocument();
   });
@@ -131,7 +139,7 @@ describe('RelationList', () => {
     const onShowInGraph = vi.fn();
     const { copyToClipboard } = await import('@/Shared');
 
-    renderWithTheme(<RelationList items={items} onShowInGraph={onShowInGraph} />);
+    renderWithTheme(<RelationList items={items} onShowInGraph={onShowInGraph} {...listProps} />);
 
     fireEvent.contextMenu(screen.getByText('a.ts'));
 
