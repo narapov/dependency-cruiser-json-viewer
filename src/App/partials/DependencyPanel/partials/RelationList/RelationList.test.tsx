@@ -125,4 +125,24 @@ describe('RelationList', () => {
 
     expect(screen.queryByText(i18n.current.t('dependencyPanel.hidden', { count: 0 }))).not.toBeInTheDocument();
   });
+
+  it('opens context menu and runs copy and show-in-graph actions', async () => {
+    const { result: i18n } = renderHook(() => useTranslation());
+    const onShowInGraph = vi.fn();
+    const { copyToClipboard } = await import('@/Shared');
+
+    renderWithTheme(<RelationList items={items} onShowInGraph={onShowInGraph} />);
+
+    fireEvent.contextMenu(screen.getByText('a.ts'));
+
+    expect(screen.getByRole('menu')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('menuitem', { name: i18n.current.t('actions.copyPath') }));
+    expect(copyToClipboard).toHaveBeenCalledWith('src/a.ts');
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+
+    fireEvent.contextMenu(screen.getByText('b.ts'));
+    fireEvent.click(screen.getByRole('menuitem', { name: i18n.current.t('actions.showInGraph') }));
+    expect(onShowInGraph).toHaveBeenCalledWith('src/b.ts');
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
 });

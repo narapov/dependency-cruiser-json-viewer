@@ -19,6 +19,7 @@ import { getBaseName, type ModuleRelation } from '@/domain';
 import { copyToClipboard } from '@/Shared';
 
 import { countRelationLeaves, getRelationPathStyle } from './helpers';
+import { useRelationRowContextMenu } from './hooks';
 
 interface RelationListProps {
   items: ModuleRelation[];
@@ -69,12 +70,17 @@ function RelationRow({ item, expandKey, expandedKeys, onToggleExpand, onShowInGr
   const { t } = useTranslation();
   const hasChildren = (item.children?.length ?? 0) > 0;
   const expanded = expandedKeys.has(expandKey);
+  const { onContextMenu, contextMenu } = useRelationRowContextMenu({
+    path: item.path,
+    onShowInGraph,
+  });
 
   return (
     <>
       <ListItem
         disableGutters
         title={item.path}
+        onContextMenu={onContextMenu}
         sx={{
           display: 'flex',
           alignItems: 'center',
@@ -84,6 +90,14 @@ function RelationRow({ item, expandKey, expandedKeys, onToggleExpand, onShowInGr
           borderRadius: 1,
           '&:hover, &:focus-within': {
             bgcolor: 'action.hover',
+          },
+          '& .relationRowActions': {
+            opacity: 0,
+            pointerEvents: 'none',
+          },
+          '&:hover .relationRowActions, &:focus-within .relationRowActions': {
+            opacity: 1,
+            pointerEvents: 'auto',
           },
         }}
       >
@@ -114,7 +128,7 @@ function RelationRow({ item, expandKey, expandedKeys, onToggleExpand, onShowInGr
             },
           }}
         />
-        <Stack direction="row" sx={{ flexShrink: 0, alignItems: 'center' }}>
+        <Stack className="relationRowActions" direction="row" sx={{ flexShrink: 0, alignItems: 'center' }}>
           <Tooltip title={t('actions.copyPath')}>
             <IconButton
               edge="end"
@@ -139,6 +153,7 @@ function RelationRow({ item, expandKey, expandedKeys, onToggleExpand, onShowInGr
           </Tooltip>
         </Stack>
       </ListItem>
+      {contextMenu}
       {hasChildren ? (
         <Collapse in={expanded} timeout="auto" unmountOnExit>
           <List dense disablePadding>
