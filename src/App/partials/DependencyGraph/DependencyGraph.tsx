@@ -11,8 +11,6 @@ import { Background, Controls, MiniMap, Panel, ReactFlow, ReactFlowProvider, typ
 
 import '@xyflow/react/dist/style.css';
 
-import { useLogChangedProps } from '@/Shared';
-
 import { getMinimapNodeColor } from './helpers';
 import {
   useAutoFitView,
@@ -240,7 +238,6 @@ interface DependencyGraphProps extends Omit<
 
 export function DependencyGraph({ ref, ...props }: DependencyGraphProps) {
   const [autoLayoutOnly, setAutoLayoutOnly] = useState(true);
-  useLogChangedProps('DependencyGraph', props);
 
   return (
     <div className={clsx(styles.container, autoLayoutOnly && styles.layoutLocked)}>
