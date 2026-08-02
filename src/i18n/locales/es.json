@@ -45,6 +45,7 @@
     "collapseActiveRecursive": "Contraer recursivamente el elemento activo",
     "clearAllHighlights": "Limpiar todos los resaltados",
     "exportGraphDot": "Exportar grafo DOT",
+    "viewGraphDotOnline": "Ver grafo DOT en línea",
     "expandAllRecursive": "Expandir todo recursivamente",
     "collapseAllRecursive": "Contraer todo recursivamente",
     "selectAll": "Seleccionar todo",

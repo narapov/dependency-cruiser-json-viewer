@@ -45,6 +45,7 @@
     "collapseActiveRecursive": "Aktives Element rekursiv einklappen",
     "clearAllHighlights": "Alle Hervorhebungen löschen",
     "exportGraphDot": "Graph als DOT exportieren",
+    "viewGraphDotOnline": "Graph-DOT online anzeigen",
     "expandAllRecursive": "Alles rekursiv erweitern",
     "collapseAllRecursive": "Alles rekursiv einklappen",
     "selectAll": "Alles auswählen",

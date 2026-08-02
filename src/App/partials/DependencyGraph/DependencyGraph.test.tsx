@@ -13,8 +13,9 @@ import type { DependencyGraphHandle } from './types';
 const fitView = vi.fn();
 const getNode = vi.fn((id: string) => (id === 'src/a.ts' ? { id } : undefined));
 const clearBuildFailed = vi.fn();
-const { downloadTextFile } = vi.hoisted(() => ({
+const { downloadTextFile, openGraphvizOnline } = vi.hoisted(() => ({
   downloadTextFile: vi.fn(),
+  openGraphvizOnline: vi.fn(),
 }));
 
 const buildGraphState = {
@@ -30,6 +31,7 @@ vi.mock('@/Shared', async importOriginal => {
   return {
     ...actual,
     downloadTextFile: (...args: unknown[]) => downloadTextFile(...args),
+    openGraphvizOnline: (...args: unknown[]) => openGraphvizOnline(...args),
   };
 });
 
@@ -155,6 +157,16 @@ describe('DependencyGraph', () => {
       expect.stringContaining('digraph {'),
       'text/vnd.graphviz',
     );
+  });
+
+  it('openDotOnline opens Graphviz Online with serialized DOT', () => {
+    const ref = createRef<DependencyGraphHandle>();
+
+    renderWithTheme(<DependencyGraph ref={ref} {...baseProps} />);
+
+    ref.current?.openDotOnline();
+
+    expect(openGraphvizOnline).toHaveBeenCalledWith(expect.stringContaining('digraph {'));
   });
 
   it('shows build error snackbar and clears on close', () => {

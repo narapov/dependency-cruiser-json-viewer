@@ -45,6 +45,7 @@
     "collapseActiveRecursive": "Свернуть активный элемент рекурсивно",
     "clearAllHighlights": "Сбросить все подсветки",
     "exportGraphDot": "Экспорт графа в DOT",
+    "viewGraphDotOnline": "Открыть граф DOT онлайн",
     "expandAllRecursive": "Развернуть всё рекурсивно",
     "collapseAllRecursive": "Свернуть всё рекурсивно",
     "selectAll": "Выбрать всё",

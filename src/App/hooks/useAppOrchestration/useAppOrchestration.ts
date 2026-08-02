@@ -215,6 +215,10 @@ export function useAppOrchestration({
     graphRef.current?.exportDot();
   };
 
+  const viewGraphDotOnline = () => {
+    graphRef.current?.openDotOnline();
+  };
+
   const expandAllRecursive = () => {
     updateExpandedKeys(allFolderKeys);
   };
@@ -260,6 +264,7 @@ export function useAppOrchestration({
     collapseActiveRecursive,
     clearAllHighlights,
     exportGraphDot,
+    viewGraphDotOnline,
     expandAllRecursive,
     collapseAllRecursive,
     selectAll,

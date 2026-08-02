@@ -17,6 +17,7 @@ function createOrch(): AppCommandsOrchestration {
     collapseActiveRecursive: vi.fn(),
     clearAllHighlights: vi.fn(),
     exportGraphDot: vi.fn(),
+    viewGraphDotOnline: vi.fn(),
     expandAllRecursive: vi.fn(),
     collapseAllRecursive: vi.fn(),
     selectAll: vi.fn(),
@@ -48,6 +49,7 @@ describe('useAppCommands', () => {
 
     const ids = result.current.map(command => command.id);
     expect(ids).toContain('exportGraphDot');
+    expect(ids).toContain('viewGraphDotOnline');
     expect(ids).toContain('selectAll');
     expect(ids).toContain('setTheme');
     expect(ids).toContain('about');
@@ -83,6 +85,7 @@ describe('useAppCommands', () => {
     byId.toggleFileTree.onExecute();
     byId.copyActive.onExecute();
     byId.exportGraphDot.onExecute();
+    byId.viewGraphDotOnline.onExecute();
 
     expect(orch.selectAll).toHaveBeenCalled();
     expect(openThemePicker).toHaveBeenCalled();
@@ -90,5 +93,6 @@ describe('useAppCommands', () => {
     expect(toggleFileTree).toHaveBeenCalled();
     expect(orch.copyActive).toHaveBeenCalled();
     expect(orch.exportGraphDot).toHaveBeenCalled();
+    expect(orch.viewGraphDotOnline).toHaveBeenCalled();
   });
 });

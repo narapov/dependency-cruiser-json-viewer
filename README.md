@@ -30,7 +30,7 @@ The usual workflow meant constantly tweaking filters, `collapsePattern`, and `ex
 - **Edge highlighting** — highlight dependencies via the edge context menu; highlights are tied to the underlying import relation and persist when you expand or collapse nodes.
 - **Drill-down navigation** — expanding a folder in the tree rebuilds the graph for that scope, so you can walk from high-level architecture down to individual files.
 - **Quick search & commands** — fuzzy file search (`Cmd/Ctrl+P`) and command palette (`F1`); see Keyboard shortcuts below.
-- **DOT export** — export the current graph layout as a Graphviz `.dot` file via the command palette (**Export Graph DOT**); render with `neato -n2 -Tsvg graph.dot` or `dot -Knop2 -Tsvg graph.dot`.
+- **DOT export** — export the current graph layout as a Graphviz `.dot` file via the command palette (**Export Graph DOT**), or open it in [Graphviz Online](https://dreampuf.github.io/GraphvizOnline/?engine=nop2) (**View Graph DOT Online**); render locally with `neato -n2 -Tsvg graph.dot` or `dot -Knop2 -Tsvg graph.dot`.
 - **Ignore patterns** — glob patterns to exclude modules from tree and graph.
 
 ## Keyboard shortcuts

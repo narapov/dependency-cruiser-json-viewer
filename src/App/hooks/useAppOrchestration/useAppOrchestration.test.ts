@@ -31,6 +31,7 @@ function createRefs() {
     focusNode: vi.fn(),
     clearAllHighlights: vi.fn(),
     exportDot: vi.fn(),
+    openDotOnline: vi.fn(),
   };
   // refs are mutable in tests
   (fileTreeRef as { current: FileTreeHandle }).current = fileTree as unknown as FileTreeHandle;
@@ -326,6 +327,16 @@ describe('useAppOrchestration', () => {
     });
 
     expect(graph.exportDot).toHaveBeenCalled();
+  });
+
+  it('viewGraphDotOnline delegates to the graph handle', () => {
+    const { result, graph } = renderOrchestration();
+
+    act(() => {
+      result.current.viewGraphDotOnline();
+    });
+
+    expect(graph.openDotOnline).toHaveBeenCalled();
   });
 
   it('focusActivePath focuses tree and graph when path is selected', () => {
