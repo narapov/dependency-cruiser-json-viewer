@@ -209,6 +209,8 @@ function DependencyGraphInner({
           nodeColor={miniMapNodeColor}
           nodeStrokeColor={resolvedMode === 'dark' ? theme.palette.grey[600] : theme.palette.grey[500]}
           nodeStrokeWidth={1}
+          maskStrokeColor={resolvedMode === 'dark' ? theme.palette.common.white : theme.palette.common.black}
+          maskStrokeWidth={2}
           style={{ width: 160, height: 120 }}
         />
         <Controls position="bottom-right" showInteractive={false} />
