@@ -47,9 +47,18 @@ export function usePendingFocusNode({
 
     const inLayout = layoutNodes.some(node => node.id === path);
     if (inLayout) {
-      pendingFocusPathRef.current = null;
-      void fitView({ nodes: [{ id: path }], padding: 0.5, duration: 300 });
-      return;
+      // Wait for React Flow to measure a just-added node before fitting.
+      const timeoutId = setTimeout(() => {
+        if (pendingFocusPathRef.current !== path) {
+          return;
+        }
+        pendingFocusPathRef.current = null;
+        void fitView({ nodes: [{ id: path }], padding: 0.5, duration: 300 });
+      }, 100);
+
+      return () => {
+        clearTimeout(timeoutId);
+      };
     }
 
     const inResult = graphResult.nodes.some(node => node.id === path);

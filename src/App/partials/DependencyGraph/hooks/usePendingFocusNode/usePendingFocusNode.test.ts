@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { act, renderHook } from '@testing-library/react';
 import type { Node } from '@xyflow/react';
@@ -29,7 +29,12 @@ function emptyGraphResult(overrides: Partial<BuildGraphResult> = {}): BuildGraph
 }
 
 describe('usePendingFocusNode', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
   afterEach(() => {
+    vi.useRealTimers();
     fitView.mockClear();
     getNode.mockClear();
     getNode.mockImplementation((id: string) => (id === 'src/a.ts' ? { id } : undefined));
@@ -99,11 +104,61 @@ describe('usePendingFocusNode', () => {
       layoutNodes: [pendingNode],
     });
 
+    expect(fitView).not.toHaveBeenCalled();
+
+    act(() => {
+      vi.advanceTimersByTime(100);
+    });
+
     expect(fitView).toHaveBeenCalledWith({
       nodes: [{ id: 'src/pending.ts' }],
       padding: 0.5,
       duration: 300,
     });
+  });
+
+  it('skips deferred fitView when pending path changes during the timeout', () => {
+    const pendingNode = stubNode('src/pending.ts');
+    const { result, rerender } = renderHook(
+      ({ isBuildingGraph, graphResult, layoutNodes }) =>
+        usePendingFocusNode({ isBuildingGraph, graphResult, layoutNodes }),
+      {
+        initialProps: {
+          isBuildingGraph: true,
+          graphResult: emptyGraphResult(),
+          layoutNodes: [] as Node[],
+        },
+      },
+    );
+
+    act(() => {
+      result.current.focusNode('src/pending.ts');
+    });
+
+    rerender({
+      isBuildingGraph: false,
+      graphResult: emptyGraphResult({ nodes: [pendingNode] }),
+      layoutNodes: [pendingNode],
+    });
+
+    expect(fitView).not.toHaveBeenCalled();
+
+    act(() => {
+      result.current.focusNode('src/a.ts');
+    });
+
+    expect(fitView).toHaveBeenCalledTimes(1);
+    expect(fitView).toHaveBeenCalledWith({
+      nodes: [{ id: 'src/a.ts' }],
+      padding: 0.5,
+      duration: 300,
+    });
+
+    act(() => {
+      vi.advanceTimersByTime(100);
+    });
+
+    expect(fitView).toHaveBeenCalledTimes(1);
   });
 
   it('drops pending focus when rebuild finishes without the node', () => {
@@ -137,6 +192,10 @@ describe('usePendingFocusNode', () => {
       isBuildingGraph: false,
       graphResult: emptyGraphResult({ nodes: [otherNode, missingNode] }),
       layoutNodes: [otherNode, missingNode],
+    });
+
+    act(() => {
+      vi.advanceTimersByTime(100);
     });
 
     // Pending was cleared after the earlier rebuild without the node.
