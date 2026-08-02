@@ -65,12 +65,15 @@ describe('parseCruiseResultJson', () => {
     ).toThrow(CruiseResultParseError);
   });
 
-  it('throws invalidFormat when a module has no dependents', () => {
-    expect(() =>
+  it('defaults missing dependents to an empty array', () => {
+    expect(
       parseCruiseResultJson(
         JSON.stringify({ modules: [{ source: 'src/a.ts', dependencies: [], valid: true }], summary: {} }),
       ),
-    ).toThrow(CruiseResultParseError);
+    ).toEqual({
+      modules: [{ source: 'src/a.ts', dependencies: [], dependents: [], valid: true }],
+      summary: {},
+    });
   });
 
   it('throws invalidFormat when a module has no valid flag', () => {
@@ -92,7 +95,9 @@ describe('validateCruiseResult', () => {
     try {
       validateCruiseResult({ summary: {} });
     } catch (error) {
+      expect(error).toBeInstanceOf(CruiseResultParseError);
       expect((error as CruiseResultParseError).code).toBe('invalidFormat');
+      expect((error as CruiseResultParseError).cause).toBeInstanceOf(Error);
     }
   });
 

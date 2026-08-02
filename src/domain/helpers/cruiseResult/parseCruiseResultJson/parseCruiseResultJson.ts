@@ -8,8 +8,8 @@ export type CruiseResultParseErrorCode = 'invalidJson' | 'invalidFormat';
 export class CruiseResultParseError extends Error {
   readonly code: CruiseResultParseErrorCode;
 
-  constructor(code: CruiseResultParseErrorCode) {
-    super(code);
+  constructor(code: CruiseResultParseErrorCode, options?: ErrorOptions) {
+    super(code, options);
     this.name = 'CruiseResultParseError';
     this.code = code;
   }
@@ -21,6 +21,10 @@ export class CruiseResultParseError extends Error {
  * Nested dependency and summary fields stay loose: dependency-cruiser's TypeScript types
  * (e.g. `IDependency.protocol`, `instability`) are stricter than real cruise JSON, and the
  * viewer only reads a few edge fields (`resolved`, `circular`, `dependencyTypes`).
+ *
+ * `dependents` is optional in the official JSON schema (required are only `source`,
+ * `dependencies`, `valid`) and is omitted by older cruise exports — the viewer derives
+ * incoming edges from reverse dependency walks instead.
  *
  * Canonical wire format (not used here — too heavy for the viewer load path):
  * https://github.com/sverweij/dependency-cruiser/blob/main/src/schema/cruise-result.schema.json
@@ -45,7 +49,7 @@ const cruiseModuleSchema = object({
   source: string(),
   valid: boolean(),
   dependencies: array(cruiseDependencySchema),
-  dependents: array(string()),
+  dependents: array(string()).default([]),
 }).loose();
 
 /** Structural Zod schema for cruise-result JSON consumed by the viewer. */
@@ -58,7 +62,7 @@ export const cruiseResultSchema = object({
 export function validateCruiseResult(parsed: unknown): ICruiseResult {
   const result = cruiseResultSchema.safeParse(parsed);
   if (!result.success) {
-    throw new CruiseResultParseError('invalidFormat');
+    throw new CruiseResultParseError('invalidFormat', { cause: result.error });
   }
 
   // Full ICruiseResult / IDependency cannot be mirrored in Zod without rejecting real cruise exports.
@@ -71,8 +75,8 @@ export function parseCruiseResultJson(text: string): ICruiseResult {
 
   try {
     parsed = JSON.parse(text);
-  } catch {
-    throw new CruiseResultParseError('invalidJson');
+  } catch (error) {
+    throw new CruiseResultParseError('invalidJson', { cause: error });
   }
 
   return validateCruiseResult(parsed);

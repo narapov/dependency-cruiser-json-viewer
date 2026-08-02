@@ -44,6 +44,7 @@ export function useLoadCruiseResultFromFile() {
       if (signal.aborted || (error instanceof DOMException && error.name === 'AbortError')) {
         return;
       }
+      console.error(error);
       if (error instanceof CruiseResultParseError) {
         setFileLoadError(
           error.code === 'invalidJson' ? t('app.invalidCruiseResultJson') : t('app.invalidCruiseResultFormat'),
