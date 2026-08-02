@@ -44,6 +44,7 @@
     "collapseActive": "Collapse Active Item",
     "collapseActiveRecursive": "Collapse Active Item Recursive",
     "clearAllHighlights": "Clear All Highlights",
+    "exportGraphDot": "Export Graph DOT",
     "expandAllRecursive": "Expand All Recursive",
     "collapseAllRecursive": "Collapse All Recursive",
     "selectAll": "Select All",

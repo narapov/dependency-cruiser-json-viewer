@@ -44,6 +44,7 @@
     "collapseActive": "Réduire l'élément actif",
     "collapseActiveRecursive": "Réduire récursivement l'élément actif",
     "clearAllHighlights": "Effacer tous les surlignages",
+    "exportGraphDot": "Exporter le graphe DOT",
     "expandAllRecursive": "Tout développer récursivement",
     "collapseAllRecursive": "Tout réduire récursivement",
     "selectAll": "Tout sélectionner",

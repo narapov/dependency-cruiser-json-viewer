@@ -44,6 +44,7 @@
     "collapseActive": "Свернуть активный элемент",
     "collapseActiveRecursive": "Свернуть активный элемент рекурсивно",
     "clearAllHighlights": "Сбросить все подсветки",
+    "exportGraphDot": "Экспорт графа в DOT",
     "expandAllRecursive": "Развернуть всё рекурсивно",
     "collapseAllRecursive": "Свернуть всё рекурсивно",
     "selectAll": "Выбрать всё",

@@ -211,6 +211,10 @@ export function useAppOrchestration({
     setUserEdgeHighlights(new Map());
   };
 
+  const exportGraphDot = () => {
+    graphRef.current?.exportDot();
+  };
+
   const expandAllRecursive = () => {
     updateExpandedKeys(allFolderKeys);
   };
@@ -255,6 +259,7 @@ export function useAppOrchestration({
     collapseActive,
     collapseActiveRecursive,
     clearAllHighlights,
+    exportGraphDot,
     expandAllRecursive,
     collapseAllRecursive,
     selectAll,

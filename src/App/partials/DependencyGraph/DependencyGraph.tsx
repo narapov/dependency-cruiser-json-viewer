@@ -11,7 +11,9 @@ import { Background, Controls, MiniMap, Panel, ReactFlow, ReactFlowProvider, typ
 
 import '@xyflow/react/dist/style.css';
 
-import { getMinimapNodeColor } from './helpers';
+import { downloadTextFile } from '@/Shared';
+
+import { buildEdgeDependencyKeyMap, getMinimapNodeColor, serializeGraphToDot } from './helpers';
 import {
   useAutoFitView,
   useBuildGraph,
@@ -148,6 +150,22 @@ function DependencyGraphInner({
   useImperativeHandle(imperativeRef, () => ({
     focusNode,
     clearAllHighlights: onClearAllHighlights,
+    exportDot: () => {
+      const edgeDependencyKeyMap = buildEdgeDependencyKeyMap(
+        modules,
+        selectedPaths,
+        expandedFolders,
+        visibleNodeIds,
+        baseEdges,
+      );
+      const dot = serializeGraphToDot({
+        nodes: layoutNodes,
+        edges: baseEdges,
+        userEdgeHighlights,
+        edgeDependencyKeyMap,
+      });
+      downloadTextFile('graph.dot', dot, 'text/vnd.graphviz');
+    },
   }));
 
   const onPaneClick = () => {

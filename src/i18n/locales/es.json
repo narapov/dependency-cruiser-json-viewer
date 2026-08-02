@@ -44,6 +44,7 @@
     "collapseActive": "Contraer elemento activo",
     "collapseActiveRecursive": "Contraer recursivamente el elemento activo",
     "clearAllHighlights": "Limpiar todos los resaltados",
+    "exportGraphDot": "Exportar grafo DOT",
     "expandAllRecursive": "Expandir todo recursivamente",
     "collapseAllRecursive": "Contraer todo recursivamente",
     "selectAll": "Seleccionar todo",

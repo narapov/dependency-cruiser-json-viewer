@@ -13,6 +13,9 @@ import type { DependencyGraphHandle } from './types';
 const fitView = vi.fn();
 const getNode = vi.fn((id: string) => (id === 'src/a.ts' ? { id } : undefined));
 const clearBuildFailed = vi.fn();
+const { downloadTextFile } = vi.hoisted(() => ({
+  downloadTextFile: vi.fn(),
+}));
 
 const buildGraphState = {
   graphResult: { nodes: [], edges: [], visibleNodeIds: new Set<string>(), parentByNode: new Map() },
@@ -21,6 +24,14 @@ const buildGraphState = {
   clearBuildFailed,
   expandedFolders: new Set<string>(),
 };
+
+vi.mock('@/Shared', async importOriginal => {
+  const actual = await importOriginal<typeof import('@/Shared')>();
+  return {
+    ...actual,
+    downloadTextFile: (...args: unknown[]) => downloadTextFile(...args),
+  };
+});
 
 vi.mock('@xyflow/react', () => ({
   ReactFlowProvider: ({ children }: { children: ReactNode }) => children,
@@ -130,6 +141,20 @@ describe('DependencyGraph', () => {
     fitView.mockClear();
     ref.current?.focusNode('missing.ts');
     expect(fitView).not.toHaveBeenCalled();
+  });
+
+  it('exportDot downloads serialized graph.dot', () => {
+    const ref = createRef<DependencyGraphHandle>();
+
+    renderWithTheme(<DependencyGraph ref={ref} {...baseProps} />);
+
+    ref.current?.exportDot();
+
+    expect(downloadTextFile).toHaveBeenCalledWith(
+      'graph.dot',
+      expect.stringContaining('digraph {'),
+      'text/vnd.graphviz',
+    );
   });
 
   it('shows build error snackbar and clears on close', () => {

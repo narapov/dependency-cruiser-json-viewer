@@ -12,6 +12,7 @@ export interface AppCommandsOrchestration {
   collapseActive: () => void;
   collapseActiveRecursive: () => void;
   clearAllHighlights: () => void;
+  exportGraphDot: () => void;
   expandAllRecursive: () => void;
   collapseAllRecursive: () => void;
   selectAll: () => void;
@@ -48,6 +49,7 @@ export function useAppCommands({
     collapseActive,
     collapseActiveRecursive,
     clearAllHighlights,
+    exportGraphDot,
     expandAllRecursive,
     collapseAllRecursive,
     selectAll,
@@ -79,6 +81,11 @@ export function useAppCommands({
       id: 'clearAllHighlights',
       label: t('commands.clearAllHighlights'),
       onExecute: clearAllHighlights,
+    },
+    {
+      id: 'exportGraphDot',
+      label: t('commands.exportGraphDot'),
+      onExecute: exportGraphDot,
     },
     {
       id: 'expandAllRecursive',
