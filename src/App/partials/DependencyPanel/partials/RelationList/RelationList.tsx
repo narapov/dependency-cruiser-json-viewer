@@ -74,12 +74,17 @@ function RelationRow({ item, expandKey, expandedKeys, onToggleExpand, onShowInGr
     <>
       <ListItem
         disableGutters
+        title={item.path}
         sx={{
           display: 'flex',
-          alignItems: 'flex-start',
-          gap: 0.5,
-          py: 0.5,
-          pl: depth * 1,
+          alignItems: 'center',
+          gap: 0.25,
+          py: 0,
+          pl: depth * 0.75,
+          borderRadius: 1,
+          '&:hover, &:focus-within': {
+            bgcolor: 'action.hover',
+          },
         }}
       >
         {hasChildren ? (
@@ -87,12 +92,12 @@ function RelationRow({ item, expandKey, expandedKeys, onToggleExpand, onShowInGr
             size="small"
             aria-label={expanded ? t('actions.collapse') : t('actions.expand')}
             onClick={() => onToggleExpand(expandKey)}
-            sx={{ mt: 0.25, flexShrink: 0 }}
+            sx={{ flexShrink: 0, p: 0.25 }}
           >
             {expanded ? <ExpandMore fontSize="small" /> : <ChevronRight fontSize="small" />}
           </IconButton>
         ) : (
-          <Box sx={{ width: 34, flexShrink: 0 }} />
+          <Box sx={{ width: 24, flexShrink: 0 }} />
         )}
         <ListItemText
           primary={getBaseName(item.path)}
@@ -102,20 +107,33 @@ function RelationRow({ item, expandKey, expandedKeys, onToggleExpand, onShowInGr
               sx: {
                 fontFamily: 'monospace',
                 fontSize: 11,
+                lineHeight: 1.3,
                 wordBreak: 'break-all',
                 ...getRelationPathStyle(item),
               },
             },
           }}
         />
-        <Stack direction="row" sx={{ flexShrink: 0 }}>
+        <Stack direction="row" sx={{ flexShrink: 0, alignItems: 'center' }}>
           <Tooltip title={t('actions.copyPath')}>
-            <IconButton edge="end" aria-label={t('actions.copyPath')} onClick={() => void copyToClipboard(item.path)}>
+            <IconButton
+              edge="end"
+              size="small"
+              aria-label={t('actions.copyPath')}
+              onClick={() => void copyToClipboard(item.path)}
+              sx={{ p: 0.25 }}
+            >
               <ContentCopyOutlined fontSize="small" />
             </IconButton>
           </Tooltip>
           <Tooltip title={t('actions.showInGraph')}>
-            <IconButton edge="end" aria-label={t('actions.showInGraph')} onClick={() => onShowInGraph(item.path)}>
+            <IconButton
+              edge="end"
+              size="small"
+              aria-label={t('actions.showInGraph')}
+              onClick={() => onShowInGraph(item.path)}
+              sx={{ p: 0.25 }}
+            >
               <MyLocationOutlined fontSize="small" />
             </IconButton>
           </Tooltip>
@@ -189,13 +207,13 @@ export function RelationList({ items, hiddenItems = [], onShowInGraph }: Relatio
       ) : null}
 
       {hiddenCount > 0 ? (
-        <Box sx={{ mt: items.length > 0 ? 1 : 0 }}>
+        <Box sx={{ mt: items.length > 0 ? 0.5 : 0 }}>
           <Box
             sx={{
               display: 'flex',
               alignItems: 'center',
-              gap: 0.5,
-              py: 0.5,
+              gap: 0.25,
+              py: 0.25,
               cursor: 'pointer',
               userSelect: 'none',
             }}
