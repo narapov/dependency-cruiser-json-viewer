@@ -3,16 +3,21 @@
 ## Layers
 
 ```
-main → App → components/* → domain → Shared
+Feature roots: src/App, src/Shared, src/domain (excludes src/i18n, src/assets, src/testsUtils)
+
+main → App → App/partials/{Feature}
+         ↘ domain
+         ↘ Shared
+Shared → Shared, domain
+domain → domain only
 ```
 
-- **`src/domain/`** — cruise data logic (`IModule[]`, path utils, folder expansion, module relations). Import via `from '../../domain'` (root barrel only). May import **only** `src/domain/`.
-- **`src/Shared/`** — reusable code without app logic. Import **only** via `from '../../Shared'` (root barrel). May import **`src/Shared/`** and **`src/domain/`**.
-- **`src/App/`** — root composition: data loading, shared UI state coordination (`useAppOrchestration`).
-- **`src/components/*`** — feature modules (FileTree, DependencyGraph, QuickPick, DependencyPanel, AppLayout). May import **`src/Shared/`**, **`src/domain/`**, and files within the **same** `src/components/{Feature}/` tree.
-- **`src/components/AppLayout/`** — layout shell only (resize handles, CSS regions, slots).
+- **`src/domain/`** — pure cruise-data logic (no React, no xyflow, no Shared). Import via `from '@/domain'` only. May import **only** `src/domain/`.
+- **`src/Shared/`** — reusable code without app logic. Import via `from '@/Shared'` only. May import **`src/Shared/`** and **`src/domain/`**.
+- **`src/App/`** (outside `partials/`) — composition, data loading, shared UI coordination. Import partials **only** via `partials/{Name}/index.ts`.
+- **`src/App/partials/{Feature}/`** — feature modules. May import Shared, domain, and the same feature tree. No layer isolation between App partials (folder rules only).
 
-Layer boundaries are enforced by [`.dependency-cruiser/layer-import-rules.mjs`](../.dependency-cruiser/layer-import-rules.mjs) (`domain-only-domain`, `shared-only-shared-and-domain`, `components-only-shared-domain-and-self`).
+Layer boundaries are enforced by [`.dependency-cruiser/layer-import-rules.mjs`](../.dependency-cruiser/layer-import-rules.mjs) (`domain-only-domain`, `shared-only-shared-and-domain`, `shared-feature-partials-only-shared-domain-and-self`, `domain-feature-partials-only-domain-and-self`, `app-root-only-shared-domain-and-partial-barrels`).
 
 ## Module structure
 
@@ -63,7 +68,7 @@ Allowed subfolders (`subdir`): `hooks`, `partials`, `hocs`, `contexts`, `types`,
 
 ### Folder import rules (per directory)
 
-Rules are **recursive** — the same constraints apply at every folder depth. Enforced by [`.dependency-cruiser/folder-import-rules.mjs`](../.dependency-cruiser/folder-import-rules.mjs) (`npm run depcruise`). Scope: `src/**` except `src/i18n/`.
+Rules are **recursive** — the same constraints apply at every folder depth. Enforced by [`.dependency-cruiser/folder-import-rules.mjs`](../.dependency-cruiser/folder-import-rules.mjs) (`npm run depcruise`). Scope: `src/**` except `src/i18n/`, `src/assets/`, and `src/testsUtils/`.
 
 | Direction                                | Allowed                                                                                                                                 | Forbidden                                                                                             |
 | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
@@ -86,7 +91,7 @@ Rules are **recursive** — the same constraints apply at every folder depth. En
 | `outside-dir-no-nested-partials-*`  | lateral import into another partials branch             |
 | `outside-dir-sibling-then-subdir-*` | lateral import into `{subdir}` of a sibling partial     |
 
-Cross-feature boundaries are **not** covered by these rules (planned separately).
+Cross-feature boundaries between App partials are **not** covered by layer rules (folder rules apply within each feature tree).
 
 ## Types in modules
 
@@ -122,7 +127,7 @@ Each `index.ts` re-exports its module. Prefer `export * from` — barrels stay i
 
 Use **named** re-exports only when intentional:
 
-- **API boundary** — e.g. `DependencyGraph/helpers` exports `assignFolderColors` but not test helpers; `QuickOpen/helpers` exports search helpers but not `PathSearchTier`; `FileTree/index` omits `computeCheckState`.
+- **API boundary** — e.g. `DependencyGraph/helpers` exports `assignFolderColors` but not test helpers; `QuickPick/helpers` exports search helpers but not `PathSearchTier`; `FileTree/index` omits `computeCheckState`.
 - **Name collisions** — e.g. `AppLayout/hooks` renames `DEFAULT_WIDTH` / `MIN_WIDTH` from sidebar vs panel hooks.
 - **Default export** — `export *` does not re-export `default`.
 
@@ -130,76 +135,24 @@ Use **named** re-exports only when intentional:
 
 | From                    | Import                                                           |
 | ----------------------- | ---------------------------------------------------------------- |
-| Anywhere outside Shared | `from '../../Shared'` only                                       |
-| App, components         | `from '../../domain'` only                                       |
-| App internals           | `from './hooks'`                                                 |
-| Between features        | `from '../FileTree'` (barrel)                                    |
+| Anywhere outside Shared | `from '@/Shared'` only                                           |
+| App, App/partials       | `from '@/domain'` only                                           |
+| App root internals      | `from './hooks'`, `from './partials/FileTree'` (barrel)          |
+| Between App features    | `from '../FileTree'` (barrel)                                    |
 | Inside a module         | `from './partials/X'`, `from './helpers/X'` (via their index.ts) |
 
 Forbidden:
 
-- `from '../../Shared/components/Tree'`
-- `from '../../App/helpers'`
+- `from '@/Shared/components/Tree'`
+- `from '@/App/helpers'`
 - `from '../FileTree/partials/...'`
 - `from '../DependencyGraph/helpers/...'` (use feature barrel)
 - `from '../DependencyGraph/types/...'` (use `ComponentName.types.ts` or feature barrel)
-- `from '../../domain/pathUtils'` (use domain root barrel)
-
-## Domain structure
-
-```
-domain/
-├── helpers/
-│   ├── pathUtils/
-│   ├── folderExpansion/
-│   ├── dependencyCruiserState/   # getInitialDependencyCruiserState, getDefaultSelectedKeys, …
-│   └── moduleRelations/
-├── types/
-│   ├── DependencyCruiserState.ts
-│   └── ModuleRelations.ts
-└── index.ts
-```
-
-Pure logic over `dependency-cruiser` data. No React, no xyflow, no Shared imports.
-
-## Shared categories
-
-```
-Shared/
-├── components/
-├── hooks/        # useResizableWidth
-├── helpers/      # copyToClipboard, queryClient, graphTheme
-├── styles/       # graphTheme.css (CSS variables for graph colors)
-├── types/        # cross-shared types (placeholder)
-└── contexts/     # placeholder
-```
-
-## App structure
-
-```
-App/
-├── App.tsx
-├── hooks/        # useCruiseResult, useAppOrchestration, useInitialDependencyCruiserState
-└── api/          # cruiseResult
-```
-
-`useAppOrchestration` holds **shared UI state only**: `selectedPaths`, `expandedKeys`, `activePath`, `dependenciesPath`. Initial values come from `useInitialDependencyCruiserState`, which delegates to domain `getInitialDependencyCruiserState(sources)` — with no FileTree dependency. Cross-pane navigation uses imperative refs on `FileTree` (`focusPath`) and `DependencyGraph` (`focusNode`).
-
-Feature modules own their data:
-
-- **FileTree** — `buildFileTree`, tree selection helpers, tree UI
-- **DependencyGraph** — `assignFolderColors`, `buildGraph`, graph rendering
-- **QuickOpen** — search state, keyboard shortcut (Cmd/Ctrl+P)
-
-## Imperative handles
-
-| Handle                  | Method            | Purpose                       |
-| ----------------------- | ----------------- | ----------------------------- |
-| `FileTreeHandle`        | `focusPath(path)` | Scroll to and focus tree item |
-| `DependencyGraphHandle` | `focusNode(path)` | `fitView` to graph node       |
-
-React 19: `ref` is a regular prop (no `forwardRef`). Project uses React Compiler — avoid manual `useCallback`/`useMemo` in new code.
+- `from '@/domain/pathUtils'` (use domain root barrel)
+- From App root: `from './partials/FileTree/helpers/...'` (partial barrels only)
 
 ## Enforcement
 
 - `dependency-cruiser` — layer rules ([`.dependency-cruiser/layer-import-rules.mjs`](../.dependency-cruiser/layer-import-rules.mjs)) and folder import rules for `src/**` ([`.dependency-cruiser/folder-import-rules.mjs`](../.dependency-cruiser/folder-import-rules.mjs), `npm run depcruise`). See [Folder import rules](#folder-import-rules-per-directory) above.
+
+React 19: `ref` is a regular prop (no `forwardRef`). Project uses React Compiler — avoid manual `useCallback`/`useMemo` in new code.

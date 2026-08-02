@@ -28,15 +28,15 @@ function buildLayerImportRules() {
     //   ✓ domain/helpers/pathUtils → domain/types
     // Forbids: any other src layer.
     //   ✗ domain/helpers/foo → Shared/helpers/bar
-    //   ✗ domain/helpers/foo → components/Feature/…
+    //   ✗ domain/helpers/foo → App/partials/Feature/…
     forbidden('domain-only-domain', { path: '^src/domain/' }, { pathNot: '^src/domain/' }),
 
     // shared-only-shared-and-domain
     // Allows: src/Shared/ and src/domain/.
     //   ✓ Shared/hooks/useX → domain/helpers/pathUtils
     //   ✓ Shared/helpers/foo → Shared/components/bar
-    // Forbids: App, components, i18n, …
-    //   ✗ Shared/helpers/foo → components/Feature
+    // Forbids: App, i18n, …
+    //   ✗ Shared/helpers/foo → App/partials/Feature
     //   ✗ Shared/helpers/foo → App/hooks/useX
     // Test files may import src/testsUtils/ (shared test helpers).
     forbidden(
