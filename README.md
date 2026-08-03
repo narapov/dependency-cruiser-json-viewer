@@ -33,6 +33,7 @@ The usual workflow meant constantly tweaking filters, `collapsePattern`, and `ex
 - **DOT export** — export the current graph layout as a Graphviz `.dot` file via the command palette (**Export Graph DOT**), or open it in [Graphviz Online](https://dreampuf.github.io/GraphvizOnline/?engine=nop2) (**View Graph DOT Online**); render locally with `neato -n2 -Tsvg graph.dot` or `dot -Knop2 -Tsvg graph.dot`.
 - **Workspace save/load** — save selection, expansion, ignore patterns, edge highlights, folder colors, and layout into the cruise JSON under `dependency-cruiser-json-viewer` (**Save Workspace**). Both **Load dependency-cruiser JSON** (when the file has workspace settings) and **Load Workspace Settings** always clear the current view and replace selection, expansion, the dependencies panel path, ignore patterns, edge highlights, folder colors, and layout from the file, dropping entries that no longer match the relevant cruise data (e.g. references to files or dependencies that no longer exist).
 - **Ignore patterns** — glob patterns to exclude modules from tree and graph.
+- **Watch mode** — reload the cruise JSON when the file changes on disk and keep the current workspace (see [Watch mode](#watch-mode)).
 
 ## Keyboard shortcuts
 
