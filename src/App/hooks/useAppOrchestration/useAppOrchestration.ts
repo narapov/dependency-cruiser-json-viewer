@@ -1,38 +1,78 @@
-import { useMemo, useState, type RefObject } from 'react';
+import { useEffect, useMemo, useReducer, type RefObject } from 'react';
 
 import {
   applyHighlightKeys,
   getAncestorKeys,
   getParentPath,
   getSubtreeFolderKeys,
+  isFolderPath,
+  isPathInSources,
   isPathVisibleInSelection,
   removeSubtreeFolderKeys,
   resolveActivePathAfterCollapse,
+  serializeViewerWorkspace,
   toggleExpandedKey,
   type DependencyCruiserState,
+  type FolderBaseColor,
+  type MergedViewerWorkspaceView,
+  type ViewerWorkspaceSettings,
 } from '@/domain';
-import { APP_STORAGE_PREFIX, copyToClipboard } from '@/Shared';
+import { APP_STORAGE_PREFIX, copyToClipboard, downloadTextFile } from '@/Shared';
 
-import type { DependencyGraphHandle } from '../../partials/DependencyGraph';
+import { defaultFolderColorsRecord } from '../../helpers';
+import type { DependencyGraphHandle, GraphLayoutState } from '../../partials/DependencyGraph';
 import { buildFileTree, getAllFolderKeys, getAllKeys, type FileTreeHandle } from '../../partials/FileTree';
 
 interface UseAppOrchestrationOptions {
   sources: string[];
+  unfilteredCruiseResult: import('dependency-cruiser').ICruiseResult | undefined;
+  ignorePatterns: string[];
   fileTreeRef: RefObject<FileTreeHandle | null>;
   graphRef: RefObject<DependencyGraphHandle | null>;
   initialDependencyCruiserState: DependencyCruiserState;
+  cruiseLoadId: number;
 }
 
-function isFolderPath(path: string, sources: string[]): boolean {
-  return sources.some(source => source.startsWith(`${path}/`));
+interface WorkspaceViewState {
+  selectedPaths: string[];
+  expandedKeys: string[];
+  activePath: string | null;
+  dependenciesPath: string | null;
+  userEdgeHighlights: ReadonlyMap<string, string>;
+  folderBaseColors: Record<string, FolderBaseColor>;
+  pendingLayout: GraphLayoutState | null;
+  sourcesKey: string;
+  cruiseLoadId: number;
+  lastInitialSelectedKeys: string[];
+  lastInitialExpandedKeys: string[];
 }
 
-function isPathInSources(path: string, sources: string[]): boolean {
-  if (sources.includes(path)) {
-    return true;
-  }
-  return isFolderPath(path, sources);
-}
+type WorkspaceViewAction =
+  | {
+      type: 'syncFromProps';
+      sources: string[];
+      sourcesKey: string;
+      cruiseLoadId: number;
+      initial: DependencyCruiserState;
+    }
+  | {
+      type: 'applyWorkspaceView';
+      view: MergedViewerWorkspaceView;
+      sourcesKey: string;
+      cruiseLoadId: number;
+      lastInitialSelectedKeys: string[];
+      lastInitialExpandedKeys: string[];
+    }
+  | { type: 'toggleFolder'; path: string }
+  | { type: 'expandRecursive'; path: string; sources: string[] }
+  | { type: 'updateExpandedKeys'; updater: string[] | ((prev: string[]) => string[]) }
+  | { type: 'activatePath'; path: string }
+  | { type: 'setSelectedPaths'; paths: string[] }
+  | { type: 'setDependenciesPath'; path: string | null }
+  | { type: 'setUserEdgeHighlights'; highlights: ReadonlyMap<string, string> }
+  | { type: 'setUserDependencyHighlight'; keys: readonly string[]; color: string | null }
+  | { type: 'clearAllHighlights' }
+  | { type: 'layoutApplied' };
 
 function resolveActiveFolderPath(activePath: string | null, sources: string[]): string | null {
   if (activePath == null) {
@@ -44,33 +84,209 @@ function resolveActiveFolderPath(activePath: string | null, sources: string[]): 
   return getParentPath(activePath);
 }
 
+function createInitialWorkspaceViewState(
+  sources: string[],
+  cruiseLoadId: number,
+  initial: DependencyCruiserState,
+): WorkspaceViewState {
+  return {
+    selectedPaths: initial.selectedKeys,
+    expandedKeys: initial.expandedKeys,
+    activePath: null,
+    dependenciesPath: null,
+    userEdgeHighlights: new Map(),
+    folderBaseColors: defaultFolderColorsRecord(sources),
+    pendingLayout: null,
+    sourcesKey: sources.join('\0'),
+    cruiseLoadId,
+    lastInitialSelectedKeys: initial.selectedKeys,
+    lastInitialExpandedKeys: initial.expandedKeys,
+  };
+}
+
+function syncWorkspaceViewFromProps(
+  state: WorkspaceViewState,
+  action: Extract<WorkspaceViewAction, { type: 'syncFromProps' }>,
+): WorkspaceViewState {
+  const { sources, sourcesKey, cruiseLoadId, initial } = action;
+
+  if (sourcesKey !== state.sourcesKey || cruiseLoadId !== state.cruiseLoadId) {
+    return {
+      selectedPaths: initial.selectedKeys,
+      expandedKeys: initial.expandedKeys,
+      activePath: null,
+      dependenciesPath: null,
+      userEdgeHighlights: new Map(),
+      folderBaseColors: defaultFolderColorsRecord(sources),
+      pendingLayout: { autoLayoutOnly: true, nodePositions: {} },
+      sourcesKey,
+      cruiseLoadId,
+      lastInitialSelectedKeys: initial.selectedKeys,
+      lastInitialExpandedKeys: initial.expandedKeys,
+    };
+  }
+
+  // Adopt new initial identity after eager apply (resolve vs useMemo create distinct arrays)
+  // without clobbering the applied view. Selection sync on sources/cruiseLoadId is above.
+  if (
+    initial.selectedKeys !== state.lastInitialSelectedKeys ||
+    initial.expandedKeys !== state.lastInitialExpandedKeys
+  ) {
+    return {
+      ...state,
+      lastInitialSelectedKeys: initial.selectedKeys,
+      lastInitialExpandedKeys: initial.expandedKeys,
+    };
+  }
+
+  return state;
+}
+
+function applyWorkspaceViewState(
+  state: WorkspaceViewState,
+  action: Extract<WorkspaceViewAction, { type: 'applyWorkspaceView' }>,
+): WorkspaceViewState {
+  const { view, sourcesKey, cruiseLoadId, lastInitialSelectedKeys, lastInitialExpandedKeys } = action;
+  return {
+    ...state,
+    selectedPaths: view.selectedFiles,
+    expandedKeys: view.expandedKeys,
+    dependenciesPath: view.dependenciesPath,
+    userEdgeHighlights: view.userEdgeHighlights,
+    folderBaseColors: view.folderColors,
+    activePath: null,
+    pendingLayout: {
+      autoLayoutOnly: view.autoLayoutOnly,
+      nodePositions: view.nodePositions,
+    },
+    sourcesKey,
+    cruiseLoadId,
+    lastInitialSelectedKeys,
+    lastInitialExpandedKeys,
+  };
+}
+
+function updateExpandedKeysState(
+  state: WorkspaceViewState,
+  updater: string[] | ((prev: string[]) => string[]),
+): WorkspaceViewState {
+  const next = typeof updater === 'function' ? updater(state.expandedKeys) : updater;
+  const collapsed = state.expandedKeys.filter(key => !next.includes(key));
+  if (collapsed.length === 0 && next === state.expandedKeys) {
+    return state;
+  }
+  return {
+    ...state,
+    expandedKeys: next,
+    activePath: collapsed.length > 0 ? resolveActivePathAfterCollapse(state.activePath, collapsed) : state.activePath,
+  };
+}
+
+function workspaceViewReducer(state: WorkspaceViewState, action: WorkspaceViewAction): WorkspaceViewState {
+  switch (action.type) {
+    case 'syncFromProps':
+      return syncWorkspaceViewFromProps(state, action);
+
+    case 'applyWorkspaceView':
+      return applyWorkspaceViewState(state, action);
+
+    case 'toggleFolder':
+      return updateExpandedKeysState(state, keys => toggleExpandedKey(keys, action.path));
+
+    case 'expandRecursive':
+      return updateExpandedKeysState(state, keys => [
+        ...new Set([...keys, ...getSubtreeFolderKeys(action.path, action.sources)]),
+      ]);
+
+    case 'updateExpandedKeys':
+      return updateExpandedKeysState(state, action.updater);
+
+    case 'activatePath': {
+      const ancestors = getAncestorKeys(action.path);
+      const oldKeysSet = new Set(state.expandedKeys);
+      const newKeysSet = new Set([...state.expandedKeys, ...ancestors]);
+      const expandedKeys = oldKeysSet.size !== newKeysSet.size ? Array.from(newKeysSet) : state.expandedKeys;
+      return {
+        ...state,
+        expandedKeys,
+        activePath: action.path,
+      };
+    }
+
+    case 'setSelectedPaths':
+      return { ...state, selectedPaths: action.paths };
+
+    case 'setDependenciesPath':
+      return { ...state, dependenciesPath: action.path };
+
+    case 'setUserEdgeHighlights':
+      return { ...state, userEdgeHighlights: action.highlights };
+
+    case 'setUserDependencyHighlight':
+      return {
+        ...state,
+        userEdgeHighlights: applyHighlightKeys(state.userEdgeHighlights, action.keys, action.color),
+      };
+
+    case 'clearAllHighlights':
+      return { ...state, userEdgeHighlights: new Map() };
+
+    case 'layoutApplied':
+      return state.pendingLayout == null ? state : { ...state, pendingLayout: null };
+
+    default: {
+      const _exhaustive: never = action;
+      return _exhaustive;
+    }
+  }
+}
+
 export function useAppOrchestration({
   sources,
+  unfilteredCruiseResult,
+  ignorePatterns,
   fileTreeRef,
   graphRef,
   initialDependencyCruiserState,
+  cruiseLoadId,
 }: UseAppOrchestrationOptions) {
-  const [selectedPaths, setSelectedPaths] = useState(initialDependencyCruiserState.selectedKeys);
-  const [prevSelectedKeys, setPrevSelectedKeys] = useState(initialDependencyCruiserState.selectedKeys);
-  const [expandedKeys, setExpandedKeys] = useState(initialDependencyCruiserState.expandedKeys);
-  const [prevExpandedKeys, setPrevExpandedKeys] = useState(initialDependencyCruiserState.expandedKeys);
-  const [activePath, setActivePath] = useState<string | null>(null);
-  const [dependenciesPath, setDependenciesPath] = useState<string | null>(null);
-  const [userEdgeHighlights, setUserEdgeHighlights] = useState<ReadonlyMap<string, string>>(() => new Map());
+  const [state, dispatch] = useReducer(workspaceViewReducer, undefined, () =>
+    createInitialWorkspaceViewState(sources, cruiseLoadId, initialDependencyCruiserState),
+  );
 
-  if (initialDependencyCruiserState.selectedKeys !== prevSelectedKeys) {
-    setPrevSelectedKeys(initialDependencyCruiserState.selectedKeys);
-    setSelectedPaths(initialDependencyCruiserState.selectedKeys);
+  const sourcesKey = sources.join('\0');
+
+  if (
+    sourcesKey !== state.sourcesKey ||
+    cruiseLoadId !== state.cruiseLoadId ||
+    initialDependencyCruiserState.selectedKeys !== state.lastInitialSelectedKeys ||
+    initialDependencyCruiserState.expandedKeys !== state.lastInitialExpandedKeys
+  ) {
+    dispatch({
+      type: 'syncFromProps',
+      sources,
+      sourcesKey,
+      cruiseLoadId,
+      initial: initialDependencyCruiserState,
+    });
   }
 
-  if (initialDependencyCruiserState.expandedKeys !== prevExpandedKeys) {
-    setPrevExpandedKeys(initialDependencyCruiserState.expandedKeys);
-    setExpandedKeys(initialDependencyCruiserState.expandedKeys);
-  }
+  useEffect(() => {
+    if (state.pendingLayout == null) {
+      return;
+    }
+    if (graphRef.current == null) {
+      return;
+    }
+    graphRef.current.setLayoutState(state.pendingLayout);
+    // One-shot apply of restored/reset layout onto the graph handle.
+    dispatch({ type: 'layoutApplied' });
+  }, [state.pendingLayout, graphRef, state.selectedPaths, state.expandedKeys]);
 
-  const resolvedActivePath = activePath != null && isPathInSources(activePath, sources) ? activePath : null;
+  const resolvedActivePath =
+    state.activePath != null && isPathInSources(state.activePath, sources) ? state.activePath : null;
   const resolvedDependenciesPath =
-    dependenciesPath != null && isPathInSources(dependenciesPath, sources) ? dependenciesPath : null;
+    state.dependenciesPath != null && isPathInSources(state.dependenciesPath, sources) ? state.dependenciesPath : null;
 
   const treeData = useMemo(() => buildFileTree(sources), [sources]);
   const allKeys = useMemo(() => getAllKeys(treeData), [treeData]);
@@ -79,27 +295,11 @@ export function useAppOrchestration({
   const panelOpen = resolvedDependenciesPath != null;
 
   const updateExpandedKeys = (updater: string[] | ((prev: string[]) => string[])) => {
-    setExpandedKeys(prev => {
-      const next = typeof updater === 'function' ? updater(prev) : updater;
-      const collapsed = prev.filter(key => !next.includes(key));
-      if (collapsed.length > 0) {
-        setActivePath(current => resolveActivePathAfterCollapse(current, collapsed));
-      }
-      return next;
-    });
+    dispatch({ type: 'updateExpandedKeys', updater });
   };
 
   const activatePath = (path: string) => {
-    const ancestors = getAncestorKeys(path);
-    setExpandedKeys(oldKeys => {
-      const oldKeysSet = new Set(oldKeys);
-      const newKeysSet = new Set([...oldKeys, ...ancestors]);
-      if (oldKeysSet.size !== newKeysSet.size) {
-        return Array.from(newKeysSet);
-      }
-      return oldKeys;
-    });
-    setActivePath(path);
+    dispatch({ type: 'activatePath', path });
   };
 
   const showInGraph = (path: string) => {
@@ -113,23 +313,23 @@ export function useAppOrchestration({
   };
 
   const toggleFolder = (path: string) => {
-    updateExpandedKeys(keys => toggleExpandedKey(keys, path));
+    dispatch({ type: 'toggleFolder', path });
   };
 
   const expandRecursive = (path: string) => {
-    updateExpandedKeys(keys => [...new Set([...keys, ...getSubtreeFolderKeys(path, sources)])]);
+    dispatch({ type: 'expandRecursive', path, sources });
   };
 
   const handleShowDependencies = (path: string) => {
-    setDependenciesPath(path);
+    dispatch({ type: 'setDependenciesPath', path });
   };
 
   const handleClosePanel = () => {
-    setDependenciesPath(null);
+    dispatch({ type: 'setDependenciesPath', path: null });
   };
 
   const focusPath = (path: string) => {
-    if (isPathVisibleInSelection(path, selectedPaths)) {
+    if (isPathVisibleInSelection(path, state.selectedPaths)) {
       graphRef.current?.focusNode(path);
     }
     fileTreeRef.current?.focusPath(path);
@@ -204,11 +404,11 @@ export function useAppOrchestration({
   };
 
   const setUserDependencyHighlight = (dependencyKeys: readonly string[], color: string | null) => {
-    setUserEdgeHighlights(prev => applyHighlightKeys(prev, dependencyKeys, color));
+    dispatch({ type: 'setUserDependencyHighlight', keys: dependencyKeys, color });
   };
 
   const clearAllHighlights = () => {
-    setUserEdgeHighlights(new Map());
+    dispatch({ type: 'clearAllHighlights' });
   };
 
   const exportGraphDot = () => {
@@ -217,6 +417,27 @@ export function useAppOrchestration({
 
   const viewGraphDotOnline = () => {
     graphRef.current?.openDotOnline();
+  };
+
+  const saveWorkspace = () => {
+    if (unfilteredCruiseResult == null) {
+      return;
+    }
+    const layout = graphRef.current?.getLayoutState() ?? { autoLayoutOnly: true, nodePositions: {} };
+    const settings: ViewerWorkspaceSettings = {
+      ignorePatterns,
+      selectedFiles: state.selectedPaths.filter(key =>
+        unfilteredCruiseResult.modules.some(module => module.source === key),
+      ),
+      expandedKeys: state.expandedKeys,
+      dependenciesPath: resolvedDependenciesPath,
+      userEdgeHighlights: Object.fromEntries(state.userEdgeHighlights.entries()),
+      folderColors: state.folderBaseColors,
+      autoLayoutOnly: layout.autoLayoutOnly,
+      nodePositions: layout.autoLayoutOnly ? {} : layout.nodePositions,
+    };
+    const payload = serializeViewerWorkspace(unfilteredCruiseResult, settings);
+    downloadTextFile('cruise-result.json', `${JSON.stringify(payload, null, 2)}\n`, 'application/json');
   };
 
   const expandAllRecursive = () => {
@@ -228,23 +449,38 @@ export function useAppOrchestration({
   };
 
   const selectAll = () => {
-    setSelectedPaths(allKeys);
+    dispatch({ type: 'setSelectedPaths', paths: allKeys });
   };
 
   const unselectAll = () => {
-    setSelectedPaths([]);
+    dispatch({ type: 'setSelectedPaths', paths: [] });
+  };
+
+  const applyWorkspaceView = (input: {
+    view: MergedViewerWorkspaceView;
+    sourcesKey: string;
+    cruiseLoadId: number;
+    lastInitialSelectedKeys: string[];
+    lastInitialExpandedKeys: string[];
+  }) => {
+    dispatch({ type: 'applyWorkspaceView', ...input });
   };
 
   return {
     panelOpen,
-    selectedPaths,
-    expandedKeys,
+    selectedPaths: state.selectedPaths,
+    expandedKeys: state.expandedKeys,
     activePath: resolvedActivePath,
     dependenciesPath: resolvedDependenciesPath,
-    userEdgeHighlights,
-    setUserEdgeHighlights,
+    userEdgeHighlights: state.userEdgeHighlights,
+    folderBaseColors: state.folderBaseColors,
+    setUserEdgeHighlights: (highlights: ReadonlyMap<string, string>) => {
+      dispatch({ type: 'setUserEdgeHighlights', highlights });
+    },
     setUserDependencyHighlight,
-    setSelectedPaths,
+    setSelectedPaths: (paths: string[]) => {
+      dispatch({ type: 'setSelectedPaths', paths });
+    },
     updateExpandedKeys,
     activatePath,
     showInGraph,
@@ -265,9 +501,11 @@ export function useAppOrchestration({
     clearAllHighlights,
     exportGraphDot,
     viewGraphDotOnline,
+    saveWorkspace,
     expandAllRecursive,
     collapseAllRecursive,
     selectAll,
     unselectAll,
+    applyWorkspaceView,
   };
 }

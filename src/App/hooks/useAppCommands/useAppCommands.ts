@@ -14,6 +14,7 @@ export interface AppCommandsOrchestration {
   clearAllHighlights: () => void;
   exportGraphDot: () => void;
   viewGraphDotOnline: () => void;
+  saveWorkspace: () => void;
   expandAllRecursive: () => void;
   collapseAllRecursive: () => void;
   selectAll: () => void;
@@ -26,8 +27,10 @@ interface UseAppCommandsOptions {
   openLanguagePicker: () => void;
   openIgnorePatterns: () => void;
   openLoadCruiseResult: () => void;
+  openLoadSettings: () => void;
   openAbout: () => void;
   toggleFileTree: () => void;
+  fileLoadInProgress?: boolean;
 }
 
 export function useAppCommands({
@@ -36,8 +39,10 @@ export function useAppCommands({
   openLanguagePicker,
   openIgnorePatterns,
   openLoadCruiseResult,
+  openLoadSettings,
   openAbout,
   toggleFileTree,
+  fileLoadInProgress = false,
 }: UseAppCommandsOptions): QuickPickCommand[] {
   const { t } = useTranslation();
   const {
@@ -52,6 +57,7 @@ export function useAppCommands({
     clearAllHighlights,
     exportGraphDot,
     viewGraphDotOnline,
+    saveWorkspace,
     expandAllRecursive,
     collapseAllRecursive,
     selectAll,
@@ -95,6 +101,11 @@ export function useAppCommands({
       onExecute: viewGraphDotOnline,
     },
     {
+      id: 'saveWorkspace',
+      label: t('commands.saveWorkspace'),
+      onExecute: saveWorkspace,
+    },
+    {
       id: 'expandAllRecursive',
       label: t('commands.expandAllRecursive'),
       onExecute: expandAllRecursive,
@@ -116,6 +127,13 @@ export function useAppCommands({
       id: 'loadCruiseResult',
       label: t('commands.loadCruiseResult'),
       onExecute: openLoadCruiseResult,
+      disabled: fileLoadInProgress,
+    },
+    {
+      id: 'loadWorkspaceSettings',
+      label: t('commands.loadWorkspaceSettings'),
+      onExecute: openLoadSettings,
+      disabled: fileLoadInProgress,
     },
     { id: 'about', label: t('commands.about'), onExecute: openAbout },
     { id: 'toggleFileTree', label: t('commands.toggleFileTree'), onExecute: toggleFileTree },

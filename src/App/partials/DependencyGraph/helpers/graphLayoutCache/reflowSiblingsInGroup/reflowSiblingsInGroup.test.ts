@@ -125,4 +125,57 @@ describe('reflowSiblingsInGroup', () => {
       fileA.position.y + 100 > fileB.position.y;
     expect(stillOverlap).toBe(false);
   });
+
+  it('clears a chain of three overlapping siblings across multiple passes', () => {
+    const nodeById = new Map([
+      ['folder-a', node('folder-a', { type: 'folderGroup', width: 600, height: 400 })],
+      [
+        'file-a',
+        node('file-a', {
+          parentId: 'folder-a',
+          position: { x: 0, y: 50 },
+          width: 120,
+          height: 32,
+        }),
+      ],
+      [
+        'file-b',
+        node('file-b', {
+          parentId: 'folder-a',
+          position: { x: 40, y: 50 },
+          width: 120,
+          height: 32,
+        }),
+      ],
+      [
+        'file-c',
+        node('file-c', {
+          parentId: 'folder-a',
+          position: { x: 80, y: 50 },
+          width: 120,
+          height: 32,
+        }),
+      ],
+    ]);
+    const parentByNode = new Map<string, string | null>([
+      ['folder-a', null],
+      ['file-a', 'folder-a'],
+      ['file-b', 'folder-a'],
+      ['file-c', 'folder-a'],
+    ]);
+
+    expect(reflowSiblingsInGroup('folder-a', nodeById, parentByNode)).toBe(true);
+
+    const siblings = ['file-a', 'file-b', 'file-c'].map(id => nodeById.get(id)!);
+    siblings.forEach((left, i) => {
+      siblings.slice(i + 1).forEach(right => {
+        const overlap =
+          left.position.x < right.position.x + 120 &&
+          left.position.x + 120 > right.position.x &&
+          left.position.y < right.position.y + 32 &&
+          left.position.y + 32 > right.position.y;
+        expect(overlap).toBe(false);
+      });
+    });
+  });
 });

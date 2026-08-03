@@ -164,4 +164,85 @@ describe('useGraphLayoutNodes', () => {
 
     expect(result.current.hasUserLayout).toBe(false);
   });
+
+  it('defers layout restore until graphResult has nodes, then keeps positions', async () => {
+    const { invalidatePositionCache } = await import('../../helpers');
+    const emptyGraph = makeGraphResult([]);
+    const readyGraph = makeGraphResult([makeNode('src/a.ts'), makeNode('src/b.ts')]);
+    const restoredPositions = {
+      '': { 'src/a.ts': { x: 10, y: 20 }, 'src/b.ts': { x: 30, y: 40 } },
+    };
+
+    const { result, rerender } = renderHook(
+      ({ graphResult }) => useGraphLayoutNodes({ graphResult, autoLayoutOnly: false }),
+      { initialProps: { graphResult: emptyGraph } },
+    );
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    act(() => {
+      result.current.setLayoutSnapshot({ nodePositions: restoredPositions });
+    });
+
+    expect(result.current.hasUserLayout).toBe(true);
+    expect(result.current.getLayoutSnapshot().nodePositions).toEqual({});
+
+    vi.mocked(invalidatePositionCache).mockClear();
+
+    rerender({ graphResult: readyGraph });
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(invalidatePositionCache).not.toHaveBeenCalled();
+    expect(result.current.getLayoutSnapshot().nodePositions).toEqual(restoredPositions);
+  });
+
+  it('clears previous sizes and nodes before applying a restored layout', async () => {
+    const { reflowParentSiblings, preserveExpandedGroupPositions, collectNodeSizes } = await import('../../helpers');
+    const firstGraph = makeGraphResult([makeNode('old.ts', { position: { x: 1, y: 1 }, width: 120, height: 32 })]);
+    const secondGraph = makeGraphResult([makeNode('old.ts', { position: { x: 2, y: 2 }, width: 140, height: 40 })]);
+    const previousSizes = new Map([['old.ts', { width: 120, height: 32 }]]);
+    vi.mocked(collectNodeSizes).mockReturnValue(previousSizes);
+
+    const { result, rerender } = renderHook(
+      ({ graphResult }) => useGraphLayoutNodes({ graphResult, autoLayoutOnly: false }),
+      { initialProps: { graphResult: firstGraph } },
+    );
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    rerender({ graphResult: secondGraph });
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    const callBeforeRestore = vi.mocked(reflowParentSiblings).mock.calls.at(-1)?.[0];
+    expect(callBeforeRestore?.previousSizes).toBe(previousSizes);
+    expect(callBeforeRestore?.previousNodes).toEqual(firstGraph.nodes);
+
+    vi.mocked(reflowParentSiblings).mockClear();
+    vi.mocked(preserveExpandedGroupPositions).mockClear();
+
+    act(() => {
+      result.current.setLayoutSnapshot({
+        nodePositions: {
+          '': { 'old.ts': { x: 10, y: 20 } },
+        },
+      });
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(vi.mocked(preserveExpandedGroupPositions)).toHaveBeenCalledWith(secondGraph.nodes, null);
+    const callAfterRestore = vi.mocked(reflowParentSiblings).mock.calls.at(-1)?.[0];
+    expect(callAfterRestore?.previousSizes).toEqual(new Map());
+    expect(callAfterRestore?.previousNodes).toBeNull();
+  });
 });

@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { assignFolderColors, parsePastelHsl, type FolderColorMode } from './assignFolderColors';
+import {
+  assignFolderBaseColors,
+  assignFolderColors,
+  parsePastelHsl,
+  toThemedFolderColor,
+  type FolderColorMode,
+} from './assignFolderColors';
 
 const SAMPLE_SOURCES = [
   'src/App.tsx',
@@ -56,6 +62,34 @@ function expectParentChildHueSeparation(colors: ReadonlyMap<string, string>) {
   const childHue = parsePastelHsl(childColor!)!.hue;
   expect(hueDistance(parentHue, childHue)).toBeGreaterThanOrEqual(40);
 }
+
+describe('assignFolderBaseColors', () => {
+  it('returns the same base color for the same path across calls', () => {
+    const first = assignFolderBaseColors(SAMPLE_SOURCES);
+    const second = assignFolderBaseColors([...SAMPLE_SOURCES].reverse());
+    for (const path of first.keys()) {
+      expect(second.get(path)).toEqual(first.get(path));
+    }
+  });
+});
+
+describe('toThemedFolderColor', () => {
+  it('uses light pastel tones in light mode', () => {
+    const color = toThemedFolderColor({ hue: 120, lightnessIndex: 0 }, 'light');
+    const parsed = parsePastelHsl(color);
+    expect(parsed).not.toBeNull();
+    expect(parsed!.lightness).toBeGreaterThanOrEqual(88);
+    expect(parsed!.saturation).toBe(48);
+  });
+
+  it('uses dark muted tones in dark mode', () => {
+    const color = toThemedFolderColor({ hue: 120, lightnessIndex: 0 }, 'dark');
+    const parsed = parsePastelHsl(color);
+    expect(parsed).not.toBeNull();
+    expect(parsed!.lightness).toBeLessThanOrEqual(28);
+    expect(parsed!.saturation).toBe(42);
+  });
+});
 
 describe('assignFolderColors', () => {
   it('returns the same color for the same path across calls', () => {

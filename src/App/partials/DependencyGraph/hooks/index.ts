@@ -5,3 +5,4 @@ export * from './useGraphLayoutNodes';
 export * from './useHighlightedEdges';
 export * from './useHighlightedNodes';
 export * from './usePendingFocusNode';
+export * from './useThemedFolderColors';

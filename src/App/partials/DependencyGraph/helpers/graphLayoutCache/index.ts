@@ -4,3 +4,4 @@ export * from './invalidatePositionCache';
 export * from './applyPositionCache';
 export * from './resolveGroupSize';
 export * from './reflowParentSiblings';
+export * from './serializePositionCache';

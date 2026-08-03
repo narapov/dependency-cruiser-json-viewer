@@ -10,13 +10,13 @@ import { CruiseResultParseError } from '@/domain';
 
 import { useLoadCruiseResultFromFile } from './useLoadCruiseResultFromFile';
 
-const parseCruiseResultJson = vi.hoisted(() => vi.fn());
+const parseViewerFileJson = vi.hoisted(() => vi.fn());
 
 vi.mock('@/domain', async importOriginal => {
   const actual = await importOriginal<typeof import('@/domain')>();
   return {
     ...actual,
-    parseCruiseResultJson,
+    parseViewerFileJson,
   };
 });
 
@@ -45,7 +45,7 @@ describe('useLoadCruiseResultFromFile', () => {
 
   it('stores parsed cruise result in the query cache on success', async () => {
     const cruiseResult = { modules: [], summary: {} };
-    parseCruiseResultJson.mockReturnValue(cruiseResult);
+    parseViewerFileJson.mockReturnValue({ cruiseResult });
     const { queryClient, wrapper } = createWrapper();
     const { result } = renderHook(() => useLoadCruiseResultFromFile(), { wrapper });
 
@@ -55,13 +55,13 @@ describe('useLoadCruiseResultFromFile', () => {
       await result.current.handleFileSelect(file);
     });
 
-    expect(parseCruiseResultJson).toHaveBeenCalled();
+    expect(parseViewerFileJson).toHaveBeenCalled();
     expect(queryClient.getQueryData(['cruise-result'])).toEqual(cruiseResult);
     expect(result.current.fileLoadError).toBeNull();
   });
 
   it('sets invalidJson error message for CruiseResultParseError', async () => {
-    parseCruiseResultJson.mockImplementation(() => {
+    parseViewerFileJson.mockImplementation(() => {
       throw new CruiseResultParseError('invalidJson');
     });
     const t = getT();
@@ -76,7 +76,7 @@ describe('useLoadCruiseResultFromFile', () => {
   });
 
   it('sets invalidFormat error message for format parse errors', async () => {
-    parseCruiseResultJson.mockImplementation(() => {
+    parseViewerFileJson.mockImplementation(() => {
       throw new CruiseResultParseError('invalidFormat');
     });
     const t = getT();
@@ -91,7 +91,7 @@ describe('useLoadCruiseResultFromFile', () => {
   });
 
   it('sets format error for unexpected failures', async () => {
-    parseCruiseResultJson.mockImplementation(() => {
+    parseViewerFileJson.mockImplementation(() => {
       throw new Error('boom');
     });
     const t = getT();
@@ -106,7 +106,7 @@ describe('useLoadCruiseResultFromFile', () => {
   });
 
   it('clears file load error', async () => {
-    parseCruiseResultJson.mockImplementation(() => {
+    parseViewerFileJson.mockImplementation(() => {
       throw new CruiseResultParseError('invalidJson');
     });
     const { wrapper } = createWrapper();
@@ -125,7 +125,7 @@ describe('useLoadCruiseResultFromFile', () => {
   });
 
   it('openFilePicker clears error and opens the file input', async () => {
-    parseCruiseResultJson.mockImplementation(() => {
+    parseViewerFileJson.mockImplementation(() => {
       throw new CruiseResultParseError('invalidJson');
     });
     const { wrapper } = createWrapper();
@@ -146,15 +146,64 @@ describe('useLoadCruiseResultFromFile', () => {
     expect(open).toHaveBeenCalled();
   });
 
+  it('replaces the cruise cache and reports optional settings', async () => {
+    const cruiseResult = { modules: [], summary: {} };
+    parseViewerFileJson.mockReturnValue({ cruiseResult });
+    const onLoaded = vi.fn();
+    const { queryClient, wrapper } = createWrapper();
+    const { result } = renderHook(() => useLoadCruiseResultFromFile({ onLoaded }), { wrapper });
+
+    await act(async () => {
+      await result.current.handleFileSelect(new File(['{"modules":[]}'], 'cruise.json'));
+    });
+
+    expect(onLoaded).toHaveBeenCalledWith({ cruiseResult, settings: undefined });
+    expect(queryClient.getQueryData(['cruise-result'])).toEqual(cruiseResult);
+  });
+
+  it('sets query data before onLoaded', async () => {
+    const cruiseResult = { modules: [{ source: 'a.ts' }], summary: {} };
+    parseViewerFileJson.mockReturnValue({ cruiseResult });
+    const { queryClient, wrapper } = createWrapper();
+    const seenDuringOnLoaded: unknown[] = [];
+    const onLoaded = vi.fn(() => {
+      seenDuringOnLoaded.push(queryClient.getQueryData(['cruise-result']));
+    });
+    const { result } = renderHook(() => useLoadCruiseResultFromFile({ onLoaded }), { wrapper });
+
+    await act(async () => {
+      await result.current.handleFileSelect(new File(['{}'], 'cruise.json'));
+    });
+
+    expect(seenDuringOnLoaded).toEqual([cruiseResult]);
+  });
+
+  it('warns when cruise loads but workspace settings were ignored', async () => {
+    const cruiseResult = { modules: [], summary: {} };
+    parseViewerFileJson.mockReturnValue({ cruiseResult, workspaceSettingsIgnored: true });
+    const t = getT();
+    const onLoaded = vi.fn();
+    const { queryClient, wrapper } = createWrapper();
+    const { result } = renderHook(() => useLoadCruiseResultFromFile({ onLoaded }), { wrapper });
+
+    await act(async () => {
+      await result.current.handleFileSelect(new File(['{}'], 'cruise.json'));
+    });
+
+    expect(onLoaded).toHaveBeenCalledWith({ cruiseResult, settings: undefined });
+    expect(queryClient.getQueryData(['cruise-result'])).toEqual(cruiseResult);
+    expect(result.current.fileLoadError).toBe(t('app.ignoredInvalidWorkspaceSettings'));
+  });
+
   it('ignores a stale load when a newer file is selected', async () => {
     const resultA = { modules: [{ source: 'a.ts' }], summary: {} };
     const resultB = { modules: [{ source: 'b.ts' }], summary: {} };
-    parseCruiseResultJson.mockImplementation((text: string) => {
+    parseViewerFileJson.mockImplementation((text: string) => {
       if (text === 'A') {
-        return resultA;
+        return { cruiseResult: resultA };
       }
       if (text === 'B') {
-        return resultB;
+        return { cruiseResult: resultB };
       }
       throw new CruiseResultParseError('invalidFormat');
     });
@@ -201,7 +250,7 @@ describe('useLoadCruiseResultFromFile', () => {
 
   it('aborts an in-flight load on unmount', async () => {
     const cruiseResult = { modules: [{ source: 'a.ts' }], summary: {} };
-    parseCruiseResultJson.mockReturnValue(cruiseResult);
+    parseViewerFileJson.mockReturnValue({ cruiseResult });
 
     const { promise: deferredText, resolve: resolveText } = Promise.withResolvers<string>();
     const textSpy = vi.spyOn(File.prototype, 'text').mockReturnValue(deferredText);

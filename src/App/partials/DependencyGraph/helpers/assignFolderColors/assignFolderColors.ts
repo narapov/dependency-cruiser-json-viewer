@@ -1,5 +1,9 @@
+import type { FolderBaseColor } from '@/domain';
+
 /** Theme mode used when picking pastel folder background hues. */
 export type FolderColorMode = 'light' | 'dark';
+
+export type { FolderBaseColor };
 
 const FOLDER_COLOR_PALETTE = {
   light: {
@@ -51,40 +55,57 @@ function pickHue(parentHue: number | null, siblingIndex: number, usedHues: numbe
   );
 }
 
-function toPastelColor(hue: number, lightnessIndex: number, mode: FolderColorMode): string {
-  const { saturation, lightnessOptions } = FOLDER_COLOR_PALETTE[mode];
-  const lightness = lightnessOptions[lightnessIndex % lightnessOptions.length];
-  return `hsl(${Math.round(hue)}, ${saturation}%, ${lightness}%)`;
-}
-
-function assignColorsForChildren(
+function assignBaseColorsForChildren(
   parentKey: string,
   parentHue: number | null,
   childrenIndex: Map<string, string[]>,
-  mode: FolderColorMode,
-): Map<string, string> {
+): Map<string, FolderBaseColor> {
   const childPaths = childrenIndex.get(parentKey) ?? [];
 
-  const { colors } = childPaths.reduce<{ colors: Map<string, string>; usedHues: number[] }>(
+  const { colors } = childPaths.reduce<{ colors: Map<string, FolderBaseColor>; usedHues: number[] }>(
     (acc, path, i) => {
       const hue = pickHue(parentHue, i, acc.usedHues);
-      acc.colors.set(path, toPastelColor(hue, i, mode));
-      const nested = assignColorsForChildren(path, hue, childrenIndex, mode);
+      acc.colors.set(path, { hue, lightnessIndex: i });
+      const nested = assignBaseColorsForChildren(path, hue, childrenIndex);
       return {
         colors: new Map([...acc.colors, ...nested]),
         usedHues: [...acc.usedHues, hue],
       };
     },
-    { colors: new Map<string, string>(), usedHues: [] },
+    { colors: new Map<string, FolderBaseColor>(), usedHues: [] },
   );
 
   return colors;
 }
 
+/** Assigns theme-independent base colors (hue + lightnessIndex) to each folder path. */
+export function assignFolderBaseColors(sources: string[]): ReadonlyMap<string, FolderBaseColor> {
+  const childrenIndex = buildChildrenIndex(sources);
+  return assignBaseColorsForChildren('', null, childrenIndex);
+}
+
+/** Converts a base folder color into a pastel HSL string for the given theme mode. */
+export function toThemedFolderColor(base: FolderBaseColor, mode: FolderColorMode): string {
+  const { saturation, lightnessOptions } = FOLDER_COLOR_PALETTE[mode];
+  const lightness = lightnessOptions[base.lightnessIndex % lightnessOptions.length];
+  return `hsl(${Math.round(base.hue)}, ${saturation}%, ${lightness}%)`;
+}
+
+/** Maps base folder colors to themed pastel HSL strings. */
+export function mapFolderBaseColorsToThemed(
+  baseColors: ReadonlyMap<string, FolderBaseColor> | Readonly<Record<string, FolderBaseColor>>,
+  mode: FolderColorMode,
+): ReadonlyMap<string, string> {
+  const entries =
+    baseColors instanceof Map
+      ? [...baseColors.entries()]
+      : Object.entries(baseColors as Record<string, FolderBaseColor>);
+  return new Map(entries.map(([path, base]) => [path, toThemedFolderColor(base, mode)]));
+}
+
 /** Assigns distinct pastel HSL colors to each folder path in the source tree. */
 export function assignFolderColors(sources: string[], mode: FolderColorMode = 'light'): ReadonlyMap<string, string> {
-  const childrenIndex = buildChildrenIndex(sources);
-  return assignColorsForChildren('', null, childrenIndex, mode);
+  return mapFolderBaseColorsToThemed(assignFolderBaseColors(sources), mode);
 }
 
 /** Parses an `hsl(h, s%, l%)` string into numeric components, or null if invalid. */
@@ -102,4 +123,11 @@ export function parsePastelHsl(color: string): {
     saturation: Number(match[2]),
     lightness: Number(match[3]),
   };
+}
+
+/** Serializes a base folder color map to a plain JSON record. */
+export function folderBaseColorsToRecord(
+  colors: ReadonlyMap<string, FolderBaseColor>,
+): Record<string, FolderBaseColor> {
+  return Object.fromEntries(colors.entries());
 }
