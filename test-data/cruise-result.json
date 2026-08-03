@@ -476,6 +476,7 @@
         "src/domain/helpers/cruiseResultFilter/compileIgnoreMatchers/compileIgnoreMatchers.test.ts",
         "src/domain/helpers/cruiseResultFilter/countIgnoredModules/countIgnoredModules.test.ts",
         "src/domain/helpers/cruiseResultFilter/filterCruiseResult/filterCruiseResult.test.ts",
+        "src/domain/helpers/dependencyCruiserState/expandSelectionWithSelectedAncestors/expandSelectionWithSelectedAncestors.test.ts",
         "src/domain/helpers/dependencyCruiserState/getDefaultExpandedKeys/getDefaultExpandedKeys.test.ts",
         "src/domain/helpers/dependencyCruiserState/getDefaultSelectedKeys/getDefaultSelectedKeys.test.ts",
         "src/domain/helpers/dependencyCruiserState/getInitialDependencyCruiserState/getInitialDependencyCruiserState.test.ts",
@@ -5451,6 +5452,23 @@
       "dependencies": [
         {
           "dynamic": false,
+          "module": "./expandSelectionWithSelectedAncestors",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "export"
+          ],
+          "resolved": "src/domain/helpers/dependencyCruiserState/expandSelectionWithSelectedAncestors/index.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
           "module": "./getDefaultExpandedKeys",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
@@ -5508,18 +5526,18 @@
       "valid": true
     },
     {
-      "source": "src/domain/helpers/dependencyCruiserState/getDefaultExpandedKeys/index.ts",
+      "source": "src/domain/helpers/dependencyCruiserState/expandSelectionWithSelectedAncestors/index.ts",
       "dependencies": [
         {
           "dynamic": false,
-          "module": "./getDefaultExpandedKeys",
+          "module": "./expandSelectionWithSelectedAncestors",
           "moduleSystem": "es6",
           "exoticallyRequired": false,
           "dependencyTypes": [
             "local",
             "export"
           ],
-          "resolved": "src/domain/helpers/dependencyCruiserState/getDefaultExpandedKeys/getDefaultExpandedKeys.ts",
+          "resolved": "src/domain/helpers/dependencyCruiserState/expandSelectionWithSelectedAncestors/expandSelectionWithSelectedAncestors.ts",
           "coreModule": false,
           "followable": true,
           "couldNotResolve": false,
@@ -5529,54 +5547,13 @@
         }
       ],
       "dependents": [
-        "src/domain/helpers/dependencyCruiserState/index.ts",
-        "src/domain/helpers/dependencyCruiserState/getInitialDependencyCruiserState/getInitialDependencyCruiserState.ts",
-        "src/domain/helpers/dependencyCruiserState/getInitialDependencyCruiserState/getInitialDependencyCruiserState.test.ts"
+        "src/domain/helpers/dependencyCruiserState/index.ts"
       ],
       "orphan": false,
       "valid": true
     },
     {
-      "source": "src/domain/helpers/dependencyCruiserState/getDefaultExpandedKeys/getDefaultExpandedKeys.ts",
-      "dependencies": [],
-      "dependents": [
-        "src/domain/helpers/dependencyCruiserState/getDefaultExpandedKeys/index.ts",
-        "src/domain/helpers/dependencyCruiserState/getDefaultExpandedKeys/getDefaultExpandedKeys.test.ts"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/domain/helpers/dependencyCruiserState/getDefaultSelectedKeys/index.ts",
-      "dependencies": [
-        {
-          "dynamic": false,
-          "module": "./getDefaultSelectedKeys",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "local",
-            "export"
-          ],
-          "resolved": "src/domain/helpers/dependencyCruiserState/getDefaultSelectedKeys/getDefaultSelectedKeys.ts",
-          "coreModule": false,
-          "followable": true,
-          "couldNotResolve": false,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        }
-      ],
-      "dependents": [
-        "src/domain/helpers/dependencyCruiserState/index.ts",
-        "src/domain/helpers/dependencyCruiserState/getInitialDependencyCruiserState/getInitialDependencyCruiserState.ts",
-        "src/domain/helpers/dependencyCruiserState/getInitialDependencyCruiserState/getInitialDependencyCruiserState.test.ts"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "src/domain/helpers/dependencyCruiserState/getDefaultSelectedKeys/getDefaultSelectedKeys.ts",
+      "source": "src/domain/helpers/dependencyCruiserState/expandSelectionWithSelectedAncestors/expandSelectionWithSelectedAncestors.ts",
       "dependencies": [
         {
           "dynamic": false,
@@ -5597,8 +5574,8 @@
         }
       ],
       "dependents": [
-        "src/domain/helpers/dependencyCruiserState/getDefaultSelectedKeys/index.ts",
-        "src/domain/helpers/dependencyCruiserState/getDefaultSelectedKeys/getDefaultSelectedKeys.test.ts"
+        "src/domain/helpers/dependencyCruiserState/expandSelectionWithSelectedAncestors/index.ts",
+        "src/domain/helpers/dependencyCruiserState/expandSelectionWithSelectedAncestors/expandSelectionWithSelectedAncestors.test.ts"
       ],
       "orphan": false,
       "valid": true
@@ -5745,6 +5722,7 @@
       ],
       "dependents": [
         "src/domain/helpers/index.ts",
+        "src/domain/helpers/dependencyCruiserState/expandSelectionWithSelectedAncestors/expandSelectionWithSelectedAncestors.ts",
         "src/domain/helpers/dependencyCruiserState/getDefaultSelectedKeys/getDefaultSelectedKeys.ts",
         "src/domain/helpers/folderExpansion/getSubtreeFolderKeys/getSubtreeFolderKeys.ts",
         "src/domain/helpers/moduleRelations/getFolderRelations/getFolderRelations.ts",
@@ -6140,6 +6118,102 @@
       "dependents": [
         "src/domain/helpers/pathUtils/isUnderFolder/index.ts",
         "src/domain/helpers/pathUtils/isUnderFolder/isUnderFolder.test.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/domain/helpers/dependencyCruiserState/getDefaultExpandedKeys/index.ts",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./getDefaultExpandedKeys",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "export"
+          ],
+          "resolved": "src/domain/helpers/dependencyCruiserState/getDefaultExpandedKeys/getDefaultExpandedKeys.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/domain/helpers/dependencyCruiserState/index.ts",
+        "src/domain/helpers/dependencyCruiserState/getInitialDependencyCruiserState/getInitialDependencyCruiserState.ts",
+        "src/domain/helpers/dependencyCruiserState/getInitialDependencyCruiserState/getInitialDependencyCruiserState.test.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/domain/helpers/dependencyCruiserState/getDefaultExpandedKeys/getDefaultExpandedKeys.ts",
+      "dependencies": [],
+      "dependents": [
+        "src/domain/helpers/dependencyCruiserState/getDefaultExpandedKeys/index.ts",
+        "src/domain/helpers/dependencyCruiserState/getDefaultExpandedKeys/getDefaultExpandedKeys.test.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/domain/helpers/dependencyCruiserState/getDefaultSelectedKeys/index.ts",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./getDefaultSelectedKeys",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "export"
+          ],
+          "resolved": "src/domain/helpers/dependencyCruiserState/getDefaultSelectedKeys/getDefaultSelectedKeys.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/domain/helpers/dependencyCruiserState/index.ts",
+        "src/domain/helpers/dependencyCruiserState/getInitialDependencyCruiserState/getInitialDependencyCruiserState.ts",
+        "src/domain/helpers/dependencyCruiserState/getInitialDependencyCruiserState/getInitialDependencyCruiserState.test.ts"
+      ],
+      "orphan": false,
+      "valid": true
+    },
+    {
+      "source": "src/domain/helpers/dependencyCruiserState/getDefaultSelectedKeys/getDefaultSelectedKeys.ts",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../../pathUtils",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/domain/helpers/pathUtils/index.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [
+        "src/domain/helpers/dependencyCruiserState/getDefaultSelectedKeys/index.ts",
+        "src/domain/helpers/dependencyCruiserState/getDefaultSelectedKeys/getDefaultSelectedKeys.test.ts"
       ],
       "orphan": false,
       "valid": true
@@ -17571,7 +17645,8 @@
       "dependents": [
         "src/App/hooks/useCruiseResult/useCruiseResult.ts",
         "src/App/hooks/useCruiseResultWatch/useCruiseResultWatch.ts",
-        "src/App/api/index.ts"
+        "src/App/api/index.ts",
+        "src/App/hooks/useCruiseResultWatch/useCruiseResultWatch.test.tsx"
       ],
       "orphan": false,
       "valid": true
@@ -23801,6 +23876,23 @@
     {
       "source": "src/App/hooks/useCruiseResultWatch/useCruiseResultWatch.test.tsx",
       "dependencies": [
+        {
+          "dynamic": false,
+          "module": "../../api/cruiseResult",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/App/api/cruiseResult/index.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
         {
           "dynamic": false,
           "module": "./useCruiseResultWatch",
@@ -31826,6 +31918,48 @@
       "valid": true
     },
     {
+      "source": "src/domain/helpers/dependencyCruiserState/expandSelectionWithSelectedAncestors/expandSelectionWithSelectedAncestors.test.ts",
+      "dependencies": [
+        {
+          "dynamic": false,
+          "module": "./expandSelectionWithSelectedAncestors",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "local",
+            "import"
+          ],
+          "resolved": "src/domain/helpers/dependencyCruiserState/expandSelectionWithSelectedAncestors/expandSelectionWithSelectedAncestors.ts",
+          "coreModule": false,
+          "followable": true,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": false,
+          "circular": false,
+          "valid": true
+        },
+        {
+          "dynamic": false,
+          "module": "vitest",
+          "moduleSystem": "es6",
+          "exoticallyRequired": false,
+          "dependencyTypes": [
+            "npm-dev",
+            "import"
+          ],
+          "resolved": "node_modules/vitest/dist/index.js",
+          "coreModule": false,
+          "followable": false,
+          "couldNotResolve": false,
+          "matchesDoNotFollow": true,
+          "circular": false,
+          "valid": true
+        }
+      ],
+      "dependents": [],
+      "orphan": false,
+      "valid": true
+    },
+    {
       "source": "src/domain/helpers/dependencyCruiserState/getDefaultExpandedKeys/getDefaultExpandedKeys.test.ts",
       "dependencies": [
         {
@@ -33654,46 +33788,6 @@
       "valid": true
     },
     {
-      "source": "src/ss.ts",
-      "dependencies": [
-        {
-          "dynamic": false,
-          "module": "./Shared212",
-          "moduleSystem": "es6",
-          "exoticallyRequired": false,
-          "dependencyTypes": [
-            "unknown"
-          ],
-          "resolved": "./Shared212",
-          "coreModule": false,
-          "followable": false,
-          "couldNotResolve": true,
-          "matchesDoNotFollow": false,
-          "circular": false,
-          "valid": true
-        }
-      ],
-      "dependents": [],
-      "orphan": false,
-      "valid": true
-    },
-    {
-      "source": "./Shared212",
-      "followable": false,
-      "coreModule": false,
-      "couldNotResolve": true,
-      "matchesDoNotFollow": false,
-      "dependencyTypes": [
-        "unknown"
-      ],
-      "dependencies": [],
-      "dependents": [
-        "src/ss.ts"
-      ],
-      "orphan": false,
-      "valid": true
-    },
-    {
       "source": "src/vite-env.d.ts",
       "dependencies": [
         {
@@ -33780,8 +33874,8 @@
     "warn": 0,
     "info": 0,
     "ignore": 0,
-    "totalCruised": 630,
-    "totalDependenciesCruised": 1507,
+    "totalCruised": 631,
+    "totalDependenciesCruised": 1512,
     "optionsUsed": {
       "baseDir": "/Users/nikolayarapov/repo/dependency-cruiser-json-viewer",
       "combinedDependencies": false,

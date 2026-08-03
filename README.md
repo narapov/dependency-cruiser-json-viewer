@@ -81,7 +81,7 @@ npx dependency-cruiser-json-viewer cruise-result.json -w
 ### Local development (this repository)
 
 1. Set `CRUISE_WATCH=true` in [`.env.development`](.env.development) (only the literal value `true` enables watch).
-2. Refresh the sample cruise JSON if needed: `npm run depcruise:json-for-cli` (or `npm run depcruise:json-for-cli:watch` to regenerate it when `src/` changes).
+2. Refresh the sample cruise JSON if needed: `npm run depcruise:json-for-cli` (or `npm run watch-src-and-regenerate-cruise-result-for-cli` to regenerate it when `src/` changes).
 3. Start the Vite dev server: `npm run dev`.
 
 With `CRUISE_WATCH=false` (the default in `.env.development`) or any value other than `true`, `npm run dev` runs without cruise watch — you can load a JSON file from the command palette as usual.

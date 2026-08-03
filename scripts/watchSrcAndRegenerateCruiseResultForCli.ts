@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 import { exec } from 'node:child_process';
 import path from 'node:path';
 import { promisify } from 'node:util';
@@ -8,8 +7,9 @@ import chokidar from 'chokidar';
 const execAsync = promisify(exec);
 
 const DEPCRUISE_DEBOUNCE_MS = 300;
+const LOG_PREFIX = '[watch-src-and-regenerate-cruise-result-for-cli]';
 
-let depcruiseTimer;
+let depcruiseTimer: ReturnType<typeof setTimeout> | undefined;
 let depcruiseRunning = false;
 let depcruiseQueued = false;
 
@@ -21,9 +21,9 @@ async function runDepcruise() {
   depcruiseRunning = true;
   try {
     await execAsync('npm run depcruise:json-for-cli');
-    console.log('[depcruise:json-for-cli:watch] regenerated test-data/cruise-result.json');
+    console.log(`${LOG_PREFIX} regenerated test-data/cruise-result.json`);
   } catch (error) {
-    console.error('[depcruise:json-for-cli:watch] depcruise:json-for-cli failed:', error);
+    console.error(`${LOG_PREFIX} depcruise:json-for-cli failed:`, error);
   } finally {
     depcruiseRunning = false;
     if (depcruiseQueued) {
@@ -55,4 +55,4 @@ srcWatcher.on('all', eventName => {
   }
 });
 
-console.log(`[depcruise:json-for-cli:watch] watching ${srcDir}`);
+console.log(`${LOG_PREFIX} watching ${srcDir}`);

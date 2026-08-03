@@ -39,7 +39,7 @@
     "depcruise:json": "depcruise src -T json -f ./cruise-result.json",
     "depcruise:json-for-gh-pages": "depcruise src -T json -f dist/cruise-result.json",
     "depcruise:json-for-cli": "depcruise src -T json -f test-data/cruise-result.json",
-    "depcruise:json-for-cli:watch": "node scripts/watch-depcruise-json-for-cli.mjs",
+    "watch-src-and-regenerate-cruise-result-for-cli": "node scripts/watchSrcAndRegenerateCruiseResultForCli.ts",
     "cli:verify": "npm run build && npm run depcruise:json-for-cli && node bin/dependency-cruiser-json-viewer.mjs test-data/cruise-result.json",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
