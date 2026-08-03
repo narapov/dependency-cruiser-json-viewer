@@ -7,7 +7,8 @@ on:
         description: Version bump
         required: true
         type: choice
-        options: [patch, minor, major]
+        default: auto
+        options: [auto, patch, minor, major]
 
 permissions:
   contents: write
@@ -34,7 +35,12 @@ jobs:
       - run: npm ci
       - run: git config user.name "github-actions[bot]"
       - run: git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-      - run: npm run release:ci -- ${{ inputs.release_type }}
+      - run: |
+          if [ "${{ inputs.release_type }}" = "auto" ]; then
+            npm run release:ci
+          else
+            npm run release:ci -- ${{ inputs.release_type }}
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_PAT }}
           NPM_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
