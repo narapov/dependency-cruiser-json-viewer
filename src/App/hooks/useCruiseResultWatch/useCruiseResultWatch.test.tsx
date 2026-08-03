@@ -8,6 +8,7 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 
 import { CRUISE_RESULT_CHANGED_EVENT } from '@/Shared';
 
+import { fetchCruiseResult } from '../../api/cruiseResult';
 import { useCruiseResultWatch } from './useCruiseResultWatch';
 
 const socketOn = vi.fn();
@@ -26,6 +27,10 @@ vi.mock('socket.io-client', () => ({
     off: socketOff,
     disconnect: socketDisconnect,
   }),
+}));
+
+vi.mock('../../api/cruiseResult', () => ({
+  fetchCruiseResult: vi.fn(),
 }));
 
 const cruiseResult = {
@@ -56,6 +61,8 @@ describe('useCruiseResultWatch', () => {
     socketDisconnect.mockClear();
     changedHandler = undefined;
     delete window.envs;
+    vi.mocked(fetchCruiseResult).mockReset();
+    vi.mocked(fetchCruiseResult).mockResolvedValue(cruiseResult);
   });
 
   it('does not connect when watch is disabled', () => {
@@ -83,10 +90,7 @@ describe('useCruiseResultWatch', () => {
   it('refetches and applies current workspace settings on change event', async () => {
     window.envs = { watch: true };
     const queryClient = new QueryClient();
-    queryClient.setQueryDefaults(['cruise-result'], {
-      queryFn: async () => cruiseResult,
-    });
-    const fetchQuery = vi.spyOn(queryClient, 'fetchQuery').mockResolvedValue(cruiseResult);
+    const setQueryData = vi.spyOn(queryClient, 'setQueryData');
 
     const setCruiseLoadId = vi.fn();
     const setPatterns = vi.fn();
@@ -126,12 +130,8 @@ describe('useCruiseResultWatch', () => {
     });
 
     await waitFor(() => {
-      expect(fetchQuery).toHaveBeenCalledWith(
-        expect.objectContaining({
-          queryKey: ['cruise-result'],
-          staleTime: 0,
-        }),
-      );
+      expect(fetchCruiseResult).toHaveBeenCalledWith(undefined, { cacheBust: true });
+      expect(setQueryData).toHaveBeenCalledWith(['cruise-result'], cruiseResult);
       expect(setCruiseLoadId).toHaveBeenCalledWith(3);
       expect(setPatterns).toHaveBeenCalledWith(['**/*.test.ts']);
       expect(applyWorkspaceView).toHaveBeenCalledWith(

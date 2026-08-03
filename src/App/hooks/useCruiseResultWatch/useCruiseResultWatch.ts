@@ -36,17 +36,15 @@ export function useCruiseResultWatch({
   const onCruiseResultChanged = useEffectEvent(async () => {
     const settings = getCurrentWorkspaceSettings();
     const nextCruiseLoadId = cruiseLoadId + 1;
-    const cruiseResult = await queryClient.fetchQuery<ICruiseResult>({
-      queryKey: ['cruise-result'],
-      staleTime: 0,
-      queryFn: ({ signal }) => fetchCruiseResult(signal, { cacheBust: true }),
-    });
+    const cruiseResult = await fetchCruiseResult(undefined, { cacheBust: true });
+    const resolved = settings != null ? resolveWorkspaceApply({ cruiseResult, settings }) : null;
+
+    queryClient.setQueryData<ICruiseResult>(['cruise-result'], cruiseResult);
     setCruiseLoadId(nextCruiseLoadId);
-    if (settings == null) {
+    if (settings == null || resolved == null) {
       return;
     }
     setPatterns(settings.ignorePatterns);
-    const resolved = resolveWorkspaceApply({ cruiseResult, settings });
     applyWorkspaceView({
       ...resolved,
       cruiseLoadId: nextCruiseLoadId,
