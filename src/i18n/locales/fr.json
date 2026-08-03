@@ -8,6 +8,9 @@
     "loadCruiseResult": "Charger un fichier JSON",
     "invalidCruiseResultJson": "Le fichier sélectionné n'est pas un JSON valide.",
     "invalidCruiseResultFormat": "Le fichier sélectionné ne ressemble pas à un résultat cruise dependency-cruiser.",
+    "missingWorkspaceSettings": "Le fichier sélectionné ne contient pas de paramètres d'espace de travail du visualiseur.",
+    "loadWorkspaceSettingsRequiresCruise": "Chargez un résultat cruise avant de charger les paramètres de l'espace de travail.",
+    "ignoredInvalidWorkspaceSettings": "Résultat cruise chargé, mais les paramètres d'espace de travail du visualiseur dans le fichier étaient invalides et ont été ignorés.",
     "errorBoundaryTitle": "Une erreur s'est produite",
     "errorBoundaryMessage": "Une erreur inattendue s'est produite. Rechargez la page pour continuer.",
     "errorBoundaryReload": "Recharger",
@@ -53,9 +56,11 @@
     "setLanguage": "Choisir la langue",
     "setIgnorePatterns": "Définir les motifs d'exclusion",
     "loadCruiseResult": "Charger le JSON dependency-cruiser",
+    "loadWorkspaceSettings": "Charger les paramètres de l'espace de travail",
     "toggleFileTree": "Afficher/Masquer l'arborescence",
     "unselectAll": "Tout désélectionner",
-    "about": "À propos"
+    "about": "À propos",
+    "saveWorkspace": "Enregistrer l'espace de travail"
   },
   "quickPick": {
     "commandPlaceholder": "Tapez le nom d'une commande à exécuter...",

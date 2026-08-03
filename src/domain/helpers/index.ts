@@ -6,3 +6,4 @@ export * from './dependencyUtils';
 export * from './moduleRelations';
 export * from './cruiseResultFilter';
 export * from './cruiseResult';
+export * from './viewerWorkspace';

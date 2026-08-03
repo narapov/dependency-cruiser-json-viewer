@@ -26,24 +26,34 @@ export function QuickPickCommandResultsListItem({
     () => computeQuickPickHighlight(query, command.label, command.label),
     [query, command.label],
   );
+  const disabled = Boolean(command.disabled);
+  const selectedBg = highlighted && !disabled ? 'action.selected' : 'transparent';
+  let hoverBg: 'transparent' | 'action.selected' | 'action.hover' = 'action.hover';
+  if (disabled) {
+    hoverBg = 'transparent';
+  } else if (highlighted) {
+    hoverBg = 'action.selected';
+  }
 
   return (
     <Box
       component="li"
       role="option"
       aria-selected={highlighted}
-      onMouseEnter={onMouseEnter}
-      onClick={onClick}
+      aria-disabled={disabled || undefined}
+      onMouseEnter={disabled ? undefined : onMouseEnter}
+      onClick={disabled ? undefined : onClick}
       sx={{
         display: 'flex',
         alignItems: 'center',
         px: 1.5,
         py: 0.75,
-        cursor: 'pointer',
+        cursor: disabled ? 'default' : 'pointer',
         fontSize: 13,
-        bgcolor: highlighted ? 'action.selected' : 'transparent',
+        opacity: disabled ? 0.5 : 1,
+        bgcolor: selectedBg,
         '&:hover': {
-          bgcolor: highlighted ? 'action.selected' : 'action.hover',
+          bgcolor: hoverBg,
         },
       }}
     >

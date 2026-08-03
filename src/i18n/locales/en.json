@@ -8,6 +8,9 @@
     "loadCruiseResult": "Load JSON file",
     "invalidCruiseResultJson": "The selected file is not valid JSON.",
     "invalidCruiseResultFormat": "The selected file is not a dependency-cruiser cruise result.",
+    "missingWorkspaceSettings": "The selected file has no viewer workspace settings.",
+    "loadWorkspaceSettingsRequiresCruise": "Load a cruise result before loading workspace settings.",
+    "ignoredInvalidWorkspaceSettings": "Cruise result loaded, but viewer workspace settings in the file were invalid and were ignored.",
     "errorBoundaryTitle": "Something went wrong",
     "errorBoundaryMessage": "An unexpected error occurred. Reload the page to continue.",
     "errorBoundaryReload": "Reload",
@@ -53,9 +56,11 @@
     "setLanguage": "Set Language",
     "setIgnorePatterns": "Set Ignore Patterns",
     "loadCruiseResult": "Load dependency-cruiser JSON",
+    "loadWorkspaceSettings": "Load Workspace Settings",
     "toggleFileTree": "Toggle File Tree",
     "unselectAll": "Unselect All",
-    "about": "About"
+    "about": "About",
+    "saveWorkspace": "Save Workspace"
   },
   "quickPick": {
     "commandPlaceholder": "Type the name of a command to run...",

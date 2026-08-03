@@ -8,6 +8,9 @@
     "loadCruiseResult": "Загрузить JSON-файл",
     "invalidCruiseResultJson": "Выбранный файл не является корректным JSON.",
     "invalidCruiseResultFormat": "Выбранный файл не похож на результат cruise dependency-cruiser.",
+    "missingWorkspaceSettings": "В выбранном файле нет настроек рабочего пространства просмотрщика.",
+    "loadWorkspaceSettingsRequiresCruise": "Сначала загрузите результат cruise, затем настройки рабочего пространства.",
+    "ignoredInvalidWorkspaceSettings": "Результат cruise загружен, но настройки рабочего пространства в файле некорректны и были проигнорированы.",
     "errorBoundaryTitle": "Что-то пошло не так",
     "errorBoundaryMessage": "Произошла непредвиденная ошибка. Перезагрузите страницу, чтобы продолжить.",
     "errorBoundaryReload": "Перезагрузить",
@@ -53,9 +56,11 @@
     "setLanguage": "Выбрать язык",
     "setIgnorePatterns": "Настроить игнорируемые паттерны",
     "loadCruiseResult": "Загрузить JSON dependency-cruiser",
+    "loadWorkspaceSettings": "Загрузить настройки рабочего пространства",
     "toggleFileTree": "Переключить дерево файлов",
     "unselectAll": "Снять выделение",
-    "about": "О приложении"
+    "about": "О приложении",
+    "saveWorkspace": "Сохранить рабочее пространство"
   },
   "quickPick": {
     "commandPlaceholder": "Введите название команды...",

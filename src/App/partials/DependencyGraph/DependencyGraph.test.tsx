@@ -69,6 +69,8 @@ vi.mock('./hooks', async importOriginal => {
       onNodeDrag: vi.fn(),
       onNodeDragStop: vi.fn(),
       hasUserLayout: false,
+      getLayoutSnapshot: () => ({ nodePositions: {} }),
+      setLayoutSnapshot: vi.fn(),
     }),
     useHighlightedNodes: () => ({ highlightedNodes: [] }),
     useHighlightedEdges: () => ({
@@ -87,6 +89,7 @@ const baseProps = {
   modules: [],
   selectedPaths: ['src/a.ts'],
   expandedKeys: ['src'],
+  folderBaseColors: {},
   onToggleFolder: vi.fn(),
   onExpandRecursive: vi.fn(),
   onShowInFileTree: vi.fn(),

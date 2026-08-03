@@ -9,12 +9,14 @@ import {
   buildGroupFingerprints,
   collectNodeSizes,
   compactAfterDrag,
+  deserializePositionCache,
   invalidateGroupPositionCache,
   invalidateGroupPositionCacheRecursive,
   invalidatePositionCache,
   preserveExpandedGroupPositions,
   reflowForDrag,
   reflowParentSiblings,
+  serializePositionCache,
   updateGroupCacheFromNodes,
   updateGroupPositionCache,
   updateSubtreeGroupCaches,
@@ -45,12 +47,18 @@ interface UseGraphLayoutNodesInput {
   autoLayoutOnly?: boolean;
 }
 
+export interface GraphLayoutSnapshot {
+  nodePositions: Record<string, Record<string, { x: number; y: number }>>;
+}
+
 interface UseGraphLayoutNodesResult {
   nodes: Node[];
   onNodesChange: (changes: NodeChange[]) => void;
   onNodeDrag: OnNodeDrag<Node>;
   onNodeDragStop: OnNodeDrag<Node>;
   hasUserLayout: boolean;
+  getLayoutSnapshot: () => GraphLayoutSnapshot;
+  setLayoutSnapshot: (snapshot: GraphLayoutSnapshot) => void;
 }
 
 export function useGraphLayoutNodes({
@@ -63,6 +71,9 @@ export function useGraphLayoutNodes({
   const prevSizesRef = useRef<Map<string, NodeSize>>(new Map());
   const prevNodesRef = useRef<Node[] | null>(null);
   const [hasUserLayout, setHasUserLayout] = useState(false);
+  const [layoutSeed, setLayoutSeed] = useState(0);
+  const pendingRestoreRef = useRef<GraphLayoutSnapshot | null>(null);
+  const skipStaleGroupPurgeRef = useRef(false);
 
   useEffect(() => {
     if (!autoLayoutOnly) {
@@ -74,6 +85,20 @@ export function useGraphLayoutNodes({
   }, [autoLayoutOnly]);
 
   useEffect(() => {
+    if (pendingRestoreRef.current != null) {
+      if (graphResult.nodes.length === 0) {
+        // Wait for the rebuilt graph; applying against an empty result would wipe the cache.
+        setNodes([]);
+        return;
+      }
+      positionCacheRef.current = deserializePositionCache(pendingRestoreRef.current.nodePositions);
+      pendingRestoreRef.current = null;
+      prevFingerprintsRef.current = null;
+      prevSizesRef.current = new Map();
+      prevNodesRef.current = null;
+      skipStaleGroupPurgeRef.current = true;
+    }
+
     const { nodes: layoutNodes, parentByNode, visibleNodeIds } = graphResult;
     const nodeIds = new Set(layoutNodes.map(node => node.id));
     const currentFingerprints = buildGroupFingerprints(nodeIds, parentByNode);
@@ -82,7 +107,16 @@ export function useGraphLayoutNodes({
       positionCacheRef.current.clear();
     }
 
-    invalidatePositionCache(positionCacheRef.current, currentFingerprints, prevFingerprintsRef.current, visibleNodeIds);
+    if (skipStaleGroupPurgeRef.current) {
+      skipStaleGroupPurgeRef.current = false;
+    } else {
+      invalidatePositionCache(
+        positionCacheRef.current,
+        currentFingerprints,
+        prevFingerprintsRef.current,
+        visibleNodeIds,
+      );
+    }
 
     let nextNodes = autoLayoutOnly ? layoutNodes : preserveExpandedGroupPositions(layoutNodes, prevNodesRef.current);
 
@@ -110,7 +144,17 @@ export function useGraphLayoutNodes({
     prevSizesRef.current = collectNodeSizes(nextNodes);
     prevNodesRef.current = nextNodes;
     setNodes(nextNodes);
-  }, [autoLayoutOnly, graphResult, setNodes]);
+  }, [autoLayoutOnly, graphResult, layoutSeed, setNodes]);
+
+  const getLayoutSnapshot = useCallback((): GraphLayoutSnapshot => {
+    return { nodePositions: serializePositionCache(positionCacheRef.current) };
+  }, []);
+
+  const setLayoutSnapshot = useCallback((snapshot: GraphLayoutSnapshot) => {
+    pendingRestoreRef.current = snapshot;
+    setHasUserLayout(Object.keys(snapshot.nodePositions).length > 0);
+    setLayoutSeed(seed => seed + 1);
+  }, []);
 
   const onNodeDrag = useCallback<OnNodeDrag<Node>>(
     (_, draggedNode) => {
@@ -232,5 +276,7 @@ export function useGraphLayoutNodes({
     onNodeDrag,
     onNodeDragStop,
     hasUserLayout,
+    getLayoutSnapshot,
+    setLayoutSnapshot,
   };
 }

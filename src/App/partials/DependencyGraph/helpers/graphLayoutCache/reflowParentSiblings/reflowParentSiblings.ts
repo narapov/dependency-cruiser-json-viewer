@@ -3,7 +3,7 @@ import type { Node } from '@xyflow/react';
 import { sortNodesByDepth } from '../../sortNodesByDepth';
 import { updateGroupCacheFromNodes } from '../applyPositionCache';
 import { collectFixedNodesForReflow } from '../collectFixedNodesForReflow';
-import { collectGroupsNeedingReflow } from '../collectGroupsNeedingReflow';
+import { collectGroupsNeedingReflow, groupHasOverlappingSiblings } from '../collectGroupsNeedingReflow';
 import { collectGroupsToCompact, compactGroupChildren } from '../compactGroupChildren';
 import { getGroupDepth } from '../getGroupDepth';
 import { reflowSiblingsInGroup } from '../reflowSiblingsInGroup';
@@ -16,6 +16,8 @@ import {
 import { getNodeSize } from '../resolveGroupSize';
 import type { GroupFingerprints, GroupId, NodeSize, PositionCache } from '../types';
 
+const MIN_REFLOW_ITERATIONS_CAP = 8;
+
 /** Inputs for sibling reflow after size or membership changes. */
 export interface ReflowInput {
   nodes: Node[];
@@ -25,6 +27,68 @@ export interface ReflowInput {
   currentFingerprints?: GroupFingerprints | null;
   previousFingerprints?: GroupFingerprints | null;
   previousNodes?: readonly Node[] | null;
+}
+
+function collectKnownGroupIds(
+  nodeById: Map<string, Node>,
+  parentByNode: ReadonlyMap<string, string | null>,
+): Set<GroupId> {
+  return [...nodeById.values()].reduce((groups, node) => {
+    groups.add(parentByNode.get(node.id) ?? null);
+    if (node.type === 'folderGroup') {
+      groups.add(node.id);
+    }
+    return groups;
+  }, new Set<GroupId>());
+}
+
+function collectGroupsWithOverlaps(
+  nodeById: Map<string, Node>,
+  parentByNode: ReadonlyMap<string, string | null>,
+): Set<GroupId> {
+  return [...collectKnownGroupIds(nodeById, parentByNode)].reduce((groups, groupId) => {
+    if (groupHasOverlappingSiblings(groupId, nodeById, parentByNode)) {
+      groups.add(groupId);
+    }
+    return groups;
+  }, new Set<GroupId>());
+}
+
+function snapshotFolderGroupSizes(nodeById: Map<string, Node>): Map<string, NodeSize> {
+  return [...nodeById.values()].reduce((sizes, node) => {
+    if (node.type === 'folderGroup') {
+      sizes.set(node.id, getNodeSize(node));
+    }
+    return sizes;
+  }, new Map<string, NodeSize>());
+}
+
+function collectParentsOfGrownGroups(
+  beforeSizes: ReadonlyMap<string, NodeSize>,
+  nodeById: Map<string, Node>,
+  parentByNode: ReadonlyMap<string, string | null>,
+): Set<GroupId> {
+  return [...beforeSizes].reduce((parents, [groupId, beforeSize]) => {
+    const node = nodeById.get(groupId);
+    if (!node) {
+      return parents;
+    }
+
+    const afterSize = getNodeSize(node);
+    if (afterSize.width !== beforeSize.width || afterSize.height !== beforeSize.height) {
+      parents.add(parentByNode.get(groupId) ?? null);
+    }
+    return parents;
+  }, new Set<GroupId>());
+}
+
+function maxGroupDepth(nodeById: Map<string, Node>, parentByNode: ReadonlyMap<string, string | null>): number {
+  return [...nodeById.values()].reduce((maxDepth, node) => {
+    if (node.type !== 'folderGroup') {
+      return maxDepth;
+    }
+    return Math.max(maxDepth, getGroupDepth(node.id, parentByNode));
+  }, 0);
 }
 
 /** Separates overlapping siblings and resizes ancestor folder groups as needed. */
@@ -40,7 +104,7 @@ export function reflowParentSiblings({
   const nodeById = new Map(nodes.map(node => [node.id, { ...node }]));
   const fixedNodeIds = collectFixedNodesForReflow(nodes, previousSizes, previousNodes, parentByNode);
 
-  const groupsToReflow = collectGroupsNeedingReflow(
+  let groupsToReflow = collectGroupsNeedingReflow(
     nodes,
     parentByNode,
     previousSizes,
@@ -52,40 +116,32 @@ export function reflowParentSiblings({
     return nodes;
   }
 
-  const sortedGroups = [...groupsToReflow].sort(
-    (a, b) => getGroupDepth(b, parentByNode) - getGroupDepth(a, parentByNode),
-  );
+  const maxIterations = Math.max(MIN_REFLOW_ITERATIONS_CAP, maxGroupDepth(nodeById, parentByNode) + 2);
 
-  sortedGroups.forEach(groupId => {
-    reflowSiblingsInGroup(groupId, nodeById, parentByNode, fixedNodeIds);
-    const updatedNodes = [...nodeById.values()];
-    updateGroupCacheFromNodes(cache, updatedNodes, parentByNode, groupId);
-  });
+  for (let iteration = 0; iteration < maxIterations; iteration++) {
+    const sortedGroups = [...groupsToReflow].sort(
+      (a, b) => getGroupDepth(b, parentByNode) - getGroupDepth(a, parentByNode),
+    );
 
-  resizeFolderGroups(nodeById, parentByNode);
+    const anyReflow = sortedGroups.reduce((changed, groupId) => {
+      const reflowed = reflowSiblingsInGroup(groupId, nodeById, parentByNode, fixedNodeIds);
+      if (reflowed) {
+        updateGroupCacheFromNodes(cache, [...nodeById.values()], parentByNode, groupId);
+      }
+      return changed || reflowed;
+    }, false);
 
-  // Propagate size changes up: if a folderGroup resized, reflow its parent too.
-  const parentGroupsToReflow = sortedGroups.reduce((parentGroups, groupId) => {
-    if (groupId !== null) {
-      parentGroups.add(parentByNode.get(groupId) ?? null);
+    const sizesBeforeResize = snapshotFolderGroupSizes(nodeById);
+    resizeFolderGroups(nodeById, parentByNode);
+    const grownParents = collectParentsOfGrownGroups(sizesBeforeResize, nodeById, parentByNode);
+    const overlappingGroups = collectGroupsWithOverlaps(nodeById, parentByNode);
+
+    groupsToReflow = new Set([...grownParents, ...overlappingGroups]);
+
+    if (!anyReflow && grownParents.size === 0) {
+      break;
     }
-    return parentGroups;
-  }, new Set<GroupId>());
-
-  const sortedParentGroups = [...parentGroupsToReflow].sort(
-    (a, b) => getGroupDepth(b, parentByNode) - getGroupDepth(a, parentByNode),
-  );
-
-  sortedParentGroups.forEach(groupId => {
-    if (groupId === null && sortedGroups.includes(null)) {
-      return;
-    }
-    reflowSiblingsInGroup(groupId, nodeById, parentByNode, fixedNodeIds);
-    const updatedNodes = [...nodeById.values()];
-    updateGroupCacheFromNodes(cache, updatedNodes, parentByNode, groupId);
-  });
-
-  resizeFolderGroups(nodeById, parentByNode);
+  }
 
   return sortNodesByDepth([...nodeById.values()]);
 }

@@ -18,6 +18,7 @@ function createOrch(): AppCommandsOrchestration {
     clearAllHighlights: vi.fn(),
     exportGraphDot: vi.fn(),
     viewGraphDotOnline: vi.fn(),
+    saveWorkspace: vi.fn(),
     expandAllRecursive: vi.fn(),
     collapseAllRecursive: vi.fn(),
     selectAll: vi.fn(),
@@ -32,6 +33,7 @@ describe('useAppCommands', () => {
     const openLanguagePicker = vi.fn();
     const openIgnorePatterns = vi.fn();
     const openLoadCruiseResult = vi.fn();
+    const openLoadSettings = vi.fn();
     const openAbout = vi.fn();
     const toggleFileTree = vi.fn();
 
@@ -42,6 +44,7 @@ describe('useAppCommands', () => {
         openLanguagePicker,
         openIgnorePatterns,
         openLoadCruiseResult,
+        openLoadSettings,
         openAbout,
         toggleFileTree,
       }),
@@ -50,6 +53,8 @@ describe('useAppCommands', () => {
     const ids = result.current.map(command => command.id);
     expect(ids).toContain('exportGraphDot');
     expect(ids).toContain('viewGraphDotOnline');
+    expect(ids).toContain('saveWorkspace');
+    expect(ids).toContain('loadWorkspaceSettings');
     expect(ids).toContain('selectAll');
     expect(ids).toContain('setTheme');
     expect(ids).toContain('about');
@@ -63,6 +68,7 @@ describe('useAppCommands', () => {
     const orch = createOrch();
     const openThemePicker = vi.fn();
     const openAbout = vi.fn();
+    const openLoadSettings = vi.fn();
     const toggleFileTree = vi.fn();
 
     const { result } = renderHook(() =>
@@ -72,6 +78,7 @@ describe('useAppCommands', () => {
         openLanguagePicker: vi.fn(),
         openIgnorePatterns: vi.fn(),
         openLoadCruiseResult: vi.fn(),
+        openLoadSettings,
         openAbout,
         toggleFileTree,
       }),
@@ -86,6 +93,8 @@ describe('useAppCommands', () => {
     byId.copyActive.onExecute();
     byId.exportGraphDot.onExecute();
     byId.viewGraphDotOnline.onExecute();
+    byId.saveWorkspace.onExecute();
+    byId.loadWorkspaceSettings.onExecute();
 
     expect(orch.selectAll).toHaveBeenCalled();
     expect(openThemePicker).toHaveBeenCalled();
@@ -94,5 +103,28 @@ describe('useAppCommands', () => {
     expect(orch.copyActive).toHaveBeenCalled();
     expect(orch.exportGraphDot).toHaveBeenCalled();
     expect(orch.viewGraphDotOnline).toHaveBeenCalled();
+    expect(orch.saveWorkspace).toHaveBeenCalled();
+    expect(openLoadSettings).toHaveBeenCalled();
+  });
+
+  it('disables load commands while a file load is in progress', () => {
+    const { result } = renderHook(() =>
+      useAppCommands({
+        orch: createOrch(),
+        openThemePicker: vi.fn(),
+        openLanguagePicker: vi.fn(),
+        openIgnorePatterns: vi.fn(),
+        openLoadCruiseResult: vi.fn(),
+        openLoadSettings: vi.fn(),
+        openAbout: vi.fn(),
+        toggleFileTree: vi.fn(),
+        fileLoadInProgress: true,
+      }),
+    );
+
+    const byId = Object.fromEntries(result.current.map(command => [command.id, command]));
+    expect(byId.loadCruiseResult.disabled).toBe(true);
+    expect(byId.loadWorkspaceSettings.disabled).toBe(true);
+    expect(byId.saveWorkspace.disabled).toBeUndefined();
   });
 });

@@ -99,6 +99,9 @@ export function QuickPick({ ref, sources, commands, onSelectPath }: QuickPickPro
   };
 
   const handleSelectCommand = (command: QuickPickCommand) => {
+    if (command.disabled) {
+      return;
+    }
     command.onExecute();
     handleClose();
   };

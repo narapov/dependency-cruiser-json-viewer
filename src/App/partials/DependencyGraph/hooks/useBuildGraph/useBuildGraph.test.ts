@@ -7,16 +7,16 @@ import type { BuildGraphResult } from '../../types';
 import { useBuildGraph } from './useBuildGraph';
 
 const buildGraph = vi.hoisted(() => vi.fn());
-const assignFolderColors = vi.hoisted(() => vi.fn(() => new Map<string, string>()));
 
 vi.mock('../../helpers', async importOriginal => {
   const actual = await importOriginal<typeof import('../../helpers')>();
   return {
     ...actual,
     buildGraph,
-    assignFolderColors,
   };
 });
+
+const FOLDER_COLORS = new Map<string, string>();
 
 const modules = [
   { source: 'a.ts', dependencies: [] },
@@ -50,7 +50,7 @@ describe('useBuildGraph', () => {
         modules,
         selectedPaths: EMPTY_EXPANDED,
         expandedKeys: EMPTY_EXPANDED,
-        colorMode: 'light',
+        folderColors: FOLDER_COLORS,
         onToggleFolder,
         onExpandRecursive,
         onShowInFileTree,
@@ -73,7 +73,7 @@ describe('useBuildGraph', () => {
         modules,
         selectedPaths: SELECTED_A,
         expandedKeys: EMPTY_EXPANDED,
-        colorMode: 'light',
+        folderColors: FOLDER_COLORS,
         onToggleFolder,
         onExpandRecursive,
         onShowInFileTree,
@@ -98,7 +98,7 @@ describe('useBuildGraph', () => {
         modules,
         selectedPaths: SELECTED_A,
         expandedKeys: EMPTY_EXPANDED,
-        colorMode: 'light',
+        folderColors: FOLDER_COLORS,
         onToggleFolder,
         onExpandRecursive,
         onShowInFileTree,
@@ -120,7 +120,7 @@ describe('useBuildGraph', () => {
         modules,
         selectedPaths: SELECTED_A,
         expandedKeys: EMPTY_EXPANDED,
-        colorMode: 'light',
+        folderColors: FOLDER_COLORS,
         onToggleFolder,
         onExpandRecursive,
         onShowInFileTree,
@@ -152,7 +152,7 @@ describe('useBuildGraph', () => {
         modules,
         selectedPaths: SELECTED_A,
         expandedKeys: EMPTY_EXPANDED,
-        colorMode: 'light',
+        folderColors: FOLDER_COLORS,
         onToggleFolder,
         onExpandRecursive,
         onShowInFileTree,
@@ -176,7 +176,7 @@ describe('useBuildGraph', () => {
         modules,
         selectedPaths: EMPTY_EXPANDED,
         expandedKeys: EXPANDED_SRC,
-        colorMode: 'light',
+        folderColors: FOLDER_COLORS,
         onToggleFolder,
         onExpandRecursive,
         onShowInFileTree,

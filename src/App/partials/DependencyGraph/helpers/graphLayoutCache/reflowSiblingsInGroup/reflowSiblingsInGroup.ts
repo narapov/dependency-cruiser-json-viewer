@@ -5,6 +5,8 @@ import { nodesOverlap } from '../nodesOverlap';
 import { getNodeSize } from '../resolveGroupSize';
 import type { GroupId, NodeSize } from '../types';
 
+const MAX_REFLOW_PASSES = 8;
+
 function getFixedChildIdsInGroup(
   groupId: GroupId,
   parentByNode: ReadonlyMap<string, string | null>,
@@ -17,6 +19,12 @@ function getFixedChildIdsInGroup(
   const childFixed = new Set([...fixedNodeIds].filter(id => (parentByNode.get(id) ?? null) === groupId));
 
   return childFixed.size > 0 ? childFixed : undefined;
+}
+
+function sortSiblings(childIds: readonly string[], nodeById: Map<string, Node>): Node[] {
+  return childIds
+    .map(id => nodeById.get(id)!)
+    .sort((a, b) => a.position.y - b.position.y || a.position.x - b.position.x);
 }
 
 function pushAwayFromFixedNodes(
@@ -153,28 +161,14 @@ function checkVerticalOverlapWithFixedNodes(
   );
 }
 
-/** Pushes non-fixed siblings apart within a group until overlaps are resolved. */
-export function reflowSiblingsInGroup(
-  groupId: GroupId,
+function pushSiblingsApart(
+  siblings: Node[],
   nodeById: Map<string, Node>,
-  parentByNode: ReadonlyMap<string, string | null>,
-  fixedNodeIds?: ReadonlySet<string>,
+  childFixedIds: ReadonlySet<string> | undefined,
 ): boolean {
-  const nodeIds = new Set(nodeById.keys());
-  const childIds = getDirectChildren(groupId, nodeIds, parentByNode);
-  if (childIds.length <= 1) {
-    return false;
-  }
+  let changed = false;
 
-  const childFixedIds = getFixedChildIdsInGroup(groupId, parentByNode, fixedNodeIds);
-
-  const siblings = childIds
-    .map(id => nodeById.get(id)!)
-    .sort((a, b) => a.position.y - b.position.y || a.position.x - b.position.x);
-
-  let changed = childFixedIds ? pushAwayFromFixedNodes(siblings, nodeById, childFixedIds) : false;
-
-  // First pass: push down when siblings overlap.
+  // Vertical pass: push down when siblings overlap.
   siblings.forEach((current, i) => {
     if (childFixedIds?.has(current.id)) {
       return;
@@ -215,7 +209,7 @@ export function reflowSiblingsInGroup(
     changed = changed || verticalResult.changed || fixedCheck.changed;
   });
 
-  // Second pass: push right when vertical overflow still causes overlap.
+  // Horizontal pass: push right when vertical separation alone cannot clear overlap.
   siblings.forEach((current, i) => {
     if (childFixedIds?.has(current.id)) {
       return;
@@ -258,6 +252,36 @@ export function reflowSiblingsInGroup(
     }
     changed = changed || horizontalResult.changed || fixedCheck.changed;
   });
+
+  return changed;
+}
+
+/** Pushes non-fixed siblings apart within a group until overlaps are resolved. */
+export function reflowSiblingsInGroup(
+  groupId: GroupId,
+  nodeById: Map<string, Node>,
+  parentByNode: ReadonlyMap<string, string | null>,
+  fixedNodeIds?: ReadonlySet<string>,
+): boolean {
+  const nodeIds = new Set(nodeById.keys());
+  const childIds = getDirectChildren(groupId, nodeIds, parentByNode);
+  if (childIds.length <= 1) {
+    return false;
+  }
+
+  const childFixedIds = getFixedChildIdsInGroup(groupId, parentByNode, fixedNodeIds);
+
+  let siblings = sortSiblings(childIds, nodeById);
+  let changed = childFixedIds ? pushAwayFromFixedNodes(siblings, nodeById, childFixedIds) : false;
+
+  for (let pass = 0; pass < MAX_REFLOW_PASSES; pass++) {
+    siblings = sortSiblings(childIds, nodeById);
+    const passChanged = pushSiblingsApart(siblings, nodeById, childFixedIds);
+    changed = changed || passChanged;
+    if (!passChanged) {
+      break;
+    }
+  }
 
   return changed;
 }

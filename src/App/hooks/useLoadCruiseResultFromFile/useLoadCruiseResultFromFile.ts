@@ -1,17 +1,31 @@
+import type { ICruiseResult } from 'dependency-cruiser';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useQueryClient } from '@tanstack/react-query';
 
-import { CruiseResultParseError, parseCruiseResultJson } from '@/domain';
-import { raceWithAbortSignal } from '@/Shared';
+import type { ViewerWorkspaceSettings } from '@/domain';
 
-export function useLoadCruiseResultFromFile() {
+import { isViewerFileLoadAbort, readViewerFile, resolveViewerFileParseErrorMessage } from '../../helpers';
+import { useFileLoadNotice } from '../useFileLoadNotice';
+
+export interface LoadedCruiseResultFile {
+  cruiseResult: ICruiseResult;
+  settings?: ViewerWorkspaceSettings;
+}
+
+interface UseLoadCruiseResultFromFileOptions {
+  onLoaded?: (loaded: LoadedCruiseResultFile) => void;
+}
+
+export function useLoadCruiseResultFromFile(options: UseLoadCruiseResultFromFileOptions = {}) {
+  const { onLoaded } = options;
   const queryClient = useQueryClient();
   const { t } = useTranslation();
   const fileInputRef = useRef<{ open: () => void }>(null);
   const loadAbortRef = useRef<AbortController | null>(null);
-  const [fileLoadError, setFileLoadError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const { fileLoadError, setFileLoadError, clearFileLoadError } = useFileLoadNotice();
 
   useEffect(() => {
     return () => {
@@ -20,7 +34,7 @@ export function useLoadCruiseResultFromFile() {
   }, []);
 
   const openFilePicker = () => {
-    setFileLoadError(null);
+    clearFileLoadError();
     fileInputRef.current?.open();
   };
 
@@ -29,40 +43,39 @@ export function useLoadCruiseResultFromFile() {
     const controller = new AbortController();
     loadAbortRef.current = controller;
     const { signal } = controller;
+    setIsLoading(true);
 
     try {
-      const result = await raceWithAbortSignal(
-        file.text().then(text => parseCruiseResultJson(text)),
-        signal,
-      );
+      const parsed = await readViewerFile(file, signal);
       if (signal.aborted) {
         return;
       }
-      queryClient.setQueryData(['cruise-result'], result);
-      setFileLoadError(null);
+
+      queryClient.setQueryData(['cruise-result'], parsed.cruiseResult);
+      onLoaded?.({ cruiseResult: parsed.cruiseResult, settings: parsed.settings });
+      if (parsed.workspaceSettingsIgnored) {
+        setFileLoadError(t('app.ignoredInvalidWorkspaceSettings'));
+      } else {
+        clearFileLoadError();
+      }
     } catch (error) {
-      if (signal.aborted || (error instanceof DOMException && error.name === 'AbortError')) {
+      if (isViewerFileLoadAbort(error, signal)) {
         return;
       }
       console.error(error);
-      if (error instanceof CruiseResultParseError) {
-        setFileLoadError(
-          error.code === 'invalidJson' ? t('app.invalidCruiseResultJson') : t('app.invalidCruiseResultFormat'),
-        );
-        return;
+      setFileLoadError(resolveViewerFileParseErrorMessage(error, t));
+    } finally {
+      if (loadAbortRef.current === controller) {
+        setIsLoading(false);
       }
-      setFileLoadError(t('app.invalidCruiseResultFormat'));
     }
-  };
-
-  const clearFileLoadError = () => {
-    setFileLoadError(null);
   };
 
   return {
     fileInputRef,
     openFilePicker,
     handleFileSelect,
+    isLoading,
     fileLoadError,
     clearFileLoadError,
   };

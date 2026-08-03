@@ -11,6 +11,7 @@ import { Background, Controls, MiniMap, Panel, ReactFlow, ReactFlowProvider, typ
 
 import '@xyflow/react/dist/style.css';
 
+import type { FolderBaseColor } from '@/domain';
 import { downloadTextFile, openGraphvizOnline } from '@/Shared';
 
 import { buildEdgeDependencyKeyMap, getMinimapNodeColor, serializeGraphToDot } from './helpers';
@@ -22,6 +23,7 @@ import {
   useHighlightedEdges,
   useHighlightedNodes,
   usePendingFocusNode,
+  useThemedFolderColors,
 } from './hooks';
 import { DependencyEdge } from './partials/DependencyEdge';
 import { FileNode } from './partials/FileNode';
@@ -50,6 +52,7 @@ interface DependencyGraphInnerProps {
   modules: IModule[];
   selectedPaths: string[];
   expandedKeys: string[];
+  folderBaseColors: Readonly<Record<string, FolderBaseColor>>;
   onToggleFolder: (path: string) => void;
   onExpandRecursive: (path: string) => void;
   onShowInFileTree: (path: string) => void;
@@ -68,6 +71,7 @@ function DependencyGraphInner({
   modules,
   selectedPaths,
   expandedKeys,
+  folderBaseColors,
   onToggleFolder,
   onExpandRecursive,
   onShowInFileTree,
@@ -86,12 +90,13 @@ function DependencyGraphInner({
   const resolvedMode = mode === 'system' ? systemMode : mode;
 
   const colorMode = resolvedMode ?? 'light';
+  const folderColors = useThemedFolderColors(folderBaseColors, colorMode);
 
   const { graphResult, isBuildingGraph, buildFailed, clearBuildFailed, expandedFolders } = useBuildGraph({
     modules,
     selectedPaths,
     expandedKeys,
-    colorMode,
+    folderColors,
     onToggleFolder,
     onExpandRecursive,
     onShowInFileTree,
@@ -104,6 +109,8 @@ function DependencyGraphInner({
     onNodeDrag,
     onNodeDragStop,
     hasUserLayout,
+    getLayoutSnapshot,
+    setLayoutSnapshot,
   } = useGraphLayoutNodes({
     graphResult,
     autoLayoutOnly,
@@ -172,6 +179,14 @@ function DependencyGraphInner({
       },
       openDotOnline: () => {
         openGraphvizOnline(buildDot());
+      },
+      getLayoutState: () => ({
+        autoLayoutOnly,
+        nodePositions: getLayoutSnapshot().nodePositions,
+      }),
+      setLayoutState: state => {
+        onAutoLayoutOnlyChange(state.autoLayoutOnly);
+        setLayoutSnapshot({ nodePositions: state.nodePositions });
       },
     };
   });

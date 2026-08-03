@@ -131,8 +131,7 @@ export function applyPositionCache(
       if (previous !== undefined && previous !== fingerprint) {
         return false;
       }
-      const childIds = getDirectChildren(groupId, nodeIds, parentByNode);
-      return childIds.every(childId => groupCache.has(childId));
+      return true;
     })
     .flatMap(([groupId]) => {
       const groupCache = cache.get(groupId)!;

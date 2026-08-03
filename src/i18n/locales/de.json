@@ -8,6 +8,9 @@
     "loadCruiseResult": "JSON-Datei laden",
     "invalidCruiseResultJson": "Die ausgewählte Datei ist kein gültiges JSON.",
     "invalidCruiseResultFormat": "Die ausgewählte Datei ist kein dependency-cruiser-Cruise-Ergebnis.",
+    "missingWorkspaceSettings": "Die ausgewählte Datei enthält keine Viewer-Workspace-Einstellungen.",
+    "loadWorkspaceSettingsRequiresCruise": "Laden Sie zuerst ein Cruise-Ergebnis, bevor Sie Workspace-Einstellungen laden.",
+    "ignoredInvalidWorkspaceSettings": "Cruise-Ergebnis geladen, aber die Viewer-Workspace-Einstellungen in der Datei waren ungültig und wurden ignoriert.",
     "errorBoundaryTitle": "Etwas ist schiefgelaufen",
     "errorBoundaryMessage": "Ein unerwarteter Fehler ist aufgetreten. Laden Sie die Seite neu, um fortzufahren.",
     "errorBoundaryReload": "Neu laden",
@@ -53,9 +56,11 @@
     "setLanguage": "Sprache festlegen",
     "setIgnorePatterns": "Ignorier-Muster festlegen",
     "loadCruiseResult": "dependency-cruiser-JSON laden",
+    "loadWorkspaceSettings": "Workspace-Einstellungen laden",
     "toggleFileTree": "Dateibaum ein-/ausblenden",
     "unselectAll": "Auswahl aufheben",
-    "about": "Über"
+    "about": "Über",
+    "saveWorkspace": "Workspace speichern"
   },
   "quickPick": {
     "commandPlaceholder": "Geben Sie den Namen eines Befehls ein...",

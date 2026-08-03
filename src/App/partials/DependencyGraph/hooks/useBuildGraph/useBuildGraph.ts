@@ -1,7 +1,7 @@
 import type { IModule } from 'dependency-cruiser';
 import { useEffect, useMemo, useState } from 'react';
 
-import { assignFolderColors, buildGraph, type FolderColorMode } from '../../helpers';
+import { buildGraph } from '../../helpers';
 import type { BuildGraphResult } from '../../types';
 
 function createEmptyGraphResult(): BuildGraphResult {
@@ -17,7 +17,7 @@ interface UseBuildGraphInput {
   modules: IModule[];
   selectedPaths: string[];
   expandedKeys: string[];
-  colorMode: FolderColorMode;
+  folderColors: ReadonlyMap<string, string>;
   onToggleFolder: (path: string) => void;
   onExpandRecursive: (path: string) => void;
   onShowInFileTree: (path: string) => void;
@@ -36,14 +36,12 @@ export function useBuildGraph({
   modules,
   selectedPaths,
   expandedKeys,
-  colorMode,
+  folderColors,
   onToggleFolder,
   onExpandRecursive,
   onShowInFileTree,
   onShowDependencies,
 }: UseBuildGraphInput): UseBuildGraphResult {
-  const sources = useMemo(() => modules.map(module => module.source), [modules]);
-  const folderColors = useMemo(() => assignFolderColors(sources, colorMode), [sources, colorMode]);
   const expandedFolders = useMemo(() => new Set(expandedKeys), [expandedKeys]);
 
   const [graphResult, setGraphResult] = useState<BuildGraphResult>(createEmptyGraphResult);

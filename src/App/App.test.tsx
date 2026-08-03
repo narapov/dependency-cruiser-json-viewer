@@ -11,6 +11,7 @@ import { renderWithTheme } from '@/testsUtils';
 import App from './App';
 
 const openFilePicker = vi.fn();
+const openSettingsFilePicker = vi.fn();
 const useCruiseResult = vi.fn();
 
 vi.mock('./hooks', () => ({
@@ -19,6 +20,15 @@ vi.mock('./hooks', () => ({
     fileInputRef: { current: null },
     openFilePicker,
     handleFileSelect: vi.fn(),
+    isLoading: false,
+    fileLoadError: null,
+    clearFileLoadError: vi.fn(),
+  }),
+  useLoadWorkspaceSettingsFromFile: () => ({
+    fileInputRef: { current: null },
+    openFilePicker: openSettingsFilePicker,
+    handleFileSelect: vi.fn(),
+    isLoading: false,
     fileLoadError: null,
     clearFileLoadError: vi.fn(),
   }),
@@ -44,6 +54,7 @@ vi.mock('./hooks', () => ({
     handleClosePanel: vi.fn(),
     handleQuickPickSelect: vi.fn(),
     focusActivePath: vi.fn(),
+    applyWorkspaceView: vi.fn(),
   }),
   useAppCommands: () => [],
 }));

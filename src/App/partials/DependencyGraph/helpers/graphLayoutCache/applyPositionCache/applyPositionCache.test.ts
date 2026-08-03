@@ -138,7 +138,7 @@ describe('applyPositionCache', () => {
     expect(result.find(n => n.id === 'b')?.position).toEqual({ x: 200, y: 200 });
   });
 
-  it('does not apply when group cache is missing a child', () => {
+  it('applies cached children when group cache is partial', () => {
     const nodes = [node('a', { position: { x: 100, y: 100 } }), node('b', { position: { x: 200, y: 200 } })];
     const parentByNode = new Map<string, string | null>([
       ['a', null],
@@ -149,7 +149,7 @@ describe('applyPositionCache', () => {
 
     const result = applyPositionCache(nodes, parentByNode, cache, fingerprints, fingerprints);
 
-    expect(result.find(n => n.id === 'a')?.position).toEqual({ x: 100, y: 100 });
+    expect(result.find(n => n.id === 'a')?.position).toEqual({ x: 10, y: 20 });
     expect(result.find(n => n.id === 'b')?.position).toEqual({ x: 200, y: 200 });
   });
 });

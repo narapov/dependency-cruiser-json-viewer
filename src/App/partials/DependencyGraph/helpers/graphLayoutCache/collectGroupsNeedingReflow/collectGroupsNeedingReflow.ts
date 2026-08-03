@@ -5,7 +5,8 @@ import { nodesOverlap } from '../nodesOverlap';
 import { getNodeSize } from '../resolveGroupSize';
 import type { GroupFingerprints, GroupId, NodeSize } from '../types';
 
-function groupHasOverlappingSiblings(
+/** True when any pair of direct children in the group overlap. */
+export function groupHasOverlappingSiblings(
   groupId: GroupId,
   nodeById: Map<string, Node>,
   parentByNode: ReadonlyMap<string, string | null>,

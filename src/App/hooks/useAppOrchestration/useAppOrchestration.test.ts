@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 
 import { LANGUAGE_STORAGE_KEY } from '@/i18n';
-import { APP_STORAGE_PREFIX, copyToClipboard, THEME_STORAGE_KEY } from '@/Shared';
+import { APP_STORAGE_PREFIX, copyToClipboard, downloadTextFile, THEME_STORAGE_KEY } from '@/Shared';
 
 import type { DependencyGraphHandle } from '../../partials/DependencyGraph';
 import type { FileTreeHandle } from '../../partials/FileTree';
@@ -16,6 +16,7 @@ vi.mock('@/Shared', async importOriginal => {
   return {
     ...actual,
     copyToClipboard: vi.fn(() => Promise.resolve()),
+    downloadTextFile: vi.fn(),
   };
 });
 
@@ -32,6 +33,8 @@ function createRefs() {
     clearAllHighlights: vi.fn(),
     exportDot: vi.fn(),
     openDotOnline: vi.fn(),
+    getLayoutState: vi.fn(() => ({ autoLayoutOnly: true, nodePositions: {} })),
+    setLayoutState: vi.fn(),
   };
   // refs are mutable in tests
   (fileTreeRef as { current: FileTreeHandle }).current = fileTree as unknown as FileTreeHandle;
@@ -55,9 +58,20 @@ function renderOrchestration(
     ({ sources, initialDependencyCruiserState: initial }) =>
       useAppOrchestration({
         sources,
+        unfilteredCruiseResult: {
+          modules: (overrides.sources ?? SOURCES).map(source => ({
+            source,
+            dependencies: [],
+            dependents: [],
+            valid: true,
+          })),
+          summary: {},
+        } as never,
+        ignorePatterns: [],
         fileTreeRef: refs.fileTreeRef,
         graphRef: refs.graphRef,
         initialDependencyCruiserState: initial,
+        cruiseLoadId: 0,
       }),
     {
       initialProps: {
@@ -90,14 +104,18 @@ describe('useAppOrchestration', () => {
     expect(result.current.panelOpen).toBe(false);
   });
 
-  it('syncs when initialDependencyCruiserState changes', () => {
+  it('resets selection when sources change', () => {
     const { result, rerender } = renderOrchestration({
       selectedKeys: ['src/a.ts'],
       expandedKeys: ['src'],
     });
 
+    act(() => {
+      result.current.setSelectedPaths(['src/a.ts']);
+    });
+
     rerender({
-      sources: SOURCES,
+      sources: ['src/b/c.ts'],
       initialDependencyCruiserState: {
         selectedKeys: ['src/b/c.ts'],
         expandedKeys: ['src', 'src/b'],
@@ -395,5 +413,184 @@ describe('useAppOrchestration', () => {
     });
 
     expect(result.current.activePath).toBe('src/b');
+  });
+
+  it('saveWorkspace writes selectedFiles as module sources only', () => {
+    const { result } = renderOrchestration({
+      selectedKeys: ['src', 'src/a.ts', 'src/b', 'src/b/c.ts'],
+    });
+
+    act(() => {
+      result.current.saveWorkspace();
+    });
+
+    expect(downloadTextFile).toHaveBeenCalled();
+    const [, content] = vi.mocked(downloadTextFile).mock.calls[0]!;
+    const payload = JSON.parse(content as string) as {
+      'dependency-cruiser-json-viewer': { settings: { selectedFiles: string[] } };
+    };
+    expect(payload['dependency-cruiser-json-viewer'].settings.selectedFiles).toEqual(['src/a.ts', 'src/b/c.ts']);
+  });
+
+  it('applies workspace view immediately regardless of the sources prop', () => {
+    const refs = createRefs();
+    const restoredExpanded = ['src', 'src/b', 'src/e', 'src/e/f'];
+    const view = {
+      selectedFiles: ['src/a.ts', 'src/b/c.ts', 'src/b/d.ts', 'src/e/f/g.ts'],
+      expandedKeys: restoredExpanded,
+      dependenciesPath: null,
+      userEdgeHighlights: new Map<string, string>(),
+      folderColors: {
+        src: { hue: 10, lightnessIndex: 0 },
+        'src/b': { hue: 20, lightnessIndex: 1 },
+        'src/e': { hue: 30, lightnessIndex: 0 },
+        'src/e/f': { hue: 40, lightnessIndex: 1 },
+      },
+      autoLayoutOnly: true,
+      nodePositions: {},
+    };
+    const emptyInitial = { selectedKeys: [] as string[], expandedKeys: [] as string[] };
+    const readyInitial = { selectedKeys: SOURCES, expandedKeys: ['src'] };
+
+    const { result, rerender } = renderHook(
+      ({ sources, initialDependencyCruiserState, cruiseLoadId }) =>
+        useAppOrchestration({
+          sources,
+          unfilteredCruiseResult: undefined,
+          ignorePatterns: [],
+          fileTreeRef: refs.fileTreeRef,
+          graphRef: refs.graphRef,
+          initialDependencyCruiserState,
+          cruiseLoadId,
+        }),
+      {
+        initialProps: {
+          sources: [] as string[],
+          initialDependencyCruiserState: emptyInitial,
+          cruiseLoadId: 0,
+        },
+      },
+    );
+
+    expect(result.current.expandedKeys).toEqual([]);
+
+    act(() => {
+      result.current.applyWorkspaceView({
+        view,
+        sourcesKey: SOURCES.join('\0'),
+        cruiseLoadId: 1,
+        lastInitialSelectedKeys: readyInitial.selectedKeys,
+        lastInitialExpandedKeys: readyInitial.expandedKeys,
+      });
+      // Same batch as App: props catch up with the eagerly resolved sourcesKey.
+      rerender({
+        sources: SOURCES,
+        initialDependencyCruiserState: readyInitial,
+        cruiseLoadId: 1,
+      });
+    });
+
+    expect(result.current.expandedKeys).toEqual(restoredExpanded);
+    expect(result.current.selectedPaths).toEqual(view.selectedFiles);
+  });
+
+  it('applies workspace view with empty sources without waiting', () => {
+    const refs = createRefs();
+    const emptyInitial = { selectedKeys: [] as string[], expandedKeys: [] as string[] };
+    const unfilteredCruiseResult = {
+      modules: [{ source: 'src/a.ts', dependencies: [], dependents: [], valid: true }],
+      summary: {},
+    } as never;
+
+    const { result, rerender } = renderHook(
+      ({ cruiseLoadId }) =>
+        useAppOrchestration({
+          sources: [],
+          unfilteredCruiseResult,
+          ignorePatterns: ['**/*'],
+          fileTreeRef: refs.fileTreeRef,
+          graphRef: refs.graphRef,
+          initialDependencyCruiserState: emptyInitial,
+          cruiseLoadId,
+        }),
+      { initialProps: { cruiseLoadId: 0 } },
+    );
+
+    act(() => {
+      result.current.applyWorkspaceView({
+        view: {
+          selectedFiles: [],
+          expandedKeys: [],
+          dependenciesPath: null,
+          userEdgeHighlights: new Map(),
+          folderColors: {},
+          autoLayoutOnly: true,
+          nodePositions: {},
+        },
+        sourcesKey: '',
+        cruiseLoadId: 1,
+        lastInitialSelectedKeys: [],
+        lastInitialExpandedKeys: [],
+      });
+      rerender({ cruiseLoadId: 1 });
+    });
+
+    expect(result.current.selectedPaths).toEqual([]);
+    expect(result.current.expandedKeys).toEqual([]);
+  });
+
+  it('restores layout via setLayoutState when applying workspace view', () => {
+    const refs = createRefs();
+    const nodePositions = { '': { 'src/a.ts': { x: 5, y: 6 } } };
+    const initialDependencyCruiserState = { selectedKeys: SOURCES, expandedKeys: ['src'] };
+    const view = {
+      selectedFiles: ['src/a.ts', 'src/b/c.ts', 'src/b/d.ts', 'src/e/f/g.ts'],
+      expandedKeys: ['src'],
+      dependenciesPath: null,
+      userEdgeHighlights: new Map<string, string>(),
+      folderColors: {
+        src: { hue: 10, lightnessIndex: 0 },
+        'src/b': { hue: 20, lightnessIndex: 1 },
+        'src/e': { hue: 30, lightnessIndex: 0 },
+        'src/e/f': { hue: 40, lightnessIndex: 1 },
+      },
+      autoLayoutOnly: false,
+      nodePositions,
+    };
+
+    const { result } = renderHook(() =>
+      useAppOrchestration({
+        sources: SOURCES,
+        unfilteredCruiseResult: {
+          modules: SOURCES.map(source => ({
+            source,
+            dependencies: [],
+            dependents: [],
+            valid: true,
+          })),
+          summary: {},
+        } as never,
+        ignorePatterns: [],
+        fileTreeRef: refs.fileTreeRef,
+        graphRef: refs.graphRef,
+        initialDependencyCruiserState,
+        cruiseLoadId: 1,
+      }),
+    );
+
+    act(() => {
+      result.current.applyWorkspaceView({
+        view,
+        sourcesKey: SOURCES.join('\0'),
+        cruiseLoadId: 1,
+        lastInitialSelectedKeys: initialDependencyCruiserState.selectedKeys,
+        lastInitialExpandedKeys: initialDependencyCruiserState.expandedKeys,
+      });
+    });
+
+    expect(refs.graph.setLayoutState).toHaveBeenCalledWith({
+      autoLayoutOnly: false,
+      nodePositions,
+    });
   });
 });

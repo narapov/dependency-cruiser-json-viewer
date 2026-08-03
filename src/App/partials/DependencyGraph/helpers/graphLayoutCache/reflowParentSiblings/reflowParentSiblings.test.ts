@@ -4,6 +4,8 @@ import { GRID_GAP_Y, GROUP_HEADER, GROUP_PADDING } from '../../buildGraph';
 import { LEAF_NODE_HEIGHT, LEAF_NODE_MIN_WIDTH } from '../../getLeafNodeSize';
 import { buildGroupFingerprints } from '../buildGroupFingerprints';
 import { createTestNode as node } from '../createTestNode';
+import { nodesOverlap } from '../nodesOverlap';
+import { getNodeSize } from '../resolveGroupSize';
 import type { PositionCache } from '../types';
 import { collectNodeSizes, compactAfterDrag, reflowForDrag, reflowParentSiblings } from './reflowParentSiblings';
 
@@ -281,6 +283,92 @@ describe('reflowParentSiblings on expand', () => {
     const childB = result.find(n => n.id === 'root/child-b')!;
     expect(root?.position).toEqual({ x: 0, y: 50 });
     expect(childB.position.y).toBeGreaterThanOrEqual(childA.position.y + 150 + GRID_GAP_Y);
+  });
+
+  it('reflows again after resize grows an expanded folder beyond its prior size', () => {
+    const parentByNode = new Map<string, string | null>([
+      ['folder-a', null],
+      ['folder-b', null],
+      ['file-1', 'folder-a'],
+      ['file-2', 'folder-a'],
+    ]);
+    const previousNodes = [
+      node('folder-a', { type: 'folder', position: { x: 0, y: 50 }, width: 120, height: 40 }),
+      node('folder-b', { type: 'folder', position: { x: 150, y: 50 }, width: 120, height: 40 }),
+    ];
+    const previousSizes = collectNodeSizes(previousNodes);
+    // Declared height 100 is smaller than the children bounding box after layout.
+    const grownNodes = [
+      node('folder-a', { type: 'folderGroup', position: { x: 0, y: 50 }, width: 200, height: 100 }),
+      node('file-1', { parentId: 'folder-a', position: { x: 16, y: 52 }, width: 120, height: 32 }),
+      node('file-2', { parentId: 'folder-a', position: { x: 16, y: 100 }, width: 120, height: 32 }),
+      node('folder-b', { type: 'folder', position: { x: 150, y: 50 }, width: 120, height: 40 }),
+    ];
+    const cache: PositionCache = new Map();
+
+    const result = reflowParentSiblings({
+      nodes: grownNodes,
+      parentByNode,
+      previousSizes,
+      cache,
+      previousNodes,
+    });
+
+    const folderA = result.find(n => n.id === 'folder-a')!;
+    const folderB = result.find(n => n.id === 'folder-b')!;
+    expect(folderA.position).toEqual({ x: 0, y: 50 });
+    expect(nodesOverlap(folderA.position, getNodeSize(folderA), folderB.position, getNodeSize(folderB))).toBe(false);
+  });
+
+  it('reflows top-level neighbors after nested expand grows an ancestor on resize', () => {
+    const parentByNode = new Map<string, string | null>([
+      ['outer-a', null],
+      ['outer-b', null],
+      ['mid', 'outer-a'],
+      ['side', 'outer-a'],
+      ['file-x', 'mid'],
+      ['file-y', 'mid'],
+    ]);
+    const previousNodes = [
+      node('outer-a', { type: 'folder', position: { x: 0, y: 0 }, width: 120, height: 40 }),
+      node('outer-b', { type: 'folder', position: { x: 200, y: 0 }, width: 120, height: 40 }),
+    ];
+    const previousSizes = collectNodeSizes(previousNodes);
+    const grownNodes = [
+      node('outer-a', { type: 'folderGroup', position: { x: 0, y: 0 }, width: 250, height: 150 }),
+      node('mid', {
+        type: 'folderGroup',
+        parentId: 'outer-a',
+        position: { x: 16, y: 52 },
+        width: 180,
+        height: 80,
+      }),
+      node('side', { parentId: 'outer-a', position: { x: 50, y: 52 }, width: 120, height: 32 }),
+      node('file-x', { parentId: 'mid', position: { x: 16, y: 52 }, width: 120, height: 40 }),
+      node('file-y', { parentId: 'mid', position: { x: 16, y: 60 }, width: 120, height: 40 }),
+      node('outer-b', { type: 'folder', position: { x: 200, y: 0 }, width: 120, height: 40 }),
+    ];
+    const cache: PositionCache = new Map();
+    const currentFingerprints = buildGroupFingerprints(
+      new Set(['outer-a', 'outer-b', 'mid', 'side', 'file-x', 'file-y']),
+      parentByNode,
+    );
+    const previousFingerprints = buildGroupFingerprints(new Set(['outer-a', 'outer-b']), parentByNode);
+
+    const result = reflowParentSiblings({
+      nodes: grownNodes,
+      parentByNode,
+      previousSizes,
+      cache,
+      currentFingerprints,
+      previousFingerprints,
+      previousNodes,
+    });
+
+    const outerA = result.find(n => n.id === 'outer-a')!;
+    const outerB = result.find(n => n.id === 'outer-b')!;
+    expect(outerA.position).toEqual({ x: 0, y: 0 });
+    expect(nodesOverlap(outerA.position, getNodeSize(outerA), outerB.position, getNodeSize(outerB))).toBe(false);
   });
 });
 
