@@ -1,13 +1,14 @@
 import { execSync } from 'node:child_process';
-import fs from 'node:fs';
 import path from 'node:path';
 
+import { loadEnv } from 'vite';
 import { defineConfig } from 'vitest/config';
 
 import babel from '@rolldown/plugin-babel';
 import react, { reactCompilerPreset } from '@vitejs/plugin-react';
 
 import packageJson from './package.json' with { type: 'json' };
+import { cruiseWatchPlugin } from './vite.cruiseWatchPlugin.ts';
 
 const cruiseResultPath = path.resolve('test-data/cruise-result.json');
 
@@ -21,48 +22,35 @@ function getGitCommitHash(): string {
 }
 
 // https://vite.dev/config/
-export default defineConfig({
-  define: {
-    __PACKAGE_NAME__: JSON.stringify(packageJson.name),
-    __APP_VERSION__: JSON.stringify(packageJson.version),
-    __APP_COMMIT_HASH__: JSON.stringify(getGitCommitHash()),
-  },
-  resolve: {
-    alias: {
-      '@': path.resolve(import.meta.dirname, 'src'),
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '');
+  const cruiseWatchEnabled = (process.env.CRUISE_WATCH ?? env.CRUISE_WATCH) === 'true';
+
+  return {
+    define: {
+      __PACKAGE_NAME__: JSON.stringify(packageJson.name),
+      __APP_VERSION__: JSON.stringify(packageJson.version),
+      __APP_COMMIT_HASH__: JSON.stringify(getGitCommitHash()),
     },
-  },
-  plugins: [
-    react(),
-    babel({ presets: [reactCompilerPreset()] }),
-    {
-      name: 'dev-cruise-result',
-      configureServer(server) {
-        server.middlewares.use((req, res, next) => {
-          const url = req.url?.split('?')[0];
-          if (url !== '/cruise-result.json') {
-            next();
-            return;
-          }
-          if (!fs.existsSync(cruiseResultPath)) {
-            res.statusCode = 404;
-            res.end('Run: npm run depcruise:json-for-cli');
-            return;
-          }
-          res.setHeader('Content-Type', 'application/json; charset=utf-8');
-          fs.createReadStream(cruiseResultPath).pipe(res);
-        });
+    resolve: {
+      alias: {
+        '@': path.resolve(import.meta.dirname, 'src'),
       },
     },
-  ],
-  test: {
-    globals: true,
-    environment: 'node',
-    setupFiles: ['./src/setupTests.ts'],
-    include: ['src/**/*.{test,spec}.{ts,tsx}', '.dependency-cruiser/**/*.test.ts'],
-    coverage: {
-      include: ['src/**/*.{ts,tsx}'],
-      exclude: ['src/**/*.test.{ts,tsx}', 'src/**/index.{ts,tsx}', 'src/i18n/locales/**', 'src/testsUtils/**'],
+    plugins: [
+      react(),
+      babel({ presets: [reactCompilerPreset()] }),
+      ...(process.env.VITEST ? [] : [cruiseWatchPlugin(cruiseResultPath, { watchEnabled: cruiseWatchEnabled })]),
+    ],
+    test: {
+      globals: true,
+      environment: 'node',
+      setupFiles: ['./src/setupTests.ts'],
+      include: ['src/**/*.{test,spec}.{ts,tsx}', '.dependency-cruiser/**/*.test.ts'],
+      coverage: {
+        include: ['src/**/*.{ts,tsx}'],
+        exclude: ['src/**/*.test.{ts,tsx}', 'src/**/index.{ts,tsx}', 'src/i18n/locales/**', 'src/testsUtils/**'],
+      },
     },
-  },
+  };
 });

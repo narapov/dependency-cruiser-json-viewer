@@ -1,6 +1,9 @@
 {
   "app": {
     "title": "Dependency Cruiser JSON Viewer",
+    "watchMode": "watch-mode",
+    "watchModeTooltip": "La carga manual de archivos está desactivada. El resultado cruise se recarga automáticamente cuando el archivo cambia.",
+    "cruiseResultUpdated": "Resultado cruise actualizado.",
     "modulesCountFiltered": "{{filtered}}/{{total}} módulos",
     "loadErrorTitle": "Error al cargar el resultado cruise",
     "noCruiseResultTitle": "No hay resultado cruise cargado",

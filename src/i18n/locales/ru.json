@@ -1,6 +1,9 @@
 {
   "app": {
     "title": "Dependency Cruiser JSON Viewer",
+    "watchMode": "watch-mode",
+    "watchModeTooltip": "Ручная загрузка файлов отключена. Результат cruise обновляется автоматически при изменении файла.",
+    "cruiseResultUpdated": "Результат cruise обновлён.",
     "modulesCountFiltered": "{{filtered}}/{{total}} модулей",
     "loadErrorTitle": "Не удалось загрузить результат cruise",
     "noCruiseResultTitle": "Результат cruise не загружен",

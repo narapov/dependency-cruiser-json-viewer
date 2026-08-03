@@ -26,6 +26,7 @@
     "prettier.config.ts",
     "eslint.config.ts",
     "commitlint.config.ts",
+    "scripts/watchSrcAndRegenerateCruiseResultForCli.ts",
     ".dependency-cruiser/**/*"
   ]
 }

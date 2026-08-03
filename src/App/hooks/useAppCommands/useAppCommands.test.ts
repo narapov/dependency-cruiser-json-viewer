@@ -127,4 +127,24 @@ describe('useAppCommands', () => {
     expect(byId.loadWorkspaceSettings.disabled).toBe(true);
     expect(byId.saveWorkspace.disabled).toBeUndefined();
   });
+
+  it('omits loadCruiseResult when cruise watch is enabled', () => {
+    const { result } = renderHook(() =>
+      useAppCommands({
+        orch: createOrch(),
+        openThemePicker: vi.fn(),
+        openLanguagePicker: vi.fn(),
+        openIgnorePatterns: vi.fn(),
+        openLoadCruiseResult: vi.fn(),
+        openLoadSettings: vi.fn(),
+        openAbout: vi.fn(),
+        toggleFileTree: vi.fn(),
+        cruiseWatchEnabled: true,
+      }),
+    );
+
+    const ids = result.current.map(command => command.id);
+    expect(ids).not.toContain('loadCruiseResult');
+    expect(ids).toContain('loadWorkspaceSettings');
+  });
 });

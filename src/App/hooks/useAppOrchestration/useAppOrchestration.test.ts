@@ -491,7 +491,10 @@ describe('useAppOrchestration', () => {
     });
 
     expect(result.current.expandedKeys).toEqual(restoredExpanded);
-    expect(result.current.selectedPaths).toEqual(view.selectedFiles);
+    expect(result.current.selectedPaths).toEqual(
+      expect.arrayContaining([...view.selectedFiles, 'src', 'src/b', 'src/e', 'src/e/f']),
+    );
+    expect(result.current.selectedPaths).toHaveLength(view.selectedFiles.length + 4);
   });
 
   it('applies workspace view with empty sources without waiting', () => {

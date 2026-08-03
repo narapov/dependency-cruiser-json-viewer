@@ -5,16 +5,21 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
+import chokidar from 'chokidar';
 import handler from 'serve-handler';
+import { Server as SocketIoServer } from 'socket.io';
 
 const DEFAULT_PORT = 7347;
 const DEFAULT_HOST = '127.0.0.1';
+const CRUISE_RESULT_CHANGED_EVENT = 'cruise-result:changed';
+const CRUISE_RESULT_SOCKET_PATH = '/api/cruise-result-socket.io';
 
 const { values, positionals } = parseArgs({
   args: process.argv.slice(2),
   options: {
     port: { type: 'string', short: 'p' },
     host: { type: 'string', short: 'h' },
+    watch: { type: 'boolean', short: 'w' },
     help: { type: 'boolean' },
   },
   allowPositionals: true,
@@ -22,11 +27,12 @@ const { values, positionals } = parseArgs({
 
 function printUsage() {
   console.error(
-    `Usage: dependency-cruiser-json-viewer <path-to-cruise-result.json> [--port <number>] [--host <host>]
+    `Usage: dependency-cruiser-json-viewer <path-to-cruise-result.json> [--port <number>] [--host <host>] [--watch]
 
 Options:
-  --port, -p  HTTP port (default: ${DEFAULT_PORT})
-  --host, -h  Bind host (default: ${DEFAULT_HOST})
+  --port, -p   HTTP port (default: ${DEFAULT_PORT})
+  --host, -h   Bind host (default: ${DEFAULT_HOST})
+  --watch, -w  Watch cruise JSON and notify the UI to reload
 `,
   );
 }
@@ -37,6 +43,7 @@ if (values.help || positionals.length === 0) {
 }
 
 const cruiseJsonPath = path.resolve(positionals[0]);
+const watchMode = values.watch === true;
 
 if (!fs.existsSync(cruiseJsonPath)) {
   console.error(`Error: file not found: ${cruiseJsonPath}`);
@@ -72,6 +79,12 @@ if (!fs.existsSync(distDir)) {
 const server = http.createServer(async (req, res) => {
   const { pathname } = new URL(req.url ?? '/', `http://localhost:${port}`);
 
+  if (pathname === '/envs.js') {
+    res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+    res.end(`window.envs = { watch: ${watchMode} };\n`);
+    return;
+  }
+
   if (pathname === '/cruise-result.json') {
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     fs.createReadStream(cruiseJsonPath).pipe(res);
@@ -84,6 +97,26 @@ const server = http.createServer(async (req, res) => {
   });
 });
 
+/** @type {import('socket.io').Server | undefined} */
+let io;
+
+if (watchMode) {
+  io = new SocketIoServer(server, { path: CRUISE_RESULT_SOCKET_PATH });
+  const cruiseJsonWatcher = chokidar.watch(cruiseJsonPath, {
+    ignoreInitial: true,
+    awaitWriteFinish: { stabilityThreshold: 200, pollInterval: 50 },
+  });
+  cruiseJsonWatcher.on('all', eventName => {
+    if (eventName === 'add' || eventName === 'change') {
+      io?.emit(CRUISE_RESULT_CHANGED_EVENT);
+    }
+  });
+  server.on('close', () => {
+    void cruiseJsonWatcher.close();
+    void io?.close();
+  });
+}
+
 server.on('error', err => {
   if (err.code === 'EADDRINUSE') {
     console.error(`Error: port ${port} is already in use`);
@@ -94,5 +127,6 @@ server.on('error', err => {
 });
 
 server.listen(port, host, () => {
-  console.log(`dependency-cruiser-json-viewer is running at http://localhost:${port}`);
+  const watchSuffix = watchMode ? ' (watch)' : '';
+  console.log(`dependency-cruiser-json-viewer is running at http://localhost:${port}${watchSuffix}`);
 });

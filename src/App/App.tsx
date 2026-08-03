@@ -1,5 +1,5 @@
 import type { IModule } from 'dependency-cruiser';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Alert from '@mui/material/Alert';
@@ -15,12 +15,14 @@ import {
   filterCruiseResult,
   type ViewerWorkspaceSettings,
 } from '@/domain';
+import { getWindowEnvs } from '@/Shared';
 
 import { resolveWorkspaceApply } from './helpers';
 import {
   useAppCommands,
   useAppOrchestration,
   useCruiseResult,
+  useCruiseResultWatch,
   useIgnorePatterns,
   useInitialDependencyCruiserState,
   useLoadCruiseResultFromFile,
@@ -47,6 +49,8 @@ function App() {
   const { data, isPending, isError, error } = useCruiseResult();
   const { patterns, setPatterns } = useIgnorePatterns();
   const [cruiseLoadId, setCruiseLoadId] = useState(0);
+  const [cruiseResultUpdatedOpen, setCruiseResultUpdatedOpen] = useState(false);
+  const cruiseWatchEnabled = getWindowEnvs()?.watch === true;
 
   const fileTreeRef = useRef<FileTreeHandle>(null);
   const graphRef = useRef<DependencyGraphHandle>(null);
@@ -75,6 +79,26 @@ function App() {
     initialDependencyCruiserState,
     cruiseLoadId,
   });
+
+  useCruiseResultWatch({
+    cruiseLoadId,
+    setCruiseLoadId,
+    setPatterns,
+    getCurrentWorkspaceSettings: orch.getCurrentWorkspaceSettings,
+    applyWorkspaceView: orch.applyWorkspaceView,
+  });
+
+  const isInitialCruiseResult = useRef(true);
+  useEffect(() => {
+    if (!cruiseWatchEnabled || data == null) {
+      return;
+    }
+    if (isInitialCruiseResult.current) {
+      isInitialCruiseResult.current = false;
+      return;
+    }
+    setCruiseResultUpdatedOpen(true);
+  }, [data, cruiseWatchEnabled]);
 
   const handleCruiseLoaded = useCallback(
     ({ cruiseResult, settings }: LoadedCruiseResultFile) => {
@@ -142,7 +166,7 @@ function App() {
   const isFileLoading = isCruiseFileLoading || isSettingsFileLoading;
 
   const openLoadCruiseResult = () => {
-    if (isFileLoading) {
+    if (cruiseWatchEnabled || isFileLoading) {
       return;
     }
     clearSettingsFileLoadError();
@@ -183,6 +207,7 @@ function App() {
     openAbout: () => setAboutOpen(true),
     toggleFileTree: toggleSidebarOpen,
     fileLoadInProgress: isFileLoading,
+    cruiseWatchEnabled,
   });
 
   if (isPending) {
@@ -214,14 +239,17 @@ function App() {
               {fileLoadError}
             </Alert>
           )}
-          {isFileLoading ? (
-            <CircularProgress size={32} />
-          ) : (
-            <Button variant="contained" onClick={openLoadCruiseResult} disabled={isFileLoading}>
-              {t('app.loadCruiseResult')}
-            </Button>
+          {!cruiseWatchEnabled &&
+            (isFileLoading ? (
+              <CircularProgress size={32} />
+            ) : (
+              <Button variant="contained" onClick={openLoadCruiseResult} disabled={isFileLoading}>
+                {t('app.loadCruiseResult')}
+              </Button>
+            ))}
+          {!cruiseWatchEnabled && (
+            <CruiseResultFileInput ref={cruiseFileInputRef} onFileSelect={handleCruiseFileSelect} />
           )}
-          <CruiseResultFileInput ref={cruiseFileInputRef} onFileSelect={handleCruiseFileSelect} />
         </Stack>
       </div>
     );
@@ -237,6 +265,7 @@ function App() {
           filteredModulesCount={filteredModulesCount}
           totalModulesCount={totalModulesCount}
           hasIgnoredModules={ignoredModuleCount > 0}
+          watchMode={cruiseWatchEnabled}
           onOpenFileSearch={() => quickPickRef.current?.openFileMode()}
           onOpenCommandPalette={() => quickPickRef.current?.openCommandMode()}
           onOpenIgnorePatterns={() => setIgnorePatternsOpen(true)}
@@ -297,7 +326,9 @@ function App() {
             commands={commands}
             onSelectPath={orch.handleQuickPickSelect}
           />
-          <CruiseResultFileInput ref={cruiseFileInputRef} onFileSelect={handleCruiseFileSelect} />
+          {!cruiseWatchEnabled && (
+            <CruiseResultFileInput ref={cruiseFileInputRef} onFileSelect={handleCruiseFileSelect} />
+          )}
           <CruiseResultFileInput ref={settingsFileInputRef} onFileSelect={handleSettingsFileSelect} />
           {isFileLoading && (
             <div className={styles.fileLoadOverlay}>
@@ -312,6 +343,16 @@ function App() {
           >
             <Alert severity="error" onClose={clearFileLoadError} sx={{ width: '100%' }}>
               {fileLoadError}
+            </Alert>
+          </Snackbar>
+          <Snackbar
+            open={cruiseResultUpdatedOpen}
+            autoHideDuration={4000}
+            onClose={() => setCruiseResultUpdatedOpen(false)}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+          >
+            <Alert severity="success" onClose={() => setCruiseResultUpdatedOpen(false)} sx={{ width: '100%' }}>
+              {t('app.cruiseResultUpdated')}
             </Alert>
           </Snackbar>
           <ThemePickerDialog open={themePickerOpen} onClose={() => setThemePickerOpen(false)} />

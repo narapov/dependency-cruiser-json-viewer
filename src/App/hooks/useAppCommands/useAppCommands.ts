@@ -31,6 +31,7 @@ interface UseAppCommandsOptions {
   openAbout: () => void;
   toggleFileTree: () => void;
   fileLoadInProgress?: boolean;
+  cruiseWatchEnabled?: boolean;
 }
 
 export function useAppCommands({
@@ -43,6 +44,7 @@ export function useAppCommands({
   openAbout,
   toggleFileTree,
   fileLoadInProgress = false,
+  cruiseWatchEnabled = false,
 }: UseAppCommandsOptions): QuickPickCommand[] {
   const { t } = useTranslation();
   const {
@@ -64,7 +66,7 @@ export function useAppCommands({
     unselectAll,
   } = orch;
 
-  return [
+  const commands: QuickPickCommand[] = [
     { id: 'clearLocalStorage', label: t('commands.clearLocalStorage'), onExecute: clearLocalStorage },
     { id: 'showActive', label: t('commands.showActive'), onExecute: focusActivePath },
     { id: 'copyActive', label: t('commands.copyActive'), onExecute: copyActive },
@@ -124,12 +126,6 @@ export function useAppCommands({
       onExecute: openIgnorePatterns,
     },
     {
-      id: 'loadCruiseResult',
-      label: t('commands.loadCruiseResult'),
-      onExecute: openLoadCruiseResult,
-      disabled: fileLoadInProgress,
-    },
-    {
       id: 'loadWorkspaceSettings',
       label: t('commands.loadWorkspaceSettings'),
       onExecute: openLoadSettings,
@@ -138,5 +134,16 @@ export function useAppCommands({
     { id: 'about', label: t('commands.about'), onExecute: openAbout },
     { id: 'toggleFileTree', label: t('commands.toggleFileTree'), onExecute: toggleFileTree },
     { id: 'unselectAll', label: t('commands.unselectAll'), onExecute: unselectAll },
-  ].sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: 'base' }));
+  ];
+
+  if (!cruiseWatchEnabled) {
+    commands.push({
+      id: 'loadCruiseResult',
+      label: t('commands.loadCruiseResult'),
+      onExecute: openLoadCruiseResult,
+      disabled: fileLoadInProgress,
+    });
+  }
+
+  return commands.sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: 'base' }));
 }
