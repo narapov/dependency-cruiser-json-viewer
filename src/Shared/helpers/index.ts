@@ -2,6 +2,7 @@ export * from './clampWidth';
 export * from './copyToClipboard';
 export * from './downloadTextFile';
 export * from './formatShortcut';
+export * from './getWindowEnvs';
 export * from './graphTheme';
 export * from './openGraphvizOnline';
 export * from './queryClient';

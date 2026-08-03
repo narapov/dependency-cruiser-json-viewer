@@ -419,12 +419,12 @@ export function useAppOrchestration({
     graphRef.current?.openDotOnline();
   };
 
-  const saveWorkspace = () => {
+  const getCurrentWorkspaceSettings = (): ViewerWorkspaceSettings | null => {
     if (unfilteredCruiseResult == null) {
-      return;
+      return null;
     }
     const layout = graphRef.current?.getLayoutState() ?? { autoLayoutOnly: true, nodePositions: {} };
-    const settings: ViewerWorkspaceSettings = {
+    return {
       ignorePatterns,
       selectedFiles: state.selectedPaths.filter(key =>
         unfilteredCruiseResult.modules.some(module => module.source === key),
@@ -436,6 +436,16 @@ export function useAppOrchestration({
       autoLayoutOnly: layout.autoLayoutOnly,
       nodePositions: layout.autoLayoutOnly ? {} : layout.nodePositions,
     };
+  };
+
+  const saveWorkspace = () => {
+    if (unfilteredCruiseResult == null) {
+      return;
+    }
+    const settings = getCurrentWorkspaceSettings();
+    if (settings == null) {
+      return;
+    }
     const payload = serializeViewerWorkspace(unfilteredCruiseResult, settings);
     downloadTextFile('cruise-result.json', `${JSON.stringify(payload, null, 2)}\n`, 'application/json');
   };
@@ -502,6 +512,7 @@ export function useAppOrchestration({
     exportGraphDot,
     viewGraphDotOnline,
     saveWorkspace,
+    getCurrentWorkspaceSettings,
     expandAllRecursive,
     collapseAllRecursive,
     selectAll,

@@ -55,8 +55,10 @@ vi.mock('./hooks', () => ({
     handleQuickPickSelect: vi.fn(),
     focusActivePath: vi.fn(),
     applyWorkspaceView: vi.fn(),
+    getCurrentWorkspaceSettings: vi.fn(() => null),
   }),
   useAppCommands: () => [],
+  useCruiseResultWatch: vi.fn(),
 }));
 
 vi.mock('./partials/FileTree', () => ({
