@@ -9,10 +9,16 @@ import {
   CRUISE_RESULT_SOCKET_PATH,
 } from './src/Shared/constants/cruiseResultChangedEvent.ts';
 
+export interface CruiseWatchPluginOptions {
+  watchEnabled: boolean;
+}
+
 /**
- * Dev-only cruise JSON serving and socket.io notifications when cruise-result.json changes.
+ * Dev-only cruise JSON serving and optional socket.io notifications when cruise-result.json changes.
  */
-export function cruiseWatchPlugin(cruiseResultPath: string): Plugin {
+export function cruiseWatchPlugin(cruiseResultPath: string, options: CruiseWatchPluginOptions): Plugin {
+  const { watchEnabled } = options;
+
   return {
     name: 'cruise-watch',
     configureServer(server) {
@@ -20,7 +26,7 @@ export function cruiseWatchPlugin(cruiseResultPath: string): Plugin {
         const url = req.url?.split('?')[0];
         if (url === '/envs.js') {
           res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
-          res.end('window.envs = { watch: true };\n');
+          res.end(`window.envs = { watch: ${watchEnabled} };\n`);
           return;
         }
         if (url !== '/cruise-result.json') {
@@ -35,6 +41,10 @@ export function cruiseWatchPlugin(cruiseResultPath: string): Plugin {
         res.setHeader('Content-Type', 'application/json; charset=utf-8');
         fs.createReadStream(cruiseResultPath).pipe(res);
       });
+
+      if (!watchEnabled) {
+        return;
+      }
 
       let io: SocketIoServer | undefined;
 

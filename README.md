@@ -59,28 +59,51 @@ Optional flags:
 ```bash
 npx dependency-cruiser-json-viewer cruise-result.json --port 9000
 # dependency-cruiser-json-viewer is running at http://localhost:9000
+
+npx dependency-cruiser-json-viewer cruise-result.json --watch
+# or -w — reload the UI when the cruise JSON file changes
 ```
 
 The CLI serves the built viewer from `dist` and streams your JSON file at `/cruise-result.json` without copying it.
 
+## Watch mode
+
+When watch mode is on, the viewer reloads `/cruise-result.json` whenever that file changes on disk and re-applies the current workspace (selection, ignore patterns, edge highlights, folder colors, and layout). Manual **Load dependency-cruiser JSON** is disabled while watch is active.
+
+### CLI
+
+```bash
+npx dependency-cruiser-json-viewer cruise-result.json --watch
+# or
+npx dependency-cruiser-json-viewer cruise-result.json -w
+```
+
+### Local development (this repository)
+
+1. Set `CRUISE_WATCH=true` in [`.env.development`](.env.development) (only the literal value `true` enables watch).
+2. Refresh the sample cruise JSON if needed: `npm run depcruise:json-for-cli` (or `npm run depcruise:json-for-cli:watch` to regenerate it when `src/` changes).
+3. Start the Vite dev server: `npm run dev`.
+
+With `CRUISE_WATCH=false` (the default in `.env.development`) or any value other than `true`, `npm run dev` runs without cruise watch — you can load a JSON file from the command palette as usual.
+
 ## Scripts
 
-| Command                               | Description                                                                            |
-| ------------------------------------- | -------------------------------------------------------------------------------------- |
-| `npm run dev`                         | Start Vite dev server (serves `test-data/cruise-result.json` at `/cruise-result.json`) |
-| `npm run build`                       | Type-check (`tsc`) and build for production                                            |
-| `npm run build:gh-pages`              | Production build with GitHub Pages base path + embed cruise result in `dist/`          |
-| `npm run preview`                     | Preview production build                                                               |
-| `npm run test`                        | Run Vitest suite                                                                       |
-| `npm run lint`                        | Run ESLint                                                                             |
-| `npm run lint:fix`                    | Run ESLint with autofix                                                                |
-| `npm run format`                      | Format all files with Prettier                                                         |
-| `npm run format:check`                | Check formatting (CI-friendly)                                                         |
-| `npm run depcruise`                   | Run dependency-cruiser on `src` (validate layer rules)                                 |
-| `npm run depcruise:json`              | Export cruise result to `./cruise-result.json`                                         |
-| `npm run depcruise:json-for-cli`      | Export cruise result to `test-data/cruise-result.json`                                 |
-| `npm run depcruise:json-for-gh-pages` | Export cruise result to `dist/cruise-result.json`                                      |
-| `npm run cli:verify`                  | Build, refresh `test-data/cruise-result.json`, start CLI server                        |
+| Command                               | Description                                                                                                          |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`                         | Start Vite dev server (serves `test-data/cruise-result.json`; cruise watch via `CRUISE_WATCH` in `.env.development`) |
+| `npm run build`                       | Type-check (`tsc`) and build for production                                                                          |
+| `npm run build:gh-pages`              | Production build with GitHub Pages base path + embed cruise result in `dist/`                                        |
+| `npm run preview`                     | Preview production build                                                                                             |
+| `npm run test`                        | Run Vitest suite                                                                                                     |
+| `npm run lint`                        | Run ESLint                                                                                                           |
+| `npm run lint:fix`                    | Run ESLint with autofix                                                                                              |
+| `npm run format`                      | Format all files with Prettier                                                                                       |
+| `npm run format:check`                | Check formatting (CI-friendly)                                                                                       |
+| `npm run depcruise`                   | Run dependency-cruiser on `src` (validate layer rules)                                                               |
+| `npm run depcruise:json`              | Export cruise result to `./cruise-result.json`                                                                       |
+| `npm run depcruise:json-for-cli`      | Export cruise result to `test-data/cruise-result.json`                                                               |
+| `npm run depcruise:json-for-gh-pages` | Export cruise result to `dist/cruise-result.json`                                                                    |
+| `npm run cli:verify`                  | Build, refresh `test-data/cruise-result.json`, start CLI server                                                      |
 
 ## License
 
