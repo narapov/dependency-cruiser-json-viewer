@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.0](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v1.0.0...v1.1.0) (2026-08-03)
+
+### Features
+
+- save and load viewer workspace state ([#3](https://github.com/narapov/dependency-cruiser-json-viewer/issues/3)) ([3e03649](https://github.com/narapov/dependency-cruiser-json-viewer/commit/3e036498e95b6dbd7aec46c9ccbd35aead5c5a15))
+
 ## [1.0.0](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v0.2.0...v1.0.0) (2026-08-02)
 
 ### Features
