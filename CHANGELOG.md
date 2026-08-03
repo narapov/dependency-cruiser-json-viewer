@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.0.0](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v0.2.0...v1.0.0) (2026-08-02)
+
+### Features
+
+- add hidden items to DependencyPanel and show deps as tree ([0d74fe6](https://github.com/narapov/dependency-cruiser-json-viewer/commit/0d74fe6fb381ea9b4aeb004a266b7625c0fab2b8))
+- add highlight edge from dependency panel ([5be9c34](https://github.com/narapov/dependency-cruiser-json-viewer/commit/5be9c34e31e3affea3fc3b324eb0e785fbf18447))
+- add RelationList context menu and reveal actions on hover ([159e2d0](https://github.com/narapov/dependency-cruiser-json-viewer/commit/159e2d0e7f693db327317df0b399a403f6cb6e9a))
+- export graph as .dot file ([f5aaff5](https://github.com/narapov/dependency-cruiser-json-viewer/commit/f5aaff5ab0772f077ce38e4d608a8253c77d9236))
+- highlight minimap viewport ([d709ae4](https://github.com/narapov/dependency-cruiser-json-viewer/commit/d709ae49ac6e3263f710cd329739d9181bc1ba83))
+- open graph DOT in Graphviz Online ([14503eb](https://github.com/narapov/dependency-cruiser-json-viewer/commit/14503ebdf72d28d501b8a749662fe8d78002994e))
+
+### Bug Fixes
+
+- accept cruise results without dependents and preserve parse causes ([17b1f92](https://github.com/narapov/dependency-cruiser-json-viewer/commit/17b1f92d8e538e8118fb724e212d6507fd6fc28d))
+- defer graph focus until ELK layout applies the node ([72fce0e](https://github.com/narapov/dependency-cruiser-json-viewer/commit/72fce0e3d1702d071269cdd80148158d75df603f))
+- focus graph node ([1c87790](https://github.com/narapov/dependency-cruiser-json-viewer/commit/1c877908c2dd61e05e2d0f61ccb9f2ddef7f6e49))
+- incorrect types in tests ([d8a59cc](https://github.com/narapov/dependency-cruiser-json-viewer/commit/d8a59cc586e35dad8f61799fe012dc5a1a9ed2cc))
+- race-safe loads, stricter cruise schema, and UI cleanup ([79e97cf](https://github.com/narapov/dependency-cruiser-json-viewer/commit/79e97cfc727f1c115c0a4b00dc14b1946ce9d7b2))
+
+### Performance Improvements
+
+- remove O(n²) subtree walk and path×pattern picomatch compiles ([c841735](https://github.com/narapov/dependency-cruiser-json-viewer/commit/c84173502b593f1efd27f0ab1cee7f4bf0ddc948))
+
 ## [0.2.0](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v0.1.5...v0.2.0) (2026-07-31)
 
 ### Features
