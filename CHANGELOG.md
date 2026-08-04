@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.2.0](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v1.1.0...v1.2.0) (2026-08-04)
+
+### Features
+
+- add watch-mode ([#4](https://github.com/narapov/dependency-cruiser-json-viewer/issues/4)) ([5d13057](https://github.com/narapov/dependency-cruiser-json-viewer/commit/5d13057c4d2fa584ba4b891d42d5e26d4b862ec6))
+
 ## [1.1.0](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v1.0.0...v1.1.0) (2026-08-03)
 
 ### Features
