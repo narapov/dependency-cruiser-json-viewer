@@ -25,6 +25,8 @@
     "showFileTree": "Показать дерево файлов ({{shortcut}})",
     "hideRules": "Скрыть правила ({{shortcut}})",
     "showRules": "Показать правила ({{shortcut}})",
+    "hideCircular": "Скрыть циклы ({{shortcut}})",
+    "showCircular": "Показать циклы ({{shortcut}})",
     "about": "О приложении"
   },
   "actions": {
@@ -59,6 +61,7 @@
     "expandAllRecursive": "Развернуть всё рекурсивно",
     "collapseAllRecursive": "Свернуть всё рекурсивно",
     "selectAll": "Выбрать всё",
+    "showCircularDependenciesOnly": "Показать только циклические зависимости",
     "setTheme": "Выбрать тему",
     "setLanguage": "Выбрать язык",
     "setIgnorePatterns": "Настроить игнорируемые паттерны",
@@ -66,6 +69,7 @@
     "loadWorkspaceSettings": "Загрузить настройки рабочего пространства",
     "showFileTree": "Показать дерево файлов",
     "showRulesPanel": "Показать панель правил",
+    "showCircularPanel": "Показать панель циклов",
     "toggleSidebar": "Переключить боковую панель",
     "unselectAll": "Снять выделение",
     "about": "О приложении",
@@ -144,7 +148,12 @@
   },
   "sidebar": {
     "files": "Файлы",
-    "rules": "Правила"
+    "rules": "Правила",
+    "circular": "Циклы"
+  },
+  "circular": {
+    "empty": "Нет циклических зависимостей",
+    "showCycle": "Показать цикл"
   },
   "rules": {
     "empty": "В этом результате cruise нет правил.",

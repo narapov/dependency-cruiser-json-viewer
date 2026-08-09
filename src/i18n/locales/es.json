@@ -25,6 +25,8 @@
     "showFileTree": "Mostrar árbol de archivos ({{shortcut}})",
     "hideRules": "Ocultar reglas ({{shortcut}})",
     "showRules": "Mostrar reglas ({{shortcut}})",
+    "hideCircular": "Ocultar circulares ({{shortcut}})",
+    "showCircular": "Mostrar circulares ({{shortcut}})",
     "about": "Acerca de"
   },
   "actions": {
@@ -59,6 +61,7 @@
     "expandAllRecursive": "Expandir todo recursivamente",
     "collapseAllRecursive": "Contraer todo recursivamente",
     "selectAll": "Seleccionar todo",
+    "showCircularDependenciesOnly": "Mostrar solo dependencias circulares",
     "setTheme": "Elegir tema",
     "setLanguage": "Elegir idioma",
     "setIgnorePatterns": "Configurar patrones de exclusión",
@@ -66,6 +69,7 @@
     "loadWorkspaceSettings": "Cargar ajustes del espacio de trabajo",
     "showFileTree": "Mostrar árbol de archivos",
     "showRulesPanel": "Mostrar panel de reglas",
+    "showCircularPanel": "Mostrar panel circular",
     "toggleSidebar": "Mostrar/Ocultar barra lateral",
     "unselectAll": "Deseleccionar todo",
     "about": "Acerca de",
@@ -144,7 +148,12 @@
   },
   "sidebar": {
     "files": "Archivos",
-    "rules": "Reglas"
+    "rules": "Reglas",
+    "circular": "Circulares"
+  },
+  "circular": {
+    "empty": "No hay dependencias circulares",
+    "showCycle": "Mostrar ciclo"
   },
   "rules": {
     "empty": "No hay reglas en este resultado de cruise.",

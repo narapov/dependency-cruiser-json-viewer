@@ -25,6 +25,8 @@
     "showFileTree": "Dateibaum einblenden ({{shortcut}})",
     "hideRules": "Regeln ausblenden ({{shortcut}})",
     "showRules": "Regeln einblenden ({{shortcut}})",
+    "hideCircular": "Zirkuläre ausblenden ({{shortcut}})",
+    "showCircular": "Zirkuläre einblenden ({{shortcut}})",
     "about": "Über"
   },
   "actions": {
@@ -59,6 +61,7 @@
     "expandAllRecursive": "Alles rekursiv erweitern",
     "collapseAllRecursive": "Alles rekursiv einklappen",
     "selectAll": "Alles auswählen",
+    "showCircularDependenciesOnly": "Nur zirkuläre Abhängigkeiten anzeigen",
     "setTheme": "Design festlegen",
     "setLanguage": "Sprache festlegen",
     "setIgnorePatterns": "Ignorier-Muster festlegen",
@@ -66,6 +69,7 @@
     "loadWorkspaceSettings": "Workspace-Einstellungen laden",
     "showFileTree": "Dateibaum anzeigen",
     "showRulesPanel": "Regelpanel anzeigen",
+    "showCircularPanel": "Zirkuläres Panel anzeigen",
     "toggleSidebar": "Seitenleiste ein-/ausblenden",
     "unselectAll": "Auswahl aufheben",
     "about": "Über",
@@ -144,7 +148,12 @@
   },
   "sidebar": {
     "files": "Dateien",
-    "rules": "Regeln"
+    "rules": "Regeln",
+    "circular": "Zirkulär"
+  },
+  "circular": {
+    "empty": "Keine zirkulären Abhängigkeiten",
+    "showCycle": "Zyklus anzeigen"
   },
   "rules": {
     "empty": "Keine Regeln in diesem Cruise-Ergebnis.",

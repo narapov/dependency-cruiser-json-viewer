@@ -25,6 +25,8 @@
     "showFileTree": "Show file tree ({{shortcut}})",
     "hideRules": "Hide rules ({{shortcut}})",
     "showRules": "Show rules ({{shortcut}})",
+    "hideCircular": "Hide circular ({{shortcut}})",
+    "showCircular": "Show circular ({{shortcut}})",
     "about": "About"
   },
   "actions": {
@@ -59,6 +61,7 @@
     "expandAllRecursive": "Expand All Recursive",
     "collapseAllRecursive": "Collapse All Recursive",
     "selectAll": "Select All",
+    "showCircularDependenciesOnly": "Show Circular Dependencies Only",
     "setTheme": "Set Theme",
     "setLanguage": "Set Language",
     "setIgnorePatterns": "Set Ignore Patterns",
@@ -66,6 +69,7 @@
     "loadWorkspaceSettings": "Load Workspace Settings",
     "showFileTree": "Show File Tree",
     "showRulesPanel": "Show Rules Panel",
+    "showCircularPanel": "Show Circular Panel",
     "toggleSidebar": "Toggle Sidebar",
     "unselectAll": "Unselect All",
     "about": "About",
@@ -144,7 +148,12 @@
   },
   "sidebar": {
     "files": "Files",
-    "rules": "Rules"
+    "rules": "Rules",
+    "circular": "Circular"
+  },
+  "circular": {
+    "empty": "No circular dependencies",
+    "showCycle": "Show cycle"
   },
   "rules": {
     "empty": "No rules in this cruise result.",

@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/dependency-cruiser-json-viewer.svg)](https://www.npmjs.com/package/dependency-cruiser-json-viewer)
 
-Interactive browser viewer for [dependency-cruiser](https://github.com/sverweij/dependency-cruiser) JSON cruise results — explore file trees, dependency graphs, and module relations.
+Interactive browser viewer for [dependency-cruiser](https://github.com/sverweij/dependency-cruiser) JSON cruise results — explore file trees, dependency graphs, circular dependencies, and module relations.
 
 Built with [React](https://react.dev/), [MUI](https://mui.com/), and [@xyflow/react](https://reactflow.dev/).
 
@@ -29,6 +29,7 @@ The usual workflow meant constantly tweaking filters, `collapsePattern`, and `ex
 - **Drag-and-drop layout** — rearrange graph nodes by dragging; custom positions persist when you expand or collapse folders. Turn off **Auto layout only** in the graph legend to enable dragging; use **Auto layout** in a folder's context menu to reset layout.
 - **Edge highlighting** — highlight dependencies via the edge context menu; highlights are tied to the underlying import relation and persist when you expand or collapse nodes.
 - **Rules panel** — browse the cruise `ruleSetUsed` with violation counts; fuzzy-filter by rule name; expand a rule to see violations and click one to select/navigate to the offending modules in the tree and graph.
+- **Circular dependencies** — open the Circular panel to browse distinct cycles; expand a cycle for member paths, or show the cycle in the graph without unrelated modules.
 - **Drill-down navigation** — expanding a folder in the tree rebuilds the graph for that scope, so you can walk from high-level architecture down to individual files.
 - **Quick search & commands** — fuzzy file search (`Cmd/Ctrl+P`) and command palette (`F1`); see Keyboard shortcuts below.
 - **DOT export** — export the current graph layout as a Graphviz `.dot` file via the command palette (**Export Graph DOT**), or open it in [Graphviz Online](https://dreampuf.github.io/GraphvizOnline/?engine=nop2) (**View Graph DOT Online**); render locally with `neato -n2 -Tsvg graph.dot` or `dot -Knop2 -Tsvg graph.dot`.

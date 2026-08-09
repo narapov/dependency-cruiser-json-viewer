@@ -242,6 +242,104 @@ describe('useAppOrchestration', () => {
     expect(result.current.selectedPaths).toEqual([]);
   });
 
+  it('showCircularDependenciesOnly selects circular modules and expands ancestors', () => {
+    const sources = ['src/a.ts', 'src/b/c.ts', 'src/b/d.ts', 'src/e/f/g.ts'];
+    const refs = createRefs();
+    const initialDependencyCruiserState = {
+      selectedKeys: sources,
+      expandedKeys: [] as string[],
+    };
+    const { result } = renderHook(() =>
+      useAppOrchestration({
+        sources,
+        unfilteredCruiseResult: {
+          modules: [
+            {
+              source: 'src/a.ts',
+              dependencies: [],
+              dependents: [],
+              valid: true,
+            },
+            {
+              source: 'src/b/c.ts',
+              dependencies: [
+                {
+                  resolved: 'src/b/d.ts',
+                  circular: true,
+                  dependencyTypes: ['local', 'import'],
+                },
+              ],
+              dependents: [],
+              valid: true,
+            },
+            {
+              source: 'src/b/d.ts',
+              dependencies: [],
+              dependents: [],
+              valid: true,
+            },
+            {
+              source: 'src/e/f/g.ts',
+              dependencies: [
+                {
+                  resolved: 'src/a.ts',
+                  circular: true,
+                  dependencyTypes: ['local', 'type-only', 'import'],
+                },
+              ],
+              dependents: [],
+              valid: true,
+            },
+          ],
+          summary: {},
+        } as never,
+        ignorePatterns: [],
+        fileTreeRef: refs.fileTreeRef,
+        graphRef: refs.graphRef,
+        initialDependencyCruiserState,
+        cruiseLoadId: 0,
+      }),
+    );
+
+    act(() => {
+      result.current.showCircularDependenciesOnly();
+    });
+
+    expect(result.current.selectedPaths).toEqual(
+      expect.arrayContaining(['src/a.ts', 'src/b/c.ts', 'src/b/d.ts', 'src/e/f/g.ts']),
+    );
+    expect(result.current.expandedKeys).toEqual(expect.arrayContaining(['src', 'src/b', 'src/e', 'src/e/f']));
+  });
+
+  it('showCircularDependenciesOnly clears selection when there are no circular modules', () => {
+    const { result } = renderOrchestration({
+      selectedKeys: SOURCES,
+      expandedKeys: ['src', 'src/b'],
+    });
+
+    act(() => {
+      result.current.showCircularDependenciesOnly();
+    });
+
+    expect(result.current.selectedPaths).toEqual([]);
+    expect(result.current.expandedKeys).toEqual(['src', 'src/b']);
+  });
+
+  it('showPathsOnly selects given paths and expands ancestors', () => {
+    const { result } = renderOrchestration({
+      selectedKeys: SOURCES,
+      expandedKeys: [],
+    });
+
+    act(() => {
+      result.current.showPathsOnly(['src/b/c.ts', 'src/b/d.ts']);
+    });
+
+    expect(result.current.selectedPaths).toEqual(expect.arrayContaining(['src/b/c.ts', 'src/b/d.ts', 'src/b']));
+    expect(result.current.selectedPaths).not.toContain('src/a.ts');
+    expect(result.current.expandedKeys).toEqual(expect.arrayContaining(['src', 'src/b']));
+  });
+
   it('expandAllRecursive and collapseAllRecursive update expandedKeys', () => {
     const { result } = renderOrchestration({ expandedKeys: [] });
 
