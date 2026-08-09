@@ -104,6 +104,7 @@ describe('buildGraphEdges', () => {
     expect(edge?.style?.strokeWidth).toBe(2);
     expect(edge?.style?.strokeDasharray).toBeUndefined();
     expect(edge?.data?.circular).toBe(true);
+    expect(edge?.data?.title).toBe('src/foo/a.ts → src/foo/b.ts (circular)');
   });
 
   it('styles type-only circular edges with light red and dash', () => {
@@ -118,6 +119,7 @@ describe('buildGraphEdges', () => {
     expect(edge?.style?.strokeDasharray).toBe('6 4');
     expect(edge?.data?.typeOnly).toBe(true);
     expect(edge?.data?.circular).toBe(true);
+    expect(edge?.data?.title).toBe('src/foo/a.ts → src/foo/b.ts (type-only) (circular)');
   });
 
   it('styles couldNotResolve edges with error color', () => {
@@ -134,6 +136,7 @@ describe('buildGraphEdges', () => {
     expect(edge?.style?.stroke).toBe(ERROR_EDGE_COLOR);
     expect(edge?.style?.strokeWidth).toBe(2);
     expect(edge?.data?.couldNotResolve).toBe(true);
+    expect(edge?.data?.title).toBe('src/foo/a.ts → missing-module (unresolved)');
   });
 
   it('styles error-rule edges and puts rule names in the title', () => {
@@ -187,6 +190,7 @@ describe('buildGraphEdges', () => {
     expect(edge?.style?.stroke).toBe(ERROR_EDGE_COLOR);
     expect(edge?.data?.circular).toBe(true);
     expect(edge?.data?.couldNotResolve).toBe(true);
+    expect(edge?.data?.title).toBe('src/foo/a.ts → missing-module (circular) (unresolved)');
   });
 
   it('prefers circular over warn for stroke color', () => {
@@ -203,7 +207,7 @@ describe('buildGraphEdges', () => {
 
     expect(edge?.style?.stroke).toBe(CIRCULAR_EDGE_COLOR);
     expect(edge?.data?.severity).toBe('warn');
-    expect(edge?.data?.title).toContain('not-in-allowed');
+    expect(edge?.data?.title).toBe('src/foo/a.ts → src/foo/b.ts (circular) (not-in-allowed)');
   });
 
   it('rolls violation flags up onto collapsed folder edges', () => {

@@ -14,6 +14,7 @@ import {
   INCOMING_EDGE_COLOR,
   OUTGOING_EDGE_COLOR,
   SELECTED_EDGE_COLOR,
+  WARNING_EDGE_COLOR,
 } from '@/Shared';
 
 import styles from './GraphLegend.module.css';
@@ -28,7 +29,8 @@ export function GraphLegend() {
   const solidItems = [
     { color: INCOMING_EDGE_COLOR, labelKey: 'graph.legend.incoming' },
     { color: OUTGOING_EDGE_COLOR, labelKey: 'graph.legend.outgoing' },
-    { color: CIRCULAR_EDGE_COLOR, labelKey: 'graph.legend.circular' },
+    { color: CIRCULAR_EDGE_COLOR, labelKey: 'graph.legend.errorOrCircular' },
+    { color: WARNING_EDGE_COLOR, labelKey: 'graph.legend.warning' },
     { color: SELECTED_EDGE_COLOR, labelKey: 'graph.legend.selected' },
   ] as const;
 

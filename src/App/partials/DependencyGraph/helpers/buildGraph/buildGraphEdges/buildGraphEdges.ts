@@ -73,8 +73,16 @@ function toReactFlowEdge(edgeKey: string, info: EdgeBuildInfo): Edge {
     style.strokeDasharray = TYPE_ONLY_EDGE_DASH;
   }
 
-  const titleSuffix = typeOnly ? ' (type-only)' : '';
-  const rulesSuffix = ruleNames.length > 0 ? ` (${ruleNames.join(', ')})` : '';
+  const isCircular = valueCircular || typeOnlyCircular;
+  const title = [
+    `${sourceRep} → ${targetRep}`,
+    typeOnly && '(type-only)',
+    isCircular && '(circular)',
+    couldNotResolve && '(unresolved)',
+    ruleNames.length > 0 && `(${ruleNames.join(', ')})`,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return {
     id: edgeKey,
@@ -83,9 +91,9 @@ function toReactFlowEdge(edgeKey: string, info: EdgeBuildInfo): Edge {
     target: targetRep,
     interactionWidth: 3,
     data: {
-      title: `${sourceRep} → ${targetRep}${titleSuffix}${rulesSuffix}`,
+      title,
       typeOnly,
-      circular: valueCircular || typeOnlyCircular,
+      circular: isCircular,
       couldNotResolve,
       severity: severity ?? undefined,
       ruleNames: ruleNames.length > 0 ? ruleNames : undefined,

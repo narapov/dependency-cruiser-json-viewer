@@ -102,7 +102,8 @@
       "title": "Legend",
       "incoming": "Incoming",
       "outgoing": "Outgoing",
-      "circular": "Circular",
+      "errorOrCircular": "Error / Circular",
+      "warning": "Warning",
       "selected": "Selected",
       "typeOnly": "Type-only",
       "typeOnlyCircular": "Type-only circular"
