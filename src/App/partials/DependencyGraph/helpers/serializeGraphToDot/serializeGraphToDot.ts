@@ -10,7 +10,7 @@ import {
   WARNING_EDGE_COLOR,
 } from '@/Shared';
 
-import type { FileNodeData, FolderGroupNodeData, FolderNodeData } from '../../types';
+import type { DependencyEdgeData, FileNodeData, FolderGroupNodeData, FolderNodeData } from '../../types';
 import { parsePastelHsl } from '../assignFolderColors';
 import { getNodeSize } from '../graphLayoutCache';
 
@@ -273,9 +273,12 @@ function emitEdge(
   const strokeWidth = resolveEdgePenWidth(edge, highlightColor != null);
   const attrs = [`color=${quoteDot(color)}`, `penwidth=${strokeWidth}`];
 
-  const typeOnly = (edge.data as { typeOnly?: boolean } | undefined)?.typeOnly === true;
-  if (typeOnly) {
+  const data = edge.data as DependencyEdgeData | undefined;
+  if (data?.typeOnly === true) {
     attrs.push('style=dashed');
+  }
+  if (typeof data?.title === 'string' && data.title.length > 0) {
+    attrs.push(`tooltip=${quoteDot(data.title)}`);
   }
 
   return `${indent}${quoteDot(edge.source)} -> ${quoteDot(edge.target)} [${attrs.join(', ')}];`;

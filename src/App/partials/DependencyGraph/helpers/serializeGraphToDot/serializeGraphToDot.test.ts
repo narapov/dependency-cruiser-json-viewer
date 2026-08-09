@@ -190,7 +190,7 @@ describe('serializeGraphToDot', () => {
       edgeDependencyKeyMap: new Map([['a.ts->b.ts', [depKey]]]),
     });
 
-    expect(dot).toContain('"a.ts" -> "b.ts" [color="#e6194b", penwidth=3]');
+    expect(dot).toContain('"a.ts" -> "b.ts" [color="#e6194b", penwidth=3, tooltip="a → b"]');
     expect(dot).not.toContain('#ff4d4f');
   });
 
@@ -218,8 +218,8 @@ describe('serializeGraphToDot', () => {
       edgeDependencyKeyMap: new Map(),
     });
 
-    expect(dot).toContain('"a.ts" -> "b.ts" [color="#ff4d4f", penwidth=2]');
-    expect(dot).toContain('"b.ts" -> "c.ts" [color="#ffa39e", penwidth=2, style=dashed]');
+    expect(dot).toContain('"a.ts" -> "b.ts" [color="#ff4d4f", penwidth=2, tooltip="a → b"]');
+    expect(dot).toContain('"b.ts" -> "c.ts" [color="#ffa39e", penwidth=2, style=dashed, tooltip="b → c"]');
   });
 
   it('uses resolved error / warn hex for unhighlighted edges', () => {
@@ -246,8 +246,8 @@ describe('serializeGraphToDot', () => {
       edgeDependencyKeyMap: new Map(),
     });
 
-    expect(dot).toContain('"a.ts" -> "b.ts" [color="#ff4d4f", penwidth=2]');
-    expect(dot).toContain('"b.ts" -> "c.ts" [color="#faad14", penwidth=2]');
+    expect(dot).toContain('"a.ts" -> "b.ts" [color="#ff4d4f", penwidth=2, tooltip="a → b"]');
+    expect(dot).toContain('"b.ts" -> "c.ts" [color="#faad14", penwidth=2, tooltip="b → c"]');
   });
 
   it('applies user highlight color and ignores base error stroke when highlighted', () => {
@@ -267,7 +267,7 @@ describe('serializeGraphToDot', () => {
       edgeDependencyKeyMap: new Map([['a.ts->b.ts', [depKey]]]),
     });
 
-    expect(dot).toContain('"a.ts" -> "b.ts" [color="#e6194b", penwidth=3]');
+    expect(dot).toContain('"a.ts" -> "b.ts" [color="#e6194b", penwidth=3, tooltip="a → b"]');
   });
 
   it('exports unresolved file nodes with red fill and error border', () => {
@@ -330,8 +330,29 @@ describe('serializeGraphToDot', () => {
     });
 
     expect(dot).toContain('color="#b1b1b7"');
+    expect(dot).toContain('tooltip="a.ts → b.ts"');
     expect(dot).not.toContain('#1677ff');
     expect(dot).not.toContain('#52c41a');
+  });
+
+  it('exports edge titles with status markers as tooltips and escapes special characters', () => {
+    const nodes = [fileNode('a.ts'), fileNode('b"c.ts', { position: { x: 100, y: 0 } })];
+    const title = 'a.ts → b"c.ts (circular) (unresolved)';
+    const edges = [
+      edgeAt('a.ts', 'b"c.ts', {
+        style: { stroke: ERROR_EDGE_COLOR, strokeWidth: 2 },
+        data: { title, circular: true, couldNotResolve: true },
+      }),
+    ];
+
+    const dot = serializeGraphToDot({
+      nodes,
+      edges,
+      userEdgeHighlights: new Map(),
+      edgeDependencyKeyMap: new Map(),
+    });
+
+    expect(dot).toContain(`tooltip=${quoteDot(title)}`);
   });
 
   it('escapes special characters in path ids and labels', () => {
