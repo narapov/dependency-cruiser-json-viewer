@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.3.0](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v1.2.0...v1.3.0) (2026-08-09)
+
+### Features
+
+- add rules viewer ([#5](https://github.com/narapov/dependency-cruiser-json-viewer/issues/5)) ([171f234](https://github.com/narapov/dependency-cruiser-json-viewer/commit/171f234003d0f1e455910e3c15544ff1085cb0f4))
+
+### Bug Fixes
+
+- curve reverse same-Y dependency graph edges ([#6](https://github.com/narapov/dependency-cruiser-json-viewer/issues/6)) ([72f75ac](https://github.com/narapov/dependency-cruiser-json-viewer/commit/72f75acf51f7c477ca9de1b4d15f809aafc56e99))
+- ignore tree checkbox clicks for show-in-graph ([a3c9fb5](https://github.com/narapov/dependency-cruiser-json-viewer/commit/a3c9fb5003c60d5ce5a65e0789f4cd65d6e2f9e6))
+
 ## [1.2.0](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v1.1.0...v1.2.0) (2026-08-04)
 
 ### Features
