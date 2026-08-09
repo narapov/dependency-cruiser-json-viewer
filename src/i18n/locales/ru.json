@@ -21,6 +21,8 @@
     "commandPalette": "Палитра команд (F1)",
     "hideFileTree": "Скрыть дерево файлов ({{shortcut}})",
     "showFileTree": "Показать дерево файлов ({{shortcut}})",
+    "hideRules": "Скрыть правила",
+    "showRules": "Показать правила",
     "about": "О приложении"
   },
   "actions": {
@@ -134,5 +136,26 @@
     "title": "О приложении",
     "version": "Версия {{version}}",
     "commit": "Коммит {{hash}}"
+  },
+  "sidebar": {
+    "files": "Файлы",
+    "rules": "Правила"
+  },
+  "rules": {
+    "empty": "В этом результате cruise нет правил.",
+    "noMatches": "Нет правил, подходящих под фильтр.",
+    "noViolations": "Нет нарушений",
+    "filterPlaceholder": "Фильтр правил…",
+    "withViolations": "С нарушениями",
+    "withoutViolations": "Без нарушений",
+    "violationsCount": "{{count}}",
+    "viewJson": "Показать JSON правила",
+    "jsonTitle": "Правило: {{name}}",
+    "severity": {
+      "error": "error",
+      "warn": "warn",
+      "info": "info",
+      "ignore": "ignore"
+    }
   }
 }

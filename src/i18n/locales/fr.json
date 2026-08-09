@@ -21,6 +21,8 @@
     "commandPalette": "Palette de commandes (F1)",
     "hideFileTree": "Masquer l'arborescence ({{shortcut}})",
     "showFileTree": "Afficher l'arborescence ({{shortcut}})",
+    "hideRules": "Masquer les règles",
+    "showRules": "Afficher les règles",
     "about": "À propos"
   },
   "actions": {
@@ -134,5 +136,26 @@
     "title": "À propos",
     "version": "Version {{version}}",
     "commit": "Commit {{hash}}"
+  },
+  "sidebar": {
+    "files": "Fichiers",
+    "rules": "Règles"
+  },
+  "rules": {
+    "empty": "Aucune règle dans ce résultat de cruise.",
+    "noMatches": "Aucune règle ne correspond au filtre.",
+    "noViolations": "Aucune violation",
+    "filterPlaceholder": "Filtrer les règles…",
+    "withViolations": "Avec violations",
+    "withoutViolations": "Sans violations",
+    "violationsCount": "{{count}}",
+    "viewJson": "Voir le JSON de la règle",
+    "jsonTitle": "Règle : {{name}}",
+    "severity": {
+      "error": "error",
+      "warn": "warn",
+      "info": "info",
+      "ignore": "ignore"
+    }
   }
 }

@@ -78,6 +78,7 @@ vi.mock('./hooks', async importOriginal => {
       getEdgeHighlight: vi.fn(),
       setUserEdgeHighlight: vi.fn(),
       onEdgeClick: vi.fn(),
+      selectEdge: vi.fn(),
       clearSelectedEdge: vi.fn(),
     }),
     useAutoFitView: vi.fn(),

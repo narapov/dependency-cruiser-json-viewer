@@ -82,6 +82,7 @@ vi.mock('./partials/AppLayout', async importOriginal => {
   return {
     ...actual,
     useSidebarOpen: () => ({ sidebarOpen: true, setSidebarOpen: vi.fn(), toggleSidebarOpen: vi.fn() }),
+    useSidebarView: () => ({ sidebarView: 'files', setSidebarView: vi.fn() }),
     useSidebarShortcut: vi.fn(),
   };
 });

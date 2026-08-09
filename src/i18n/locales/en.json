@@ -21,6 +21,8 @@
     "commandPalette": "Command Palette (F1)",
     "hideFileTree": "Hide file tree ({{shortcut}})",
     "showFileTree": "Show file tree ({{shortcut}})",
+    "hideRules": "Hide rules",
+    "showRules": "Show rules",
     "about": "About"
   },
   "actions": {
@@ -134,5 +136,26 @@
     "title": "About",
     "version": "Version {{version}}",
     "commit": "Commit {{hash}}"
+  },
+  "sidebar": {
+    "files": "Files",
+    "rules": "Rules"
+  },
+  "rules": {
+    "empty": "No rules in this cruise result.",
+    "noMatches": "No rules match the filter.",
+    "noViolations": "No violations",
+    "filterPlaceholder": "Filter rules…",
+    "withViolations": "With violations",
+    "withoutViolations": "Without violations",
+    "violationsCount": "{{count}}",
+    "viewJson": "View rule JSON",
+    "jsonTitle": "Rule: {{name}}",
+    "severity": {
+      "error": "error",
+      "warn": "warn",
+      "info": "info",
+      "ignore": "ignore"
+    }
   }
 }

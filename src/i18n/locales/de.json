@@ -21,6 +21,8 @@
     "commandPalette": "Befehlspalette (F1)",
     "hideFileTree": "Dateibaum ausblenden ({{shortcut}})",
     "showFileTree": "Dateibaum einblenden ({{shortcut}})",
+    "hideRules": "Regeln ausblenden",
+    "showRules": "Regeln einblenden",
     "about": "Über"
   },
   "actions": {
@@ -134,5 +136,26 @@
     "title": "Über",
     "version": "Version {{version}}",
     "commit": "Commit {{hash}}"
+  },
+  "sidebar": {
+    "files": "Dateien",
+    "rules": "Regeln"
+  },
+  "rules": {
+    "empty": "Keine Regeln in diesem Cruise-Ergebnis.",
+    "noMatches": "Keine Regeln entsprechen dem Filter.",
+    "noViolations": "Keine Verstöße",
+    "filterPlaceholder": "Regeln filtern…",
+    "withViolations": "Mit Verstößen",
+    "withoutViolations": "Ohne Verstöße",
+    "violationsCount": "{{count}}",
+    "viewJson": "Regel-JSON anzeigen",
+    "jsonTitle": "Regel: {{name}}",
+    "severity": {
+      "error": "error",
+      "warn": "warn",
+      "info": "info",
+      "ignore": "ignore"
+    }
   }
 }

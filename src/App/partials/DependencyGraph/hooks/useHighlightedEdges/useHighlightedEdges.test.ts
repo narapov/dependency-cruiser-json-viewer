@@ -59,6 +59,17 @@ describe('useHighlightedEdges', () => {
     expect(result.current.highlightedEdges[0]?.zIndex).not.toBe(1000);
   });
 
+  it('selects an edge by id via selectEdge', () => {
+    const { result } = renderHighlighted();
+
+    act(() => {
+      result.current.selectEdge('a.ts->b.ts');
+    });
+
+    expect(result.current.highlightedEdges[0]?.zIndex).toBe(1000);
+    expect(result.current.highlightedEdges[0]?.style?.strokeWidth).toBe(3);
+  });
+
   it('drops selectedEdgeId when the edge leaves baseEdges', () => {
     const { result, rerender } = renderHook(({ edges }) => useHighlightedEdgesHarness({ baseEdges: edges }), {
       initialProps: { edges: baseEdges },
