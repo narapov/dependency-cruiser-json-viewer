@@ -4,6 +4,7 @@ import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Box from '@mui/material/Box';
+import List from '@mui/material/List';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
@@ -46,14 +47,16 @@ function RulesSection({
       <Typography variant="subtitle2" color="text.secondary" sx={{ px: 1.5, py: 0.75 }}>
         {title} ({entries.length})
       </Typography>
-      {entries.map(entry => (
-        <RuleListItem
-          key={entry.name}
-          entry={entry}
-          nameFilter={nameFilter}
-          onSelectViolationPaths={onSelectViolationPaths}
-        />
-      ))}
+      <List dense disablePadding>
+        {entries.map(entry => (
+          <RuleListItem
+            key={entry.name}
+            entry={entry}
+            nameFilter={nameFilter}
+            onSelectViolationPaths={onSelectViolationPaths}
+          />
+        ))}
+      </List>
     </Box>
   );
 }

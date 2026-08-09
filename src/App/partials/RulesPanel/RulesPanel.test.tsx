@@ -120,7 +120,7 @@ describe('RulesPanel', () => {
     expect(screen.getByText(i18n.current.t('rules.noMatches'))).toBeInTheDocument();
   });
 
-  it('does not expand a rule with no violations', () => {
+  it('does not show an expand button for a rule with no violations', () => {
     const { result: i18n } = renderHook(() => useTranslation());
 
     renderWithTheme(
@@ -132,12 +132,12 @@ describe('RulesPanel', () => {
       />,
     );
 
-    fireEvent.click(screen.getByText('no-circular'));
-
-    expect(screen.queryByText(i18n.current.t('rules.noViolations'))).not.toBeInTheDocument();
+    expect(screen.getByTitle('no-circular')).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: i18n.current.t('actions.expand') })).toHaveLength(1);
   });
 
   it('calls onSelectViolationPaths when a violation is clicked', () => {
+    const { result: i18n } = renderHook(() => useTranslation());
     const onSelectViolationPaths = vi.fn();
 
     renderWithTheme(
@@ -149,7 +149,7 @@ describe('RulesPanel', () => {
       />,
     );
 
-    fireEvent.click(screen.getByText('domain-only-domain'));
+    fireEvent.click(screen.getByRole('button', { name: i18n.current.t('actions.expand') }));
     fireEvent.click(screen.getByText('src/domain/a.ts → src/App/App.tsx'));
 
     expect(onSelectViolationPaths).toHaveBeenCalledWith(['src/domain/a.ts', 'src/App/App.tsx']);
