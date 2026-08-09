@@ -1,2 +1,2 @@
 export * from './AppLayout';
-export { useSidebarOpen, useSidebarShortcut } from './hooks';
+export { useSidebarOpen, useSidebarShortcut, useSidebarView, type SidebarView } from './hooks';

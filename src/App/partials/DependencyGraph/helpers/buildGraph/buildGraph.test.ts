@@ -162,6 +162,34 @@ describe('buildGraph circular dependencies', () => {
   });
 });
 
+describe('buildGraph unresolved modules', () => {
+  it('marks file nodes with couldNotResolve', async () => {
+    const modules = [
+      moduleAt('src/foo/a.ts', [
+        {
+          resolved: 'missing-module',
+          couldNotResolve: true,
+        } as IModule['dependencies'][0],
+      ]),
+      { ...moduleAt('missing-module'), couldNotResolve: true } as IModule,
+    ];
+
+    const { nodes } = await buildGraph({
+      modules,
+      selectedPaths: ['src/foo/a.ts', 'missing-module'],
+      expandedFolders: new Set(['src', 'src/foo']),
+      folderColors: new Map(),
+      onToggleFolder: noopToggle,
+      onExpandRecursive: noopExpandRecursive,
+      onShowInFileTree: noopShowInFileTree,
+    });
+
+    const unresolvedNode = nodes.find(node => node.id === 'missing-module');
+    expect(unresolvedNode?.data.couldNotResolve).toBe(true);
+    expect(nodes.find(node => node.id === 'src/foo/a.ts')?.data.couldNotResolve).toBe(false);
+  });
+});
+
 describe('buildGraph type-only dependencies', () => {
   const noopArgs = {
     folderColors: new Map(),

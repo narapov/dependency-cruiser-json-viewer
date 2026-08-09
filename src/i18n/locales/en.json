@@ -21,6 +21,8 @@
     "commandPalette": "Command Palette (F1)",
     "hideFileTree": "Hide file tree ({{shortcut}})",
     "showFileTree": "Show file tree ({{shortcut}})",
+    "hideRules": "Hide rules ({{shortcut}})",
+    "showRules": "Show rules ({{shortcut}})",
     "about": "About"
   },
   "actions": {
@@ -60,7 +62,9 @@
     "setIgnorePatterns": "Set Ignore Patterns",
     "loadCruiseResult": "Load dependency-cruiser JSON",
     "loadWorkspaceSettings": "Load Workspace Settings",
-    "toggleFileTree": "Toggle File Tree",
+    "showFileTree": "Show File Tree",
+    "showRulesPanel": "Show Rules Panel",
+    "toggleSidebar": "Toggle Sidebar",
     "unselectAll": "Unselect All",
     "about": "About",
     "saveWorkspace": "Save Workspace"
@@ -98,7 +102,8 @@
       "title": "Legend",
       "incoming": "Incoming",
       "outgoing": "Outgoing",
-      "circular": "Circular",
+      "errorOrCircular": "Error / Circular",
+      "warning": "Warning",
       "selected": "Selected",
       "typeOnly": "Type-only",
       "typeOnlyCircular": "Type-only circular"
@@ -134,5 +139,26 @@
     "title": "About",
     "version": "Version {{version}}",
     "commit": "Commit {{hash}}"
+  },
+  "sidebar": {
+    "files": "Files",
+    "rules": "Rules"
+  },
+  "rules": {
+    "empty": "No rules in this cruise result.",
+    "noMatches": "No rules match the filter.",
+    "noViolations": "No violations",
+    "filterPlaceholder": "Filter rules…",
+    "withViolations": "With violations",
+    "withoutViolations": "Without violations",
+    "violationsCount": "{{count}}",
+    "viewJson": "View rule JSON",
+    "jsonTitle": "Rule: {{name}}",
+    "severity": {
+      "error": "error",
+      "warn": "warn",
+      "info": "info",
+      "ignore": "ignore"
+    }
   }
 }

@@ -4,11 +4,16 @@
   --graph-circular: #ff4d4f;
   --graph-circular-type-only: #ffa39e;
   --graph-circular-background: #fff1f0;
+  --graph-error: #ff4d4f;
+  --graph-error-background: red;
+  --graph-warning: #faad14;
+  --graph-warning-background: #fffbe6;
   --graph-selected: #fa8c16;
   --graph-default-edge: #b1b1b7;
 }
 
 [data-dark] {
   --graph-circular-background: #2a1215;
+  --graph-warning-background: #2b2111;
   --graph-default-edge: #6b6b70;
 }

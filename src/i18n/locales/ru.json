@@ -21,6 +21,8 @@
     "commandPalette": "Палитра команд (F1)",
     "hideFileTree": "Скрыть дерево файлов ({{shortcut}})",
     "showFileTree": "Показать дерево файлов ({{shortcut}})",
+    "hideRules": "Скрыть правила ({{shortcut}})",
+    "showRules": "Показать правила ({{shortcut}})",
     "about": "О приложении"
   },
   "actions": {
@@ -60,7 +62,9 @@
     "setIgnorePatterns": "Настроить игнорируемые паттерны",
     "loadCruiseResult": "Загрузить JSON dependency-cruiser",
     "loadWorkspaceSettings": "Загрузить настройки рабочего пространства",
-    "toggleFileTree": "Переключить дерево файлов",
+    "showFileTree": "Показать дерево файлов",
+    "showRulesPanel": "Показать панель правил",
+    "toggleSidebar": "Переключить боковую панель",
     "unselectAll": "Снять выделение",
     "about": "О приложении",
     "saveWorkspace": "Сохранить рабочее пространство"
@@ -98,7 +102,8 @@
       "title": "Легенда",
       "incoming": "Входящие",
       "outgoing": "Исходящие",
-      "circular": "Циклические",
+      "errorOrCircular": "Ошибка / Циклические",
+      "warning": "Предупреждение",
       "selected": "Выбранные",
       "typeOnly": "Только тип",
       "typeOnlyCircular": "Только тип, циклические"
@@ -134,5 +139,26 @@
     "title": "О приложении",
     "version": "Версия {{version}}",
     "commit": "Коммит {{hash}}"
+  },
+  "sidebar": {
+    "files": "Файлы",
+    "rules": "Правила"
+  },
+  "rules": {
+    "empty": "В этом результате cruise нет правил.",
+    "noMatches": "Нет правил, подходящих под фильтр.",
+    "noViolations": "Нет нарушений",
+    "filterPlaceholder": "Фильтр правил…",
+    "withViolations": "С нарушениями",
+    "withoutViolations": "Без нарушений",
+    "violationsCount": "{{count}}",
+    "viewJson": "Показать JSON правила",
+    "jsonTitle": "Правило: {{name}}",
+    "severity": {
+      "error": "error",
+      "warn": "warn",
+      "info": "info",
+      "ignore": "ignore"
+    }
   }
 }

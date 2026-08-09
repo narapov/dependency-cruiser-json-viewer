@@ -21,6 +21,8 @@
     "commandPalette": "Paleta de comandos (F1)",
     "hideFileTree": "Ocultar árbol de archivos ({{shortcut}})",
     "showFileTree": "Mostrar árbol de archivos ({{shortcut}})",
+    "hideRules": "Ocultar reglas ({{shortcut}})",
+    "showRules": "Mostrar reglas ({{shortcut}})",
     "about": "Acerca de"
   },
   "actions": {
@@ -60,7 +62,9 @@
     "setIgnorePatterns": "Configurar patrones de exclusión",
     "loadCruiseResult": "Cargar JSON de dependency-cruiser",
     "loadWorkspaceSettings": "Cargar ajustes del espacio de trabajo",
-    "toggleFileTree": "Mostrar/Ocultar árbol de archivos",
+    "showFileTree": "Mostrar árbol de archivos",
+    "showRulesPanel": "Mostrar panel de reglas",
+    "toggleSidebar": "Mostrar/Ocultar barra lateral",
     "unselectAll": "Deseleccionar todo",
     "about": "Acerca de",
     "saveWorkspace": "Guardar espacio de trabajo"
@@ -98,7 +102,8 @@
       "title": "Leyenda",
       "incoming": "Entrante",
       "outgoing": "Saliente",
-      "circular": "Circular",
+      "errorOrCircular": "Error / Dependencia circular",
+      "warning": "Advertencia",
       "selected": "Seleccionado",
       "typeOnly": "Solo tipo",
       "typeOnlyCircular": "Solo tipo circular"
@@ -134,5 +139,26 @@
     "title": "Acerca de",
     "version": "Versión {{version}}",
     "commit": "Commit {{hash}}"
+  },
+  "sidebar": {
+    "files": "Archivos",
+    "rules": "Reglas"
+  },
+  "rules": {
+    "empty": "No hay reglas en este resultado de cruise.",
+    "noMatches": "Ninguna regla coincide con el filtro.",
+    "noViolations": "Sin violaciones",
+    "filterPlaceholder": "Filtrar reglas…",
+    "withViolations": "Con violaciones",
+    "withoutViolations": "Sin violaciones",
+    "violationsCount": "{{count}}",
+    "viewJson": "Ver JSON de la regla",
+    "jsonTitle": "Regla: {{name}}",
+    "severity": {
+      "error": "error",
+      "warn": "warn",
+      "info": "info",
+      "ignore": "ignore"
+    }
   }
 }

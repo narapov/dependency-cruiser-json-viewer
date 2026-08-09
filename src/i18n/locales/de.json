@@ -21,6 +21,8 @@
     "commandPalette": "Befehlspalette (F1)",
     "hideFileTree": "Dateibaum ausblenden ({{shortcut}})",
     "showFileTree": "Dateibaum einblenden ({{shortcut}})",
+    "hideRules": "Regeln ausblenden ({{shortcut}})",
+    "showRules": "Regeln einblenden ({{shortcut}})",
     "about": "Über"
   },
   "actions": {
@@ -60,7 +62,9 @@
     "setIgnorePatterns": "Ignorier-Muster festlegen",
     "loadCruiseResult": "dependency-cruiser-JSON laden",
     "loadWorkspaceSettings": "Workspace-Einstellungen laden",
-    "toggleFileTree": "Dateibaum ein-/ausblenden",
+    "showFileTree": "Dateibaum anzeigen",
+    "showRulesPanel": "Regelpanel anzeigen",
+    "toggleSidebar": "Seitenleiste ein-/ausblenden",
     "unselectAll": "Auswahl aufheben",
     "about": "Über",
     "saveWorkspace": "Workspace speichern"
@@ -98,7 +102,8 @@
       "title": "Legende",
       "incoming": "Eingehend",
       "outgoing": "Ausgehend",
-      "circular": "Zirkulär",
+      "errorOrCircular": "Fehler / Zirkulär",
+      "warning": "Warnung",
       "selected": "Ausgewählt",
       "typeOnly": "Nur Typ",
       "typeOnlyCircular": "Nur Typ zirkulär"
@@ -134,5 +139,26 @@
     "title": "Über",
     "version": "Version {{version}}",
     "commit": "Commit {{hash}}"
+  },
+  "sidebar": {
+    "files": "Dateien",
+    "rules": "Regeln"
+  },
+  "rules": {
+    "empty": "Keine Regeln in diesem Cruise-Ergebnis.",
+    "noMatches": "Keine Regeln entsprechen dem Filter.",
+    "noViolations": "Keine Verstöße",
+    "filterPlaceholder": "Regeln filtern…",
+    "withViolations": "Mit Verstößen",
+    "withoutViolations": "Ohne Verstöße",
+    "violationsCount": "{{count}}",
+    "viewJson": "Regel-JSON anzeigen",
+    "jsonTitle": "Regel: {{name}}",
+    "severity": {
+      "error": "error",
+      "warn": "warn",
+      "info": "info",
+      "ignore": "ignore"
+    }
   }
 }

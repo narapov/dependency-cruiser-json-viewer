@@ -29,6 +29,7 @@ interface UseHighlightedEdgesResult {
   getEdgeHighlight: (edgeId: string) => string | undefined;
   setUserEdgeHighlight: (edgeId: string, color: string | null) => void;
   onEdgeClick: (_: MouseEvent, edge: Edge) => void;
+  selectEdge: (edgeId: string) => void;
   clearSelectedEdge: () => void;
 }
 
@@ -64,10 +65,13 @@ export function useHighlightedEdges({
 
   const highlightedEdges = useMemo(
     () =>
-      applyUserEdgeHighlightStyle(
-        applySelectedEdgeStyle(applyActivePathEdgeStyle(baseEdges, activePath ?? null), activeEdgeId),
-        effectiveUserEdgeHighlights,
-        edgeDependencyKeyMap,
+      applySelectedEdgeStyle(
+        applyUserEdgeHighlightStyle(
+          applyActivePathEdgeStyle(baseEdges, activePath ?? null),
+          effectiveUserEdgeHighlights,
+          edgeDependencyKeyMap,
+        ),
+        activeEdgeId,
       ),
     [baseEdges, activePath, activeEdgeId, effectiveUserEdgeHighlights, edgeDependencyKeyMap],
   );
@@ -96,6 +100,10 @@ export function useHighlightedEdges({
     setSelectedEdgeId(edge.id);
   };
 
+  const selectEdge = (edgeId: string) => {
+    setSelectedEdgeId(edgeId);
+  };
+
   const clearSelectedEdge = () => {
     setSelectedEdgeId(null);
   };
@@ -105,6 +113,7 @@ export function useHighlightedEdges({
     getEdgeHighlight,
     setUserEdgeHighlight,
     onEdgeClick,
+    selectEdge,
     clearSelectedEdge,
   };
 }

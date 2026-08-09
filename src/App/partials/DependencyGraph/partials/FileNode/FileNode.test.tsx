@@ -55,4 +55,35 @@ describe('FileNode', () => {
 
     expect(screen.getByText('cycle.ts')).toBeInTheDocument();
   });
+
+  it('applies unresolved error styling', () => {
+    renderWithTheme(
+      <FileNode
+        {...fileNodeProps({
+          label: 'missing',
+          path: './missing',
+          couldNotResolve: true,
+          onShowInFileTree: vi.fn(),
+        })}
+      />,
+    );
+
+    expect(screen.getByText('missing')).toBeInTheDocument();
+  });
+
+  it('prefers unresolved styling over circular when both flags are set', () => {
+    renderWithTheme(
+      <FileNode
+        {...fileNodeProps({
+          label: 'both.ts',
+          path: 'src/both.ts',
+          circular: true,
+          couldNotResolve: true,
+          onShowInFileTree: vi.fn(),
+        })}
+      />,
+    );
+
+    expect(screen.getByText('both.ts')).toBeInTheDocument();
+  });
 });

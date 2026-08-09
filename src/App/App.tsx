@@ -13,6 +13,7 @@ import {
   countIgnoredModules,
   CruiseResultParseError,
   filterCruiseResult,
+  makeDependencyKey,
   type ViewerWorkspaceSettings,
 } from '@/domain';
 import { getWindowEnvs } from '@/Shared';
@@ -31,12 +32,13 @@ import {
 } from './hooks';
 import { AboutDialog } from './partials/AboutDialog';
 import { AppHeader } from './partials/AppHeader';
-import { AppLayout, useSidebarOpen, useSidebarShortcut } from './partials/AppLayout';
+import { AppLayout, useSidebarOpen, useSidebarShortcut, useSidebarView, type SidebarView } from './partials/AppLayout';
+import { AppSidebar } from './partials/AppSidebar';
 import { AppStatusBar } from './partials/AppStatusBar';
 import { CruiseResultFileInput } from './partials/CruiseResultFileInput';
 import { DependencyGraph, type DependencyGraphHandle } from './partials/DependencyGraph';
 import { DependencyPanel } from './partials/DependencyPanel';
-import { FileTree, type FileTreeHandle } from './partials/FileTree';
+import { type FileTreeHandle } from './partials/FileTree';
 import { IgnorePatternsDialog } from './partials/IgnorePatternsDialog';
 import { LanguagePickerDialog } from './partials/LanguagePickerDialog';
 import { QuickPick, type QuickPickHandle } from './partials/QuickPick';
@@ -68,7 +70,30 @@ function App() {
   const modules: IModule[] = filteredData?.modules ?? [];
   const initialDependencyCruiserState = useInitialDependencyCruiserState(sources);
   const { sidebarOpen, setSidebarOpen, toggleSidebarOpen } = useSidebarOpen();
-  useSidebarShortcut({ onToggle: toggleSidebarOpen });
+  const { sidebarView, setSidebarView } = useSidebarView();
+  useSidebarShortcut({
+    onToggle: toggleSidebarOpen,
+    onShowFileTree: () => {
+      setSidebarView('files');
+      setSidebarOpen(true);
+    },
+    onShowRulesPanel: () => {
+      setSidebarView('rules');
+      setSidebarOpen(true);
+    },
+  });
+
+  const handleSelectSidebarView = useCallback(
+    (view: SidebarView) => {
+      if (sidebarOpen && sidebarView === view) {
+        toggleSidebarOpen();
+        return;
+      }
+      setSidebarView(view);
+      setSidebarOpen(true);
+    },
+    [sidebarOpen, sidebarView, toggleSidebarOpen, setSidebarView, setSidebarOpen],
+  );
 
   const orch = useAppOrchestration({
     sources,
@@ -187,14 +212,37 @@ function App() {
     clearSettingsFileLoadError();
   };
 
-  const { showInFileTree } = orch;
+  const { showInFileTree, setSelectedPaths, selectedPaths, showInGraph, activatePath } = orch;
 
   const handleShowInFileTree = useCallback(
     (path: string) => {
+      setSidebarView('files');
       setSidebarOpen(true);
       showInFileTree(path);
     },
-    [showInFileTree, setSidebarOpen],
+    [showInFileTree, setSidebarOpen, setSidebarView],
+  );
+
+  const handleSelectViolationPaths = useCallback(
+    (paths: string[]) => {
+      const nextPaths = paths.filter(path => !selectedPaths.includes(path));
+      if (nextPaths.length > 0) {
+        setSelectedPaths([...selectedPaths, ...nextPaths]);
+      }
+      const focusPath = paths[0];
+      const targetPath = paths[1];
+      // Expand both ends so the graph edge id is file→file (not collapsed folder reps).
+      if (targetPath != null) {
+        activatePath(targetPath);
+      }
+      if (focusPath != null) {
+        showInGraph(focusPath);
+      }
+      if (focusPath != null && targetPath != null) {
+        graphRef.current?.selectEdge(makeDependencyKey(focusPath, targetPath));
+      }
+    },
+    [selectedPaths, setSelectedPaths, showInGraph, activatePath],
   );
 
   const commands = useAppCommands({
@@ -205,7 +253,15 @@ function App() {
     openLoadCruiseResult,
     openLoadSettings,
     openAbout: () => setAboutOpen(true),
-    toggleFileTree: toggleSidebarOpen,
+    showFileTree: () => {
+      setSidebarView('files');
+      setSidebarOpen(true);
+    },
+    showRulesPanel: () => {
+      setSidebarView('rules');
+      setSidebarOpen(true);
+    },
+    toggleSidebar: toggleSidebarOpen,
     fileLoadInProgress: isFileLoading,
     cruiseWatchEnabled,
   });
@@ -273,8 +329,9 @@ function App() {
         />
       }
       sidebar={
-        <FileTree
-          ref={fileTreeRef}
+        <AppSidebar
+          view={sidebarView}
+          fileTreeRef={fileTreeRef}
           sources={sources}
           selectedKeys={orch.selectedPaths}
           onSelect={orch.setSelectedPaths}
@@ -284,6 +341,9 @@ function App() {
           onShowInGraph={orch.showInGraph}
           onShowDependencies={orch.handleShowDependencies}
           activePath={orch.activePath}
+          ruleSetUsed={data.summary.ruleSetUsed}
+          violations={data.summary.violations}
+          onSelectViolationPaths={handleSelectViolationPaths}
         />
       }
       main={
@@ -375,7 +435,8 @@ function App() {
       }
       panelOpen={orch.panelOpen}
       sidebarOpen={sidebarOpen}
-      onToggleSidebar={toggleSidebarOpen}
+      sidebarView={sidebarView}
+      onSelectSidebarView={handleSelectSidebarView}
     />
   );
 }

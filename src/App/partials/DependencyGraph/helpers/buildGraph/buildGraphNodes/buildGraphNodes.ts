@@ -15,6 +15,7 @@ export interface BuildGraphNodesInput {
   selectedSet: Set<string>;
   childrenIndex: Map<string, FolderChildren>;
   circularModules: Set<string>;
+  unresolvedModules: Set<string>;
   folderColors: ReadonlyMap<string, string>;
   onToggleFolder: (path: string) => void;
   onExpandRecursive: (path: string) => void;
@@ -29,6 +30,7 @@ function createVisibleNode(path: string, type: 'folder' | 'file', input: BuildGr
     selectedSet,
     childrenIndex,
     circularModules,
+    unresolvedModules,
     folderColors,
     onToggleFolder,
     onExpandRecursive,
@@ -98,6 +100,7 @@ function createVisibleNode(path: string, type: 'folder' | 'file', input: BuildGr
     label,
     path,
     circular: circularModules.has(path),
+    couldNotResolve: unresolvedModules.has(path),
     onShowInFileTree,
     onShowDependencies,
   };

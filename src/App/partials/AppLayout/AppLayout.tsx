@@ -2,7 +2,13 @@ import type { ReactNode } from 'react';
 
 import Box from '@mui/material/Box';
 
-import { PANEL_MIN_WIDTH, SIDEBAR_MIN_WIDTH, useDependenciesPanelWidth, useSidebarWidth } from './hooks';
+import {
+  PANEL_MIN_WIDTH,
+  SIDEBAR_MIN_WIDTH,
+  useDependenciesPanelWidth,
+  useSidebarWidth,
+  type SidebarView,
+} from './hooks';
 import { SIDEBAR_TOGGLE_WIDTH, SidebarToggle } from './partials/SidebarToggle';
 
 export interface AppLayoutProps {
@@ -14,7 +20,8 @@ export interface AppLayoutProps {
   footer: ReactNode;
   panelOpen: boolean;
   sidebarOpen: boolean;
-  onToggleSidebar: () => void;
+  sidebarView: SidebarView;
+  onSelectSidebarView: (view: SidebarView) => void;
 }
 
 const shellSx = {
@@ -63,7 +70,8 @@ export function AppLayout({
   footer,
   panelOpen,
   sidebarOpen,
-  onToggleSidebar,
+  sidebarView,
+  onSelectSidebarView,
 }: AppLayoutProps) {
   const { sidebarWidth, onResizePointerDown, onResizeContextMenu } = useSidebarWidth();
   const leftOccupiedWidth = SIDEBAR_TOGGLE_WIDTH + (sidebarOpen ? sidebarWidth : 0);
@@ -94,7 +102,7 @@ export function AppLayout({
         {header}
       </Box>
       <Box sx={{ gridArea: 'sider', position: 'relative', display: 'flex', ...panelRegionSx }}>
-        <SidebarToggle sidebarOpen={sidebarOpen} onToggle={onToggleSidebar} />
+        <SidebarToggle sidebarOpen={sidebarOpen} sidebarView={sidebarView} onSelectView={onSelectSidebarView} />
         <Box
           component="aside"
           sx={{

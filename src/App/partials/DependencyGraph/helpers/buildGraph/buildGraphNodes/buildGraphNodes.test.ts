@@ -19,6 +19,7 @@ describe('buildGraphNodes', () => {
       selectedSet: new Set(['src/foo']),
       childrenIndex: new Map(),
       circularModules: new Set(),
+      unresolvedModules: new Set(),
       folderColors: new Map([['src/foo', 'rgba(1, 2, 3, 0.1)']]),
       ...callbacks,
     });
@@ -51,6 +52,7 @@ describe('buildGraphNodes', () => {
         ],
       ]),
       circularModules: new Set(['src/foo/a.ts']),
+      unresolvedModules: new Set(),
       folderColors: new Map(),
       ...callbacks,
     });
@@ -74,6 +76,7 @@ describe('buildGraphNodes', () => {
       selectedSet: new Set(['src/foo/a.ts']),
       childrenIndex: new Map(),
       circularModules: new Set(['src/foo/a.ts']),
+      unresolvedModules: new Set(),
       folderColors: new Map(),
       ...callbacks,
     });
@@ -91,6 +94,29 @@ describe('buildGraphNodes', () => {
     expect(node?.height).toBeGreaterThan(0);
   });
 
+  it('creates file nodes with couldNotResolve flag', () => {
+    const nodeMap = buildGraphNodes({
+      visibleNodes: new Map([['missing-module', 'file']]),
+      parentByNode: new Map([['missing-module', null]]),
+      expandedFolders: new Set(),
+      selectedSet: new Set(['missing-module']),
+      childrenIndex: new Map(),
+      circularModules: new Set(),
+      unresolvedModules: new Set(['missing-module']),
+      folderColors: new Map(),
+      ...callbacks,
+    });
+
+    const node = nodeMap.get('missing-module');
+    expect(node?.type).toBe('file');
+    expect(node?.data).toMatchObject({
+      label: 'missing-module',
+      path: 'missing-module',
+      couldNotResolve: true,
+      circular: false,
+    });
+  });
+
   it('sets extent to parent when parentId is present', () => {
     const nodeMap = buildGraphNodes({
       visibleNodes: new Map([
@@ -105,6 +131,7 @@ describe('buildGraphNodes', () => {
       selectedSet: new Set(['src/foo']),
       childrenIndex: new Map(),
       circularModules: new Set(),
+      unresolvedModules: new Set(),
       folderColors: new Map(),
       ...callbacks,
     });

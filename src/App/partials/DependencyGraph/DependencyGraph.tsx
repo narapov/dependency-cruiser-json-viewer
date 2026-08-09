@@ -123,7 +123,7 @@ function DependencyGraphInner({
     activePath,
   });
 
-  const { highlightedEdges, getEdgeHighlight, setUserEdgeHighlight, onEdgeClick, clearSelectedEdge } =
+  const { highlightedEdges, getEdgeHighlight, setUserEdgeHighlight, onEdgeClick, selectEdge, clearSelectedEdge } =
     useHighlightedEdges({
       modules,
       selectedPaths,
@@ -173,6 +173,7 @@ function DependencyGraphInner({
 
     return {
       focusNode,
+      selectEdge,
       clearAllHighlights: onClearAllHighlights,
       exportDot: () => {
         downloadTextFile('graph.dot', buildDot(), 'text/vnd.graphviz');

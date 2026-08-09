@@ -28,6 +28,7 @@ The usual workflow meant constantly tweaking filters, `collapsePattern`, and `ex
 - **Dependency graph** — interactive graph with folder/file nodes and colored edges (incoming/outgoing/circular).
 - **Drag-and-drop layout** — rearrange graph nodes by dragging; custom positions persist when you expand or collapse folders. Turn off **Auto layout only** in the graph legend to enable dragging; use **Auto layout** in a folder's context menu to reset layout.
 - **Edge highlighting** — highlight dependencies via the edge context menu; highlights are tied to the underlying import relation and persist when you expand or collapse nodes.
+- **Rules panel** — browse the cruise `ruleSetUsed` with violation counts; fuzzy-filter by rule name; expand a rule to see violations and click one to select/navigate to the offending modules in the tree and graph.
 - **Drill-down navigation** — expanding a folder in the tree rebuilds the graph for that scope, so you can walk from high-level architecture down to individual files.
 - **Quick search & commands** — fuzzy file search (`Cmd/Ctrl+P`) and command palette (`F1`); see Keyboard shortcuts below.
 - **DOT export** — export the current graph layout as a Graphviz `.dot` file via the command palette (**Export Graph DOT**), or open it in [Graphviz Online](https://dreampuf.github.io/GraphvizOnline/?engine=nop2) (**View Graph DOT Online**); render locally with `neato -n2 -Tsvg graph.dot` or `dot -Knop2 -Tsvg graph.dot`.
@@ -102,8 +103,8 @@ With `CRUISE_WATCH=false` (the default in `.env.development`) or any value other
 | `npm run format:check`                | Check formatting (CI-friendly)                                                                                       |
 | `npm run depcruise`                   | Run dependency-cruiser on `src` (validate layer rules)                                                               |
 | `npm run depcruise:json`              | Export cruise result to `./cruise-result.json`                                                                       |
-| `npm run depcruise:json-for-cli`      | Export cruise result to `test-data/cruise-result.json`                                                               |
-| `npm run depcruise:json-for-gh-pages` | Export cruise result to `dist/cruise-result.json`                                                                    |
+| `npm run depcruise:json-for-cli`      | Export cruise result (`src` + `invalid_samples`, sample config) to `test-data/cruise-result.json`                    |
+| `npm run depcruise:json-for-gh-pages` | Export cruise result (`src` + `invalid_samples`, sample config) to `dist/cruise-result.json`                         |
 | `npm run cli:verify`                  | Build, refresh `test-data/cruise-result.json`, start CLI server                                                      |
 
 ## License

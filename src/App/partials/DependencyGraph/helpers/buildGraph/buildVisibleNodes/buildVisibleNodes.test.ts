@@ -82,6 +82,27 @@ describe('buildVisibleNodes', () => {
     expect(circularModules.has('src/foo/a.ts')).toBe(true);
     expect(circularModules.has('src/bar/c.ts')).toBe(false);
   });
+
+  it('collects modules with couldNotResolve', () => {
+    const modulesWithUnresolved = [
+      moduleAt('src/foo/a.ts', [
+        {
+          resolved: 'missing-module',
+          couldNotResolve: true,
+        } as IModule['dependencies'][0],
+      ]),
+      { ...moduleAt('missing-module'), couldNotResolve: true } as IModule,
+    ];
+
+    const { unresolvedModules } = buildVisibleNodes(
+      modulesWithUnresolved,
+      ['src/foo/a.ts', 'missing-module'],
+      new Set(['src', 'src/foo']),
+    );
+
+    expect(unresolvedModules.has('missing-module')).toBe(true);
+    expect(unresolvedModules.has('src/foo/a.ts')).toBe(false);
+  });
 });
 
 describe('folderHasCircularDescendant', () => {

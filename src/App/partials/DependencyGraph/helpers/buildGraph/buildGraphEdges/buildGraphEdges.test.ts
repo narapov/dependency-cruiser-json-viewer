@@ -1,7 +1,7 @@
 import type { IModule } from 'dependency-cruiser';
 import { describe, expect, it } from 'vitest';
 
-import { CIRCULAR_EDGE_COLOR, TYPE_ONLY_CIRCULAR_EDGE_COLOR } from '@/Shared';
+import { CIRCULAR_EDGE_COLOR, ERROR_EDGE_COLOR, TYPE_ONLY_CIRCULAR_EDGE_COLOR, WARNING_EDGE_COLOR } from '@/Shared';
 
 import { buildGraphEdges } from './buildGraphEdges';
 
@@ -104,6 +104,7 @@ describe('buildGraphEdges', () => {
     expect(edge?.style?.strokeWidth).toBe(2);
     expect(edge?.style?.strokeDasharray).toBeUndefined();
     expect(edge?.data?.circular).toBe(true);
+    expect(edge?.data?.title).toBe('src/foo/a.ts → src/foo/b.ts (circular)');
   });
 
   it('styles type-only circular edges with light red and dash', () => {
@@ -118,5 +119,115 @@ describe('buildGraphEdges', () => {
     expect(edge?.style?.strokeDasharray).toBe('6 4');
     expect(edge?.data?.typeOnly).toBe(true);
     expect(edge?.data?.circular).toBe(true);
+    expect(edge?.data?.title).toBe('src/foo/a.ts → src/foo/b.ts (type-only) (circular)');
+  });
+
+  it('styles couldNotResolve edges with error color', () => {
+    const dep = {
+      ...valueDep('missing-module'),
+      couldNotResolve: true,
+    } as IModule['dependencies'][0];
+    const modules = [moduleAt('src/foo/a.ts', [dep]), moduleAt('missing-module')];
+    const selectedSet = new Set(['src/foo/a.ts', 'missing-module']);
+    const visibleNodeIds = new Set(['src/foo/a.ts', 'missing-module']);
+
+    const [edge] = buildGraphEdges(modules, selectedSet, new Set(['src', 'src/foo']), visibleNodeIds);
+
+    expect(edge?.style?.stroke).toBe(ERROR_EDGE_COLOR);
+    expect(edge?.style?.strokeWidth).toBe(2);
+    expect(edge?.data?.couldNotResolve).toBe(true);
+    expect(edge?.data?.title).toBe('src/foo/a.ts → missing-module (unresolved)');
+  });
+
+  it('styles error-rule edges and puts rule names in the title', () => {
+    const dep = {
+      ...valueDep('src/foo/b.ts'),
+      valid: false,
+      rules: [
+        { name: 'shared-only', severity: 'error' },
+        { name: 'no-orphans', severity: 'warn' },
+      ],
+    } as IModule['dependencies'][0];
+    const modules = [moduleAt('src/foo/a.ts', [dep]), moduleAt('src/foo/b.ts')];
+    const selectedSet = new Set(['src/foo/a.ts', 'src/foo/b.ts']);
+    const visibleNodeIds = new Set(['src/foo/a.ts', 'src/foo/b.ts']);
+
+    const [edge] = buildGraphEdges(modules, selectedSet, new Set(['src', 'src/foo']), visibleNodeIds);
+
+    expect(edge?.style?.stroke).toBe(ERROR_EDGE_COLOR);
+    expect(edge?.data?.severity).toBe('error');
+    expect(edge?.data?.ruleNames).toEqual(['no-orphans', 'shared-only']);
+    expect(edge?.data?.title).toBe('src/foo/a.ts → src/foo/b.ts (no-orphans, shared-only)');
+  });
+
+  it('styles warn-rule edges with warning color', () => {
+    const dep = {
+      ...valueDep('src/foo/b.ts'),
+      valid: false,
+      rules: [{ name: 'not-in-allowed', severity: 'warn' }],
+    } as IModule['dependencies'][0];
+    const modules = [moduleAt('src/foo/a.ts', [dep]), moduleAt('src/foo/b.ts')];
+    const selectedSet = new Set(['src/foo/a.ts', 'src/foo/b.ts']);
+    const visibleNodeIds = new Set(['src/foo/a.ts', 'src/foo/b.ts']);
+
+    const [edge] = buildGraphEdges(modules, selectedSet, new Set(['src', 'src/foo']), visibleNodeIds);
+
+    expect(edge?.style?.stroke).toBe(WARNING_EDGE_COLOR);
+    expect(edge?.data?.severity).toBe('warn');
+  });
+
+  it('prefers couldNotResolve over circular for stroke color', () => {
+    const dep = {
+      ...valueDep('missing-module', true),
+      couldNotResolve: true,
+    } as IModule['dependencies'][0];
+    const modules = [moduleAt('src/foo/a.ts', [dep]), moduleAt('missing-module')];
+    const selectedSet = new Set(['src/foo/a.ts', 'missing-module']);
+    const visibleNodeIds = new Set(['src/foo/a.ts', 'missing-module']);
+
+    const [edge] = buildGraphEdges(modules, selectedSet, new Set(['src', 'src/foo']), visibleNodeIds);
+
+    expect(edge?.style?.stroke).toBe(ERROR_EDGE_COLOR);
+    expect(edge?.data?.circular).toBe(true);
+    expect(edge?.data?.couldNotResolve).toBe(true);
+    expect(edge?.data?.title).toBe('src/foo/a.ts → missing-module (circular) (unresolved)');
+  });
+
+  it('prefers circular over warn for stroke color', () => {
+    const dep = {
+      ...valueDep('src/foo/b.ts', true),
+      valid: false,
+      rules: [{ name: 'not-in-allowed', severity: 'warn' }],
+    } as IModule['dependencies'][0];
+    const modules = [moduleAt('src/foo/a.ts', [dep]), moduleAt('src/foo/b.ts')];
+    const selectedSet = new Set(['src/foo/a.ts', 'src/foo/b.ts']);
+    const visibleNodeIds = new Set(['src/foo/a.ts', 'src/foo/b.ts']);
+
+    const [edge] = buildGraphEdges(modules, selectedSet, new Set(['src', 'src/foo']), visibleNodeIds);
+
+    expect(edge?.style?.stroke).toBe(CIRCULAR_EDGE_COLOR);
+    expect(edge?.data?.severity).toBe('warn');
+    expect(edge?.data?.title).toBe('src/foo/a.ts → src/foo/b.ts (circular) (not-in-allowed)');
+  });
+
+  it('rolls violation flags up onto collapsed folder edges', () => {
+    const dep = {
+      ...valueDep('src/bar/c.ts'),
+      valid: false,
+      rules: [{ name: 'shared-only', severity: 'error' }],
+    } as IModule['dependencies'][0];
+    const modules = [moduleAt('src/foo/a.ts', [dep]), moduleAt('src/bar/c.ts')];
+    const selectedSet = new Set(['src/foo/a.ts', 'src/bar/c.ts']);
+    const visibleNodeIds = new Set(['src', 'src/foo', 'src/bar']);
+
+    const [edge] = buildGraphEdges(modules, selectedSet, new Set(['src']), visibleNodeIds);
+
+    expect(edge).toMatchObject({
+      source: 'src/foo',
+      target: 'src/bar',
+    });
+    expect(edge?.style?.stroke).toBe(ERROR_EDGE_COLOR);
+    expect(edge?.data?.severity).toBe('error');
+    expect(edge?.data?.ruleNames).toEqual(['shared-only']);
   });
 });

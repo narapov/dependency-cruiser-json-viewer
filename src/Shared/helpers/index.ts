@@ -4,6 +4,8 @@ export * from './downloadTextFile';
 export * from './formatShortcut';
 export * from './getWindowEnvs';
 export * from './graphTheme';
+export * from './highlightMatchStyles';
+export * from './mergeHighlightRanges';
 export * from './openGraphvizOnline';
 export * from './queryClient';
 export * from './raceWithAbortSignal';

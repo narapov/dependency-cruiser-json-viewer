@@ -2,10 +2,10 @@ import { useMemo } from 'react';
 
 import Box from '@mui/material/Box';
 
+import { HighlightedMatchText, MatchHighlight } from '@/Shared';
+
 import { computeQuickPickHighlight } from '../../../../helpers/computeQuickPickHighlight';
 import type { QuickPickCommand } from '../../../../types';
-import { QuickPickHighlightedText } from '../../../QuickPickHighlightedText';
-import { QuickPickNameHighlight } from '../../../QuickPickNameHighlight';
 
 interface QuickPickCommandResultsListItemProps {
   command: QuickPickCommand;
@@ -57,11 +57,7 @@ export function QuickPickCommandResultsListItem({
         },
       }}
     >
-      <QuickPickHighlightedText
-        text={command.label}
-        indexes={highlight.nameIndexes}
-        Highlight={QuickPickNameHighlight}
-      />
+      <HighlightedMatchText text={command.label} indexes={highlight.nameIndexes} Highlight={MatchHighlight} />
     </Box>
   );
 }

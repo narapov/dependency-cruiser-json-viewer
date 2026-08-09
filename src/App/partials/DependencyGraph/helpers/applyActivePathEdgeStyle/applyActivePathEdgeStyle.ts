@@ -5,19 +5,21 @@ import { INCOMING_EDGE_COLOR, OUTGOING_EDGE_COLOR } from '@/Shared';
 import type { DependencyEdgeData } from '../../types';
 import { withEdgeStrokeStyle } from '../withEdgeStrokeStyle';
 
-function isCircularEdge(edge: Edge): boolean {
+function isProtectedEdge(edge: Edge): boolean {
   const data = edge.data as DependencyEdgeData | undefined;
-  return data?.circular === true;
+  return (
+    data?.circular === true || data?.couldNotResolve === true || data?.severity === 'error' || data?.severity === 'warn'
+  );
 }
 
-/** Styles non-circular edges that enter or leave the active path node. */
+/** Styles non-protected edges that enter or leave the active path node. */
 export function applyActivePathEdgeStyle(edges: Edge[], activePath: string | null): Edge[] {
   if (activePath == null) {
     return edges;
   }
 
   return edges.map(edge => {
-    if (isCircularEdge(edge)) {
+    if (isProtectedEdge(edge)) {
       return edge;
     }
 

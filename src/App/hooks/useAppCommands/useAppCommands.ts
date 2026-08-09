@@ -29,7 +29,9 @@ interface UseAppCommandsOptions {
   openLoadCruiseResult: () => void;
   openLoadSettings: () => void;
   openAbout: () => void;
-  toggleFileTree: () => void;
+  showFileTree: () => void;
+  showRulesPanel: () => void;
+  toggleSidebar: () => void;
   fileLoadInProgress?: boolean;
   cruiseWatchEnabled?: boolean;
 }
@@ -42,7 +44,9 @@ export function useAppCommands({
   openLoadCruiseResult,
   openLoadSettings,
   openAbout,
-  toggleFileTree,
+  showFileTree,
+  showRulesPanel,
+  toggleSidebar,
   fileLoadInProgress = false,
   cruiseWatchEnabled = false,
 }: UseAppCommandsOptions): QuickPickCommand[] {
@@ -132,7 +136,9 @@ export function useAppCommands({
       disabled: fileLoadInProgress,
     },
     { id: 'about', label: t('commands.about'), onExecute: openAbout },
-    { id: 'toggleFileTree', label: t('commands.toggleFileTree'), onExecute: toggleFileTree },
+    { id: 'showFileTree', label: t('commands.showFileTree'), onExecute: showFileTree },
+    { id: 'showRulesPanel', label: t('commands.showRulesPanel'), onExecute: showRulesPanel },
+    { id: 'toggleSidebar', label: t('commands.toggleSidebar'), onExecute: toggleSidebar },
     { id: 'unselectAll', label: t('commands.unselectAll'), onExecute: unselectAll },
   ];
 
