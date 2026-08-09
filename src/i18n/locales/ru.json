@@ -9,6 +9,8 @@
     "noCruiseResultTitle": "Результат cruise не загружен",
     "noCruiseResultMessage": "Загрузите JSON-файл dependency-cruiser, чтобы исследовать проект.",
     "loadCruiseResult": "Загрузить JSON-файл",
+    "dropCruiseResultHint": "Перетащите JSON-файл, чтобы загрузить результат cruise",
+    "dropCruiseResultInvalidFile": "Перетащите JSON-файл dependency-cruiser.",
     "invalidCruiseResultJson": "Выбранный файл не является корректным JSON.",
     "invalidCruiseResultFormat": "Выбранный файл не похож на результат cruise dependency-cruiser.",
     "missingWorkspaceSettings": "В выбранном файле нет настроек рабочего пространства просмотрщика.",

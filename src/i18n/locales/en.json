@@ -9,6 +9,8 @@
     "noCruiseResultTitle": "No cruise result loaded",
     "noCruiseResultMessage": "Load a dependency-cruiser JSON file to explore your project.",
     "loadCruiseResult": "Load JSON file",
+    "dropCruiseResultHint": "Drop JSON file to load cruise result",
+    "dropCruiseResultInvalidFile": "Drop a dependency-cruiser JSON file.",
     "invalidCruiseResultJson": "The selected file is not valid JSON.",
     "invalidCruiseResultFormat": "The selected file is not a dependency-cruiser cruise result.",
     "missingWorkspaceSettings": "The selected file has no viewer workspace settings.",

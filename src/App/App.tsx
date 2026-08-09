@@ -23,6 +23,7 @@ import {
   useAppCommands,
   useAppOrchestration,
   useCruiseResult,
+  useCruiseResultFileDrop,
   useCruiseResultWatch,
   useIgnorePatterns,
   useInitialDependencyCruiserState,
@@ -35,6 +36,7 @@ import { AppHeader } from './partials/AppHeader';
 import { AppLayout, useSidebarOpen, useSidebarShortcut, useSidebarView, type SidebarView } from './partials/AppLayout';
 import { AppSidebar } from './partials/AppSidebar';
 import { AppStatusBar } from './partials/AppStatusBar';
+import { CruiseResultDropOverlay } from './partials/CruiseResultDropOverlay';
 import { CruiseResultFileInput } from './partials/CruiseResultFileInput';
 import { DependencyGraph, type DependencyGraphHandle } from './partials/DependencyGraph';
 import { DependencyPanel } from './partials/DependencyPanel';
@@ -176,6 +178,7 @@ function App() {
     handleFileSelect: handleCruiseFileSelect,
     isLoading: isCruiseFileLoading,
     fileLoadError: cruiseFileLoadError,
+    setFileLoadError: setCruiseFileLoadError,
     clearFileLoadError: clearCruiseFileLoadError,
   } = useLoadCruiseResultFromFile({ onLoaded: handleCruiseLoaded });
 
@@ -189,6 +192,19 @@ function App() {
   } = useLoadWorkspaceSettingsFromFile({ onLoaded: handleWorkspaceSettingsLoaded });
 
   const isFileLoading = isCruiseFileLoading || isSettingsFileLoading;
+
+  const { isDraggingFile, isDropAllowed } = useCruiseResultFileDrop({
+    enabled: !cruiseWatchEnabled && !isFileLoading,
+    onFile: file => {
+      clearSettingsFileLoadError();
+      clearCruiseFileLoadError();
+      void handleCruiseFileSelect(file);
+    },
+    onInvalidFile: () => {
+      clearSettingsFileLoadError();
+      setCruiseFileLoadError(t('app.dropCruiseResultInvalidFile'));
+    },
+  });
 
   const openLoadCruiseResult = () => {
     if (cruiseWatchEnabled || isFileLoading) {
@@ -270,6 +286,7 @@ function App() {
     return (
       <div className={styles.centered}>
         <CircularProgress size={32} />
+        <CruiseResultDropOverlay open={isDraggingFile} allowed={isDropAllowed} />
       </div>
     );
   }
@@ -307,6 +324,7 @@ function App() {
             <CruiseResultFileInput ref={cruiseFileInputRef} onFileSelect={handleCruiseFileSelect} />
           )}
         </Stack>
+        <CruiseResultDropOverlay open={isDraggingFile} allowed={isDropAllowed} />
       </div>
     );
   }
@@ -395,6 +413,7 @@ function App() {
               <CircularProgress size={32} />
             </div>
           )}
+          <CruiseResultDropOverlay open={isDraggingFile} allowed={isDropAllowed} />
           <Snackbar
             open={Boolean(fileLoadError)}
             autoHideDuration={6000}

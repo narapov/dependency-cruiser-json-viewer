@@ -1,6 +1,7 @@
 export * from './useAppCommands';
 export * from './useAppOrchestration';
 export * from './useCruiseResult';
+export * from './useCruiseResultFileDrop';
 export * from './useCruiseResultWatch';
 export * from './useFileLoadNotice';
 export * from './useIgnorePatterns';
