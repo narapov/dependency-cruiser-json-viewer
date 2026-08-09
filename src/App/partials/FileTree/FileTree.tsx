@@ -83,7 +83,17 @@ export function FileTree({
     onShowInGraph?.(itemId);
   };
 
-  const handleItemClick = (_event: SyntheticEvent, itemId: string) => {
+  const handleItemClick = (event: SyntheticEvent, itemId: string) => {
+    // MUI TreeView fires onItemClick for checkbox clicks too
+    // ignore those so selection doesn't trigger show-in-graph
+    const target = event.target;
+    if (
+      target instanceof Element &&
+      target.closest('.MuiTreeItem-checkbox, .MuiCheckbox-root, input[type="checkbox"]')
+    ) {
+      return;
+    }
+
     if (!canShowNodeInGraph(itemId)) {
       return;
     }

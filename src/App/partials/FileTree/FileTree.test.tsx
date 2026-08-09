@@ -67,6 +67,29 @@ describe('FileTree', () => {
     expect(onShowInGraph).not.toHaveBeenCalled();
   });
 
+  it('does not show in graph when clicking the checkbox', () => {
+    const onShowInGraph = vi.fn();
+
+    renderWithTheme(
+      <FileTree
+        sources={SOURCES}
+        selectedKeys={SOURCES}
+        expandedKeys={['src', 'src/b']}
+        onExpand={vi.fn()}
+        onShowInGraph={onShowInGraph}
+      />,
+    );
+
+    const treeItem = screen.getByText('a.ts').closest('[role="treeitem"]');
+    expect(treeItem).toBeInTheDocument();
+    fireEvent.click(treeItem!.querySelector('input[type="checkbox"]')!);
+    act(() => {
+      vi.advanceTimersByTime(250);
+    });
+
+    expect(onShowInGraph).not.toHaveBeenCalled();
+  });
+
   it('exposes focusPath that scrolls and focuses the item', () => {
     const ref = createRef<FileTreeHandle>();
 
