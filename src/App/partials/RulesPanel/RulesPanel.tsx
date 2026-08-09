@@ -1,16 +1,13 @@
 import type { IFlattenedRuleSet, IViolation } from 'dependency-cruiser';
-import fuzzysort from 'fuzzysort';
-import { useState, type ReactNode } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useDeferredValue, useState } from 'react';
 
 import Box from '@mui/material/Box';
-import List from '@mui/material/List';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
 
-import { groupRulesWithViolations, type RuleWithViolations } from '@/domain';
+import { groupRulesWithViolations } from '@/domain';
 
-import { RuleListItem } from './partials/RuleListItem';
+import { matchesNameFilter } from './helpers/matchesNameFilter';
+import { RulesList } from './partials/RulesList';
+import { RulesNameFilter } from './partials/RulesNameFilter';
 
 interface RulesPanelProps {
   ruleSetUsed: IFlattenedRuleSet | undefined;
@@ -19,105 +16,23 @@ interface RulesPanelProps {
   onSelectViolationPaths: (paths: string[]) => void;
 }
 
-function matchesNameFilter(name: string, filter: string): boolean {
-  const trimmed = filter.trim();
-  if (trimmed.length === 0) {
-    return true;
-  }
-  return fuzzysort.single(trimmed, name) != null;
-}
-
-function RulesSection({
-  title,
-  entries,
-  nameFilter,
-  onSelectViolationPaths,
-}: {
-  title: string;
-  entries: RuleWithViolations[];
-  nameFilter: string;
-  onSelectViolationPaths: (paths: string[]) => void;
-}) {
-  if (entries.length === 0) {
-    return null;
-  }
-
-  return (
-    <Box sx={{ mb: 1 }}>
-      <Typography variant="subtitle2" color="text.secondary" sx={{ px: 1.5, py: 0.75 }}>
-        {title} ({entries.length})
-      </Typography>
-      <List dense disablePadding>
-        {entries.map(entry => (
-          <RuleListItem
-            key={entry.name}
-            entry={entry}
-            nameFilter={nameFilter}
-            onSelectViolationPaths={onSelectViolationPaths}
-          />
-        ))}
-      </List>
-    </Box>
-  );
-}
-
 export function RulesPanel({ ruleSetUsed, violations, sources, onSelectViolationPaths }: RulesPanelProps) {
-  const { t } = useTranslation();
   const [nameFilter, setNameFilter] = useState('');
+  const deferredNameFilter = useDeferredValue(nameFilter);
   const rules = groupRulesWithViolations(ruleSetUsed, violations, sources);
-  const filteredRules = rules.filter(entry => matchesNameFilter(entry.name, nameFilter));
-  const withViolations = filteredRules.filter(entry => entry.violations.length > 0);
-  const withoutViolations = filteredRules.filter(entry => entry.violations.length === 0);
-
-  let listContent: ReactNode;
-  if (rules.length === 0) {
-    listContent = (
-      <Typography variant="body2" color="text.secondary" sx={{ p: 1.5 }}>
-        {t('rules.empty')}
-      </Typography>
-    );
-  } else if (filteredRules.length === 0) {
-    listContent = (
-      <Typography variant="body2" color="text.secondary" sx={{ p: 1.5 }}>
-        {t('rules.noMatches')}
-      </Typography>
-    );
-  } else {
-    listContent = (
-      <>
-        <RulesSection
-          title={t('rules.withViolations')}
-          entries={withViolations}
-          nameFilter={nameFilter}
-          onSelectViolationPaths={onSelectViolationPaths}
-        />
-        <RulesSection
-          title={t('rules.withoutViolations')}
-          entries={withoutViolations}
-          nameFilter={nameFilter}
-          onSelectViolationPaths={onSelectViolationPaths}
-        />
-      </>
-    );
-  }
+  const filteredRules = rules.filter(entry => matchesNameFilter(entry.name, deferredNameFilter));
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
-      <Box sx={{ flexShrink: 0, px: 1, pt: 1, pb: 0.5 }}>
-        <TextField
-          size="small"
-          fullWidth
-          value={nameFilter}
-          onChange={event => setNameFilter(event.target.value)}
-          placeholder={t('rules.filterPlaceholder')}
-          slotProps={{
-            htmlInput: {
-              'aria-label': t('rules.filterPlaceholder'),
-            },
-          }}
+      <RulesNameFilter value={nameFilter} onChange={setNameFilter} />
+      <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+        <RulesList
+          rules={rules}
+          filteredRules={filteredRules}
+          nameFilter={deferredNameFilter}
+          onSelectViolationPaths={onSelectViolationPaths}
         />
       </Box>
-      <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>{listContent}</Box>
     </Box>
   );
 }
