@@ -5,16 +5,17 @@ import type { SxProps, Theme } from '@mui/material/styles';
 
 import { mergeHighlightRanges } from '../../helpers/mergeHighlightRanges';
 
-export type QuickPickHighlightComponent = ComponentType<{ children: ReactNode }>;
+export type MatchHighlightComponent = ComponentType<{ children: ReactNode }>;
 
-interface QuickPickHighlightedTextProps {
+interface HighlightedMatchTextProps {
   text: string;
   indexes: number[];
-  Highlight: QuickPickHighlightComponent;
+  Highlight: MatchHighlightComponent;
   sx?: SxProps<Theme>;
 }
 
-export function QuickPickHighlightedText({ text, indexes, Highlight, sx }: QuickPickHighlightedTextProps) {
+/** Renders text with index-based highlight spans. */
+export function HighlightedMatchText({ text, indexes, Highlight, sx }: HighlightedMatchTextProps) {
   if (indexes.length === 0) {
     return (
       <Box component="span" sx={sx}>

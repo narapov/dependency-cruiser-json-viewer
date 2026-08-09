@@ -3,7 +3,14 @@ import { describe, expect, it } from 'vitest';
 
 import { MarkerType, type Edge } from '@xyflow/react';
 
-import { CIRCULAR_EDGE_COLOR, DEFAULT_EDGE_COLOR, INCOMING_EDGE_COLOR, OUTGOING_EDGE_COLOR } from '@/Shared';
+import {
+  CIRCULAR_EDGE_COLOR,
+  DEFAULT_EDGE_COLOR,
+  ERROR_EDGE_COLOR,
+  INCOMING_EDGE_COLOR,
+  OUTGOING_EDGE_COLOR,
+  WARNING_EDGE_COLOR,
+} from '@/Shared';
 
 import { buildGraph } from '../buildGraph';
 import { applyActivePathEdgeStyle } from './applyActivePathEdgeStyle';
@@ -16,11 +23,18 @@ const noopToggle = () => {};
 const noopShowInFileTree = () => {};
 const noopExpandRecursive = () => {};
 
-function edgeAt(id: string, source: string, target: string, stroke = DEFAULT_EDGE_COLOR): Edge {
+function edgeAt(
+  id: string,
+  source: string,
+  target: string,
+  stroke = DEFAULT_EDGE_COLOR,
+  data?: Record<string, unknown>,
+): Edge {
   return {
     id,
     source,
     target,
+    data,
     markerEnd: { type: MarkerType.ArrowClosed, color: stroke },
     style: { stroke, strokeWidth: 1 },
   };
@@ -75,5 +89,19 @@ describe('applyActivePathEdgeStyle', () => {
     const circularEdge = result.find(edge => edge.source === 'src/foo/a.ts');
 
     expect(circularEdge?.style?.stroke).toBe(CIRCULAR_EDGE_COLOR);
+  });
+
+  it('keeps error and warn edges when node is highlighted', () => {
+    const edges = [
+      edgeAt('error', 'a', 'active', ERROR_EDGE_COLOR, { severity: 'error' }),
+      edgeAt('warn', 'active', 'b', WARNING_EDGE_COLOR, { severity: 'warn' }),
+      edgeAt('unresolved', 'c', 'active', ERROR_EDGE_COLOR, { couldNotResolve: true }),
+    ];
+
+    const result = applyActivePathEdgeStyle(edges, 'active');
+
+    expect(result.find(edge => edge.id === 'error')?.style?.stroke).toBe(ERROR_EDGE_COLOR);
+    expect(result.find(edge => edge.id === 'warn')?.style?.stroke).toBe(WARNING_EDGE_COLOR);
+    expect(result.find(edge => edge.id === 'unresolved')?.style?.stroke).toBe(ERROR_EDGE_COLOR);
   });
 });

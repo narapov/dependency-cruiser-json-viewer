@@ -6,15 +6,15 @@ import { screen } from '@testing-library/react';
 
 import { renderWithTheme } from '@/testsUtils';
 
-import { QuickPickHighlightedText } from './QuickPickHighlightedText';
+import { HighlightedMatchText } from './HighlightedMatchText';
 
 function Highlight({ children }: { children: React.ReactNode }) {
   return <mark data-testid="hl">{children}</mark>;
 }
 
-describe('QuickPickHighlightedText', () => {
+describe('HighlightedMatchText', () => {
   it('renders plain text when indexes are empty', () => {
-    renderWithTheme(<QuickPickHighlightedText text="hello" indexes={[]} Highlight={Highlight} />);
+    renderWithTheme(<HighlightedMatchText text="hello" indexes={[]} Highlight={Highlight} />);
 
     expect(screen.getByText('hello')).toBeInTheDocument();
     expect(screen.queryByTestId('hl')).not.toBeInTheDocument();
@@ -22,7 +22,7 @@ describe('QuickPickHighlightedText', () => {
 
   it('wraps merged highlight ranges', () => {
     const { container } = renderWithTheme(
-      <QuickPickHighlightedText text="abcdef" indexes={[1, 2, 4]} Highlight={Highlight} />,
+      <HighlightedMatchText text="abcdef" indexes={[1, 2, 4]} Highlight={Highlight} />,
     );
 
     const marks = screen.getAllByTestId('hl');

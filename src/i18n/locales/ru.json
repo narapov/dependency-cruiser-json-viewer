@@ -21,8 +21,8 @@
     "commandPalette": "Палитра команд (F1)",
     "hideFileTree": "Скрыть дерево файлов ({{shortcut}})",
     "showFileTree": "Показать дерево файлов ({{shortcut}})",
-    "hideRules": "Скрыть правила",
-    "showRules": "Показать правила",
+    "hideRules": "Скрыть правила ({{shortcut}})",
+    "showRules": "Показать правила ({{shortcut}})",
     "about": "О приложении"
   },
   "actions": {
@@ -62,7 +62,9 @@
     "setIgnorePatterns": "Настроить игнорируемые паттерны",
     "loadCruiseResult": "Загрузить JSON dependency-cruiser",
     "loadWorkspaceSettings": "Загрузить настройки рабочего пространства",
-    "toggleFileTree": "Переключить дерево файлов",
+    "showFileTree": "Показать дерево файлов",
+    "showRulesPanel": "Показать панель правил",
+    "toggleSidebar": "Переключить боковую панель",
     "unselectAll": "Снять выделение",
     "about": "О приложении",
     "saveWorkspace": "Сохранить рабочее пространство"

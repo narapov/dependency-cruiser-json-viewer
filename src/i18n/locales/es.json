@@ -21,8 +21,8 @@
     "commandPalette": "Paleta de comandos (F1)",
     "hideFileTree": "Ocultar árbol de archivos ({{shortcut}})",
     "showFileTree": "Mostrar árbol de archivos ({{shortcut}})",
-    "hideRules": "Ocultar reglas",
-    "showRules": "Mostrar reglas",
+    "hideRules": "Ocultar reglas ({{shortcut}})",
+    "showRules": "Mostrar reglas ({{shortcut}})",
     "about": "Acerca de"
   },
   "actions": {
@@ -62,7 +62,9 @@
     "setIgnorePatterns": "Configurar patrones de exclusión",
     "loadCruiseResult": "Cargar JSON de dependency-cruiser",
     "loadWorkspaceSettings": "Cargar ajustes del espacio de trabajo",
-    "toggleFileTree": "Mostrar/Ocultar árbol de archivos",
+    "showFileTree": "Mostrar árbol de archivos",
+    "showRulesPanel": "Mostrar panel de reglas",
+    "toggleSidebar": "Mostrar/Ocultar barra lateral",
     "unselectAll": "Deseleccionar todo",
     "about": "Acerca de",
     "saveWorkspace": "Guardar espacio de trabajo"

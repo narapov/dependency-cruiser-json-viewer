@@ -24,11 +24,8 @@ export async function buildGraph({
   profiler.start('total');
 
   profiler.start('visibleNodes');
-  const { selectedSet, childrenIndex, circularModules, visibleNodes, visibleNodeIds, parentByNode } = buildVisibleNodes(
-    modules,
-    selectedPaths,
-    expandedFolders,
-  );
+  const { selectedSet, childrenIndex, circularModules, unresolvedModules, visibleNodes, visibleNodeIds, parentByNode } =
+    buildVisibleNodes(modules, selectedPaths, expandedFolders);
   profiler.end('visibleNodes');
 
   profiler.start('edges');
@@ -43,6 +40,7 @@ export async function buildGraph({
     selectedSet,
     childrenIndex,
     circularModules,
+    unresolvedModules,
     folderColors,
     onToggleFolder,
     onExpandRecursive,

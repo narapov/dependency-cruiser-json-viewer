@@ -3,12 +3,10 @@ import { useMemo } from 'react';
 import Box from '@mui/material/Box';
 
 import { getParentPath } from '@/domain';
-import { MaterialFileSystemIcon } from '@/Shared';
+import { HighlightedMatchText, MatchHighlight, MaterialFileSystemIcon } from '@/Shared';
 
 import { computeQuickPickHighlight } from '../../../../helpers/computeQuickPickHighlight';
 import type { QuickPickFileItem } from '../../../../types';
-import { QuickPickHighlightedText } from '../../../QuickPickHighlightedText';
-import { QuickPickNameHighlight } from '../../../QuickPickNameHighlight';
 import { QuickPickPathHighlight } from './partials/QuickPickPathHighlight';
 
 interface QuickPickFileResultsListItemProps {
@@ -58,14 +56,14 @@ export function QuickPickFileResultsListItem({
       <Box component="span" sx={{ flexShrink: 0, color: 'text.secondary', fontSize: 14 }}>
         <MaterialFileSystemIcon name={item.name} isFolder={item.isFolder} />
       </Box>
-      <QuickPickHighlightedText
+      <HighlightedMatchText
         text={item.name}
         indexes={nameIndexes}
-        Highlight={QuickPickNameHighlight}
+        Highlight={MatchHighlight}
         sx={{ flexShrink: 0, color: 'text.primary' }}
       />
       {parentPath && (
-        <QuickPickHighlightedText
+        <HighlightedMatchText
           text={parentPath}
           indexes={pathIndexes}
           Highlight={QuickPickPathHighlight}

@@ -21,8 +21,8 @@
     "commandPalette": "Palette de commandes (F1)",
     "hideFileTree": "Masquer l'arborescence ({{shortcut}})",
     "showFileTree": "Afficher l'arborescence ({{shortcut}})",
-    "hideRules": "Masquer les règles",
-    "showRules": "Afficher les règles",
+    "hideRules": "Masquer les règles ({{shortcut}})",
+    "showRules": "Afficher les règles ({{shortcut}})",
     "about": "À propos"
   },
   "actions": {
@@ -62,7 +62,9 @@
     "setIgnorePatterns": "Définir les motifs d'exclusion",
     "loadCruiseResult": "Charger le JSON dependency-cruiser",
     "loadWorkspaceSettings": "Charger les paramètres de l'espace de travail",
-    "toggleFileTree": "Afficher/Masquer l'arborescence",
+    "showFileTree": "Afficher l'arborescence",
+    "showRulesPanel": "Afficher le panneau des règles",
+    "toggleSidebar": "Afficher/Masquer la barre latérale",
     "unselectAll": "Tout désélectionner",
     "about": "À propos",
     "saveWorkspace": "Enregistrer l'espace de travail"

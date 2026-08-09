@@ -65,10 +65,13 @@ export function useHighlightedEdges({
 
   const highlightedEdges = useMemo(
     () =>
-      applyUserEdgeHighlightStyle(
-        applySelectedEdgeStyle(applyActivePathEdgeStyle(baseEdges, activePath ?? null), activeEdgeId),
-        effectiveUserEdgeHighlights,
-        edgeDependencyKeyMap,
+      applySelectedEdgeStyle(
+        applyUserEdgeHighlightStyle(
+          applyActivePathEdgeStyle(baseEdges, activePath ?? null),
+          effectiveUserEdgeHighlights,
+          edgeDependencyKeyMap,
+        ),
+        activeEdgeId,
       ),
     [baseEdges, activePath, activeEdgeId, effectiveUserEdgeHighlights, edgeDependencyKeyMap],
   );

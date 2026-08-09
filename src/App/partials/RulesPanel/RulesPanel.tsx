@@ -1,4 +1,5 @@
 import type { IFlattenedRuleSet, IViolation } from 'dependency-cruiser';
+import fuzzysort from 'fuzzysort';
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -22,16 +23,18 @@ function matchesNameFilter(name: string, filter: string): boolean {
   if (trimmed.length === 0) {
     return true;
   }
-  return name.toLowerCase().includes(trimmed.toLowerCase());
+  return fuzzysort.single(trimmed, name) != null;
 }
 
 function RulesSection({
   title,
   entries,
+  nameFilter,
   onSelectViolationPaths,
 }: {
   title: string;
   entries: RuleWithViolations[];
+  nameFilter: string;
   onSelectViolationPaths: (paths: string[]) => void;
 }) {
   if (entries.length === 0) {
@@ -44,7 +47,12 @@ function RulesSection({
         {title} ({entries.length})
       </Typography>
       {entries.map(entry => (
-        <RuleListItem key={entry.name} entry={entry} onSelectViolationPaths={onSelectViolationPaths} />
+        <RuleListItem
+          key={entry.name}
+          entry={entry}
+          nameFilter={nameFilter}
+          onSelectViolationPaths={onSelectViolationPaths}
+        />
       ))}
     </Box>
   );
@@ -77,11 +85,13 @@ export function RulesPanel({ ruleSetUsed, violations, sources, onSelectViolation
         <RulesSection
           title={t('rules.withViolations')}
           entries={withViolations}
+          nameFilter={nameFilter}
           onSelectViolationPaths={onSelectViolationPaths}
         />
         <RulesSection
           title={t('rules.withoutViolations')}
           entries={withoutViolations}
+          nameFilter={nameFilter}
           onSelectViolationPaths={onSelectViolationPaths}
         />
       </>

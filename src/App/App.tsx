@@ -71,7 +71,17 @@ function App() {
   const initialDependencyCruiserState = useInitialDependencyCruiserState(sources);
   const { sidebarOpen, setSidebarOpen, toggleSidebarOpen } = useSidebarOpen();
   const { sidebarView, setSidebarView } = useSidebarView();
-  useSidebarShortcut({ onToggle: toggleSidebarOpen });
+  useSidebarShortcut({
+    onToggle: toggleSidebarOpen,
+    onShowFileTree: () => {
+      setSidebarView('files');
+      setSidebarOpen(true);
+    },
+    onShowRulesPanel: () => {
+      setSidebarView('rules');
+      setSidebarOpen(true);
+    },
+  });
 
   const handleSelectSidebarView = useCallback(
     (view: SidebarView) => {
@@ -243,7 +253,15 @@ function App() {
     openLoadCruiseResult,
     openLoadSettings,
     openAbout: () => setAboutOpen(true),
-    toggleFileTree: toggleSidebarOpen,
+    showFileTree: () => {
+      setSidebarView('files');
+      setSidebarOpen(true);
+    },
+    showRulesPanel: () => {
+      setSidebarView('rules');
+      setSidebarOpen(true);
+    },
+    toggleSidebar: toggleSidebarOpen,
     fileLoadInProgress: isFileLoading,
     cruiseWatchEnabled,
   });

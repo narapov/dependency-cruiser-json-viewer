@@ -21,8 +21,8 @@
     "commandPalette": "Command Palette (F1)",
     "hideFileTree": "Hide file tree ({{shortcut}})",
     "showFileTree": "Show file tree ({{shortcut}})",
-    "hideRules": "Hide rules",
-    "showRules": "Show rules",
+    "hideRules": "Hide rules ({{shortcut}})",
+    "showRules": "Show rules ({{shortcut}})",
     "about": "About"
   },
   "actions": {
@@ -62,7 +62,9 @@
     "setIgnorePatterns": "Set Ignore Patterns",
     "loadCruiseResult": "Load dependency-cruiser JSON",
     "loadWorkspaceSettings": "Load Workspace Settings",
-    "toggleFileTree": "Toggle File Tree",
+    "showFileTree": "Show File Tree",
+    "showRulesPanel": "Show Rules Panel",
+    "toggleSidebar": "Toggle Sidebar",
     "unselectAll": "Unselect All",
     "about": "About",
     "saveWorkspace": "Save Workspace"

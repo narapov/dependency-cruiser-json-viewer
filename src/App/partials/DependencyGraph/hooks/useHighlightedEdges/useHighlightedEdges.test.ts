@@ -6,6 +6,8 @@ import { describe, expect, it } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 import type { Edge } from '@xyflow/react';
 
+import { SELECTED_EDGE_COLOR } from '@/Shared';
+
 import { useHighlightedEdges } from './useHighlightedEdges';
 
 const modules = [
@@ -98,6 +100,22 @@ describe('useHighlightedEdges', () => {
     });
 
     expect(result.current.getEdgeHighlight('a.ts->b.ts')).toBeUndefined();
+  });
+
+  it('keeps selected edge color over user highlight', () => {
+    const { result } = renderHighlighted();
+
+    act(() => {
+      result.current.setUserEdgeHighlight('a.ts->b.ts', '#ff0000');
+    });
+    act(() => {
+      result.current.selectEdge('a.ts->b.ts');
+    });
+
+    expect(result.current.getEdgeHighlight('a.ts->b.ts')).toBe('#ff0000');
+    expect(result.current.highlightedEdges[0]?.style?.stroke).toBe(SELECTED_EDGE_COLOR);
+    expect(result.current.highlightedEdges[0]?.style?.strokeWidth).toBe(3);
+    expect(result.current.highlightedEdges[0]?.zIndex).toBe(1000);
   });
 
   it('ignores highlight for unknown edge ids', () => {

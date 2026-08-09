@@ -78,6 +78,10 @@ function collectCircularModules(modules: IModule[]): Set<string> {
   );
 }
 
+function collectUnresolvedModules(modules: IModule[]): Set<string> {
+  return new Set(modules.filter(module => module.couldNotResolve === true).map(module => module.source));
+}
+
 /** Whether any selected circular module lives under this folder. */
 export function folderHasCircularDescendant(
   folderPath: string,
@@ -191,6 +195,7 @@ export interface BuildVisibleNodesResult {
   selectedSet: Set<string>;
   childrenIndex: Map<string, FolderChildren>;
   circularModules: Set<string>;
+  unresolvedModules: Set<string>;
   visibleNodes: Map<string, 'folder' | 'file'>;
   visibleNodeIds: Set<string>;
   parentByNode: Map<string, string | null>;
@@ -206,6 +211,7 @@ export function buildVisibleNodes(
   const moduleSources = new Set(modules.map(m => m.source));
   const childrenIndex = buildChildrenIndex(modules.map(m => m.source));
   const circularModules = collectCircularModules([...modules]);
+  const unresolvedModules = collectUnresolvedModules([...modules]);
 
   const roots = getRootSelectedPaths(selectedPaths, selectedSet, childrenIndex);
   const visibleNodes = collectVisibleNodes(roots, selectedSet, expandedFolders, moduleSources, childrenIndex);
@@ -217,6 +223,7 @@ export function buildVisibleNodes(
     selectedSet,
     childrenIndex,
     circularModules,
+    unresolvedModules,
     visibleNodes,
     visibleNodeIds,
     parentByNode,

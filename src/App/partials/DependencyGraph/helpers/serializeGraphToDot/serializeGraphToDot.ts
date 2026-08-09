@@ -2,7 +2,13 @@ import { hsl } from 'd3-color';
 
 import type { Edge, Node } from '@xyflow/react';
 
-import { CIRCULAR_EDGE_COLOR, DEFAULT_EDGE_COLOR, TYPE_ONLY_CIRCULAR_EDGE_COLOR } from '@/Shared';
+import {
+  CIRCULAR_EDGE_COLOR,
+  DEFAULT_EDGE_COLOR,
+  ERROR_EDGE_COLOR,
+  TYPE_ONLY_CIRCULAR_EDGE_COLOR,
+  WARNING_EDGE_COLOR,
+} from '@/Shared';
 
 import type { FileNodeData, FolderGroupNodeData, FolderNodeData } from '../../types';
 import { parsePastelHsl } from '../assignFolderColors';
@@ -14,8 +20,13 @@ const PX_PER_INCH = 72;
 const DEFAULT_EDGE_HEX = '#b1b1b7';
 const CIRCULAR_EDGE_HEX = '#ff4d4f';
 const TYPE_ONLY_CIRCULAR_EDGE_HEX = '#ffa39e';
+const ERROR_EDGE_HEX = '#ff4d4f';
+const WARNING_EDGE_HEX = '#faad14';
 const DEFAULT_FILE_FILL = '#ffffff';
 const DEFAULT_NODE_BORDER = '#666666';
+const CIRCULAR_NODE_FILL = '#fff1f0';
+const UNRESOLVED_NODE_FILL = '#ff0000';
+const ERROR_NODE_BORDER = '#ff4d4f';
 const DEFAULT_FONT_COLOR = '#000000';
 /** Minimum lightness for exported fills so nodes stay readable on dark viewers. */
 const MIN_EXPORT_FILL_LIGHTNESS = 85;
@@ -131,6 +142,12 @@ function resolveUserHighlightColor(
 
 function resolveBaseEdgeColor(edge: Edge): string {
   const stroke = edge.style?.stroke;
+  if (stroke === ERROR_EDGE_COLOR) {
+    return ERROR_EDGE_HEX;
+  }
+  if (stroke === WARNING_EDGE_COLOR) {
+    return WARNING_EDGE_HEX;
+  }
   if (stroke === CIRCULAR_EDGE_COLOR) {
     return CIRCULAR_EDGE_HEX;
   }
@@ -164,12 +181,32 @@ function getFolderFillColor(node: Node): string | undefined {
   return undefined;
 }
 
+function getFileNodeColors(data: FileNodeData | undefined): { fill: string; border: string } {
+  if (data?.couldNotResolve === true) {
+    return { fill: UNRESOLVED_NODE_FILL, border: ERROR_NODE_BORDER };
+  }
+  if (data?.circular === true) {
+    return { fill: CIRCULAR_NODE_FILL, border: ERROR_NODE_BORDER };
+  }
+  return { fill: DEFAULT_FILE_FILL, border: DEFAULT_NODE_BORDER };
+}
+
 function emitLeafNode(node: Node, rect: AbsoluteRect, graphHeight: number, indent: string): string[] {
   const centerX = rect.x + rect.width / 2;
   const centerY = flipY(rect.y + rect.height / 2, graphHeight);
   const posValue = `${formatPoint(centerX)},${formatPoint(centerY)}!`;
-  const rawFill = node.type === 'folder' ? getFolderFillColor(node) : DEFAULT_FILE_FILL;
-  const fill = rawFill != null ? toDotColor(rawFill) : DEFAULT_FILE_FILL;
+
+  let fill = DEFAULT_FILE_FILL;
+  let border = DEFAULT_NODE_BORDER;
+  if (node.type === 'folder') {
+    const rawFill = getFolderFillColor(node);
+    fill = rawFill != null ? toDotColor(rawFill) : DEFAULT_FILE_FILL;
+  } else if (node.type === 'file') {
+    const colors = getFileNodeColors(node.data as FileNodeData | undefined);
+    fill = colors.fill;
+    border = colors.border;
+  }
+
   const attrs = [
     `label=${quoteDot(getNodeLabel(node))}`,
     `width=${formatInches(rect.width)}`,
@@ -179,7 +216,7 @@ function emitLeafNode(node: Node, rect: AbsoluteRect, graphHeight: number, inden
     'shape=box',
     'style=filled',
     `fillcolor=${quoteDot(fill)}`,
-    `color=${quoteDot(DEFAULT_NODE_BORDER)}`,
+    `color=${quoteDot(border)}`,
     `fontcolor=${quoteDot(DEFAULT_FONT_COLOR)}`,
   ];
 

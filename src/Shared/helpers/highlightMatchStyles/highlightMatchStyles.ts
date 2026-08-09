@@ -1,7 +1,7 @@
 import type { Theme } from '@mui/material/styles';
 
-/** Theme-aware CSS for quick-pick match highlight spans. */
-export function highlightBaseStyles(theme: Theme) {
+/** Theme-aware CSS for match highlight spans. */
+export function highlightMatchStyles(theme: Theme) {
   return {
     fontWeight: 600,
     borderRadius: '2px',

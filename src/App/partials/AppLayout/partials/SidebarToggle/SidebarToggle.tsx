@@ -20,11 +20,17 @@ interface SidebarToggleProps {
 
 export function SidebarToggle({ sidebarOpen, sidebarView, onSelectView }: SidebarToggleProps) {
   const { t } = useTranslation();
-  const shortcut = formatShortcut('B');
+  const hideShortcut = formatShortcut('B');
+  const filesShowShortcut = formatShortcut('E', { shift: true });
+  const rulesShowShortcut = formatShortcut('M', { shift: true });
   const filesActive = sidebarOpen && sidebarView === 'files';
   const rulesActive = sidebarOpen && sidebarView === 'rules';
-  const filesLabel = filesActive ? t('app.hideFileTree', { shortcut }) : t('app.showFileTree', { shortcut });
-  const rulesLabel = rulesActive ? t('app.hideRules') : t('app.showRules');
+  const filesLabel = filesActive
+    ? t('app.hideFileTree', { shortcut: hideShortcut })
+    : t('app.showFileTree', { shortcut: filesShowShortcut });
+  const rulesLabel = rulesActive
+    ? t('app.hideRules', { shortcut: hideShortcut })
+    : t('app.showRules', { shortcut: rulesShowShortcut });
 
   return (
     <Box

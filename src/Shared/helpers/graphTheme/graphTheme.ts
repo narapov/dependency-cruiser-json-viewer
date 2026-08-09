@@ -13,6 +13,18 @@ export const TYPE_ONLY_CIRCULAR_EDGE_COLOR = 'var(--graph-circular-type-only)';
 /** CSS variable for circular node background fill. */
 export const CIRCULAR_NODE_BACKGROUND = 'var(--graph-circular-background)';
 
+/** CSS variable for error node background fill (unresolved, rule errors). */
+export const ERROR_NODE_BACKGROUND = 'var(--graph-error-background)';
+
+/** CSS variable for warning node background fill (rule warnings). */
+export const WARNING_NODE_BACKGROUND = 'var(--graph-warning-background)';
+
+/** CSS variable for error edge stroke (unresolved, rule errors). */
+export const ERROR_EDGE_COLOR = 'var(--graph-error)';
+
+/** CSS variable for warning edge stroke (rule warnings). */
+export const WARNING_EDGE_COLOR = 'var(--graph-warning)';
+
 /** CSS variable for selected edge stroke. */
 export const SELECTED_EDGE_COLOR = 'var(--graph-selected)';
 

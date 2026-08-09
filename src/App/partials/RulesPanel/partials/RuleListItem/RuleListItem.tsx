@@ -17,11 +17,14 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 
 import type { RuleWithViolations } from '@/domain';
+import { HighlightedMatchText, MatchHighlight } from '@/Shared';
 
+import { findSubstringMatchIndexes } from '../../helpers/findSubstringMatchIndexes';
 import { RuleJsonDialog } from '../RuleJsonDialog';
 
 interface RuleListItemProps {
   entry: RuleWithViolations;
+  nameFilter: string;
   onSelectViolationPaths: (paths: string[]) => void;
 }
 
@@ -52,13 +55,14 @@ function violationPaths(violation: IViolation): string[] {
   return [violation.from];
 }
 
-export function RuleListItem({ entry, onSelectViolationPaths }: RuleListItemProps) {
+export function RuleListItem({ entry, nameFilter, onSelectViolationPaths }: RuleListItemProps) {
   const { t } = useTranslation();
   const [jsonOpen, setJsonOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const count = entry.violations.length;
   const hasViolations = count > 0;
   const canViewJson = entry.rule != null;
+  const nameMatchIndexes = findSubstringMatchIndexes(entry.name, nameFilter);
 
   return (
     <>
@@ -95,7 +99,7 @@ export function RuleListItem({ entry, onSelectViolationPaths }: RuleListItemProp
               sx={{ fontFamily: 'monospace', fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis' }}
               title={entry.name}
             >
-              {entry.name}
+              <HighlightedMatchText text={entry.name} indexes={nameMatchIndexes} Highlight={MatchHighlight} />
             </Typography>
             <Chip
               size="small"
@@ -104,12 +108,14 @@ export function RuleListItem({ entry, onSelectViolationPaths }: RuleListItemProp
               variant="outlined"
               sx={{ height: 20, fontSize: 10, flexShrink: 0 }}
             />
-            <Chip
-              size="small"
-              label={t('rules.violationsCount', { count })}
-              color={hasViolations ? 'error' : 'default'}
-              sx={{ height: 20, fontSize: 11, flexShrink: 0 }}
-            />
+            {hasViolations ? (
+              <Chip
+                size="small"
+                label={t('rules.violationsCount', { count })}
+                color="error"
+                sx={{ height: 20, fontSize: 11, flexShrink: 0 }}
+              />
+            ) : null}
           </Stack>
           {canViewJson ? (
             <Tooltip title={t('rules.viewJson')}>

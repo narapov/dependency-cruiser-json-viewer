@@ -35,7 +35,9 @@ describe('useAppCommands', () => {
     const openLoadCruiseResult = vi.fn();
     const openLoadSettings = vi.fn();
     const openAbout = vi.fn();
-    const toggleFileTree = vi.fn();
+    const showFileTree = vi.fn();
+    const showRulesPanel = vi.fn();
+    const toggleSidebar = vi.fn();
 
     const { result } = renderHook(() =>
       useAppCommands({
@@ -46,7 +48,9 @@ describe('useAppCommands', () => {
         openLoadCruiseResult,
         openLoadSettings,
         openAbout,
-        toggleFileTree,
+        showFileTree,
+        showRulesPanel,
+        toggleSidebar,
       }),
     );
 
@@ -58,7 +62,9 @@ describe('useAppCommands', () => {
     expect(ids).toContain('selectAll');
     expect(ids).toContain('setTheme');
     expect(ids).toContain('about');
-    expect(ids).toContain('toggleFileTree');
+    expect(ids).toContain('showFileTree');
+    expect(ids).toContain('showRulesPanel');
+    expect(ids).toContain('toggleSidebar');
 
     const labels = result.current.map(command => command.label);
     expect(labels).toEqual([...labels].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' })));
@@ -69,7 +75,9 @@ describe('useAppCommands', () => {
     const openThemePicker = vi.fn();
     const openAbout = vi.fn();
     const openLoadSettings = vi.fn();
-    const toggleFileTree = vi.fn();
+    const showFileTree = vi.fn();
+    const showRulesPanel = vi.fn();
+    const toggleSidebar = vi.fn();
 
     const { result } = renderHook(() =>
       useAppCommands({
@@ -80,7 +88,9 @@ describe('useAppCommands', () => {
         openLoadCruiseResult: vi.fn(),
         openLoadSettings,
         openAbout,
-        toggleFileTree,
+        showFileTree,
+        showRulesPanel,
+        toggleSidebar,
       }),
     );
 
@@ -89,7 +99,9 @@ describe('useAppCommands', () => {
     byId.selectAll.onExecute();
     byId.setTheme.onExecute();
     byId.about.onExecute();
-    byId.toggleFileTree.onExecute();
+    byId.showFileTree.onExecute();
+    byId.showRulesPanel.onExecute();
+    byId.toggleSidebar.onExecute();
     byId.copyActive.onExecute();
     byId.exportGraphDot.onExecute();
     byId.viewGraphDotOnline.onExecute();
@@ -99,7 +111,9 @@ describe('useAppCommands', () => {
     expect(orch.selectAll).toHaveBeenCalled();
     expect(openThemePicker).toHaveBeenCalled();
     expect(openAbout).toHaveBeenCalled();
-    expect(toggleFileTree).toHaveBeenCalled();
+    expect(showFileTree).toHaveBeenCalled();
+    expect(showRulesPanel).toHaveBeenCalled();
+    expect(toggleSidebar).toHaveBeenCalled();
     expect(orch.copyActive).toHaveBeenCalled();
     expect(orch.exportGraphDot).toHaveBeenCalled();
     expect(orch.viewGraphDotOnline).toHaveBeenCalled();
@@ -117,7 +131,9 @@ describe('useAppCommands', () => {
         openLoadCruiseResult: vi.fn(),
         openLoadSettings: vi.fn(),
         openAbout: vi.fn(),
-        toggleFileTree: vi.fn(),
+        showFileTree: vi.fn(),
+        showRulesPanel: vi.fn(),
+        toggleSidebar: vi.fn(),
         fileLoadInProgress: true,
       }),
     );
@@ -138,7 +154,9 @@ describe('useAppCommands', () => {
         openLoadCruiseResult: vi.fn(),
         openLoadSettings: vi.fn(),
         openAbout: vi.fn(),
-        toggleFileTree: vi.fn(),
+        showFileTree: vi.fn(),
+        showRulesPanel: vi.fn(),
+        toggleSidebar: vi.fn(),
         cruiseWatchEnabled: true,
       }),
     );

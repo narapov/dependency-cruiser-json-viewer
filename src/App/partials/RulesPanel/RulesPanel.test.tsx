@@ -54,7 +54,7 @@ describe('RulesPanel', () => {
     expect(screen.getByText('domain-only-domain')).toBeInTheDocument();
     expect(screen.getByText('no-circular')).toBeInTheDocument();
     expect(screen.getByText(i18n.current.t('rules.violationsCount', { count: 1 }))).toBeInTheDocument();
-    expect(screen.getByText(i18n.current.t('rules.violationsCount', { count: 0 }))).toBeInTheDocument();
+    expect(screen.queryByText(i18n.current.t('rules.violationsCount', { count: 0 }))).not.toBeInTheDocument();
   });
 
   it('filters rules by name', () => {
@@ -74,9 +74,31 @@ describe('RulesPanel', () => {
     });
 
     expect(screen.queryByText('domain-only-domain')).not.toBeInTheDocument();
-    expect(screen.getByText('no-circular')).toBeInTheDocument();
+    expect(screen.getByTitle('no-circular')).toBeInTheDocument();
+    expect(screen.getByTestId('match-highlight')).toHaveTextContent('circular');
     expect(screen.queryByText(`${i18n.current.t('rules.withViolations')} (1)`)).not.toBeInTheDocument();
     expect(screen.getByText(`${i18n.current.t('rules.withoutViolations')} (1)`)).toBeInTheDocument();
+  });
+
+  it('filters rules with fuzzy match', () => {
+    const { result: i18n } = renderHook(() => useTranslation());
+
+    renderWithTheme(
+      <RulesPanel
+        ruleSetUsed={ruleSet}
+        violations={violations}
+        sources={['src/domain/a.ts', 'src/App/App.tsx']}
+        onSelectViolationPaths={vi.fn()}
+      />,
+    );
+
+    fireEvent.change(screen.getByRole('textbox', { name: i18n.current.t('rules.filterPlaceholder') }), {
+      target: { value: 'ncirc' },
+    });
+
+    expect(screen.queryByText('domain-only-domain')).not.toBeInTheDocument();
+    expect(screen.getByTitle('no-circular')).toBeInTheDocument();
+    expect(screen.getAllByTestId('match-highlight').length).toBeGreaterThan(0);
   });
 
   it('shows no-matches message when filter excludes all rules', () => {
