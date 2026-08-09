@@ -2,7 +2,9 @@ import { useEffect, useMemo, useReducer, type RefObject } from 'react';
 
 import {
   applyHighlightKeys,
+  collectCircularModulePaths,
   expandSelectionWithSelectedAncestors,
+  filterCruiseResult,
   getAncestorKeys,
   getParentPath,
   getSubtreeFolderKeys,
@@ -471,6 +473,26 @@ export function useAppOrchestration({
     dispatch({ type: 'setSelectedPaths', paths: [] });
   };
 
+  const showPathsOnly = (paths: string[]) => {
+    const sourceSet = new Set(sources);
+    const filtered = paths.filter(path => sourceSet.has(path));
+    dispatch({
+      type: 'setSelectedPaths',
+      paths: expandSelectionWithSelectedAncestors(filtered, sources),
+    });
+    if (filtered.length > 0) {
+      updateExpandedKeys([...new Set(filtered.flatMap(getAncestorKeys))]);
+    }
+  };
+
+  const showCircularDependenciesOnly = () => {
+    if (unfilteredCruiseResult == null) {
+      return;
+    }
+    const modules = filterCruiseResult(unfilteredCruiseResult, ignorePatterns).modules;
+    showPathsOnly(collectCircularModulePaths(modules));
+  };
+
   const applyWorkspaceView = (input: {
     view: MergedViewerWorkspaceView;
     sourcesKey: string;
@@ -522,6 +544,8 @@ export function useAppOrchestration({
     collapseAllRecursive,
     selectAll,
     unselectAll,
+    showPathsOnly,
+    showCircularDependenciesOnly,
     applyWorkspaceView,
   };
 }

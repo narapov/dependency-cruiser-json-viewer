@@ -83,6 +83,10 @@ function App() {
       setSidebarView('rules');
       setSidebarOpen(true);
     },
+    onShowCircularPanel: () => {
+      setSidebarView('circular');
+      setSidebarOpen(true);
+    },
   });
 
   const handleSelectSidebarView = useCallback(
@@ -277,6 +281,10 @@ function App() {
       setSidebarView('rules');
       setSidebarOpen(true);
     },
+    showCircularPanel: () => {
+      setSidebarView('circular');
+      setSidebarOpen(true);
+    },
     toggleSidebar: toggleSidebarOpen,
     fileLoadInProgress: isFileLoading,
     cruiseWatchEnabled,
@@ -362,6 +370,8 @@ function App() {
           ruleSetUsed={data.summary.ruleSetUsed}
           violations={data.summary.violations}
           onSelectViolationPaths={handleSelectViolationPaths}
+          modules={modules}
+          onShowCycle={orch.showPathsOnly}
         />
       }
       main={

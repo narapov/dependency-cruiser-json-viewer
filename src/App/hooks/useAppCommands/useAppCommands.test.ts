@@ -23,6 +23,7 @@ function createOrch(): AppCommandsOrchestration {
     collapseAllRecursive: vi.fn(),
     selectAll: vi.fn(),
     unselectAll: vi.fn(),
+    showCircularDependenciesOnly: vi.fn(),
   };
 }
 
@@ -37,6 +38,7 @@ describe('useAppCommands', () => {
     const openAbout = vi.fn();
     const showFileTree = vi.fn();
     const showRulesPanel = vi.fn();
+    const showCircularPanel = vi.fn();
     const toggleSidebar = vi.fn();
 
     const { result } = renderHook(() =>
@@ -50,6 +52,7 @@ describe('useAppCommands', () => {
         openAbout,
         showFileTree,
         showRulesPanel,
+        showCircularPanel,
         toggleSidebar,
       }),
     );
@@ -60,10 +63,12 @@ describe('useAppCommands', () => {
     expect(ids).toContain('saveWorkspace');
     expect(ids).toContain('loadWorkspaceSettings');
     expect(ids).toContain('selectAll');
+    expect(ids).toContain('showCircularDependenciesOnly');
     expect(ids).toContain('setTheme');
     expect(ids).toContain('about');
     expect(ids).toContain('showFileTree');
     expect(ids).toContain('showRulesPanel');
+    expect(ids).toContain('showCircularPanel');
     expect(ids).toContain('toggleSidebar');
 
     const labels = result.current.map(command => command.label);
@@ -77,6 +82,7 @@ describe('useAppCommands', () => {
     const openLoadSettings = vi.fn();
     const showFileTree = vi.fn();
     const showRulesPanel = vi.fn();
+    const showCircularPanel = vi.fn();
     const toggleSidebar = vi.fn();
 
     const { result } = renderHook(() =>
@@ -90,6 +96,7 @@ describe('useAppCommands', () => {
         openAbout,
         showFileTree,
         showRulesPanel,
+        showCircularPanel,
         toggleSidebar,
       }),
     );
@@ -97,10 +104,12 @@ describe('useAppCommands', () => {
     const byId = Object.fromEntries(result.current.map(command => [command.id, command]));
 
     byId.selectAll.onExecute();
+    byId.showCircularDependenciesOnly.onExecute();
     byId.setTheme.onExecute();
     byId.about.onExecute();
     byId.showFileTree.onExecute();
     byId.showRulesPanel.onExecute();
+    byId.showCircularPanel.onExecute();
     byId.toggleSidebar.onExecute();
     byId.copyActive.onExecute();
     byId.exportGraphDot.onExecute();
@@ -109,10 +118,12 @@ describe('useAppCommands', () => {
     byId.loadWorkspaceSettings.onExecute();
 
     expect(orch.selectAll).toHaveBeenCalled();
+    expect(orch.showCircularDependenciesOnly).toHaveBeenCalled();
     expect(openThemePicker).toHaveBeenCalled();
     expect(openAbout).toHaveBeenCalled();
     expect(showFileTree).toHaveBeenCalled();
     expect(showRulesPanel).toHaveBeenCalled();
+    expect(showCircularPanel).toHaveBeenCalled();
     expect(toggleSidebar).toHaveBeenCalled();
     expect(orch.copyActive).toHaveBeenCalled();
     expect(orch.exportGraphDot).toHaveBeenCalled();
@@ -133,6 +144,7 @@ describe('useAppCommands', () => {
         openAbout: vi.fn(),
         showFileTree: vi.fn(),
         showRulesPanel: vi.fn(),
+        showCircularPanel: vi.fn(),
         toggleSidebar: vi.fn(),
         fileLoadInProgress: true,
       }),
@@ -156,6 +168,7 @@ describe('useAppCommands', () => {
         openAbout: vi.fn(),
         showFileTree: vi.fn(),
         showRulesPanel: vi.fn(),
+        showCircularPanel: vi.fn(),
         toggleSidebar: vi.fn(),
         cruiseWatchEnabled: true,
       }),

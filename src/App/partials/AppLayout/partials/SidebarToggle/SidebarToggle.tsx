@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 
 import FolderCopyOutlined from '@mui/icons-material/FolderCopyOutlined';
+import LoopOutlined from '@mui/icons-material/LoopOutlined';
 import RuleOutlined from '@mui/icons-material/RuleOutlined';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
@@ -23,14 +24,19 @@ export function SidebarToggle({ sidebarOpen, sidebarView, onSelectView }: Sideba
   const hideShortcut = formatShortcut('B');
   const filesShowShortcut = formatShortcut('E', { shift: true });
   const rulesShowShortcut = formatShortcut('M', { shift: true });
+  const circularShowShortcut = formatShortcut('C', { shift: true });
   const filesActive = sidebarOpen && sidebarView === 'files';
   const rulesActive = sidebarOpen && sidebarView === 'rules';
+  const circularActive = sidebarOpen && sidebarView === 'circular';
   const filesLabel = filesActive
     ? t('app.hideFileTree', { shortcut: hideShortcut })
     : t('app.showFileTree', { shortcut: filesShowShortcut });
   const rulesLabel = rulesActive
     ? t('app.hideRules', { shortcut: hideShortcut })
     : t('app.showRules', { shortcut: rulesShowShortcut });
+  const circularLabel = circularActive
+    ? t('app.hideCircular', { shortcut: hideShortcut })
+    : t('app.showCircular', { shortcut: circularShowShortcut });
 
   return (
     <Box
@@ -78,6 +84,22 @@ export function SidebarToggle({ sidebarOpen, sidebarView, onSelectView }: Sideba
           }}
         >
           <RuleOutlined sx={{ fontSize: 18 }} />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title={circularLabel}>
+        <IconButton
+          size="small"
+          onClick={() => onSelectView('circular')}
+          aria-label={circularLabel}
+          aria-pressed={circularActive}
+          sx={{
+            borderRadius: 1,
+            ...(circularActive && {
+              bgcolor: 'action.selected',
+            }),
+          }}
+        >
+          <LoopOutlined sx={{ fontSize: 18 }} />
         </IconButton>
       </Tooltip>
     </Box>

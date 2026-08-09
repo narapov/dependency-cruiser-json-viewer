@@ -4,9 +4,15 @@ interface UseSidebarShortcutOptions {
   onToggle: () => void;
   onShowFileTree: () => void;
   onShowRulesPanel: () => void;
+  onShowCircularPanel: () => void;
 }
 
-export function useSidebarShortcut({ onToggle, onShowFileTree, onShowRulesPanel }: UseSidebarShortcutOptions) {
+export function useSidebarShortcut({
+  onToggle,
+  onShowFileTree,
+  onShowRulesPanel,
+  onShowCircularPanel,
+}: UseSidebarShortcutOptions) {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (!(event.metaKey || event.ctrlKey)) {
@@ -27,6 +33,12 @@ export function useSidebarShortcut({ onToggle, onShowFileTree, onShowRulesPanel 
         return;
       }
 
+      if (event.shiftKey && key === 'c') {
+        event.preventDefault();
+        onShowCircularPanel();
+        return;
+      }
+
       if (!event.shiftKey && key === 'b') {
         event.preventDefault();
         onToggle();
@@ -35,5 +47,5 @@ export function useSidebarShortcut({ onToggle, onShowFileTree, onShowRulesPanel 
 
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [onToggle, onShowFileTree, onShowRulesPanel]);
+  }, [onToggle, onShowFileTree, onShowRulesPanel, onShowCircularPanel]);
 }

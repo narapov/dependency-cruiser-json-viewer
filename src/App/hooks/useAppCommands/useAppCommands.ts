@@ -19,6 +19,7 @@ export interface AppCommandsOrchestration {
   collapseAllRecursive: () => void;
   selectAll: () => void;
   unselectAll: () => void;
+  showCircularDependenciesOnly: () => void;
 }
 
 interface UseAppCommandsOptions {
@@ -31,6 +32,7 @@ interface UseAppCommandsOptions {
   openAbout: () => void;
   showFileTree: () => void;
   showRulesPanel: () => void;
+  showCircularPanel: () => void;
   toggleSidebar: () => void;
   fileLoadInProgress?: boolean;
   cruiseWatchEnabled?: boolean;
@@ -46,6 +48,7 @@ export function useAppCommands({
   openAbout,
   showFileTree,
   showRulesPanel,
+  showCircularPanel,
   toggleSidebar,
   fileLoadInProgress = false,
   cruiseWatchEnabled = false,
@@ -68,6 +71,7 @@ export function useAppCommands({
     collapseAllRecursive,
     selectAll,
     unselectAll,
+    showCircularDependenciesOnly,
   } = orch;
 
   const commands: QuickPickCommand[] = [
@@ -122,6 +126,11 @@ export function useAppCommands({
       onExecute: collapseAllRecursive,
     },
     { id: 'selectAll', label: t('commands.selectAll'), onExecute: selectAll },
+    {
+      id: 'showCircularDependenciesOnly',
+      label: t('commands.showCircularDependenciesOnly'),
+      onExecute: showCircularDependenciesOnly,
+    },
     { id: 'setTheme', label: t('commands.setTheme'), onExecute: openThemePicker },
     { id: 'setLanguage', label: t('commands.setLanguage'), onExecute: openLanguagePicker },
     {
@@ -138,6 +147,7 @@ export function useAppCommands({
     { id: 'about', label: t('commands.about'), onExecute: openAbout },
     { id: 'showFileTree', label: t('commands.showFileTree'), onExecute: showFileTree },
     { id: 'showRulesPanel', label: t('commands.showRulesPanel'), onExecute: showRulesPanel },
+    { id: 'showCircularPanel', label: t('commands.showCircularPanel'), onExecute: showCircularPanel },
     { id: 'toggleSidebar', label: t('commands.toggleSidebar'), onExecute: toggleSidebar },
     { id: 'unselectAll', label: t('commands.unselectAll'), onExecute: unselectAll },
   ];

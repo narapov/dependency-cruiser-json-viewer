@@ -1,9 +1,10 @@
-import type { IFlattenedRuleSet, IViolation } from 'dependency-cruiser';
+import type { IFlattenedRuleSet, IModule, IViolation } from 'dependency-cruiser';
 import type { ReactNode, Ref } from 'react';
 
 import Box from '@mui/material/Box';
 
 import type { SidebarView } from '../AppLayout';
+import { CircularPanel } from '../CircularPanel';
 import { FileTree, type FileTreeHandle } from '../FileTree';
 import { RulesPanel } from '../RulesPanel';
 
@@ -22,6 +23,8 @@ interface AppSidebarProps {
   ruleSetUsed: IFlattenedRuleSet | undefined;
   violations: readonly IViolation[] | undefined;
   onSelectViolationPaths: (paths: string[]) => void;
+  modules: readonly IModule[];
+  onShowCycle: (paths: string[]) => void;
 }
 
 function ViewPanel({ active, children }: { active: boolean; children: ReactNode }) {
@@ -56,6 +59,8 @@ export function AppSidebar({
   ruleSetUsed,
   violations,
   onSelectViolationPaths,
+  modules,
+  onShowCycle,
 }: AppSidebarProps) {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
@@ -80,6 +85,9 @@ export function AppSidebar({
           sources={sources}
           onSelectViolationPaths={onSelectViolationPaths}
         />
+      </ViewPanel>
+      <ViewPanel active={view === 'circular'}>
+        <CircularPanel modules={modules} sources={sources} onShowCycle={onShowCycle} onShowInGraph={onShowInGraph} />
       </ViewPanel>
     </Box>
   );
