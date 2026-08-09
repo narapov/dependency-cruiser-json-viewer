@@ -77,6 +77,7 @@ export function useLoadCruiseResultFromFile(options: UseLoadCruiseResultFromFile
     handleFileSelect,
     isLoading,
     fileLoadError,
+    setFileLoadError,
     clearFileLoadError,
   };
 }

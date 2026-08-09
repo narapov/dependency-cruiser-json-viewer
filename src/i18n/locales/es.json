@@ -9,6 +9,8 @@
     "noCruiseResultTitle": "No hay resultado cruise cargado",
     "noCruiseResultMessage": "Carga un archivo JSON de dependency-cruiser para explorar tu proyecto.",
     "loadCruiseResult": "Cargar archivo JSON",
+    "dropCruiseResultHint": "Suelta un archivo JSON para cargar el resultado cruise",
+    "dropCruiseResultInvalidFile": "Suelta un archivo JSON de dependency-cruiser.",
     "invalidCruiseResultJson": "El archivo seleccionado no es un JSON válido.",
     "invalidCruiseResultFormat": "El archivo seleccionado no parece un resultado cruise de dependency-cruiser.",
     "missingWorkspaceSettings": "El archivo seleccionado no tiene ajustes del espacio de trabajo del visor.",

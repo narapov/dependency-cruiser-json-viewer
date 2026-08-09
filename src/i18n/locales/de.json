@@ -9,6 +9,8 @@
     "noCruiseResultTitle": "Kein Cruise-Ergebnis geladen",
     "noCruiseResultMessage": "Laden Sie eine dependency-cruiser-JSON-Datei, um Ihr Projekt zu erkunden.",
     "loadCruiseResult": "JSON-Datei laden",
+    "dropCruiseResultHint": "JSON-Datei ablegen, um das Cruise-Ergebnis zu laden",
+    "dropCruiseResultInvalidFile": "Legen Sie eine dependency-cruiser-JSON-Datei ab.",
     "invalidCruiseResultJson": "Die ausgewählte Datei ist kein gültiges JSON.",
     "invalidCruiseResultFormat": "Die ausgewählte Datei ist kein dependency-cruiser-Cruise-Ergebnis.",
     "missingWorkspaceSettings": "Die ausgewählte Datei enthält keine Viewer-Workspace-Einstellungen.",
