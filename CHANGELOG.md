@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v1.3.0...v1.4.0) (2026-08-09)
+
+### Features
+
+- add circular dependencies sidebar panel ([#8](https://github.com/narapov/dependency-cruiser-json-viewer/issues/8)) ([b63f0f6](https://github.com/narapov/dependency-cruiser-json-viewer/commit/b63f0f6dfec789dfc6b8ca459f8fddb368f74801))
+- load cruise results by dnd ([#7](https://github.com/narapov/dependency-cruiser-json-viewer/issues/7)) ([8c8a027](https://github.com/narapov/dependency-cruiser-json-viewer/commit/8c8a02727e2e90d0b2ef087e802959437f2d50f9))
+
 ## [1.3.0](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v1.2.0...v1.3.0) (2026-08-09)
 
 ### Features
