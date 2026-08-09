@@ -120,6 +120,28 @@ describe('RulesPanel', () => {
     expect(screen.getByText(i18n.current.t('rules.noMatches'))).toBeInTheDocument();
   });
 
+  it('clears the name filter from the clear button', () => {
+    const { result: i18n } = renderHook(() => useTranslation());
+
+    renderWithTheme(
+      <RulesPanel
+        ruleSetUsed={ruleSet}
+        violations={violations}
+        sources={['src/domain/a.ts', 'src/App/App.tsx']}
+        onSelectViolationPaths={vi.fn()}
+      />,
+    );
+
+    fireEvent.change(screen.getByRole('textbox', { name: i18n.current.t('rules.filterPlaceholder') }), {
+      target: { value: 'circular' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: i18n.current.t('actions.clear') }));
+
+    expect(screen.getByRole('textbox', { name: i18n.current.t('rules.filterPlaceholder') })).toHaveValue('');
+    expect(screen.getByText('domain-only-domain')).toBeInTheDocument();
+    expect(screen.getByText('no-circular')).toBeInTheDocument();
+  });
+
   it('does not show an expand button for a rule with no violations', () => {
     const { result: i18n } = renderHook(() => useTranslation());
 
