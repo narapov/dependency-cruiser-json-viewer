@@ -9,10 +9,13 @@ import { renderWithTheme } from '@/testsUtils';
 
 import { DependencyEdge } from './DependencyEdge';
 
-vi.mock('@xyflow/react', () => ({
-  BaseEdge: ({ id }: { id: string }) => <div data-testid={`base-edge-${id}`} />,
-  getBezierPath: () => ['M0 0 L10 10', 0, 0],
-}));
+vi.mock('@xyflow/react', async importOriginal => {
+  const actual = await importOriginal<typeof import('@xyflow/react')>();
+  return {
+    ...actual,
+    BaseEdge: ({ id }: { id: string }) => <div data-testid={`base-edge-${id}`} />,
+  };
+});
 
 function edgeProps(overrides: Partial<EdgeProps> = {}): EdgeProps {
   return {
