@@ -128,7 +128,7 @@ export function RuleListItem({ entry, onSelectViolationPaths }: RuleListItemProp
           ) : null}
         </AccordionSummary>
         {hasViolations ? (
-          <AccordionDetails sx={{ px: 1, pt: 0, pb: 1 }}>
+          <AccordionDetails sx={{ px: 1, pt: 0, pb: 1, pl: 4 }}>
             <List dense disablePadding>
               {entry.violations.map(violation => {
                 const label = formatViolationLabel(violation);
