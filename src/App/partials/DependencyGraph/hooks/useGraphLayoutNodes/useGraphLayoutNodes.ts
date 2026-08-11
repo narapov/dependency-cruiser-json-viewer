@@ -13,6 +13,7 @@ import {
   invalidateGroupPositionCache,
   invalidateGroupPositionCacheRecursive,
   invalidatePositionCache,
+  migrateReparentedNodePositions,
   preserveExpandedGroupPositions,
   reflowForDrag,
   reflowParentSiblings,
@@ -70,6 +71,7 @@ export function useGraphLayoutNodes({
   const prevFingerprintsRef = useRef<GroupFingerprints | null>(null);
   const prevSizesRef = useRef<Map<string, NodeSize>>(new Map());
   const prevNodesRef = useRef<Node[] | null>(null);
+  const prevParentByNodeRef = useRef<Map<string, string | null> | null>(null);
   const [hasUserLayout, setHasUserLayout] = useState(false);
   const [layoutSeed, setLayoutSeed] = useState(0);
   const pendingRestoreRef = useRef<GraphLayoutSnapshot | null>(null);
@@ -96,6 +98,7 @@ export function useGraphLayoutNodes({
       prevFingerprintsRef.current = null;
       prevSizesRef.current = new Map();
       prevNodesRef.current = null;
+      prevParentByNodeRef.current = null;
       skipStaleGroupPurgeRef.current = true;
     }
 
@@ -121,6 +124,13 @@ export function useGraphLayoutNodes({
     let nextNodes = autoLayoutOnly ? layoutNodes : preserveExpandedGroupPositions(layoutNodes, prevNodesRef.current);
 
     if (!autoLayoutOnly) {
+      nextNodes = migrateReparentedNodePositions(
+        nextNodes,
+        parentByNode,
+        prevParentByNodeRef.current,
+        prevNodesRef.current,
+        positionCacheRef.current,
+      );
       nextNodes = applyPositionCache(
         nextNodes,
         parentByNode,
@@ -143,6 +153,7 @@ export function useGraphLayoutNodes({
     prevFingerprintsRef.current = currentFingerprints;
     prevSizesRef.current = collectNodeSizes(nextNodes);
     prevNodesRef.current = nextNodes;
+    prevParentByNodeRef.current = new Map(parentByNode);
     setNodes(nextNodes);
   }, [autoLayoutOnly, graphResult, layoutSeed, setNodes]);
 
@@ -247,6 +258,7 @@ export function useGraphLayoutNodes({
 
         prevSizesRef.current = collectNodeSizes(nextNodes);
         prevNodesRef.current = nextNodes;
+        prevParentByNodeRef.current = new Map(parentByNode);
         return nextNodes;
       });
     },

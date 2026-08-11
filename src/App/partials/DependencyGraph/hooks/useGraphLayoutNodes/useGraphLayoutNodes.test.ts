@@ -14,6 +14,7 @@ vi.mock('../../helpers', async importOriginal => {
     buildGroupFingerprints: vi.fn(() => new Map()),
     invalidatePositionCache: vi.fn(),
     preserveExpandedGroupPositions: vi.fn((nodes: Node[]) => nodes),
+    migrateReparentedNodePositions: vi.fn((nodes: Node[]) => nodes),
     applyPositionCache: vi.fn((nodes: Node[]) => nodes),
     reflowParentSiblings: vi.fn(({ nodes }: { nodes: Node[] }) => nodes),
     collectNodeSizes: vi.fn(() => new Map()),
