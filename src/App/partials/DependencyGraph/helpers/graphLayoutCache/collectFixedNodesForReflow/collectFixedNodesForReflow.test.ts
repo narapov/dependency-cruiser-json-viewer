@@ -110,4 +110,28 @@ describe('collectFixedNodesForReflow', () => {
     expect(fixed.has('root/a')).toBe(false);
     expect(fixed.has('root/b')).toBe(false);
   });
+
+  it('does not fix an already expanded sibling when another folder expands with ELK size mismatch', () => {
+    const parentByNode = new Map<string, string | null>([
+      ['folder-a', null],
+      ['folder-b', null],
+    ]);
+    const previousNodes = [
+      node('folder-a', { type: 'folderGroup', width: 260, height: 210 }),
+      node('folder-b', { type: 'folder', width: 120, height: 40 }),
+    ];
+    const nodes = [
+      node('folder-a', { type: 'folderGroup', width: 280, height: 220 }),
+      node('folder-b', { type: 'folderGroup', width: 250, height: 200 }),
+    ];
+    const previousSizes = new Map([
+      ['folder-a', { width: 260, height: 210 }],
+      ['folder-b', { width: 120, height: 40 }],
+    ]);
+
+    const fixed = collectFixedNodesForReflow(nodes, previousSizes, previousNodes, parentByNode);
+
+    expect(fixed.has('folder-a')).toBe(false);
+    expect(fixed.has('folder-b')).toBe(true);
+  });
 });

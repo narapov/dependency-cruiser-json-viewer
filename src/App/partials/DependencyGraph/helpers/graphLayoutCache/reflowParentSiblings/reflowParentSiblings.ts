@@ -102,10 +102,13 @@ export function reflowParentSiblings({
   previousNodes = null,
 }: ReflowInput): Node[] {
   const nodeById = new Map(nodes.map(node => [node.id, { ...node }]));
-  const fixedNodeIds = collectFixedNodesForReflow(nodes, previousSizes, previousNodes, parentByNode);
+  resizeFolderGroups(nodeById, parentByNode);
+  const syncedNodes = sortNodesByDepth([...nodeById.values()]);
+
+  const fixedNodeIds = collectFixedNodesForReflow(syncedNodes, previousSizes, previousNodes, parentByNode);
 
   let groupsToReflow = collectGroupsNeedingReflow(
-    nodes,
+    syncedNodes,
     parentByNode,
     previousSizes,
     currentFingerprints,
@@ -113,7 +116,7 @@ export function reflowParentSiblings({
   );
 
   if (groupsToReflow.size === 0) {
-    return nodes;
+    return syncedNodes;
   }
 
   const maxIterations = Math.max(MIN_REFLOW_ITERATIONS_CAP, maxGroupDepth(nodeById, parentByNode) + 2);

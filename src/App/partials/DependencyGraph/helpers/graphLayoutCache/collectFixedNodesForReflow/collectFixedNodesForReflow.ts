@@ -46,8 +46,12 @@ export function collectFixedNodesForReflow(
       return fixed;
     }
 
+    const previous = previousById?.get(node.id);
     const currentSize = getNodeSize(node);
-    if (currentSize.width > previousSize.width || currentSize.height > previousSize.height) {
+    if (
+      previous?.type !== 'folderGroup' &&
+      (currentSize.width > previousSize.width || currentSize.height > previousSize.height)
+    ) {
       fixed.add(node.id);
     }
     return fixed;
