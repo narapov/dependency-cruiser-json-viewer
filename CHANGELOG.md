@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.4.1](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v1.4.0...v1.4.1) (2026-08-11)
+
+### Bug Fixes
+
+- correct expand layout positions when autolayout is off ([#9](https://github.com/narapov/dependency-cruiser-json-viewer/issues/9)) ([846326e](https://github.com/narapov/dependency-cruiser-json-viewer/commit/846326ede9c8fd8c3c30652ebeaa2ff88375b5b2))
+
 ## [1.4.0](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v1.3.0...v1.4.0) (2026-08-09)
 
 ### Features
