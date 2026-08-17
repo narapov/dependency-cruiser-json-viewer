@@ -1,5 +1,7 @@
 # Changelog
 
+## [1.4.2](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v1.4.1...v1.4.2) (2026-08-17)
+
 ## [1.4.1](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v1.4.0...v1.4.1) (2026-08-11)
 
 ### Bug Fixes
