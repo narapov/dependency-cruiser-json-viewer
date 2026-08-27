@@ -27,10 +27,14 @@ function patternsToText(patterns: string[]): string {
 }
 
 function textToPatterns(text: string): string[] {
-  return text
-    .split('\n')
-    .map(line => line.trim())
-    .filter(line => line.length > 0);
+  return [
+    ...new Set(
+      text
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 0),
+    ),
+  ];
 }
 
 interface IgnorePatternsFormProps {
@@ -46,6 +50,10 @@ function IgnorePatternsForm({ patterns, onClose, onSave }: IgnorePatternsFormPro
   const handleSave = () => {
     onSave(textToPatterns(draft));
     onClose();
+  };
+
+  const handleAddExample = (example: string) => {
+    setDraft(current => (current.trim().length === 0 ? example : `${current.trimEnd()}\n${example}`));
   };
 
   return (
@@ -89,6 +97,8 @@ function IgnorePatternsForm({ patterns, onClose, onSave }: IgnorePatternsFormPro
                 label={example}
                 size="small"
                 variant="outlined"
+                clickable
+                onClick={() => handleAddExample(example)}
                 sx={{ fontFamily: 'monospace', fontSize: 12 }}
               />
             ))}
