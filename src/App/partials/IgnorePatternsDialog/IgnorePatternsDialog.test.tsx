@@ -25,6 +25,20 @@ describe('IgnorePatternsDialog', () => {
     expect(onClose).toHaveBeenCalled();
   });
 
+  it('deduplicates patterns on save', () => {
+    const { result: i18n } = renderHook(() => useTranslation());
+    const onSave = vi.fn();
+    const onClose = vi.fn();
+
+    renderWithTheme(<IgnorePatternsDialog open patterns={[]} onClose={onClose} onSave={onSave} />);
+
+    const field = screen.getByRole('textbox');
+    fireEvent.change(field, { target: { value: 'dist/**\n*.map\ndist/**\n  *.map  ' } });
+    fireEvent.click(screen.getByRole('button', { name: i18n.current.t('ignorePatterns.save') }));
+
+    expect(onSave).toHaveBeenCalledWith(['dist/**', '*.map']);
+  });
+
   it('cancels without saving', () => {
     const { result: i18n } = renderHook(() => useTranslation());
     const onSave = vi.fn();
@@ -51,5 +65,17 @@ describe('IgnorePatternsDialog', () => {
     rerender(<IgnorePatternsDialog open patterns={['two']} onClose={onClose} onSave={onSave} />);
 
     expect(screen.getByDisplayValue('two')).toBeInTheDocument();
+  });
+
+  it('appends example pattern to the text field on chip click', () => {
+    const onSave = vi.fn();
+    const onClose = vi.fn();
+
+    renderWithTheme(<IgnorePatternsDialog open patterns={['node_modules']} onClose={onClose} onSave={onSave} />);
+
+    const field = screen.getByDisplayValue('node_modules');
+    fireEvent.click(screen.getByRole('button', { name: '**/*.test.ts' }));
+
+    expect(field).toHaveValue('node_modules\n**/*.test.ts');
   });
 });
