@@ -15,10 +15,6 @@ export async function buildGraph({
   selectedPaths,
   expandedFolders,
   folderColors,
-  onToggleFolder,
-  onExpandRecursive,
-  onShowInFileTree,
-  onShowDependencies,
 }: BuildGraphInput): Promise<BuildGraphResult> {
   const profiler = createBuildGraphProfiler(NEED_PROFILE);
   profiler.start('total');
@@ -42,10 +38,6 @@ export async function buildGraph({
     circularModules,
     unresolvedModules,
     folderColors,
-    onToggleFolder,
-    onExpandRecursive,
-    onShowInFileTree,
-    onShowDependencies,
   });
   const groupSizes = new Map<string, NodeSize>();
   profiler.end('nodes');

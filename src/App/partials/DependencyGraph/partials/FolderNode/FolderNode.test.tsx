@@ -8,6 +8,8 @@ import type { NodeProps } from '@xyflow/react';
 
 import { renderWithTheme } from '@/testsUtils';
 
+import { GraphActionsProvider } from '../../contexts';
+import { createMockGraphActions } from '../../contexts/GraphActionsContext/mockGraphActions';
 import type { FolderNodeData } from '../../types';
 import { FolderNode } from './FolderNode';
 
@@ -20,49 +22,47 @@ function folderNodeProps(data: FolderNodeData): NodeProps {
   return { id: data.path, data } as unknown as NodeProps;
 }
 
+function renderFolderNode(data: FolderNodeData, actions = createMockGraphActions()) {
+  renderWithTheme(
+    <GraphActionsProvider value={actions}>
+      <FolderNode {...folderNodeProps(data)} />
+    </GraphActionsProvider>,
+  );
+  return actions;
+}
+
 describe('FolderNode', () => {
   it('renders label and toggles expand via button', () => {
     const { result: i18n } = renderHook(() => useTranslation());
-    const onToggle = vi.fn();
-
-    renderWithTheme(
-      <FolderNode
-        {...folderNodeProps({
-          label: 'foo',
-          path: 'src/foo',
-          expanded: false,
-          backgroundColor: '#eee',
-          onToggle,
-          onExpandRecursive: vi.fn(),
-          onShowInFileTree: vi.fn(),
-        })}
-      />,
+    const onToggleFolder = vi.fn();
+    const actions = renderFolderNode(
+      {
+        label: 'foo',
+        path: 'src/foo',
+        expanded: false,
+        backgroundColor: '#eee',
+      },
+      createMockGraphActions({ onToggleFolder }),
     );
 
     expect(screen.getByText('foo')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: i18n.current.t('actions.expandFolder') }));
-    expect(onToggle).toHaveBeenCalledWith('src/foo');
+    expect(actions.onToggleFolder).toHaveBeenCalledWith('src/foo');
+    expect(onToggleFolder).toHaveBeenCalledWith('src/foo');
   });
 
   it('opens context menu for folder actions', () => {
     const { result: i18n } = renderHook(() => useTranslation());
 
-    renderWithTheme(
-      <FolderNode
-        {...folderNodeProps({
-          label: 'bar',
-          path: 'src/bar',
-          expanded: true,
-          circular: true,
-          highlighted: true,
-          backgroundColor: '#ddd',
-          onToggle: vi.fn(),
-          onExpandRecursive: vi.fn(),
-          onShowInFileTree: vi.fn(),
-        })}
-      />,
-    );
+    renderFolderNode({
+      label: 'bar',
+      path: 'src/bar',
+      expanded: true,
+      circular: true,
+      highlighted: true,
+      backgroundColor: '#ddd',
+    });
 
     fireEvent.contextMenu(screen.getByText('bar'));
     expect(screen.getByText(i18n.current.t('actions.collapse'))).toBeInTheDocument();

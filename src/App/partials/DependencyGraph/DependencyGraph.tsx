@@ -14,6 +14,7 @@ import '@xyflow/react/dist/style.css';
 import type { FolderBaseColor } from '@/domain';
 import { downloadTextFile, openGraphvizOnline } from '@/Shared';
 
+import { GraphActionsProvider } from './contexts';
 import { buildEdgeDependencyKeyMap, getMinimapNodeColor, serializeGraphToDot } from './helpers';
 import {
   useAutoFitView,
@@ -56,7 +57,10 @@ interface DependencyGraphInnerProps {
   onToggleFolder: (path: string) => void;
   onExpandRecursive: (path: string) => void;
   onShowInFileTree: (path: string) => void;
-  onShowDependencies?: (path: string) => void;
+  onShowDependenciesPanel: (path: string) => void;
+  onHideOthers: (path: string) => void;
+  onShowDirectDependencies: (path: string) => void;
+  onShowDirectDependents: (path: string) => void;
   onActivePathChange?: (path: string) => void;
   activePath?: string | null;
   userEdgeHighlights: ReadonlyMap<string, string>;
@@ -75,7 +79,10 @@ function DependencyGraphInner({
   onToggleFolder,
   onExpandRecursive,
   onShowInFileTree,
-  onShowDependencies,
+  onShowDependenciesPanel,
+  onHideOthers,
+  onShowDirectDependencies,
+  onShowDirectDependents,
   onActivePathChange,
   activePath,
   userEdgeHighlights,
@@ -97,10 +104,6 @@ function DependencyGraphInner({
     selectedPaths,
     expandedKeys,
     folderColors,
-    onToggleFolder,
-    onExpandRecursive,
-    onShowInFileTree,
-    onShowDependencies,
   });
 
   const {
@@ -111,6 +114,8 @@ function DependencyGraphInner({
     hasUserLayout,
     getLayoutSnapshot,
     setLayoutSnapshot,
+    onAutoLayoutGroup,
+    onAutoLayoutGroupRecursive,
   } = useGraphLayoutNodes({
     graphResult,
     autoLayoutOnly,
@@ -210,53 +215,66 @@ function DependencyGraphInner({
 
   const miniMapNodeColor = (graphNode: Node) => getMinimapNodeColor(graphNode, colorMode);
 
+  const graphActions = {
+    onToggleFolder,
+    onExpandRecursive,
+    onShowInFileTree,
+    onShowDependenciesPanel,
+    onHideOthers,
+    onShowDirectDependencies,
+    onShowDirectDependents,
+    ...(autoLayoutOnly ? {} : { onAutoLayoutGroup, onAutoLayoutGroupRecursive }),
+  };
+
   if (selectedPaths.length === 0) {
     return <GraphEmptySelection />;
   }
 
   return (
     <Box sx={{ position: 'relative', height: '100%', minHeight: 0 }}>
-      <ReactFlow
-        nodes={highlightedNodes}
-        edges={highlightedEdges}
-        nodeTypes={nodeTypes}
-        edgeTypes={edgeTypes}
-        colorMode={mode ?? 'system'}
-        onNodeClick={onNodeClick}
-        onEdgeClick={onEdgeClick}
-        onPaneClick={onPaneClick}
-        onPaneContextMenu={onPaneContextMenu}
-        onNodeContextMenu={onPaneContextMenu}
-        onEdgeContextMenu={onEdgeContextMenu}
-        onNodesChange={onNodesChange}
-        onNodeDrag={autoLayoutOnly ? undefined : onNodeDrag}
-        onNodeDragStop={autoLayoutOnly ? undefined : onNodeDragStop}
-        nodesDraggable={!autoLayoutOnly}
-        minZoom={0.01}
-        maxZoom={20}
-        onlyRenderVisibleElements
-        proOptions={{ hideAttribution: true }}
-      >
-        <Background color={theme.palette.divider} />
-        <Panel position="top-right">
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mr: 1 }}>
-            <GraphLayoutToggle checked={autoLayoutOnly} onChange={onAutoLayoutOnlyChange} />
-            <GraphLegend />
-          </Box>
-        </Panel>
-        <MiniMap
-          position="bottom-left"
-          pannable
-          zoomable
-          nodeColor={miniMapNodeColor}
-          nodeStrokeColor={resolvedMode === 'dark' ? theme.palette.grey[600] : theme.palette.grey[500]}
-          nodeStrokeWidth={1}
-          maskStrokeColor={resolvedMode === 'dark' ? theme.palette.common.white : theme.palette.common.black}
-          maskStrokeWidth={2}
-          style={{ width: 160, height: 120 }}
-        />
-        <Controls position="bottom-right" showInteractive={false} />
-      </ReactFlow>
+      <GraphActionsProvider value={graphActions}>
+        <ReactFlow
+          nodes={highlightedNodes}
+          edges={highlightedEdges}
+          nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
+          colorMode={mode ?? 'system'}
+          onNodeClick={onNodeClick}
+          onEdgeClick={onEdgeClick}
+          onPaneClick={onPaneClick}
+          onPaneContextMenu={onPaneContextMenu}
+          onNodeContextMenu={onPaneContextMenu}
+          onEdgeContextMenu={onEdgeContextMenu}
+          onNodesChange={onNodesChange}
+          onNodeDrag={autoLayoutOnly ? undefined : onNodeDrag}
+          onNodeDragStop={autoLayoutOnly ? undefined : onNodeDragStop}
+          nodesDraggable={!autoLayoutOnly}
+          minZoom={0.01}
+          maxZoom={20}
+          onlyRenderVisibleElements
+          proOptions={{ hideAttribution: true }}
+        >
+          <Background color={theme.palette.divider} />
+          <Panel position="top-right">
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mr: 1 }}>
+              <GraphLayoutToggle checked={autoLayoutOnly} onChange={onAutoLayoutOnlyChange} />
+              <GraphLegend />
+            </Box>
+          </Panel>
+          <MiniMap
+            position="bottom-left"
+            pannable
+            zoomable
+            nodeColor={miniMapNodeColor}
+            nodeStrokeColor={resolvedMode === 'dark' ? theme.palette.grey[600] : theme.palette.grey[500]}
+            nodeStrokeWidth={1}
+            maskStrokeColor={resolvedMode === 'dark' ? theme.palette.common.white : theme.palette.common.black}
+            maskStrokeWidth={2}
+            style={{ width: 160, height: 120 }}
+          />
+          <Controls position="bottom-right" showInteractive={false} />
+        </ReactFlow>
+      </GraphActionsProvider>
       {isBuildingGraph && <GraphLoader />}
       {edgeContextMenu}
       <Snackbar

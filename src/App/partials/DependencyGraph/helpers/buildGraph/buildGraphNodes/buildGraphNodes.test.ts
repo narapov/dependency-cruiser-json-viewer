@@ -2,15 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { buildGraphNodes } from './buildGraphNodes';
 
-const noop = () => {};
-
 describe('buildGraphNodes', () => {
-  const callbacks = {
-    onToggleFolder: noop,
-    onExpandRecursive: noop,
-    onShowInFileTree: noop,
-  };
-
   it('creates folderGroup nodes for expanded folders', () => {
     const nodeMap = buildGraphNodes({
       visibleNodes: new Map([['src/foo', 'folder']]),
@@ -21,7 +13,6 @@ describe('buildGraphNodes', () => {
       circularModules: new Set(),
       unresolvedModules: new Set(),
       folderColors: new Map([['src/foo', 'rgba(1, 2, 3, 0.1)']]),
-      ...callbacks,
     });
 
     const node = nodeMap.get('src/foo');
@@ -54,7 +45,6 @@ describe('buildGraphNodes', () => {
       circularModules: new Set(['src/foo/a.ts']),
       unresolvedModules: new Set(),
       folderColors: new Map(),
-      ...callbacks,
     });
 
     const node = nodeMap.get('src/foo');
@@ -78,7 +68,6 @@ describe('buildGraphNodes', () => {
       circularModules: new Set(['src/foo/a.ts']),
       unresolvedModules: new Set(),
       folderColors: new Map(),
-      ...callbacks,
     });
 
     const node = nodeMap.get('src/foo/a.ts');
@@ -104,7 +93,6 @@ describe('buildGraphNodes', () => {
       circularModules: new Set(),
       unresolvedModules: new Set(['missing-module']),
       folderColors: new Map(),
-      ...callbacks,
     });
 
     const node = nodeMap.get('missing-module');
@@ -133,7 +121,6 @@ describe('buildGraphNodes', () => {
       circularModules: new Set(),
       unresolvedModules: new Set(),
       folderColors: new Map(),
-      ...callbacks,
     });
 
     expect(nodeMap.get('src')?.extent).toBeUndefined();

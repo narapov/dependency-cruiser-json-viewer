@@ -17,10 +17,6 @@ export interface BuildGraphNodesInput {
   circularModules: Set<string>;
   unresolvedModules: Set<string>;
   folderColors: ReadonlyMap<string, string>;
-  onToggleFolder: (path: string) => void;
-  onExpandRecursive: (path: string) => void;
-  onShowInFileTree: (path: string) => void;
-  onShowDependencies?: (path: string) => void;
 }
 
 function createVisibleNode(path: string, type: 'folder' | 'file', input: BuildGraphNodesInput): Node {
@@ -32,10 +28,6 @@ function createVisibleNode(path: string, type: 'folder' | 'file', input: BuildGr
     circularModules,
     unresolvedModules,
     folderColors,
-    onToggleFolder,
-    onExpandRecursive,
-    onShowInFileTree,
-    onShowDependencies,
   } = input;
   const parentId = parentByNode.get(path) ?? undefined;
 
@@ -48,10 +40,6 @@ function createVisibleNode(path: string, type: 'folder' | 'file', input: BuildGr
         path,
         expanded: true,
         backgroundColor: folderColors.get(path) ?? 'rgba(0, 0, 0, 0.02)',
-        onToggle: onToggleFolder,
-        onExpandRecursive,
-        onShowInFileTree,
-        onShowDependencies,
       };
 
       return {
@@ -77,10 +65,6 @@ function createVisibleNode(path: string, type: 'folder' | 'file', input: BuildGr
       expanded: false,
       circular,
       backgroundColor: folderColors.get(path) ?? 'rgba(0, 0, 0, 0.02)',
-      onToggle: onToggleFolder,
-      onExpandRecursive,
-      onShowInFileTree,
-      onShowDependencies,
     };
     return {
       id: path,
@@ -101,8 +85,6 @@ function createVisibleNode(path: string, type: 'folder' | 'file', input: BuildGr
     path,
     circular: circularModules.has(path),
     couldNotResolve: unresolvedModules.has(path),
-    onShowInFileTree,
-    onShowDependencies,
   };
   return {
     id: path,

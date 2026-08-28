@@ -52,7 +52,7 @@ vi.mock('./hooks', () => ({
     showInFileTree: vi.fn(),
     toggleFolder: vi.fn(),
     expandRecursive: vi.fn(),
-    handleShowDependencies: vi.fn(),
+    handleShowDependenciesPanel: vi.fn(),
     handleClosePanel: vi.fn(),
     handleQuickPickSelect: vi.fn(),
     focusActivePath: vi.fn(),

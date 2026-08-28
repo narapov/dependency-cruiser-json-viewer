@@ -8,6 +8,8 @@ import type { NodeProps } from '@xyflow/react';
 
 import { renderWithTheme } from '@/testsUtils';
 
+import { GraphActionsProvider } from '../../contexts';
+import { createMockGraphActions } from '../../contexts/GraphActionsContext/mockGraphActions';
 import type { FileNodeData } from '../../types';
 import { FileNode } from './FileNode';
 
@@ -20,20 +22,23 @@ function fileNodeProps(data: FileNodeData): NodeProps {
   return { id: data.path, data } as unknown as NodeProps;
 }
 
+function renderFileNode(data: FileNodeData, actions = createMockGraphActions()) {
+  renderWithTheme(
+    <GraphActionsProvider value={actions}>
+      <FileNode {...fileNodeProps(data)} />
+    </GraphActionsProvider>,
+  );
+  return actions;
+}
+
 describe('FileNode', () => {
   it('renders label and opens context menu', () => {
     const { result: i18n } = renderHook(() => useTranslation());
-    const onShowInFileTree = vi.fn();
 
-    renderWithTheme(
-      <FileNode
-        {...fileNodeProps({
-          label: 'a.ts',
-          path: 'src/a.ts',
-          onShowInFileTree,
-        })}
-      />,
-    );
+    renderFileNode({
+      label: 'a.ts',
+      path: 'src/a.ts',
+    });
 
     expect(screen.getByText('a.ts')).toBeInTheDocument();
 
@@ -42,47 +47,32 @@ describe('FileNode', () => {
   });
 
   it('applies circular styling', () => {
-    renderWithTheme(
-      <FileNode
-        {...fileNodeProps({
-          label: 'cycle.ts',
-          path: 'src/cycle.ts',
-          circular: true,
-          onShowInFileTree: vi.fn(),
-        })}
-      />,
-    );
+    renderFileNode({
+      label: 'cycle.ts',
+      path: 'src/cycle.ts',
+      circular: true,
+    });
 
     expect(screen.getByText('cycle.ts')).toBeInTheDocument();
   });
 
   it('applies unresolved error styling', () => {
-    renderWithTheme(
-      <FileNode
-        {...fileNodeProps({
-          label: 'missing',
-          path: './missing',
-          couldNotResolve: true,
-          onShowInFileTree: vi.fn(),
-        })}
-      />,
-    );
+    renderFileNode({
+      label: 'missing',
+      path: './missing',
+      couldNotResolve: true,
+    });
 
     expect(screen.getByText('missing')).toBeInTheDocument();
   });
 
   it('prefers unresolved styling over circular when both flags are set', () => {
-    renderWithTheme(
-      <FileNode
-        {...fileNodeProps({
-          label: 'both.ts',
-          path: 'src/both.ts',
-          circular: true,
-          couldNotResolve: true,
-          onShowInFileTree: vi.fn(),
-        })}
-      />,
-    );
+    renderFileNode({
+      label: 'both.ts',
+      path: 'src/both.ts',
+      circular: true,
+      couldNotResolve: true,
+    });
 
     expect(screen.getByText('both.ts')).toBeInTheDocument();
   });

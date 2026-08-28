@@ -181,7 +181,7 @@ describe('useAppOrchestration', () => {
     const { result } = renderOrchestration();
 
     act(() => {
-      result.current.handleShowDependencies('src/a.ts');
+      result.current.handleShowDependenciesPanel('src/a.ts');
     });
     expect(result.current.dependenciesPath).toBe('src/a.ts');
     expect(result.current.panelOpen).toBe(true);
@@ -340,6 +340,135 @@ describe('useAppOrchestration', () => {
     expect(result.current.expandedKeys).toEqual(expect.arrayContaining(['src', 'src/b']));
   });
 
+  it('hideOthers keeps only the target file and does not change expandedKeys', () => {
+    const { result } = renderOrchestration({
+      selectedKeys: SOURCES,
+      expandedKeys: ['src', 'src/b'],
+    });
+
+    act(() => {
+      result.current.hideOthers('src/a.ts');
+    });
+
+    expect(result.current.selectedPaths).toEqual(['src/a.ts']);
+    expect(result.current.expandedKeys).toEqual(['src', 'src/b']);
+  });
+
+  it('hideOthers keeps all modules under a folder without changing expandedKeys', () => {
+    const { result } = renderOrchestration({
+      selectedKeys: SOURCES,
+      expandedKeys: ['src'],
+    });
+
+    act(() => {
+      result.current.hideOthers('src/b');
+    });
+
+    expect(result.current.selectedPaths).toEqual(expect.arrayContaining(['src/b/c.ts', 'src/b/d.ts', 'src/b']));
+    expect(result.current.selectedPaths).not.toContain('src/a.ts');
+    expect(result.current.expandedKeys).toEqual(['src']);
+  });
+
+  it('showDirectDependencies adds related modules to the selection', () => {
+    const sources = ['src/a.ts', 'src/b/c.ts', 'src/b/d.ts'];
+    const refs = createRefs();
+    const initialDependencyCruiserState = {
+      selectedKeys: ['src/a.ts'],
+      expandedKeys: [] as string[],
+    };
+    const { result } = renderHook(() =>
+      useAppOrchestration({
+        sources,
+        unfilteredCruiseResult: {
+          modules: [
+            {
+              source: 'src/a.ts',
+              dependencies: [{ resolved: 'src/b/c.ts', dependencyTypes: ['local'] }],
+              dependents: [],
+              valid: true,
+            },
+            {
+              source: 'src/b/c.ts',
+              dependencies: [],
+              dependents: [],
+              valid: true,
+            },
+            {
+              source: 'src/b/d.ts',
+              dependencies: [],
+              dependents: [],
+              valid: true,
+            },
+          ],
+          summary: {},
+        } as never,
+        ignorePatterns: [],
+        fileTreeRef: refs.fileTreeRef,
+        graphRef: refs.graphRef,
+        initialDependencyCruiserState,
+        cruiseLoadId: 0,
+      }),
+    );
+
+    act(() => {
+      result.current.showDirectDependencies('src/a.ts');
+    });
+
+    expect(result.current.selectedPaths).toEqual(expect.arrayContaining(['src/a.ts', 'src/b/c.ts']));
+    expect(result.current.selectedPaths).not.toContain('src/b/d.ts');
+    expect(result.current.expandedKeys).toEqual(expect.arrayContaining(['src', 'src/b']));
+  });
+
+  it('showDirectDependents adds incoming modules to the selection', () => {
+    const sources = ['src/a.ts', 'src/b/c.ts', 'src/b/d.ts'];
+    const refs = createRefs();
+    const initialDependencyCruiserState = {
+      selectedKeys: ['src/a.ts'],
+      expandedKeys: [] as string[],
+    };
+    const { result } = renderHook(() =>
+      useAppOrchestration({
+        sources,
+        unfilteredCruiseResult: {
+          modules: [
+            {
+              source: 'src/a.ts',
+              dependencies: [],
+              dependents: [],
+              valid: true,
+            },
+            {
+              source: 'src/b/c.ts',
+              dependencies: [{ resolved: 'src/a.ts', dependencyTypes: ['local'] }],
+              dependents: [],
+              valid: true,
+            },
+            {
+              source: 'src/b/d.ts',
+              dependencies: [],
+              dependents: [],
+              valid: true,
+            },
+          ],
+          summary: {},
+        } as never,
+        ignorePatterns: [],
+        fileTreeRef: refs.fileTreeRef,
+        graphRef: refs.graphRef,
+        initialDependencyCruiserState,
+        cruiseLoadId: 0,
+      }),
+    );
+
+    act(() => {
+      result.current.showDirectDependents('src/a.ts');
+    });
+
+    expect(result.current.selectedPaths).toEqual(expect.arrayContaining(['src/a.ts', 'src/b/c.ts']));
+    expect(result.current.selectedPaths).not.toContain('src/b/d.ts');
+    expect(result.current.expandedKeys).toEqual(expect.arrayContaining(['src', 'src/b']));
+  });
+
   it('expandAllRecursive and collapseAllRecursive update expandedKeys', () => {
     const { result } = renderOrchestration({ expandedKeys: [] });
 
@@ -407,14 +536,14 @@ describe('useAppOrchestration', () => {
     expect(copyToClipboard).toHaveBeenCalledWith('src/a.ts');
   });
 
-  it('viewActiveDependencies opens panel for active path', () => {
+  it('viewActiveItemDependenciesPanel opens panel for active path', () => {
     const { result } = renderOrchestration();
 
     act(() => {
       result.current.activatePath('src/a.ts');
     });
     act(() => {
-      result.current.viewActiveDependencies();
+      result.current.viewActiveItemDependenciesPanel();
     });
 
     expect(result.current.dependenciesPath).toBe('src/a.ts');

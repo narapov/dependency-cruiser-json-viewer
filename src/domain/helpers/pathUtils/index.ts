@@ -1,3 +1,4 @@
+export * from './collectSourcesUnderFolder';
 export * from './getAncestorKeys';
 export * from './getBaseName';
 export * from './getParentPath';

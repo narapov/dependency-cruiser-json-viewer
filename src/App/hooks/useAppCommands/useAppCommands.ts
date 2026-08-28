@@ -6,7 +6,7 @@ export interface AppCommandsOrchestration {
   clearLocalStorage: () => void;
   focusActivePath: () => void;
   copyActive: () => void;
-  viewActiveDependencies: () => void;
+  viewActiveItemDependenciesPanel: () => void;
   expandActive: () => void;
   expandActiveRecursive: () => void;
   collapseActive: () => void;
@@ -58,7 +58,7 @@ export function useAppCommands({
     clearLocalStorage,
     focusActivePath,
     copyActive,
-    viewActiveDependencies,
+    viewActiveItemDependenciesPanel,
     expandActive,
     expandActiveRecursive,
     collapseActive,
@@ -79,9 +79,9 @@ export function useAppCommands({
     { id: 'showActive', label: t('commands.showActive'), onExecute: focusActivePath },
     { id: 'copyActive', label: t('commands.copyActive'), onExecute: copyActive },
     {
-      id: 'viewActiveDependencies',
-      label: t('commands.viewActiveDependencies'),
-      onExecute: viewActiveDependencies,
+      id: 'viewActiveItemDependenciesPanel',
+      label: t('commands.viewActiveItemDependenciesPanel'),
+      onExecute: viewActiveItemDependenciesPanel,
     },
     { id: 'expandActive', label: t('commands.expandActive'), onExecute: expandActive },
     {

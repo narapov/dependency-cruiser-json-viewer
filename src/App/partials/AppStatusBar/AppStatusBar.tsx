@@ -15,10 +15,10 @@ import { copyToClipboard } from '@/Shared';
 interface AppStatusBarProps {
   activePath: string | null;
   onFocusActivePath: () => void;
-  onShowDependencies: (path: string) => void;
+  onShowDependenciesPanel: (path: string) => void;
 }
 
-export function AppStatusBar({ activePath, onFocusActivePath, onShowDependencies }: AppStatusBarProps) {
+export function AppStatusBar({ activePath, onFocusActivePath, onShowDependenciesPanel }: AppStatusBarProps) {
   const { t } = useTranslation();
   const hasSelection = activePath != null;
   const label = activePath ?? t('statusBar.noSelection');
@@ -55,7 +55,7 @@ export function AppStatusBar({ activePath, onFocusActivePath, onShowDependencies
               <IconButton
                 size="small"
                 aria-label={t('actions.viewDependencies')}
-                onClick={() => onShowDependencies(activePath)}
+                onClick={() => onShowDependenciesPanel(activePath)}
                 sx={{ p: 0.5 }}
               >
                 <AccountTreeOutlined sx={{ fontSize: 16 }} />

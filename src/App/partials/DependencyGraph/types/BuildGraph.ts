@@ -7,10 +7,6 @@ export interface BuildGraphInput {
   selectedPaths: string[];
   expandedFolders: Set<string>;
   folderColors: ReadonlyMap<string, string>;
-  onToggleFolder: (path: string) => void;
-  onExpandRecursive: (path: string) => void;
-  onShowInFileTree: (path: string) => void;
-  onShowDependencies?: (path: string) => void;
 }
 
 export interface BuildGraphResult {

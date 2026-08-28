@@ -10,10 +10,6 @@ function moduleAt(source: string, dependencies: IModule['dependencies'] = []): I
   return { source, dependencies, dependents: [], valid: true } as IModule;
 }
 
-const noopToggle = () => {};
-const noopShowInFileTree = () => {};
-const noopExpandRecursive = () => {};
-
 describe('buildGraph half-checked folders', () => {
   const sources = ['src/foo/a.ts', 'src/foo/b.ts', 'src/bar/c.ts', 'lib/y.ts'];
 
@@ -25,9 +21,6 @@ describe('buildGraph half-checked folders', () => {
       selectedPaths: ['src/foo/a.ts'],
       expandedFolders: new Set(['src']),
       folderColors: new Map(),
-      onToggleFolder: noopToggle,
-      onExpandRecursive: noopExpandRecursive,
-      onShowInFileTree: noopShowInFileTree,
     });
 
     const folderIds = nodes.filter(node => node.type === 'folder' || node.type === 'folderGroup').map(node => node.id);
@@ -43,9 +36,6 @@ describe('buildGraph half-checked folders', () => {
       selectedPaths: ['src/foo/a.ts'],
       expandedFolders: new Set(['src', 'src/foo']),
       folderColors: new Map(),
-      onToggleFolder: noopToggle,
-      onExpandRecursive: noopExpandRecursive,
-      onShowInFileTree: noopShowInFileTree,
     });
 
     expect(nodes.some(node => node.id === 'src/foo/a.ts' && node.type === 'file')).toBe(true);
@@ -60,9 +50,6 @@ describe('buildGraph half-checked folders', () => {
       selectedPaths,
       expandedFolders: new Set(['src', 'src/foo', 'src/bar']),
       folderColors: new Map(),
-      onToggleFolder: noopToggle,
-      onExpandRecursive: noopExpandRecursive,
-      onShowInFileTree: noopShowInFileTree,
     });
 
     const nodeIds = nodes.map(node => node.id);
@@ -79,9 +66,6 @@ describe('buildGraph half-checked folders', () => {
       selectedPaths: ['src/foo/a.ts', 'lib/y.ts'],
       expandedFolders: new Set(['src', 'src/foo', 'lib']),
       folderColors: new Map(),
-      onToggleFolder: noopToggle,
-      onExpandRecursive: noopExpandRecursive,
-      onShowInFileTree: noopShowInFileTree,
     });
 
     const folderIds = nodes.filter(node => node.type === 'folder' || node.type === 'folderGroup').map(node => node.id);
@@ -107,9 +91,6 @@ describe('buildGraph circular dependencies', () => {
       selectedPaths: ['src/foo/a.ts', 'src/foo/b.ts'],
       expandedFolders: new Set(['src', 'src/foo']),
       folderColors: new Map(),
-      onToggleFolder: noopToggle,
-      onExpandRecursive: noopExpandRecursive,
-      onShowInFileTree: noopShowInFileTree,
     });
 
     const fileNode = nodes.find(node => node.id === 'src/foo/a.ts');
@@ -122,9 +103,6 @@ describe('buildGraph circular dependencies', () => {
       selectedPaths: ['src/foo/a.ts', 'src/foo/b.ts'],
       expandedFolders: new Set(['src']),
       folderColors: new Map(),
-      onToggleFolder: noopToggle,
-      onExpandRecursive: noopExpandRecursive,
-      onShowInFileTree: noopShowInFileTree,
     });
 
     const folderNode = nodes.find(node => node.id === 'src/foo' && node.type === 'folder');
@@ -137,9 +115,6 @@ describe('buildGraph circular dependencies', () => {
       selectedPaths: ['src/foo/a.ts', 'src/foo/b.ts'],
       expandedFolders: new Set(['src', 'src/foo']),
       folderColors: new Map(),
-      onToggleFolder: noopToggle,
-      onExpandRecursive: noopExpandRecursive,
-      onShowInFileTree: noopShowInFileTree,
     });
 
     const groupNode = nodes.find(node => node.id === 'src/foo' && node.type === 'folderGroup');
@@ -152,9 +127,6 @@ describe('buildGraph circular dependencies', () => {
       selectedPaths: ['src/foo/a.ts', 'src/foo/b.ts'],
       expandedFolders: new Set(['src', 'src/foo']),
       folderColors: new Map(),
-      onToggleFolder: noopToggle,
-      onExpandRecursive: noopExpandRecursive,
-      onShowInFileTree: noopShowInFileTree,
     });
 
     const circularEdge = edges.find(edge => edge.source === 'src/foo/a.ts');
@@ -179,9 +151,6 @@ describe('buildGraph unresolved modules', () => {
       selectedPaths: ['src/foo/a.ts', 'missing-module'],
       expandedFolders: new Set(['src', 'src/foo']),
       folderColors: new Map(),
-      onToggleFolder: noopToggle,
-      onExpandRecursive: noopExpandRecursive,
-      onShowInFileTree: noopShowInFileTree,
     });
 
     const unresolvedNode = nodes.find(node => node.id === 'missing-module');
@@ -193,9 +162,6 @@ describe('buildGraph unresolved modules', () => {
 describe('buildGraph type-only dependencies', () => {
   const noopArgs = {
     folderColors: new Map(),
-    onToggleFolder: noopToggle,
-    onExpandRecursive: noopExpandRecursive,
-    onShowInFileTree: noopShowInFileTree,
   };
 
   const typeOnlyDep = (resolved: string, circular = false) =>
@@ -285,9 +251,6 @@ describe('buildGraph type-only dependencies', () => {
 describe('buildGraph layout', () => {
   const noopArgs = {
     folderColors: new Map(),
-    onToggleFolder: noopToggle,
-    onExpandRecursive: noopExpandRecursive,
-    onShowInFileTree: noopShowInFileTree,
   };
 
   function manySiblingSources(count: number) {

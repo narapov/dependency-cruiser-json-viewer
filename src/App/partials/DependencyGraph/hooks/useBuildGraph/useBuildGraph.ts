@@ -18,10 +18,6 @@ interface UseBuildGraphInput {
   selectedPaths: string[];
   expandedKeys: string[];
   folderColors: ReadonlyMap<string, string>;
-  onToggleFolder: (path: string) => void;
-  onExpandRecursive: (path: string) => void;
-  onShowInFileTree: (path: string) => void;
-  onShowDependencies?: (path: string) => void;
 }
 
 interface UseBuildGraphResult {
@@ -37,10 +33,6 @@ export function useBuildGraph({
   selectedPaths,
   expandedKeys,
   folderColors,
-  onToggleFolder,
-  onExpandRecursive,
-  onShowInFileTree,
-  onShowDependencies,
 }: UseBuildGraphInput): UseBuildGraphResult {
   const expandedFolders = useMemo(() => new Set(expandedKeys), [expandedKeys]);
 
@@ -68,10 +60,6 @@ export function useBuildGraph({
       selectedPaths,
       expandedFolders,
       folderColors,
-      onToggleFolder,
-      onExpandRecursive,
-      onShowInFileTree,
-      onShowDependencies,
     })
       .then(result => {
         if (cancelled) {
@@ -96,16 +84,7 @@ export function useBuildGraph({
     return () => {
       cancelled = true;
     };
-  }, [
-    modules,
-    selectedPaths,
-    expandedFolders,
-    folderColors,
-    onToggleFolder,
-    onExpandRecursive,
-    onShowInFileTree,
-    onShowDependencies,
-  ]);
+  }, [modules, selectedPaths, expandedFolders, folderColors]);
 
   const clearBuildFailed = () => {
     setBuildFailed(false);

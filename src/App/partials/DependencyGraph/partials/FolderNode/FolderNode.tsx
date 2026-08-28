@@ -3,34 +3,17 @@ import { Handle, Position, type NodeProps } from '@xyflow/react';
 
 import { CIRCULAR_NODE_BACKGROUND, MaterialFileSystemIcon } from '@/Shared';
 
+import { useGraphActions } from '../../contexts';
 import type { FolderNodeData } from '../../types';
 import { FolderExpandToggle } from '../FolderExpandToggle';
 import { NodeContextMenu } from '../NodeContextMenu';
 
 export function FolderNode({ data }: NodeProps) {
-  const {
-    label,
-    path,
-    expanded,
-    highlighted,
-    circular,
-    backgroundColor,
-    onToggle,
-    onExpandRecursive,
-    onShowInFileTree,
-    onShowDependencies,
-  } = data as FolderNodeData;
+  const { label, path, expanded, highlighted, circular, backgroundColor } = data as FolderNodeData;
+  const { onToggleFolder } = useGraphActions();
 
   return (
-    <NodeContextMenu
-      path={path}
-      isFolder
-      expanded={expanded}
-      onToggle={onToggle}
-      onExpandRecursive={onExpandRecursive}
-      onShowInFileTree={onShowInFileTree}
-      onShowDependencies={onShowDependencies}
-    >
+    <NodeContextMenu path={path} isFolder expanded={expanded}>
       <Box
         sx={{
           display: 'flex',
@@ -57,7 +40,7 @@ export function FolderNode({ data }: NodeProps) {
           expanded={expanded}
           onClick={e => {
             e.stopPropagation();
-            onToggle(path);
+            onToggleFolder(path);
           }}
         />
         <Box component="span" sx={{ fontSize: 12, flexShrink: 0, display: 'inline-flex' }}>

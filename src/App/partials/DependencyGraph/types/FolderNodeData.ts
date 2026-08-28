@@ -5,10 +5,6 @@ export interface FolderNodeData {
   highlighted?: boolean;
   circular?: boolean;
   backgroundColor: string;
-  onToggle: (path: string) => void;
-  onExpandRecursive: (path: string) => void;
-  onShowInFileTree: (path: string) => void;
-  onShowDependencies?: (path: string) => void;
   [key: string]: unknown;
 }
 
@@ -18,11 +14,5 @@ export interface FolderGroupNodeData {
   expanded: boolean;
   highlighted?: boolean;
   backgroundColor: string;
-  onToggle: (path: string) => void;
-  onExpandRecursive: (path: string) => void;
-  onShowInFileTree: (path: string) => void;
-  onShowDependencies?: (path: string) => void;
-  onAutoLayoutGroup?: (path: string) => void;
-  onAutoLayoutGroupRecursive?: (path: string) => void;
   [key: string]: unknown;
 }
