@@ -369,6 +369,22 @@ describe('useAppOrchestration', () => {
     expect(result.current.expandedKeys).toEqual(['src']);
   });
 
+  it('hideOthers on a folder keeps only already-selected modules under it', () => {
+    const { result } = renderOrchestration({
+      selectedKeys: ['src/a.ts', 'src/b/c.ts'],
+      expandedKeys: ['src', 'src/b'],
+    });
+
+    act(() => {
+      result.current.hideOthers('src/b');
+    });
+
+    expect(result.current.selectedPaths).toEqual(['src/b/c.ts']);
+    expect(result.current.selectedPaths).not.toContain('src/b/d.ts');
+    expect(result.current.selectedPaths).not.toContain('src/a.ts');
+    expect(result.current.expandedKeys).toEqual(['src', 'src/b']);
+  });
+
   it('showDirectDependencies adds related modules to the selection', () => {
     const sources = ['src/a.ts', 'src/b/c.ts', 'src/b/d.ts'];
     const refs = createRefs();

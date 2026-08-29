@@ -496,9 +496,11 @@ export function useAppOrchestration({
   };
 
   const hideOthers = (path: string) => {
+    const kept = new Set(sourcesForPath(path)).intersection(new Set(state.selectedPaths));
+
     dispatch({
       type: 'setSelectedPaths',
-      paths: expandSelectionWithSelectedAncestors(sourcesForPath(path), sources),
+      paths: expandSelectionWithSelectedAncestors([...kept], sources),
     });
   };
 
