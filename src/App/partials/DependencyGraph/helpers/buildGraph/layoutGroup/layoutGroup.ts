@@ -44,21 +44,49 @@ async function layoutChildrenWithElk(
       id: `e${index}-${edge.source}->${edge.target}`,
       sources: [edge.source],
       targets: [edge.target],
+      layoutOptions: {
+        // How important it is to keep this edge axis-aligned. int ≥ 0; higher = straighter.
+        'elk.layered.priority.straightness': String(edge.weight),
+        // How important it is to keep this edge short. int ≥ 0; higher = prefer shorter routes.
+        'elk.layered.priority.shortness': String(edge.weight),
+      },
     }));
 
   profiler?.start('elk.layout');
   const layouted = await elk.layout({
     id: 'root',
     layoutOptions: {
+      // Layout algorithm. We use layered (Sugiyama); other ELK algorithms exist (e.g. force, mrtree).
       'elk.algorithm': 'layered',
+      // Overall edge flow direction. Values: UNDEFINED | RIGHT | LEFT | DOWN | UP.
       'elk.direction': 'RIGHT',
+      // Edge routing style. Values: UNDEFINED | POLYLINE | ORTHOGONAL | SPLINES.
       'elk.edgeRouting': 'SPLINES',
+      // Layout disconnected subgraphs separately. Values: true | false.
       'elk.separateConnectedComponents': 'true',
-      //'elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX',
+      // Crossing minimization heuristic. Values: LAYER_SWEEP | MEDIAN_LAYER_SWEEP | INTERACTIVE | NONE.
+      'elk.layered.crossingMinimization.strategy': 'LAYER_SWEEP',
+      // Post-process swap heuristic after layer sweep. Values: ONE_SIDED | TWO_SIDED | OFF.
+      'elk.layered.crossingMinimization.greedySwitch.type': 'TWO_SIDED',
+      // Run greedy switch only if graph size < threshold. int ≥ 0; 0 = always on. Default: 40.
+      'elk.layered.crossingMinimization.greedySwitch.activationThreshold': '0',
+      // Brandes–Köpf fixed alignment. Values: NONE | LEFTUP | RIGHTUP | LEFTDOWN | RIGHTDOWN | BALANCED.
+      'elk.layered.nodePlacement.bk.fixedAlignment': 'BALANCED',
+      // Extra edge straightening in BK placer. Values: NONE | IMPROVE_STRAIGHTNESS.
+      'elk.layered.nodePlacement.bk.edgeStraightening': 'IMPROVE_STRAIGHTNESS',
+      // Prefer straight edges over balanced placement. Values: true | false.
+      'elk.layered.nodePlacement.favorStraightEdges': 'true',
+      // Layout effort / iteration budget. int ≥ 1; default 7.
+      'elk.layered.thoroughness': '10',
+      // Spacing between nodes in the same layer (vertical when direction is RIGHT).
       'elk.spacing.nodeNode': String(spacing.nodesep),
+      // Spacing between edges and nodes.
       'elk.spacing.edgeNode': String(Math.max(12, spacing.nodesep * 0.4)),
+      // Spacing between parallel edges.
       'elk.spacing.edgeEdge': '10',
+      // Spacing between adjacent layers (horizontal when direction is RIGHT).
       'elk.layered.spacing.nodeNodeBetweenLayers': String(spacing.ranksep),
+      // Spacing between edges and nodes across layers.
       'elk.layered.spacing.edgeNodeBetweenLayers': String(Math.max(16, spacing.ranksep * 0.25)),
     },
     children: childIds.map(childId => {
@@ -136,6 +164,7 @@ function applyChildPositions(
  *    so sparse sibling sets do not collapse into a single column.
  *
  * Only virtual layout edges between direct siblings at the current level influence layout.
+ * Edge weight (dependency count) biases crossing minimization and straightness.
  * Cross-group dependencies (e.g. file in src/foo -> file in src/bar) do not
  * affect positions — React Flow draws visual edges after layout.
  */

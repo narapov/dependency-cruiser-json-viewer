@@ -33,7 +33,7 @@ describe('buildVirtualLayoutEdges', () => {
   it('lifts cross-folder deps to folder siblings at parent level', () => {
     const edges = buildVirtualLayoutEdges('src', ['src/foo', 'src/bar'], modules, selectedSet);
 
-    expect(edges).toEqual([{ source: 'src/foo', target: 'src/bar' }]);
+    expect(edges).toEqual([{ source: 'src/foo', target: 'src/bar', weight: 1 }]);
   });
 
   it('keeps parent-level virtual edges stable regardless of expand state', () => {
@@ -52,7 +52,7 @@ describe('buildVirtualLayoutEdges', () => {
       selectedSet,
     );
 
-    expect(edges).toEqual([{ source: 'src/foo/b.ts', target: 'src/foo/c.ts' }]);
+    expect(edges).toEqual([{ source: 'src/foo/b.ts', target: 'src/foo/c.ts', weight: 1 }]);
   });
 
   it('skips self-loops and deps outside the folder children', () => {
@@ -72,6 +72,6 @@ describe('buildVirtualLayoutEdges', () => {
 
     const edges = buildVirtualLayoutEdges('src', ['src/foo', 'src/bar'], withDuplicate, selected);
 
-    expect(edges).toEqual([{ source: 'src/foo', target: 'src/bar' }]);
+    expect(edges).toEqual([{ source: 'src/foo', target: 'src/bar', weight: 2 }]);
   });
 });
