@@ -10,10 +10,24 @@ function renderShortcut() {
   const onShowFileTree = vi.fn();
   const onShowRulesPanel = vi.fn();
   const onShowCircularPanel = vi.fn();
+  const onShowHighlightsPanel = vi.fn();
   const hook = renderHook(() =>
-    useSidebarShortcut({ onToggle, onShowFileTree, onShowRulesPanel, onShowCircularPanel }),
+    useSidebarShortcut({
+      onToggle,
+      onShowFileTree,
+      onShowRulesPanel,
+      onShowCircularPanel,
+      onShowHighlightsPanel,
+    }),
   );
-  return { ...hook, onToggle, onShowFileTree, onShowRulesPanel, onShowCircularPanel };
+  return {
+    ...hook,
+    onToggle,
+    onShowFileTree,
+    onShowRulesPanel,
+    onShowCircularPanel,
+    onShowHighlightsPanel,
+  };
 }
 
 describe('useSidebarShortcut', () => {
@@ -32,13 +46,14 @@ describe('useSidebarShortcut', () => {
   });
 
   it('shows file tree on Cmd+Shift+E', () => {
-    const { onToggle, onShowFileTree, onShowRulesPanel, onShowCircularPanel } = renderShortcut();
+    const { onToggle, onShowFileTree, onShowRulesPanel, onShowCircularPanel, onShowHighlightsPanel } = renderShortcut();
 
     fireEvent.keyDown(window, { key: 'e', metaKey: true, shiftKey: true });
     expect(onShowFileTree).toHaveBeenCalledTimes(1);
     expect(onToggle).not.toHaveBeenCalled();
     expect(onShowRulesPanel).not.toHaveBeenCalled();
     expect(onShowCircularPanel).not.toHaveBeenCalled();
+    expect(onShowHighlightsPanel).not.toHaveBeenCalled();
   });
 
   it('shows file tree on Ctrl+Shift+E', () => {
@@ -79,6 +94,21 @@ describe('useSidebarShortcut', () => {
     expect(onShowCircularPanel).toHaveBeenCalledTimes(1);
   });
 
+  it('shows highlights panel on Cmd+Shift+H', () => {
+    const { onToggle, onShowHighlightsPanel } = renderShortcut();
+
+    fireEvent.keyDown(window, { key: 'h', metaKey: true, shiftKey: true });
+    expect(onShowHighlightsPanel).toHaveBeenCalledTimes(1);
+    expect(onToggle).not.toHaveBeenCalled();
+  });
+
+  it('shows highlights panel on Ctrl+Shift+H', () => {
+    const { onShowHighlightsPanel } = renderShortcut();
+
+    fireEvent.keyDown(window, { key: 'H', ctrlKey: true, shiftKey: true });
+    expect(onShowHighlightsPanel).toHaveBeenCalledTimes(1);
+  });
+
   it('ignores Cmd+Shift+B', () => {
     const { onToggle } = renderShortcut();
 
@@ -87,30 +117,35 @@ describe('useSidebarShortcut', () => {
   });
 
   it('ignores other keys', () => {
-    const { onToggle, onShowFileTree, onShowRulesPanel, onShowCircularPanel } = renderShortcut();
+    const { onToggle, onShowFileTree, onShowRulesPanel, onShowCircularPanel, onShowHighlightsPanel } = renderShortcut();
 
     fireEvent.keyDown(window, { key: 'b' });
     fireEvent.keyDown(window, { key: 'k', metaKey: true });
     fireEvent.keyDown(window, { key: 'e', metaKey: true });
     fireEvent.keyDown(window, { key: 'm', ctrlKey: true });
     fireEvent.keyDown(window, { key: 'c', metaKey: true });
+    fireEvent.keyDown(window, { key: 'h', metaKey: true });
     expect(onToggle).not.toHaveBeenCalled();
     expect(onShowFileTree).not.toHaveBeenCalled();
     expect(onShowRulesPanel).not.toHaveBeenCalled();
     expect(onShowCircularPanel).not.toHaveBeenCalled();
+    expect(onShowHighlightsPanel).not.toHaveBeenCalled();
   });
 
   it('removes listener on unmount', () => {
-    const { unmount, onToggle, onShowFileTree, onShowRulesPanel, onShowCircularPanel } = renderShortcut();
+    const { unmount, onToggle, onShowFileTree, onShowRulesPanel, onShowCircularPanel, onShowHighlightsPanel } =
+      renderShortcut();
     unmount();
 
     fireEvent.keyDown(window, { key: 'b', metaKey: true });
     fireEvent.keyDown(window, { key: 'e', metaKey: true, shiftKey: true });
     fireEvent.keyDown(window, { key: 'm', metaKey: true, shiftKey: true });
     fireEvent.keyDown(window, { key: 'c', metaKey: true, shiftKey: true });
+    fireEvent.keyDown(window, { key: 'h', metaKey: true, shiftKey: true });
     expect(onToggle).not.toHaveBeenCalled();
     expect(onShowFileTree).not.toHaveBeenCalled();
     expect(onShowRulesPanel).not.toHaveBeenCalled();
     expect(onShowCircularPanel).not.toHaveBeenCalled();
+    expect(onShowHighlightsPanel).not.toHaveBeenCalled();
   });
 });

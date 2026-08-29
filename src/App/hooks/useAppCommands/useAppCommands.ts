@@ -33,6 +33,7 @@ interface UseAppCommandsOptions {
   showFileTree: () => void;
   showRulesPanel: () => void;
   showCircularPanel: () => void;
+  showHighlightsPanel: () => void;
   toggleSidebar: () => void;
   fileLoadInProgress?: boolean;
   cruiseWatchEnabled?: boolean;
@@ -49,6 +50,7 @@ export function useAppCommands({
   showFileTree,
   showRulesPanel,
   showCircularPanel,
+  showHighlightsPanel,
   toggleSidebar,
   fileLoadInProgress = false,
   cruiseWatchEnabled = false,
@@ -148,6 +150,11 @@ export function useAppCommands({
     { id: 'showFileTree', label: t('commands.showFileTree'), onExecute: showFileTree },
     { id: 'showRulesPanel', label: t('commands.showRulesPanel'), onExecute: showRulesPanel },
     { id: 'showCircularPanel', label: t('commands.showCircularPanel'), onExecute: showCircularPanel },
+    {
+      id: 'showHighlightsPanel',
+      label: t('commands.showHighlightsPanel'),
+      onExecute: showHighlightsPanel,
+    },
     { id: 'toggleSidebar', label: t('commands.toggleSidebar'), onExecute: toggleSidebar },
     { id: 'unselectAll', label: t('commands.unselectAll'), onExecute: unselectAll },
   ];

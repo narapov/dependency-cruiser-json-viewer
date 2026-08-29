@@ -27,6 +27,8 @@
     "showRules": "Afficher les règles ({{shortcut}})",
     "hideCircular": "Masquer les cycles ({{shortcut}})",
     "showCircular": "Afficher les cycles ({{shortcut}})",
+    "hideHighlights": "Masquer les surlignages ({{shortcut}})",
+    "showHighlights": "Afficher les surlignages ({{shortcut}})",
     "about": "À propos"
   },
   "actions": {
@@ -73,6 +75,7 @@
     "showFileTree": "Afficher l'arborescence",
     "showRulesPanel": "Afficher le panneau des règles",
     "showCircularPanel": "Afficher le panneau des cycles",
+    "showHighlightsPanel": "Afficher le panneau des surlignages",
     "toggleSidebar": "Afficher/Masquer la barre latérale",
     "unselectAll": "Tout désélectionner",
     "about": "À propos",
@@ -143,6 +146,12 @@
     "examples": "Exemples",
     "save": "Enregistrer",
     "cancel": "Annuler"
+  },
+  "highlights": {
+    "empty": "Aucune connexion surlignée.",
+    "removeConnection": "Supprimer le surlignage de la connexion",
+    "removeColor": "Supprimer tous les surlignages de cette couleur",
+    "clearAll": "Tout effacer"
   },
   "about": {
     "title": "À propos",

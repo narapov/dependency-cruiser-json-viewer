@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
+import ColorizeOutlined from '@mui/icons-material/ColorizeOutlined';
 import FolderCopyOutlined from '@mui/icons-material/FolderCopyOutlined';
 import LoopOutlined from '@mui/icons-material/LoopOutlined';
 import RuleOutlined from '@mui/icons-material/RuleOutlined';
@@ -25,9 +26,11 @@ export function SidebarToggle({ sidebarOpen, sidebarView, onSelectView }: Sideba
   const filesShowShortcut = formatShortcut('E', { shift: true });
   const rulesShowShortcut = formatShortcut('M', { shift: true });
   const circularShowShortcut = formatShortcut('C', { shift: true });
+  const highlightsShowShortcut = formatShortcut('H', { shift: true });
   const filesActive = sidebarOpen && sidebarView === 'files';
   const rulesActive = sidebarOpen && sidebarView === 'rules';
   const circularActive = sidebarOpen && sidebarView === 'circular';
+  const highlightsActive = sidebarOpen && sidebarView === 'highlights';
   const filesLabel = filesActive
     ? t('app.hideFileTree', { shortcut: hideShortcut })
     : t('app.showFileTree', { shortcut: filesShowShortcut });
@@ -37,6 +40,9 @@ export function SidebarToggle({ sidebarOpen, sidebarView, onSelectView }: Sideba
   const circularLabel = circularActive
     ? t('app.hideCircular', { shortcut: hideShortcut })
     : t('app.showCircular', { shortcut: circularShowShortcut });
+  const highlightsLabel = highlightsActive
+    ? t('app.hideHighlights', { shortcut: hideShortcut })
+    : t('app.showHighlights', { shortcut: highlightsShowShortcut });
 
   return (
     <Box
@@ -100,6 +106,22 @@ export function SidebarToggle({ sidebarOpen, sidebarView, onSelectView }: Sideba
           }}
         >
           <LoopOutlined sx={{ fontSize: 18 }} />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title={highlightsLabel}>
+        <IconButton
+          size="small"
+          onClick={() => onSelectView('highlights')}
+          aria-label={highlightsLabel}
+          aria-pressed={highlightsActive}
+          sx={{
+            borderRadius: 1,
+            ...(highlightsActive && {
+              bgcolor: 'action.selected',
+            }),
+          }}
+        >
+          <ColorizeOutlined sx={{ fontSize: 18 }} />
         </IconButton>
       </Tooltip>
     </Box>

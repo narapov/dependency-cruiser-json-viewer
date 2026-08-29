@@ -5,6 +5,7 @@ interface UseSidebarShortcutOptions {
   onShowFileTree: () => void;
   onShowRulesPanel: () => void;
   onShowCircularPanel: () => void;
+  onShowHighlightsPanel: () => void;
 }
 
 export function useSidebarShortcut({
@@ -12,6 +13,7 @@ export function useSidebarShortcut({
   onShowFileTree,
   onShowRulesPanel,
   onShowCircularPanel,
+  onShowHighlightsPanel,
 }: UseSidebarShortcutOptions) {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -39,6 +41,12 @@ export function useSidebarShortcut({
         return;
       }
 
+      if (event.shiftKey && key === 'h') {
+        event.preventDefault();
+        onShowHighlightsPanel();
+        return;
+      }
+
       if (!event.shiftKey && key === 'b') {
         event.preventDefault();
         onToggle();
@@ -47,5 +55,5 @@ export function useSidebarShortcut({
 
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [onToggle, onShowFileTree, onShowRulesPanel, onShowCircularPanel]);
+  }, [onToggle, onShowFileTree, onShowRulesPanel, onShowCircularPanel, onShowHighlightsPanel]);
 }

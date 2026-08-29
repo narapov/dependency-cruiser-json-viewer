@@ -27,35 +27,27 @@ function createOrch(): AppCommandsOrchestration {
   };
 }
 
+function baseOptions(overrides: Partial<Parameters<typeof useAppCommands>[0]> = {}) {
+  return {
+    orch: createOrch(),
+    openThemePicker: vi.fn(),
+    openLanguagePicker: vi.fn(),
+    openIgnorePatterns: vi.fn(),
+    openLoadCruiseResult: vi.fn(),
+    openLoadSettings: vi.fn(),
+    openAbout: vi.fn(),
+    showFileTree: vi.fn(),
+    showRulesPanel: vi.fn(),
+    showCircularPanel: vi.fn(),
+    showHighlightsPanel: vi.fn(),
+    toggleSidebar: vi.fn(),
+    ...overrides,
+  };
+}
+
 describe('useAppCommands', () => {
   it('returns sorted commands with expected ids', () => {
-    const orch = createOrch();
-    const openThemePicker = vi.fn();
-    const openLanguagePicker = vi.fn();
-    const openIgnorePatterns = vi.fn();
-    const openLoadCruiseResult = vi.fn();
-    const openLoadSettings = vi.fn();
-    const openAbout = vi.fn();
-    const showFileTree = vi.fn();
-    const showRulesPanel = vi.fn();
-    const showCircularPanel = vi.fn();
-    const toggleSidebar = vi.fn();
-
-    const { result } = renderHook(() =>
-      useAppCommands({
-        orch,
-        openThemePicker,
-        openLanguagePicker,
-        openIgnorePatterns,
-        openLoadCruiseResult,
-        openLoadSettings,
-        openAbout,
-        showFileTree,
-        showRulesPanel,
-        showCircularPanel,
-        toggleSidebar,
-      }),
-    );
+    const { result } = renderHook(() => useAppCommands(baseOptions()));
 
     const ids = result.current.map(command => command.id);
     expect(ids).toContain('exportGraphDot');
@@ -65,6 +57,7 @@ describe('useAppCommands', () => {
     expect(ids).toContain('selectAll');
     expect(ids).toContain('showCircularDependenciesOnly');
     expect(ids).toContain('setTheme');
+    expect(ids).toContain('showHighlightsPanel');
     expect(ids).toContain('about');
     expect(ids).toContain('showFileTree');
     expect(ids).toContain('showRulesPanel');
@@ -78,6 +71,7 @@ describe('useAppCommands', () => {
   it('wires command actions to orchestration and dialog openers', () => {
     const orch = createOrch();
     const openThemePicker = vi.fn();
+    const showHighlightsPanel = vi.fn();
     const openAbout = vi.fn();
     const openLoadSettings = vi.fn();
     const showFileTree = vi.fn();
@@ -86,19 +80,19 @@ describe('useAppCommands', () => {
     const toggleSidebar = vi.fn();
 
     const { result } = renderHook(() =>
-      useAppCommands({
-        orch,
-        openThemePicker,
-        openLanguagePicker: vi.fn(),
-        openIgnorePatterns: vi.fn(),
-        openLoadCruiseResult: vi.fn(),
-        openLoadSettings,
-        openAbout,
-        showFileTree,
-        showRulesPanel,
-        showCircularPanel,
-        toggleSidebar,
-      }),
+      useAppCommands(
+        baseOptions({
+          orch,
+          openThemePicker,
+          openLoadSettings,
+          openAbout,
+          showFileTree,
+          showRulesPanel,
+          showCircularPanel,
+          showHighlightsPanel,
+          toggleSidebar,
+        }),
+      ),
     );
 
     const byId = Object.fromEntries(result.current.map(command => [command.id, command]));
@@ -106,6 +100,7 @@ describe('useAppCommands', () => {
     byId.selectAll.onExecute();
     byId.showCircularDependenciesOnly.onExecute();
     byId.setTheme.onExecute();
+    byId.showHighlightsPanel.onExecute();
     byId.about.onExecute();
     byId.showFileTree.onExecute();
     byId.showRulesPanel.onExecute();
@@ -120,6 +115,7 @@ describe('useAppCommands', () => {
     expect(orch.selectAll).toHaveBeenCalled();
     expect(orch.showCircularDependenciesOnly).toHaveBeenCalled();
     expect(openThemePicker).toHaveBeenCalled();
+    expect(showHighlightsPanel).toHaveBeenCalled();
     expect(openAbout).toHaveBeenCalled();
     expect(showFileTree).toHaveBeenCalled();
     expect(showRulesPanel).toHaveBeenCalled();
@@ -133,22 +129,7 @@ describe('useAppCommands', () => {
   });
 
   it('disables load commands while a file load is in progress', () => {
-    const { result } = renderHook(() =>
-      useAppCommands({
-        orch: createOrch(),
-        openThemePicker: vi.fn(),
-        openLanguagePicker: vi.fn(),
-        openIgnorePatterns: vi.fn(),
-        openLoadCruiseResult: vi.fn(),
-        openLoadSettings: vi.fn(),
-        openAbout: vi.fn(),
-        showFileTree: vi.fn(),
-        showRulesPanel: vi.fn(),
-        showCircularPanel: vi.fn(),
-        toggleSidebar: vi.fn(),
-        fileLoadInProgress: true,
-      }),
-    );
+    const { result } = renderHook(() => useAppCommands(baseOptions({ fileLoadInProgress: true })));
 
     const byId = Object.fromEntries(result.current.map(command => [command.id, command]));
     expect(byId.loadCruiseResult.disabled).toBe(true);
@@ -157,22 +138,7 @@ describe('useAppCommands', () => {
   });
 
   it('omits loadCruiseResult when cruise watch is enabled', () => {
-    const { result } = renderHook(() =>
-      useAppCommands({
-        orch: createOrch(),
-        openThemePicker: vi.fn(),
-        openLanguagePicker: vi.fn(),
-        openIgnorePatterns: vi.fn(),
-        openLoadCruiseResult: vi.fn(),
-        openLoadSettings: vi.fn(),
-        openAbout: vi.fn(),
-        showFileTree: vi.fn(),
-        showRulesPanel: vi.fn(),
-        showCircularPanel: vi.fn(),
-        toggleSidebar: vi.fn(),
-        cruiseWatchEnabled: true,
-      }),
-    );
+    const { result } = renderHook(() => useAppCommands(baseOptions({ cruiseWatchEnabled: true })));
 
     const ids = result.current.map(command => command.id);
     expect(ids).not.toContain('loadCruiseResult');

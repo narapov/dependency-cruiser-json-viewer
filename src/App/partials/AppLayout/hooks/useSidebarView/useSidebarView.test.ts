@@ -14,6 +14,7 @@ describe('useSidebarView', () => {
     { stored: null, expected: 'files' as const },
     { stored: 'rules', expected: 'rules' as const },
     { stored: 'circular', expected: 'circular' as const },
+    { stored: 'highlights', expected: 'highlights' as const },
     { stored: 'bogus', expected: 'files' as const },
   ])('resolves stored value $stored to $expected', ({ stored, expected }) => {
     if (stored != null) {

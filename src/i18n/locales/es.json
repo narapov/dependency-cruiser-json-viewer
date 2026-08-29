@@ -27,6 +27,8 @@
     "showRules": "Mostrar reglas ({{shortcut}})",
     "hideCircular": "Ocultar circulares ({{shortcut}})",
     "showCircular": "Mostrar circulares ({{shortcut}})",
+    "hideHighlights": "Ocultar resaltados ({{shortcut}})",
+    "showHighlights": "Mostrar resaltados ({{shortcut}})",
     "about": "Acerca de"
   },
   "actions": {
@@ -73,6 +75,7 @@
     "showFileTree": "Mostrar árbol de archivos",
     "showRulesPanel": "Mostrar panel de reglas",
     "showCircularPanel": "Mostrar panel circular",
+    "showHighlightsPanel": "Mostrar panel de resaltados",
     "toggleSidebar": "Mostrar/Ocultar barra lateral",
     "unselectAll": "Deseleccionar todo",
     "about": "Acerca de",
@@ -143,6 +146,12 @@
     "examples": "Ejemplos",
     "save": "Guardar",
     "cancel": "Cancelar"
+  },
+  "highlights": {
+    "empty": "No hay conexiones resaltadas.",
+    "removeConnection": "Quitar resaltado de la conexión",
+    "removeColor": "Quitar todos los resaltados de este color",
+    "clearAll": "Limpiar todo"
   },
   "about": {
     "title": "Acerca de",

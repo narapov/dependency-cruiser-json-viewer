@@ -87,6 +87,10 @@ function App() {
       setSidebarView('circular');
       setSidebarOpen(true);
     },
+    onShowHighlightsPanel: () => {
+      setSidebarView('highlights');
+      setSidebarOpen(true);
+    },
   });
 
   const handleSelectSidebarView = useCallback(
@@ -243,7 +247,7 @@ function App() {
     [showInFileTree, setSidebarOpen, setSidebarView],
   );
 
-  const handleSelectViolationPaths = useCallback(
+  const handleShowDependencyConnection = useCallback(
     (paths: string[]) => {
       const nextPaths = paths.filter(path => !selectedPaths.includes(path));
       if (nextPaths.length > 0) {
@@ -283,6 +287,10 @@ function App() {
     },
     showCircularPanel: () => {
       setSidebarView('circular');
+      setSidebarOpen(true);
+    },
+    showHighlightsPanel: () => {
+      setSidebarView('highlights');
       setSidebarOpen(true);
     },
     toggleSidebar: toggleSidebarOpen,
@@ -369,9 +377,13 @@ function App() {
           activePath={orch.activePath}
           ruleSetUsed={data.summary.ruleSetUsed}
           violations={data.summary.violations}
-          onSelectViolationPaths={handleSelectViolationPaths}
+          onSelectViolationPaths={handleShowDependencyConnection}
           modules={modules}
           onShowCycle={orch.showPathsOnly}
+          highlights={orch.userEdgeHighlights}
+          onRemoveHighlightKeys={keys => orch.setUserDependencyHighlight(keys, null)}
+          onShowHighlightConnection={(source, target) => handleShowDependencyConnection([source, target])}
+          onClearAllHighlights={orch.clearAllHighlights}
         />
       }
       main={
