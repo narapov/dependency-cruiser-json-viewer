@@ -12,7 +12,7 @@ Built with [React](https://react.dev/), [MUI](https://mui.com/), and [@xyflow/re
 
 Try it live: [https://narapov.github.io/dependency-cruiser-json-viewer/](https://narapov.github.io/dependency-cruiser-json-viewer/)
 
-The demo loads the dependency-cruiser cruise result of this project by default. To explore your own codebase, press **F1** to open the command palette and choose **Load dependency-cruiser JSON** to pick a local `.json` file.
+The demo loads the dependency-cruiser cruise result of this project by default. To explore your own codebase, press **F1** to open the command palette and choose **Load dependency-cruiser JSON**, or drag and drop a local `.json` file onto the window.
 
 ## Motivation
 
@@ -27,10 +27,12 @@ The usual workflow meant constantly tweaking filters, `collapsePattern`, and `ex
 - **File tree** — browse modules and folders; checkbox selection to dynamically show or hide parts of the codebase in the graph; expand/collapse, context menu.
 - **Dependency graph** — interactive graph with folder/file nodes and colored edges (incoming/outgoing/circular).
 - **Drag-and-drop layout** — rearrange graph nodes by dragging; custom positions persist when you expand or collapse folders. Turn off **Auto layout only** in the graph legend to enable dragging; use **Auto layout** in a folder's context menu to reset layout.
-- **Edge highlighting** — highlight dependencies via the edge context menu; highlights are tied to the underlying import relation and persist when you expand or collapse nodes.
+- **Edge highlighting** — highlight dependencies via the edge context menu (or the dependencies panel); highlights are tied to the underlying import relation and persist when you expand or collapse nodes. Open the **Highlights** sidebar to browse connections by color, jump to one in the graph, or remove a single highlight, a whole color group, or all highlights.
+- **Hide others** — from a graph node context menu, keep only that file (or already-selected modules under a folder) in the selection so the rest of the graph is hidden.
 - **Rules panel** — browse the cruise `ruleSetUsed` with violation counts; fuzzy-filter by rule name; expand a rule to see violations and click one to select/navigate to the offending modules in the tree and graph.
 - **Circular dependencies** — open the Circular panel to browse distinct cycles; expand a cycle for member paths, or show the cycle in the graph without unrelated modules.
 - **Drill-down navigation** — expanding a folder in the tree rebuilds the graph for that scope, so you can walk from high-level architecture down to individual files.
+- **Load cruise JSON** — load a cruise result via the command palette (**Load dependency-cruiser JSON**) or by dragging a `.json` file onto the window (disabled while watch mode is active).
 - **Quick search & commands** — fuzzy file search (`Cmd/Ctrl+P`) and command palette (`F1`); see Keyboard shortcuts below.
 - **DOT export** — export the current graph layout as a Graphviz `.dot` file via the command palette (**Export Graph DOT**), or open it in [Graphviz Online](https://dreampuf.github.io/GraphvizOnline/?engine=nop2) (**View Graph DOT Online**); render locally with `neato -n2 -Tsvg graph.dot` or `dot -Knop2 -Tsvg graph.dot`.
 - **Workspace save/load** — save selection, expansion, ignore patterns, edge highlights, folder colors, and layout into the cruise JSON under `dependency-cruiser-json-viewer` (**Save Workspace**). Both **Load dependency-cruiser JSON** (when the file has workspace settings) and **Load Workspace Settings** always clear the current view and replace selection, expansion, the dependencies panel path, ignore patterns, edge highlights, folder colors, and layout from the file, dropping entries that no longer match the relevant cruise data (e.g. references to files or dependencies that no longer exist).
@@ -39,10 +41,15 @@ The usual workflow meant constantly tweaking filters, `collapsePattern`, and `ex
 
 ## Keyboard shortcuts
 
-| Shortcut               | Action                                                                                                                           |
-| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| **F1**                 | Open the command palette (expand/collapse, theme, language, ignore patterns, load JSON, etc.).                                   |
-| **Cmd+P** / **Ctrl+P** | Open quick file search; type to fuzzy-find files/folders, Enter to navigate (expands ancestors, focuses node in tree and graph). |
+| Shortcut                           | Action                                                                                                                           |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| **F1**                             | Open the command palette (expand/collapse, theme, language, ignore patterns, load JSON, etc.).                                   |
+| **Cmd+P** / **Ctrl+P**             | Open quick file search; type to fuzzy-find files/folders, Enter to navigate (expands ancestors, focuses node in tree and graph). |
+| **Cmd+B** / **Ctrl+B**             | Toggle sidebar.                                                                                                                  |
+| **Cmd+Shift+E** / **Ctrl+Shift+E** | Show File Tree.                                                                                                                  |
+| **Cmd+Shift+M** / **Ctrl+Shift+M** | Show Rules.                                                                                                                      |
+| **Cmd+Shift+C** / **Ctrl+Shift+C** | Show Circular.                                                                                                                   |
+| **Cmd+Shift+H** / **Ctrl+Shift+H** | Show Highlights.                                                                                                                 |
 
 Typing `>` at the start of the quick-search query switches to command mode (same as F1).
 
@@ -71,7 +78,7 @@ The CLI serves the built viewer from `dist` and streams your JSON file at `/crui
 
 ## Watch mode
 
-When watch mode is on, the viewer reloads `/cruise-result.json` whenever that file changes on disk and re-applies the current workspace (selection, ignore patterns, edge highlights, folder colors, and layout). Manual **Load dependency-cruiser JSON** is disabled while watch is active.
+When watch mode is on, the viewer reloads `/cruise-result.json` whenever that file changes on disk and re-applies the current workspace (selection, ignore patterns, edge highlights, folder colors, and layout). Manual **Load dependency-cruiser JSON** and drag-and-drop load are disabled while watch is active.
 
 ### CLI
 
