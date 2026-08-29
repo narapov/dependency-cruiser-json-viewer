@@ -9,4 +9,5 @@ export const IGNORE_PATTERN_EXAMPLES = [
   '**/*.stories.tsx',
   '**/__tests__/**',
   '**/__fixtures__/**',
+  '**/node_modules/**',
 ] as const;
