@@ -515,9 +515,8 @@ export function useAppOrchestration({
       type: 'setSelectedPaths',
       paths: expandSelectionWithSelectedAncestors(nextSources, sources),
     });
-    const newlyAddedSelected = related.filter(relatedPath => !currentModuleSources.includes(relatedPath));
-    if (newlyAddedSelected.length > 0) {
-      updateExpandedKeys([...new Set([...state.expandedKeys, ...newlyAddedSelected.flatMap(getAncestorKeys)])]);
+    if (related.length > 0) {
+      updateExpandedKeys([...new Set([...state.expandedKeys, ...related.flatMap(getAncestorKeys)])]);
     }
   };
 

@@ -419,6 +419,54 @@ describe('useAppOrchestration', () => {
     expect(result.current.expandedKeys).toEqual(expect.arrayContaining(['src', 'src/b']));
   });
 
+  it('showDirectDependencies expands ancestors of already-selected related modules', () => {
+    const sources = ['src/a.ts', 'src/b/c.ts', 'src/b/d.ts'];
+    const refs = createRefs();
+    const initialDependencyCruiserState = {
+      selectedKeys: ['src/a.ts', 'src/b/c.ts'],
+      expandedKeys: [] as string[],
+    };
+    const { result } = renderHook(() =>
+      useAppOrchestration({
+        sources,
+        unfilteredCruiseResult: {
+          modules: [
+            {
+              source: 'src/a.ts',
+              dependencies: [{ resolved: 'src/b/c.ts', dependencyTypes: ['local'] }],
+              dependents: [],
+              valid: true,
+            },
+            {
+              source: 'src/b/c.ts',
+              dependencies: [],
+              dependents: [],
+              valid: true,
+            },
+            {
+              source: 'src/b/d.ts',
+              dependencies: [],
+              dependents: [],
+              valid: true,
+            },
+          ],
+          summary: {},
+        } as never,
+        ignorePatterns: [],
+        fileTreeRef: refs.fileTreeRef,
+        graphRef: refs.graphRef,
+        initialDependencyCruiserState,
+        cruiseLoadId: 0,
+      }),
+    );
+
+    act(() => {
+      result.current.showDirectDependencies('src/a.ts');
+    });
+
+    expect(result.current.expandedKeys).toEqual(expect.arrayContaining(['src', 'src/b']));
+  });
+
   it('showDirectDependents adds incoming modules to the selection', () => {
     const sources = ['src/a.ts', 'src/b/c.ts', 'src/b/d.ts'];
     const refs = createRefs();
