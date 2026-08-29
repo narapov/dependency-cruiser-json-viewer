@@ -9,7 +9,7 @@ import { fireEvent, renderHook, screen } from '@testing-library/react';
 import { renderWithTheme } from '@/testsUtils';
 
 import { GraphActionsProvider } from '../../contexts';
-import { createMockGraphActions } from '../../contexts/GraphActionsContext/mockGraphActions';
+import { createMockGraphActions } from '../../contexts/GraphActionsContext/__fixtures__/mockGraphActions';
 import { NodeContextMenu } from './NodeContextMenu';
 
 vi.mock('@/Shared', async importOriginal => {

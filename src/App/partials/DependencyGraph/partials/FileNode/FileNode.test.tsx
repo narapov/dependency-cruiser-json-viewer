@@ -9,7 +9,7 @@ import type { NodeProps } from '@xyflow/react';
 import { renderWithTheme } from '@/testsUtils';
 
 import { GraphActionsProvider } from '../../contexts';
-import { createMockGraphActions } from '../../contexts/GraphActionsContext/mockGraphActions';
+import { createMockGraphActions } from '../../contexts/GraphActionsContext/__fixtures__/mockGraphActions';
 import type { FileNodeData } from '../../types';
 import { FileNode } from './FileNode';
 

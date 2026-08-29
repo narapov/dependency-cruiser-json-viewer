@@ -31,6 +31,7 @@
 //
 // {subdir}/{child}/{grandchild} (no-deep-subdir; any import path, including ./ and ../):
 //   ✓ {subdir}/{child}         ✓ {subdir}/{child}/index.ts
+//   ✓ …/{child}/__fixtures__/…  (test fixtures colocated with a module)
 //   ✗ {subdir}/{child}/{grandchild}
 //
 // Imports outside $1/ from partials/$2/… (outside-dir-*; $1 = file dir, $2 = branch root):
@@ -53,6 +54,9 @@ const SRC_FEATURE_ROOTS = ['App', 'Shared', 'domain'];
 
 // src/i18n/, src/assets/, and src/testsUtils/ are out of scope — separate import layout.
 const SRC_FOLDER_SCOPE_NOT = '^src/i18n/|^src/assets/|^src/testsUtils/';
+
+// Test fixtures colocated with modules — may be deep-imported from *.test.ts(x).
+const FIXTURES_PATH_NOT = '/__fixtures__/';
 
 // Max partials/…/partials/… nesting (no * — safe-regex).
 const MAX_PARTIALS_DEPTH = 10;
@@ -195,7 +199,12 @@ function buildFolderImportRules() {
       },
       {
         path: '$1/.+/.+',
-        pathNot: [`$1/[^/]+/index\\.ts$`, `$1/(?:${SUBDIRS_RE})/[^/]+$`, `$1/(?:${SUBDIRS_RE})/[^/]+/index\\.ts$`],
+        pathNot: [
+          `$1/[^/]+/index\\.ts$`,
+          `$1/(?:${SUBDIRS_RE})/[^/]+$`,
+          `$1/(?:${SUBDIRS_RE})/[^/]+/index\\.ts$`,
+          FIXTURES_PATH_NOT,
+        ],
       },
     ),
 
@@ -203,13 +212,25 @@ function buildFolderImportRules() {
     // Allows: {subdir}/{child}, {subdir}/{child}/index.ts
     //   ✓ hooks/useXxx/useXxx.tsx → ../../partials/SubFeature
     //   ✓ Feature/Feature.tsx → ./helpers/helperName/index.ts
+    //   ✓ to: …/__fixtures__/… — tests may deep-import fixtures
+    //   ✓ from: …/__fixtures__/… — fixtures may import parent module siblings (../ComponentName)
     // Forbids: {subdir}/{child}/{grandchild} where grandchild is not index.
     //   ✗ hooks/useXxx/useXxx.tsx → ../../partials/SubFeature/SubFeature.tsx
     //   ✗ …/partials/SubFeature/partials/A/A.tsx → ../../../hooks/useXxx/useXxx
-    forbidden('no-deep-subdir', NON_INDEX_FROM, {
-      path: `(?:${SUBDIRS_RE})/[^/]+/[^/]+`,
-      pathNot: ['^$1/', `/index\\.ts$`],
-    }),
+    forbidden(
+      'no-deep-subdir',
+      {
+        ...NON_INDEX_FROM,
+        pathNot: [
+          ...(Array.isArray(NON_INDEX_FROM.pathNot) ? NON_INDEX_FROM.pathNot : [NON_INDEX_FROM.pathNot]),
+          FIXTURES_PATH_NOT,
+        ],
+      },
+      {
+        path: `(?:${SUBDIRS_RE})/[^/]+/[^/]+`,
+        pathNot: ['^$1/', `/index\\.ts$`, FIXTURES_PATH_NOT],
+      },
+    ),
 
     // ancestor-no-nested-partials (parent ../ imports; direct ancestors only)
     // Allows: (../)+partials/{child}, (../)+partials/{child}/index.ts — one level.
@@ -230,6 +251,7 @@ export {
   EXTERNAL_DEP_TYPES,
   SRC_FEATURE_ROOTS,
   SRC_FOLDER_SCOPE_NOT,
+  FIXTURES_PATH_NOT,
   MAX_PARTIALS_DEPTH,
   PARTIALS_SCOPE_PREFIXES,
   NON_INDEX_FROM,

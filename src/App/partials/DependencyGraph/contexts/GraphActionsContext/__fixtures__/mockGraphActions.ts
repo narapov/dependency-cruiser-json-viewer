@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
 
-import type { GraphActionsContextValue } from './GraphActionsContext';
+import type { GraphActionsContextValue } from '../GraphActionsContext';
 
 /** Creates mock graph action callbacks for component tests. */
 export function createMockGraphActions(overrides: Partial<GraphActionsContextValue> = {}): GraphActionsContextValue {
