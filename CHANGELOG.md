@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.5.0](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v1.4.2...v1.5.0) (2026-08-29)
+
+### Features
+
+- add clickable ignore pattern examples ([#10](https://github.com/narapov/dependency-cruiser-json-viewer/issues/10)) ([73357c2](https://github.com/narapov/dependency-cruiser-json-viewer/commit/73357c2dc49d67aebe3e6207986da10988604e69))
+- add sidebar panel for edge highlights ([#12](https://github.com/narapov/dependency-cruiser-json-viewer/issues/12)) ([203319e](https://github.com/narapov/dependency-cruiser-json-viewer/commit/203319e217b5891f12a20338de3c1f4a1748c605))
+- add weight to layout edges and tune ELK placement ([#13](https://github.com/narapov/dependency-cruiser-json-viewer/issues/13)) ([347fee9](https://github.com/narapov/dependency-cruiser-json-viewer/commit/347fee9cfac6e59c6f8701b2f2b88e63d212d728))
+- hide others and direct relation actions ([#11](https://github.com/narapov/dependency-cruiser-json-viewer/issues/11)) ([ba904de](https://github.com/narapov/dependency-cruiser-json-viewer/commit/ba904de96f07ecd3ca3ffa0430d68d4edd286651))
+
+### Bug Fixes
+
+- keep only selected modules when hiding others in a folder ([71a9d8c](https://github.com/narapov/dependency-cruiser-json-viewer/commit/71a9d8c8189e13bd3a1f326d2e37993e11cb2e76))
+
 ## [1.4.2](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v1.4.1...v1.4.2) (2026-08-17)
 
 ## [1.4.1](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v1.4.0...v1.4.1) (2026-08-11)
