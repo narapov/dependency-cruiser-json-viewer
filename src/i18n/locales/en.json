@@ -27,6 +27,8 @@
     "showRules": "Show rules ({{shortcut}})",
     "hideCircular": "Hide circular ({{shortcut}})",
     "showCircular": "Show circular ({{shortcut}})",
+    "hideHighlights": "Hide highlights ({{shortcut}})",
+    "showHighlights": "Show highlights ({{shortcut}})",
     "about": "About"
   },
   "actions": {
@@ -73,6 +75,7 @@
     "showFileTree": "Show File Tree",
     "showRulesPanel": "Show Rules Panel",
     "showCircularPanel": "Show Circular Panel",
+    "showHighlightsPanel": "Show Highlights Panel",
     "toggleSidebar": "Toggle Sidebar",
     "unselectAll": "Unselect All",
     "about": "About",
@@ -143,6 +146,12 @@
     "examples": "Examples",
     "save": "Save",
     "cancel": "Cancel"
+  },
+  "highlights": {
+    "empty": "No highlighted connections.",
+    "removeConnection": "Remove connection highlight",
+    "removeColor": "Remove all highlights of this color",
+    "clearAll": "Clear all"
   },
   "about": {
     "title": "About",

@@ -27,6 +27,8 @@
     "showRules": "Показать правила ({{shortcut}})",
     "hideCircular": "Скрыть циклы ({{shortcut}})",
     "showCircular": "Показать циклы ({{shortcut}})",
+    "hideHighlights": "Скрыть подсветки ({{shortcut}})",
+    "showHighlights": "Показать подсветки ({{shortcut}})",
     "about": "О приложении"
   },
   "actions": {
@@ -73,6 +75,7 @@
     "showFileTree": "Показать дерево файлов",
     "showRulesPanel": "Показать панель правил",
     "showCircularPanel": "Показать панель циклов",
+    "showHighlightsPanel": "Показать панель подсветок",
     "toggleSidebar": "Переключить боковую панель",
     "unselectAll": "Снять выделение",
     "about": "О приложении",
@@ -143,6 +146,12 @@
     "examples": "Примеры",
     "save": "Сохранить",
     "cancel": "Отмена"
+  },
+  "highlights": {
+    "empty": "Нет подсвеченных связей.",
+    "removeConnection": "Убрать подсветку связи",
+    "removeColor": "Убрать все подсветки этого цвета",
+    "clearAll": "Сбросить все"
   },
   "about": {
     "title": "О приложении",

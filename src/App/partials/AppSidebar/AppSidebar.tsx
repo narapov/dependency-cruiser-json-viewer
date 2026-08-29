@@ -6,6 +6,7 @@ import Box from '@mui/material/Box';
 import type { SidebarView } from '../AppLayout';
 import { CircularPanel } from '../CircularPanel';
 import { FileTree, type FileTreeHandle } from '../FileTree';
+import { HighlightsPanel } from '../HighlightsPanel';
 import { RulesPanel } from '../RulesPanel';
 
 interface AppSidebarProps {
@@ -25,6 +26,10 @@ interface AppSidebarProps {
   onSelectViolationPaths: (paths: string[]) => void;
   modules: readonly IModule[];
   onShowCycle: (paths: string[]) => void;
+  highlights: ReadonlyMap<string, string>;
+  onRemoveHighlightKeys: (keys: readonly string[]) => void;
+  onShowHighlightConnection: (source: string, target: string) => void;
+  onClearAllHighlights: () => void;
 }
 
 function ViewPanel({ active, children }: { active: boolean; children: ReactNode }) {
@@ -61,6 +66,10 @@ export function AppSidebar({
   onSelectViolationPaths,
   modules,
   onShowCycle,
+  highlights,
+  onRemoveHighlightKeys,
+  onShowHighlightConnection,
+  onClearAllHighlights,
 }: AppSidebarProps) {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
@@ -88,6 +97,14 @@ export function AppSidebar({
       </ViewPanel>
       <ViewPanel active={view === 'circular'}>
         <CircularPanel modules={modules} sources={sources} onShowCycle={onShowCycle} onShowInGraph={onShowInGraph} />
+      </ViewPanel>
+      <ViewPanel active={view === 'highlights'}>
+        <HighlightsPanel
+          highlights={highlights}
+          onRemoveDependencyKeys={onRemoveHighlightKeys}
+          onShowConnection={onShowHighlightConnection}
+          onClearAll={onClearAllHighlights}
+        />
       </ViewPanel>
     </Box>
   );

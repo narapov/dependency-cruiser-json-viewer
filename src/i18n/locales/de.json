@@ -27,6 +27,8 @@
     "showRules": "Regeln einblenden ({{shortcut}})",
     "hideCircular": "Zirkuläre ausblenden ({{shortcut}})",
     "showCircular": "Zirkuläre einblenden ({{shortcut}})",
+    "hideHighlights": "Hervorhebungen ausblenden ({{shortcut}})",
+    "showHighlights": "Hervorhebungen einblenden ({{shortcut}})",
     "about": "Über"
   },
   "actions": {
@@ -73,6 +75,7 @@
     "showFileTree": "Dateibaum anzeigen",
     "showRulesPanel": "Regelpanel anzeigen",
     "showCircularPanel": "Zirkuläres Panel anzeigen",
+    "showHighlightsPanel": "Hervorhebungen-Panel anzeigen",
     "toggleSidebar": "Seitenleiste ein-/ausblenden",
     "unselectAll": "Auswahl aufheben",
     "about": "Über",
@@ -143,6 +146,12 @@
     "examples": "Beispiele",
     "save": "Speichern",
     "cancel": "Abbrechen"
+  },
+  "highlights": {
+    "empty": "Keine hervorgehobenen Verbindungen.",
+    "removeConnection": "Hervorhebung der Verbindung entfernen",
+    "removeColor": "Alle Hervorhebungen dieser Farbe entfernen",
+    "clearAll": "Alle löschen"
   },
   "about": {
     "title": "Über",

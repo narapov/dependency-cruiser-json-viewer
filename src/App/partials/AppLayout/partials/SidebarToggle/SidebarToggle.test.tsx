@@ -11,12 +11,13 @@ import { renderWithTheme } from '@/testsUtils';
 import { SidebarToggle } from './SidebarToggle';
 
 describe('SidebarToggle', () => {
-  it('renders files, rules, and circular buttons and reports view selection', () => {
+  it('renders files, rules, circular, and highlights buttons and reports view selection', () => {
     const { result: i18n } = renderHook(() => useTranslation());
     const onSelectView = vi.fn();
     const hideShortcut = formatShortcut('B');
     const rulesShowShortcut = formatShortcut('M', { shift: true });
     const circularShowShortcut = formatShortcut('C', { shift: true });
+    const highlightsShowShortcut = formatShortcut('H', { shift: true });
 
     renderWithTheme(<SidebarToggle sidebarOpen sidebarView="files" onSelectView={onSelectView} />);
 
@@ -36,6 +37,13 @@ describe('SidebarToggle', () => {
       }),
     );
     expect(onSelectView).toHaveBeenCalledWith('circular');
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: i18n.current.t('app.showHighlights', { shortcut: highlightsShowShortcut }),
+      }),
+    );
+    expect(onSelectView).toHaveBeenCalledWith('highlights');
   });
 
   it('marks the active circular view as pressed when sidebar is open', () => {
