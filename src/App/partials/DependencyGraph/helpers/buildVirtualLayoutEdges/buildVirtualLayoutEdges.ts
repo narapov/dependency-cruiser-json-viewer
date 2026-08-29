@@ -6,6 +6,8 @@ import { getParentPath } from '@/domain';
 export interface LayoutEdge {
   source: string;
   target: string;
+  /** Number of module dependencies collapsed into this sibling-level edge. */
+  weight: number;
 }
 
 /** Nearest ancestor (or path itself) that is a direct child of the folder. */
@@ -58,8 +60,11 @@ export function buildVirtualLayoutEdges(
       )
       .reduce((map, { sourceChild, targetChild }) => {
         const key = `${sourceChild}->${targetChild}`;
-        if (!map.has(key)) {
-          map.set(key, { source: sourceChild, target: targetChild });
+        const existing = map.get(key);
+        if (existing) {
+          existing.weight += 1;
+        } else {
+          map.set(key, { source: sourceChild, target: targetChild, weight: 1 });
         }
         return map;
       }, new Map<string, LayoutEdge>())

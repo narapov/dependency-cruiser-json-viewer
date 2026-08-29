@@ -58,7 +58,7 @@ describe('getDependencyEdgePath', () => {
       sourceY: 10,
       sourcePosition: Position.Right,
       targetX: 20,
-      targetY: 80,
+      targetY: 120,
       targetPosition: Position.Left,
     });
 

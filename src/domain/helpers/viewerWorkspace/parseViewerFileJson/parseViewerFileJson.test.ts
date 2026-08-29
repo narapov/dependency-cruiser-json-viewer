@@ -1,15 +1,12 @@
 import type { ICruiseResult, IModule, ISummary } from 'dependency-cruiser';
 import { describe, expect, it } from 'vitest';
 
-import {
-  parseViewerFileJson,
-  replaceWorkspaceSettings,
-  serializeViewerWorkspace,
-  VIEWER_WORKSPACE_EXTENSION_KEY,
-  VIEWER_WORKSPACE_SCHEMA_VERSION,
-} from '..';
 import type { ViewerWorkspaceSettings } from '../../../types';
 import { CruiseResultParseError } from '../../cruiseResult';
+import { VIEWER_WORKSPACE_EXTENSION_KEY, VIEWER_WORKSPACE_SCHEMA_VERSION } from '../constants';
+import { replaceWorkspaceSettings } from '../replaceWorkspaceSettings';
+import { serializeViewerWorkspace } from '../serializeViewerWorkspace';
+import { parseViewerFileJson } from './parseViewerFileJson';
 
 const validResult = {
   modules: [

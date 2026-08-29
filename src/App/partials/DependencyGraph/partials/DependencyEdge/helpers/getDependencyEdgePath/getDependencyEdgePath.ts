@@ -1,7 +1,7 @@
 import { getBezierPath, type Position } from '@xyflow/react';
 
 /** Max |sourceY - targetY| treated as the same horizontal row. */
-const SAME_Y_EPSILON = 20;
+const SAME_Y_EPSILON = 100;
 /** Minimum vertical control-point offset for reverse edges. */
 const BULGE_MIN = 24;
 /** Maximum vertical control-point offset for reverse edges. */
