@@ -3,6 +3,8 @@ import { useEffect, useMemo, useReducer, type RefObject } from 'react';
 import {
   applyHighlightKeys,
   collectCircularModulePaths,
+  collectRelatedModuleSources,
+  collectSourcesUnderFolder,
   expandSelectionWithSelectedAncestors,
   filterCruiseResult,
   getAncestorKeys,
@@ -18,6 +20,7 @@ import {
   type DependencyCruiserState,
   type FolderBaseColor,
   type MergedViewerWorkspaceView,
+  type RelatedModuleDirection,
   type ViewerWorkspaceSettings,
 } from '@/domain';
 import { APP_STORAGE_PREFIX, copyToClipboard, downloadTextFile } from '@/Shared';
@@ -327,7 +330,7 @@ export function useAppOrchestration({
     dispatch({ type: 'expandRecursive', path, sources });
   };
 
-  const handleShowDependencies = (path: string) => {
+  const handleShowDependenciesPanel = (path: string) => {
     dispatch({ type: 'setDependenciesPath', path });
   };
 
@@ -371,11 +374,11 @@ export function useAppOrchestration({
     void copyToClipboard(resolvedActivePath);
   };
 
-  const viewActiveDependencies = () => {
+  const viewActiveItemDependenciesPanel = () => {
     if (resolvedActivePath == null) {
       return;
     }
-    handleShowDependencies(resolvedActivePath);
+    handleShowDependenciesPanel(resolvedActivePath);
   };
 
   const expandActive = () => {
@@ -485,6 +488,46 @@ export function useAppOrchestration({
     }
   };
 
+  const sourcesForPath = (path: string): string[] => {
+    if (isFolderPath(path, sources)) {
+      return collectSourcesUnderFolder(path, sources);
+    }
+    return sources.includes(path) ? [path] : [];
+  };
+
+  const hideOthers = (path: string) => {
+    dispatch({
+      type: 'setSelectedPaths',
+      paths: expandSelectionWithSelectedAncestors(sourcesForPath(path), sources),
+    });
+  };
+
+  const showRelatedModules = (path: string, direction: RelatedModuleDirection) => {
+    if (unfilteredCruiseResult == null) {
+      return;
+    }
+    const modules = filterCruiseResult(unfilteredCruiseResult, ignorePatterns).modules;
+    const related = collectRelatedModuleSources(path, modules, direction);
+    const sourceSet = new Set(sources);
+    const currentModuleSources = state.selectedPaths.filter(selected => sourceSet.has(selected));
+    const nextSources = [...new Set([...currentModuleSources, ...sourcesForPath(path), ...related])];
+    dispatch({
+      type: 'setSelectedPaths',
+      paths: expandSelectionWithSelectedAncestors(nextSources, sources),
+    });
+    if (related.length > 0) {
+      updateExpandedKeys([...new Set([...state.expandedKeys, ...related.flatMap(getAncestorKeys)])]);
+    }
+  };
+
+  const showDirectDependencies = (path: string) => {
+    showRelatedModules(path, 'dependencies');
+  };
+
+  const showDirectDependents = (path: string) => {
+    showRelatedModules(path, 'dependents');
+  };
+
   const showCircularDependenciesOnly = () => {
     if (unfilteredCruiseResult == null) {
       return;
@@ -524,13 +567,13 @@ export function useAppOrchestration({
     showInFileTree,
     toggleFolder,
     expandRecursive,
-    handleShowDependencies,
+    handleShowDependenciesPanel,
     handleClosePanel,
     handleQuickPickSelect,
     focusActivePath,
     clearLocalStorage,
     copyActive,
-    viewActiveDependencies,
+    viewActiveItemDependenciesPanel,
     expandActive,
     expandActiveRecursive,
     collapseActive,
@@ -545,6 +588,9 @@ export function useAppOrchestration({
     selectAll,
     unselectAll,
     showPathsOnly,
+    hideOthers,
+    showDirectDependencies,
+    showDirectDependents,
     showCircularDependenciesOnly,
     applyWorkspaceView,
   };

@@ -25,7 +25,7 @@ describe('AppStatusBar', () => {
   it('shows no-selection label without action buttons', () => {
     const { result: i18n } = renderHook(() => useTranslation());
 
-    renderWithTheme(<AppStatusBar activePath={null} onFocusActivePath={vi.fn()} onShowDependencies={vi.fn()} />);
+    renderWithTheme(<AppStatusBar activePath={null} onFocusActivePath={vi.fn()} onShowDependenciesPanel={vi.fn()} />);
 
     expect(screen.getByText(i18n.current.t('statusBar.noSelection'))).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: i18n.current.t('actions.copyPath') })).not.toBeInTheDocument();
@@ -34,14 +34,14 @@ describe('AppStatusBar', () => {
   it('renders path and invokes focus, dependencies, and copy actions', async () => {
     const { result: i18n } = renderHook(() => useTranslation());
     const onFocusActivePath = vi.fn();
-    const onShowDependencies = vi.fn();
+    const onShowDependenciesPanel = vi.fn();
     const { copyToClipboard } = await import('@/Shared');
 
     renderWithTheme(
       <AppStatusBar
         activePath="src/foo/a.ts"
         onFocusActivePath={onFocusActivePath}
-        onShowDependencies={onShowDependencies}
+        onShowDependenciesPanel={onShowDependenciesPanel}
       />,
     );
 
@@ -51,7 +51,7 @@ describe('AppStatusBar', () => {
     expect(onFocusActivePath).toHaveBeenCalled();
 
     fireEvent.click(screen.getByRole('button', { name: i18n.current.t('actions.viewDependencies') }));
-    expect(onShowDependencies).toHaveBeenCalledWith('src/foo/a.ts');
+    expect(onShowDependenciesPanel).toHaveBeenCalledWith('src/foo/a.ts');
 
     fireEvent.click(screen.getByRole('button', { name: i18n.current.t('actions.copyPath') }));
     expect(copyToClipboard).toHaveBeenCalledWith('src/foo/a.ts');

@@ -18,7 +18,7 @@ interface AppSidebarProps {
   onExpand: (keys: string[]) => void;
   onExpandRecursive: (path: string) => void;
   onShowInGraph: (path: string) => void;
-  onShowDependencies: (path: string) => void;
+  onShowDependenciesPanel: (path: string) => void;
   activePath: string | null;
   ruleSetUsed: IFlattenedRuleSet | undefined;
   violations: readonly IViolation[] | undefined;
@@ -54,7 +54,7 @@ export function AppSidebar({
   onExpand,
   onExpandRecursive,
   onShowInGraph,
-  onShowDependencies,
+  onShowDependenciesPanel,
   activePath,
   ruleSetUsed,
   violations,
@@ -74,7 +74,7 @@ export function AppSidebar({
           onExpand={onExpand}
           onExpandRecursive={onExpandRecursive}
           onShowInGraph={onShowInGraph}
-          onShowDependencies={onShowDependencies}
+          onShowDependenciesPanel={onShowDependenciesPanel}
           activePath={activePath}
         />
       </ViewPanel>

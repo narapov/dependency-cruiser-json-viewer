@@ -34,9 +34,10 @@ const graphResult: BuildGraphResult = {
   parentByNode: new Map(),
 };
 
-const onToggleFolder = vi.fn();
-const onExpandRecursive = vi.fn();
-const onShowInFileTree = vi.fn();
+const hookInputBase = {
+  modules,
+  folderColors: FOLDER_COLORS,
+};
 
 describe('useBuildGraph', () => {
   afterEach(() => {
@@ -47,13 +48,9 @@ describe('useBuildGraph', () => {
     buildGraph.mockResolvedValue(graphResult);
     const { result } = renderHook(() =>
       useBuildGraph({
-        modules,
+        ...hookInputBase,
         selectedPaths: EMPTY_EXPANDED,
         expandedKeys: EMPTY_EXPANDED,
-        folderColors: FOLDER_COLORS,
-        onToggleFolder,
-        onExpandRecursive,
-        onShowInFileTree,
       }),
     );
 
@@ -70,13 +67,9 @@ describe('useBuildGraph', () => {
     buildGraph.mockResolvedValue(graphResult);
     const { result } = renderHook(() =>
       useBuildGraph({
-        modules,
+        ...hookInputBase,
         selectedPaths: SELECTED_A,
         expandedKeys: EMPTY_EXPANDED,
-        folderColors: FOLDER_COLORS,
-        onToggleFolder,
-        onExpandRecursive,
-        onShowInFileTree,
       }),
     );
 
@@ -95,13 +88,9 @@ describe('useBuildGraph', () => {
     buildGraph.mockRejectedValue(new Error('layout failed'));
     const { result } = renderHook(() =>
       useBuildGraph({
-        modules,
+        ...hookInputBase,
         selectedPaths: SELECTED_A,
         expandedKeys: EMPTY_EXPANDED,
-        folderColors: FOLDER_COLORS,
-        onToggleFolder,
-        onExpandRecursive,
-        onShowInFileTree,
       }),
     );
 
@@ -117,13 +106,9 @@ describe('useBuildGraph', () => {
     buildGraph.mockRejectedValue(new Error('layout failed'));
     const { result } = renderHook(() =>
       useBuildGraph({
-        modules,
+        ...hookInputBase,
         selectedPaths: SELECTED_A,
         expandedKeys: EMPTY_EXPANDED,
-        folderColors: FOLDER_COLORS,
-        onToggleFolder,
-        onExpandRecursive,
-        onShowInFileTree,
       }),
     );
 
@@ -149,13 +134,9 @@ describe('useBuildGraph', () => {
 
     const { unmount } = renderHook(() =>
       useBuildGraph({
-        modules,
+        ...hookInputBase,
         selectedPaths: SELECTED_A,
         expandedKeys: EMPTY_EXPANDED,
-        folderColors: FOLDER_COLORS,
-        onToggleFolder,
-        onExpandRecursive,
-        onShowInFileTree,
       }),
     );
 
@@ -173,13 +154,9 @@ describe('useBuildGraph', () => {
     buildGraph.mockResolvedValue(graphResult);
     const { result } = renderHook(() =>
       useBuildGraph({
-        modules,
+        ...hookInputBase,
         selectedPaths: EMPTY_EXPANDED,
         expandedKeys: EXPANDED_SRC,
-        folderColors: FOLDER_COLORS,
-        onToggleFolder,
-        onExpandRecursive,
-        onShowInFileTree,
       }),
     );
 

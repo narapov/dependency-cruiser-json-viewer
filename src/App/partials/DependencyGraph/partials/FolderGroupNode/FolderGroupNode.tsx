@@ -5,6 +5,7 @@ import { Handle, Position, type NodeProps } from '@xyflow/react';
 
 import { MaterialFileSystemIcon } from '@/Shared';
 
+import { useGraphActions } from '../../contexts';
 import type { FolderGroupNodeData } from '../../types';
 import { FolderExpandToggle } from '../FolderExpandToggle';
 import { NodeContextMenu } from '../NodeContextMenu';
@@ -12,19 +13,9 @@ import { NodeContextMenu } from '../NodeContextMenu';
 import styles from './FolderGroupNode.module.css';
 
 export function FolderGroupNode({ data }: NodeProps) {
-  const {
-    label,
-    path,
-    expanded,
-    highlighted,
-    backgroundColor,
-    onToggle,
-    onExpandRecursive,
-    onShowInFileTree,
-    onShowDependencies,
-    onAutoLayoutGroup,
-    onAutoLayoutGroupRecursive,
-  } = data as FolderGroupNodeData;
+  const { label, path, expanded, highlighted, backgroundColor } = data as FolderGroupNodeData;
+
+  const { onToggleFolder, onAutoLayoutGroup, onAutoLayoutGroupRecursive } = useGraphActions();
 
   return (
     <Box
@@ -49,10 +40,6 @@ export function FolderGroupNode({ data }: NodeProps) {
         path={path}
         isFolder
         expanded={expanded}
-        onToggle={onToggle}
-        onExpandRecursive={onExpandRecursive}
-        onShowInFileTree={onShowInFileTree}
-        onShowDependencies={onShowDependencies}
         onAutoLayout={onAutoLayoutGroup}
         onAutoLayoutRecursive={onAutoLayoutGroupRecursive}
       >
@@ -79,7 +66,7 @@ export function FolderGroupNode({ data }: NodeProps) {
             expanded={expanded}
             onClick={e => {
               e.stopPropagation();
-              onToggle(path);
+              onToggleFolder(path);
             }}
           />
           <Box component="span" sx={{ fontSize: 12, flexShrink: 0, display: 'inline-flex' }}>

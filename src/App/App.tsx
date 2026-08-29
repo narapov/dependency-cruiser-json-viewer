@@ -365,7 +365,7 @@ function App() {
           onExpand={orch.updateExpandedKeys}
           onExpandRecursive={orch.expandRecursive}
           onShowInGraph={orch.showInGraph}
-          onShowDependencies={orch.handleShowDependencies}
+          onShowDependenciesPanel={orch.handleShowDependenciesPanel}
           activePath={orch.activePath}
           ruleSetUsed={data.summary.ruleSetUsed}
           violations={data.summary.violations}
@@ -384,7 +384,10 @@ function App() {
           onToggleFolder={orch.toggleFolder}
           onExpandRecursive={orch.expandRecursive}
           onShowInFileTree={handleShowInFileTree}
-          onShowDependencies={orch.handleShowDependencies}
+          onShowDependenciesPanel={orch.handleShowDependenciesPanel}
+          onHideOthers={orch.hideOthers}
+          onShowDirectDependencies={orch.showDirectDependencies}
+          onShowDirectDependents={orch.showDirectDependents}
           onActivePathChange={orch.activatePath}
           activePath={orch.activePath}
           userEdgeHighlights={orch.userEdgeHighlights}
@@ -459,7 +462,7 @@ function App() {
         <AppStatusBar
           activePath={orch.activePath}
           onFocusActivePath={orch.focusActivePath}
-          onShowDependencies={orch.handleShowDependencies}
+          onShowDependenciesPanel={orch.handleShowDependenciesPanel}
         />
       }
       panelOpen={orch.panelOpen}

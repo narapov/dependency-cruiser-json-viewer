@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   buildFolderImportRules,
+  FIXTURES_PATH_NOT,
   MAX_PARTIALS_DEPTH,
   PARTIALS_SCOPE_PREFIXES,
   SUBDIRS_RE,
@@ -91,6 +92,39 @@ describe('buildFolderImportRules', () => {
       re((rule.to.pathNot as string[]).find(p => p === '^$1/')!.replace('$1', fromMatch![1])).test(sameDirTarget),
     ).toBe(true);
     expect(re((rule.to.pathNot as string[]).find(p => p.includes('index'))!).test(deepPartial)).toBe(false);
+  });
+
+  it('no-deep-subdir allows __fixtures__ deep imports but forbids other deep paths', () => {
+    const rule = named.get('no-deep-subdir')!;
+    const fixturesPath =
+      'src/App/partials/DependencyGraph/contexts/GraphActionsContext/__fixtures__/mockGraphActions.ts';
+    const deepMock = 'src/App/partials/DependencyGraph/contexts/GraphActionsContext/mockGraphActions.ts';
+
+    expect(re(rule.to.path as string).test('contexts/GraphActionsContext/__fixtures__/mockGraphActions.ts')).toBe(true);
+    expect(re(FIXTURES_PATH_NOT).test(fixturesPath)).toBe(true);
+    expect((rule.to.pathNot as string[]).some(pattern => re(pattern).test(fixturesPath))).toBe(true);
+    expect((rule.to.pathNot as string[]).some(pattern => re(pattern).test(deepMock))).toBe(false);
+  });
+
+  it('no-deep-subdir exempts __fixtures__ importers', () => {
+    const rule = named.get('no-deep-subdir')!;
+    const fixturesImporter =
+      'src/App/partials/DependencyGraph/contexts/GraphActionsContext/__fixtures__/mockGraphActions.ts';
+    const regularImporter = 'src/App/partials/DependencyGraph/partials/FileNode/FileNode.test.tsx';
+    const fromPathNot = Array.isArray(rule.from.pathNot) ? rule.from.pathNot : [rule.from.pathNot];
+
+    expect(fromPathNot.some(pattern => re(pattern as string).test(fixturesImporter))).toBe(true);
+    expect(fromPathNot.some(pattern => re(pattern as string).test(regularImporter))).toBe(false);
+  });
+
+  it('same-dir-no-deep allows ./contexts/…/__fixtures__/… imports', () => {
+    const rule = named.get('same-dir-no-deep')!;
+    const dir = 'src/App/partials/DependencyGraph';
+    const fixturesTarget = `${dir}/contexts/GraphActionsContext/__fixtures__/mockGraphActions.ts`;
+    const pathNot = (rule.to.pathNot as string[]).map(pattern => pattern.replace('$1', dir));
+
+    expect(re((rule.to.path as string).replace('$1', dir)).test(fixturesTarget)).toBe(true);
+    expect(pathNot.some(pattern => re(pattern).test(fixturesTarget))).toBe(true);
   });
 
   it('ancestor-no-nested-partials matches nested partials chains', () => {

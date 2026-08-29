@@ -14,15 +14,8 @@ function moduleAt(source: string, dependencies: IModule['dependencies'] = []): I
   return { source, dependencies, dependents: [], valid: true } as IModule;
 }
 
-const noopToggle = () => {};
-const noopShowInFileTree = () => {};
-const noopExpandRecursive = () => {};
-
 const graphArgs = {
   folderColors: new Map(),
-  onToggleFolder: noopToggle,
-  onExpandRecursive: noopExpandRecursive,
-  onShowInFileTree: noopShowInFileTree,
 };
 
 describe('getEdgeDependencyKeys', () => {

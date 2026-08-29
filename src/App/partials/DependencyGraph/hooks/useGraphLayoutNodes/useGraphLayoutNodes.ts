@@ -60,6 +60,8 @@ interface UseGraphLayoutNodesResult {
   hasUserLayout: boolean;
   getLayoutSnapshot: () => GraphLayoutSnapshot;
   setLayoutSnapshot: (snapshot: GraphLayoutSnapshot) => void;
+  onAutoLayoutGroup: (groupId: string) => void;
+  onAutoLayoutGroupRecursive: (groupId: string) => void;
 }
 
 export function useGraphLayoutNodes({
@@ -269,26 +271,20 @@ export function useGraphLayoutNodes({
 
   const onAutoLayoutGroupRecursive = useCallback((groupId: string) => runAutoLayout(groupId, true), [runAutoLayout]);
 
-  const enrichedNodes = useMemo(
-    () =>
-      nodes.map(node => {
-        const withCallbacks =
-          !autoLayoutOnly && node.type === 'folderGroup'
-            ? { ...node, data: { ...node.data, onAutoLayoutGroup, onAutoLayoutGroupRecursive } }
-            : node;
-
-        return autoLayoutOnly ? { ...withCallbacks, draggable: false, dragHandle: undefined } : withCallbacks;
-      }),
-    [nodes, autoLayoutOnly, onAutoLayoutGroup, onAutoLayoutGroupRecursive],
+  const layoutNodes = useMemo(
+    () => (autoLayoutOnly ? nodes.map(node => ({ ...node, draggable: false, dragHandle: undefined })) : nodes),
+    [nodes, autoLayoutOnly],
   );
 
   return {
-    nodes: enrichedNodes,
+    nodes: layoutNodes,
     onNodesChange,
     onNodeDrag,
     onNodeDragStop,
     hasUserLayout,
     getLayoutSnapshot,
     setLayoutSnapshot,
+    onAutoLayoutGroup,
+    onAutoLayoutGroupRecursive,
   };
 }

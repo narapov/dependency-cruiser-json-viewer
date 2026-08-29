@@ -29,7 +29,7 @@ export const FileTreeItem = forwardRef<HTMLLIElement, TreeItemProps>(function Fi
     onToggleExpand: isFolder ? ctx.onToggleExpand : undefined,
     onExpandRecursive: isFolder ? ctx.onExpandRecursive : undefined,
     onShowInGraph: navigable ? ctx.onShowInGraph : undefined,
-    onShowDependencies: navigable ? ctx.onShowDependencies : undefined,
+    onShowDependenciesPanel: navigable ? ctx.onShowDependenciesPanel : undefined,
   });
 
   return (

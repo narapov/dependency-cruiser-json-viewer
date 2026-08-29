@@ -10,7 +10,7 @@ function createOrch(): AppCommandsOrchestration {
     clearLocalStorage: vi.fn(),
     focusActivePath: vi.fn(),
     copyActive: vi.fn(),
-    viewActiveDependencies: vi.fn(),
+    viewActiveItemDependenciesPanel: vi.fn(),
     expandActive: vi.fn(),
     expandActiveRecursive: vi.fn(),
     collapseActive: vi.fn(),

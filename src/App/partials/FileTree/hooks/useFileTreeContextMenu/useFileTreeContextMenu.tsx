@@ -13,7 +13,7 @@ export interface FileTreeContextMenuOptions {
   onToggleExpand?: (path: string) => void;
   onExpandRecursive?: (path: string) => void;
   onShowInGraph?: (path: string) => void;
-  onShowDependencies?: (path: string) => void;
+  onShowDependenciesPanel?: (path: string) => void;
 }
 
 export function useFileTreeContextMenu({
@@ -23,7 +23,7 @@ export function useFileTreeContextMenu({
   onToggleExpand,
   onExpandRecursive,
   onShowInGraph,
-  onShowDependencies,
+  onShowDependenciesPanel,
 }: FileTreeContextMenuOptions) {
   const { t } = useTranslation();
   const [anchorPosition, setAnchorPosition] = useState<{ top: number; left: number } | null>(null);
@@ -65,8 +65,8 @@ export function useFileTreeContextMenu({
       {isFolder && onExpandRecursive && (
         <MenuItem onClick={handleAction(() => onExpandRecursive(path))}>{t('actions.expandRecursive')}</MenuItem>
       )}
-      {onShowDependencies && (
-        <MenuItem onClick={handleAction(() => onShowDependencies(path))}>{t('actions.viewDependencies')}</MenuItem>
+      {onShowDependenciesPanel && (
+        <MenuItem onClick={handleAction(() => onShowDependenciesPanel(path))}>{t('actions.viewDependencies')}</MenuItem>
       )}
     </Menu>
   );

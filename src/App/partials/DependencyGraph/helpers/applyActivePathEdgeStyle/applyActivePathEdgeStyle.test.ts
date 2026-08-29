@@ -19,10 +19,6 @@ function moduleAt(source: string, dependencies: IModule['dependencies'] = []): I
   return { source, dependencies, dependents: [], valid: true } as IModule;
 }
 
-const noopToggle = () => {};
-const noopShowInFileTree = () => {};
-const noopExpandRecursive = () => {};
-
 function edgeAt(
   id: string,
   source: string,
@@ -80,9 +76,6 @@ describe('applyActivePathEdgeStyle', () => {
       selectedPaths: ['src/foo/a.ts', 'src/foo/b.ts'],
       expandedFolders: new Set(['src', 'src/foo']),
       folderColors: new Map(),
-      onToggleFolder: noopToggle,
-      onExpandRecursive: noopExpandRecursive,
-      onShowInFileTree: noopShowInFileTree,
     });
 
     const result = applyActivePathEdgeStyle(edges, 'src/foo/a.ts');

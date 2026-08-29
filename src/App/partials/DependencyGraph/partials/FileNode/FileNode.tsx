@@ -7,8 +7,7 @@ import type { FileNodeData } from '../../types';
 import { NodeContextMenu } from '../NodeContextMenu';
 
 export function FileNode({ data }: NodeProps) {
-  const { label, path, highlighted, circular, couldNotResolve, onShowInFileTree, onShowDependencies } =
-    data as FileNodeData;
+  const { label, path, highlighted, circular, couldNotResolve } = data as FileNodeData;
 
   let bgcolor: string = 'background.paper';
   let borderColor: string = 'divider';
@@ -21,12 +20,7 @@ export function FileNode({ data }: NodeProps) {
   }
 
   return (
-    <NodeContextMenu
-      path={path}
-      isFolder={false}
-      onShowInFileTree={onShowInFileTree}
-      onShowDependencies={onShowDependencies}
-    >
+    <NodeContextMenu path={path} isFolder={false}>
       <Box
         sx={{
           display: 'flex',

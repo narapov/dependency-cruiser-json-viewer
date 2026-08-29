@@ -118,7 +118,7 @@ describe('useGraphLayoutNodes', () => {
     expect(result.current.hasUserLayout).toBe(true);
   });
 
-  it('attaches auto-layout callbacks to folderGroup nodes', async () => {
+  it('returns auto-layout callbacks from the hook', async () => {
     const folder = makeNode('src', {
       type: 'folderGroup',
       data: { label: 'src' },
@@ -131,11 +131,12 @@ describe('useGraphLayoutNodes', () => {
       await Promise.resolve();
     });
 
+    expect(result.current.onAutoLayoutGroup).toEqual(expect.any(Function));
+    expect(result.current.onAutoLayoutGroupRecursive).toEqual(expect.any(Function));
+
     const folderNode = result.current.nodes.find(node => node.id === 'src');
-    expect(folderNode?.data).toMatchObject({
-      onAutoLayoutGroup: expect.any(Function),
-      onAutoLayoutGroupRecursive: expect.any(Function),
-    });
+    expect(folderNode?.data).not.toHaveProperty('onAutoLayoutGroup');
+    expect(folderNode?.data).not.toHaveProperty('onAutoLayoutGroupRecursive');
   });
 
   it('resets hasUserLayout when switching to autoLayoutOnly', async () => {
