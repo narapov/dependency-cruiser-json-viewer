@@ -52,6 +52,11 @@
     "highlight": "Подсветить",
     "clear": "Очистить"
   },
+  "jsonView": {
+    "initial": "Исходное",
+    "expandAll": "Развернуть всё",
+    "collapseAll": "Свернуть всё"
+  },
   "commands": {
     "clearLocalStorage": "Очистить локальное хранилище",
     "showActive": "Показать активный элемент",
@@ -81,7 +86,8 @@
     "toggleSidebar": "Переключить боковую панель",
     "unselectAll": "Снять выделение",
     "about": "О приложении",
-    "saveWorkspace": "Сохранить рабочее пространство"
+    "saveWorkspace": "Сохранить рабочее пространство",
+    "viewCruiseResultJson": "Показать JSON результата cruise"
   },
   "quickPick": {
     "commandPlaceholder": "Введите название команды...",

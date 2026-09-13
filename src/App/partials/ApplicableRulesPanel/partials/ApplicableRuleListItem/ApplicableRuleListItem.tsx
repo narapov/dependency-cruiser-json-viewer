@@ -19,7 +19,7 @@ import Typography from '@mui/material/Typography';
 
 import type { RuleWithViolations } from '@/domain';
 
-import { RuleJsonDialog } from '../RuleJsonDialog';
+import { RuleJsonDialog } from '../../../RuleJsonDialog';
 
 interface ApplicableRuleListItemProps {
   entry: RuleWithViolations;
@@ -104,16 +104,16 @@ export function ApplicableRuleListItem({ entry, onSelectViolationPaths }: Applic
             variant="outlined"
             sx={{ height: 20, fontSize: 10, flexShrink: 0 }}
           />
-          {hasViolations ? (
+          {hasViolations && (
             <Chip
               size="small"
               label={t('rules.violationsCount', { count })}
               color="error"
               sx={{ height: 20, fontSize: 11, flexShrink: 0 }}
             />
-          ) : null}
+          )}
         </Stack>
-        {canViewJson ? (
+        {canViewJson && (
           <Tooltip title={t('rules.viewJson')}>
             <IconButton
               size="small"
@@ -124,9 +124,9 @@ export function ApplicableRuleListItem({ entry, onSelectViolationPaths }: Applic
               <DataObjectOutlined fontSize="small" />
             </IconButton>
           </Tooltip>
-        ) : null}
+        )}
       </ListItem>
-      {hasViolations ? (
+      {hasViolations && (
         <Collapse in={expanded} timeout="auto" unmountOnExit>
           <List dense disablePadding sx={{ pl: 4, pb: 0.5 }}>
             {entry.violations.map(violation => {
@@ -155,10 +155,10 @@ export function ApplicableRuleListItem({ entry, onSelectViolationPaths }: Applic
             })}
           </List>
         </Collapse>
-      ) : null}
-      {canViewJson ? (
+      )}
+      {canViewJson && (
         <RuleJsonDialog open={jsonOpen} ruleName={entry.name} rule={entry.rule} onClose={() => setJsonOpen(false)} />
-      ) : null}
+      )}
     </>
   );
 }

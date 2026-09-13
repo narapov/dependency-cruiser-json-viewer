@@ -93,13 +93,13 @@ export function AppHeader({
         }}
       >
         {t('app.title')}
-        {watchMode ? (
+        {watchMode && (
           <Tooltip title={t('app.watchModeTooltip')}>
             <Box component="span" sx={{ ...headerSecondaryTextSx, ml: 1, fontWeight: 400 }}>
               {t('app.watchMode')}
             </Box>
           </Tooltip>
-        ) : null}
+        )}
       </Typography>
       <Stack direction="row" spacing={0} sx={{ gridArea: 'meta', alignItems: 'center', minWidth: 0 }}>
         {filteredModulesCount != null && totalModulesCount != null && (

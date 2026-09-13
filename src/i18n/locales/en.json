@@ -52,6 +52,11 @@
     "highlight": "Highlight",
     "clear": "Clear"
   },
+  "jsonView": {
+    "initial": "Initial",
+    "expandAll": "Expand all",
+    "collapseAll": "Collapse all"
+  },
   "commands": {
     "clearLocalStorage": "Clear Local Storage",
     "showActive": "Show Active Item",
@@ -81,7 +86,8 @@
     "toggleSidebar": "Toggle Sidebar",
     "unselectAll": "Unselect All",
     "about": "About",
-    "saveWorkspace": "Save Workspace"
+    "saveWorkspace": "Save Workspace",
+    "viewCruiseResultJson": "View Cruise Result JSON"
   },
   "quickPick": {
     "commandPlaceholder": "Type the name of a command to run...",

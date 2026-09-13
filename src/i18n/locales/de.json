@@ -52,6 +52,11 @@
     "highlight": "Hervorheben",
     "clear": "Löschen"
   },
+  "jsonView": {
+    "initial": "Ausgangszustand",
+    "expandAll": "Alle erweitern",
+    "collapseAll": "Alle einklappen"
+  },
   "commands": {
     "clearLocalStorage": "Lokalen Speicher leeren",
     "showActive": "Aktives Element anzeigen",
@@ -81,7 +86,8 @@
     "toggleSidebar": "Seitenleiste ein-/ausblenden",
     "unselectAll": "Auswahl aufheben",
     "about": "Über",
-    "saveWorkspace": "Workspace speichern"
+    "saveWorkspace": "Workspace speichern",
+    "viewCruiseResultJson": "Cruise-Result-JSON anzeigen"
   },
   "quickPick": {
     "commandPlaceholder": "Geben Sie den Namen eines Befehls ein...",

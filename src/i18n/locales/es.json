@@ -52,6 +52,11 @@
     "highlight": "Resaltar",
     "clear": "Limpiar"
   },
+  "jsonView": {
+    "initial": "Inicial",
+    "expandAll": "Expandir todo",
+    "collapseAll": "Contraer todo"
+  },
   "commands": {
     "clearLocalStorage": "Borrar almacenamiento local",
     "showActive": "Mostrar elemento activo",
@@ -81,7 +86,8 @@
     "toggleSidebar": "Mostrar/Ocultar barra lateral",
     "unselectAll": "Deseleccionar todo",
     "about": "Acerca de",
-    "saveWorkspace": "Guardar espacio de trabajo"
+    "saveWorkspace": "Guardar espacio de trabajo",
+    "viewCruiseResultJson": "Ver JSON del resultado cruise"
   },
   "quickPick": {
     "commandPlaceholder": "Escribe el nombre de un comando para ejecutar...",

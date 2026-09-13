@@ -111,7 +111,7 @@ export function AppLayout({
           onLayoutChanged={onLayoutChanged}
           resizeTargetMinimumSize={{ fine: 5, coarse: 20 }}
         >
-          {sidebarOpen ? (
+          {sidebarOpen && (
             <Panel
               id="sidebar"
               minSize={SIDEBAR_MIN_SIZE}
@@ -122,15 +122,15 @@ export function AppLayout({
                 {sidebar}
               </Box>
             </Panel>
-          ) : null}
-          {sidebarOpen ? <Separator className={styles.separator} /> : null}
+          )}
+          {sidebarOpen && <Separator className={styles.separator} />}
           <Panel id="graph" minSize={GRAPH_MIN_SIZE}>
             <Box component="main" sx={panelContentSx}>
               {main}
             </Box>
           </Panel>
-          {showDependencies ? <Separator className={styles.separator} /> : null}
-          {showDependencies ? (
+          {showDependencies && <Separator className={styles.separator} />}
+          {showDependencies && (
             <Panel
               id="dependencies"
               minSize={PANEL_MIN_SIZE}
@@ -141,9 +141,9 @@ export function AppLayout({
                 {dependenciesPanel}
               </Box>
             </Panel>
-          ) : null}
-          {showApplicableRules ? <Separator className={styles.separator} /> : null}
-          {showApplicableRules ? (
+          )}
+          {showApplicableRules && <Separator className={styles.separator} />}
+          {showApplicableRules && (
             <Panel
               id="applicableRules"
               minSize={PANEL_MIN_SIZE}
@@ -154,7 +154,7 @@ export function AppLayout({
                 {applicableRulesPanel}
               </Box>
             </Panel>
-          ) : null}
+          )}
         </Group>
       </Box>
       {overlay}

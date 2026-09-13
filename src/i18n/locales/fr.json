@@ -52,6 +52,11 @@
     "highlight": "Surligner",
     "clear": "Effacer"
   },
+  "jsonView": {
+    "initial": "Initial",
+    "expandAll": "Tout développer",
+    "collapseAll": "Tout réduire"
+  },
   "commands": {
     "clearLocalStorage": "Effacer le stockage local",
     "showActive": "Afficher l'élément actif",
@@ -81,7 +86,8 @@
     "toggleSidebar": "Afficher/Masquer la barre latérale",
     "unselectAll": "Tout désélectionner",
     "about": "À propos",
-    "saveWorkspace": "Enregistrer l'espace de travail"
+    "saveWorkspace": "Enregistrer l'espace de travail",
+    "viewCruiseResultJson": "Voir le JSON du résultat cruise"
   },
   "quickPick": {
     "commandPlaceholder": "Tapez le nom d'une commande à exécuter...",

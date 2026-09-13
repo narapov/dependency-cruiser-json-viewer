@@ -43,6 +43,7 @@ import { DependencyGraph, type DependencyGraphHandle } from './partials/Dependen
 import { DependencyPanel } from './partials/DependencyPanel';
 import { type FileTreeHandle } from './partials/FileTree';
 import { IgnorePatternsDialog } from './partials/IgnorePatternsDialog';
+import { JsonViewDialog } from './partials/JsonViewDialog';
 import { LanguagePickerDialog } from './partials/LanguagePickerDialog';
 import { QuickPick, type QuickPickHandle } from './partials/QuickPick';
 import { ThemePickerDialog } from './partials/ThemePickerDialog';
@@ -64,6 +65,7 @@ function App() {
   const [languagePickerOpen, setLanguagePickerOpen] = useState(false);
   const [ignorePatternsOpen, setIgnorePatternsOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [cruiseResultJsonOpen, setCruiseResultJsonOpen] = useState(false);
 
   const filteredData = useMemo(() => (data ? filterCruiseResult(data, patterns) : undefined), [data, patterns]);
 
@@ -278,6 +280,7 @@ function App() {
     openLoadCruiseResult,
     openLoadSettings,
     openAbout: () => setAboutOpen(true),
+    openViewCruiseResultJson: () => setCruiseResultJsonOpen(true),
     showFileTree: () => {
       setSidebarView('files');
       setSidebarOpen(true);
@@ -297,6 +300,7 @@ function App() {
     toggleSidebar: toggleSidebarOpen,
     fileLoadInProgress: isFileLoading,
     cruiseWatchEnabled,
+    hasCruiseResult: data != null,
   });
 
   if (isPending) {
@@ -484,6 +488,14 @@ function App() {
             onSave={setPatterns}
           />
           <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} />
+          <JsonViewDialog
+            open={cruiseResultJsonOpen}
+            title={t('commands.viewCruiseResultJson')}
+            data={data ?? null}
+            onClose={() => setCruiseResultJsonOpen(false)}
+            shouldExpandNode={level => level < 4}
+            maxWidth="md"
+          />
         </>
       }
       footer={

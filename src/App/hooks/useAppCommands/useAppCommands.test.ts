@@ -37,6 +37,7 @@ function baseOptions(overrides: Partial<Parameters<typeof useAppCommands>[0]> = 
     openLoadCruiseResult: vi.fn(),
     openLoadSettings: vi.fn(),
     openAbout: vi.fn(),
+    openViewCruiseResultJson: vi.fn(),
     showFileTree: vi.fn(),
     showRulesPanel: vi.fn(),
     showCircularPanel: vi.fn(),
@@ -60,6 +61,7 @@ describe('useAppCommands', () => {
     expect(ids).toContain('setTheme');
     expect(ids).toContain('showHighlightsPanel');
     expect(ids).toContain('about');
+    expect(ids).toContain('viewCruiseResultJson');
     expect(ids).toContain('showFileTree');
     expect(ids).toContain('showRulesPanel');
     expect(ids).toContain('showCircularPanel');
@@ -75,6 +77,7 @@ describe('useAppCommands', () => {
     const showHighlightsPanel = vi.fn();
     const openAbout = vi.fn();
     const openLoadSettings = vi.fn();
+    const openViewCruiseResultJson = vi.fn();
     const showFileTree = vi.fn();
     const showRulesPanel = vi.fn();
     const showCircularPanel = vi.fn();
@@ -87,11 +90,13 @@ describe('useAppCommands', () => {
           openThemePicker,
           openLoadSettings,
           openAbout,
+          openViewCruiseResultJson,
           showFileTree,
           showRulesPanel,
           showCircularPanel,
           showHighlightsPanel,
           toggleSidebar,
+          hasCruiseResult: true,
         }),
       ),
     );
@@ -103,6 +108,7 @@ describe('useAppCommands', () => {
     byId.setTheme.onExecute();
     byId.showHighlightsPanel.onExecute();
     byId.about.onExecute();
+    byId.viewCruiseResultJson.onExecute();
     byId.showFileTree.onExecute();
     byId.showRulesPanel.onExecute();
     byId.showCircularPanel.onExecute();
@@ -118,6 +124,7 @@ describe('useAppCommands', () => {
     expect(openThemePicker).toHaveBeenCalled();
     expect(showHighlightsPanel).toHaveBeenCalled();
     expect(openAbout).toHaveBeenCalled();
+    expect(openViewCruiseResultJson).toHaveBeenCalled();
     expect(showFileTree).toHaveBeenCalled();
     expect(showRulesPanel).toHaveBeenCalled();
     expect(showCircularPanel).toHaveBeenCalled();
@@ -127,6 +134,14 @@ describe('useAppCommands', () => {
     expect(orch.viewGraphDotOnline).toHaveBeenCalled();
     expect(orch.saveWorkspace).toHaveBeenCalled();
     expect(openLoadSettings).toHaveBeenCalled();
+    expect(byId.viewCruiseResultJson.disabled).toBe(false);
+  });
+
+  it('disables viewCruiseResultJson when cruise result is missing', () => {
+    const { result } = renderHook(() => useAppCommands(baseOptions({ hasCruiseResult: false })));
+
+    const byId = Object.fromEntries(result.current.map(command => [command.id, command]));
+    expect(byId.viewCruiseResultJson.disabled).toBe(true);
   });
 
   it('disables load commands while a file load is in progress', () => {
