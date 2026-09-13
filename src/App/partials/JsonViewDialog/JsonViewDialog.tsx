@@ -27,6 +27,7 @@ interface JsonViewDialogProps {
   onClose: () => void;
   shouldExpandNode?: ShouldExpandNode;
   maxWidth?: DialogProps['maxWidth'];
+  fullScreen?: boolean;
 }
 
 function resolveShouldExpandNode(expandMode: ExpandMode, initialShouldExpandNode: ShouldExpandNode): ShouldExpandNode {
@@ -46,6 +47,7 @@ export function JsonViewDialog({
   onClose,
   shouldExpandNode = allExpanded,
   maxWidth = 'sm',
+  fullScreen = false,
 }: JsonViewDialogProps) {
   const { t } = useTranslation();
   const colorMode = useResolvedColorMode();
@@ -63,7 +65,8 @@ export function JsonViewDialog({
       onClose={onClose}
       maxWidth={maxWidth}
       fullWidth
-      sx={{ '& .MuiDialog-container': { alignItems: 'flex-start', pt: '12vh' } }}
+      fullScreen={fullScreen}
+      sx={fullScreen ? undefined : { '& .MuiDialog-container': { alignItems: 'flex-start', pt: '12vh' } }}
     >
       <DialogTitle sx={{ pb: 1, fontSize: 16 }}>{title}</DialogTitle>
       <DialogContent sx={{ pt: 1 }}>

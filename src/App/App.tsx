@@ -494,7 +494,7 @@ function App() {
             data={data ?? null}
             onClose={() => setCruiseResultJsonOpen(false)}
             shouldExpandNode={level => level < 4}
-            maxWidth="md"
+            fullScreen
           />
         </>
       }
