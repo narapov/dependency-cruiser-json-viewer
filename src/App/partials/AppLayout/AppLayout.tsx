@@ -1,18 +1,12 @@
 import { type ReactNode } from 'react';
+import { Group, Panel, Separator } from 'react-resizable-panels';
 
 import Box from '@mui/material/Box';
 
-import {
-  APPLICABLE_RULES_PANEL_DEFAULT_WIDTH,
-  APPLICABLE_RULES_PANEL_MIN_WIDTH,
-  PANEL_MIN_WIDTH,
-  SIDEBAR_MIN_WIDTH,
-  useApplicableRulesPanelWidth,
-  useDependenciesPanelWidth,
-  useSidebarWidth,
-  type SidebarView,
-} from './hooks';
-import { SIDEBAR_TOGGLE_WIDTH, SidebarToggle } from './partials/SidebarToggle';
+import { useAppPanelsLayout, type SidebarView } from './hooks';
+import { SidebarToggle } from './partials/SidebarToggle';
+
+import styles from './AppLayout.module.css';
 
 export interface AppLayoutProps {
   header: ReactNode;
@@ -29,16 +23,23 @@ export interface AppLayoutProps {
   onSelectSidebarView: (view: SidebarView) => void;
 }
 
+const SIDEBAR_MIN_SIZE = 150;
+const SIDEBAR_DEFAULT_SIZE = 280;
+const GRAPH_MIN_SIZE = 120;
+const PANEL_MIN_SIZE = 200;
+const PANEL_DEFAULT_SIZE = 360;
+
 const shellSx = {
   display: 'grid',
   height: '100%',
   minHeight: 0,
   gridTemplateAreas: `
-    "header header header header"
-    "sider  main   dependenciesPanel applicableRulesPanel"
-    "footer footer footer footer"
+    "header"
+    "body"
+    "footer"
   `,
   gridTemplateRows: 'auto 1fr auto',
+  gridTemplateColumns: '1fr',
 } as const;
 
 const regionSx = {
@@ -46,29 +47,21 @@ const regionSx = {
   overflow: 'hidden',
 } as const;
 
-const panelRegionSx = {
-  minHeight: 0,
-} as const;
-
-const resizeHandleSx = {
-  position: 'absolute',
-  top: 0,
-  bottom: 0,
-  zIndex: 2,
-  width: 6,
-  cursor: 'col-resize',
-  touchAction: 'none',
-  '&:hover': {
-    bgcolor: 'action.hover',
-  },
-  '@media (hover: none)': {
-    width: 12,
-  },
-} as const;
-
-const panelAsideSx = {
+const panelContentSx = {
   height: '100%',
+  minHeight: 0,
   overflow: 'hidden',
+} as const;
+
+const sidebarPanelSx = {
+  ...panelContentSx,
+  bgcolor: 'background.paper',
+  borderRight: 1,
+  borderColor: 'divider',
+} as const;
+
+const rightPanelSx = {
+  ...panelContentSx,
   bgcolor: 'background.paper',
   borderLeft: 1,
   borderColor: 'divider',
@@ -88,34 +81,13 @@ export function AppLayout({
   sidebarView,
   onSelectSidebarView,
 }: AppLayoutProps) {
-  const { sidebarWidth, onResizePointerDown, onResizeContextMenu } = useSidebarWidth();
-  const leftOccupiedWidth = SIDEBAR_TOGGLE_WIDTH + (sidebarOpen ? sidebarWidth : 0);
+  const { defaultLayout, onLayoutChanged } = useAppPanelsLayout();
 
-  // Shell-only: reserve space for the other column when open (rules uses live deps width; deps uses rules default to avoid a render cycle).
-  const {
-    width: dependenciesPanelWidth,
-    onResizePointerDown: onDependenciesPanelResizePointerDown,
-    onResizeContextMenu: onDependenciesPanelResizeContextMenu,
-  } = useDependenciesPanelWidth(
-    leftOccupiedWidth + (applicableRulesPanelOpen ? APPLICABLE_RULES_PANEL_DEFAULT_WIDTH : 0),
-  );
-
-  const {
-    width: applicableRulesPanelWidth,
-    onResizePointerDown: onApplicableRulesPanelResizePointerDown,
-    onResizeContextMenu: onApplicableRulesPanelResizeContextMenu,
-  } = useApplicableRulesPanelWidth(leftOccupiedWidth + (dependenciesPanelOpen ? dependenciesPanelWidth : 0));
-
-  const dependenciesColumnWidth = dependenciesPanelOpen ? dependenciesPanelWidth : 0;
-  const applicableRulesColumnWidth = applicableRulesPanelOpen ? applicableRulesPanelWidth : 0;
+  const showDependencies = dependenciesPanelOpen && dependenciesPanel != null;
+  const showApplicableRules = applicableRulesPanelOpen && applicableRulesPanel != null;
 
   return (
-    <Box
-      sx={{
-        ...shellSx,
-        gridTemplateColumns: `${leftOccupiedWidth}px 1fr ${dependenciesColumnWidth}px ${applicableRulesColumnWidth}px`,
-      }}
-    >
+    <Box sx={shellSx}>
       <Box
         component="header"
         sx={{
@@ -129,73 +101,61 @@ export function AppLayout({
       >
         {header}
       </Box>
-      <Box sx={{ gridArea: 'sider', position: 'relative', display: 'flex', ...panelRegionSx }}>
+      <Box sx={{ gridArea: 'body', display: 'flex', ...regionSx }}>
         <SidebarToggle sidebarOpen={sidebarOpen} sidebarView={sidebarView} onSelectView={onSelectSidebarView} />
-        <Box
-          component="aside"
-          sx={{
-            flex: sidebarOpen ? 1 : 0,
-            width: sidebarOpen ? undefined : 0,
-            height: '100%',
-            minWidth: 0,
-            overflow: 'hidden',
-            bgcolor: 'background.paper',
-            borderRight: sidebarOpen ? 1 : 0,
-            borderColor: 'divider',
-          }}
+        <Group
+          id="app-panels"
+          orientation="horizontal"
+          style={{ flex: 1, minWidth: 0, height: '100%' }}
+          defaultLayout={defaultLayout}
+          onLayoutChanged={onLayoutChanged}
+          resizeTargetMinimumSize={{ fine: 5, coarse: 20 }}
         >
-          {sidebar}
-        </Box>
-        {sidebarOpen && (
-          <Box
-            role="separator"
-            aria-orientation="vertical"
-            aria-valuenow={sidebarWidth}
-            aria-valuemin={SIDEBAR_MIN_WIDTH}
-            onPointerDown={onResizePointerDown}
-            onContextMenu={onResizeContextMenu}
-            sx={{ ...resizeHandleSx, right: 0, transform: 'translateX(50%)' }}
-          />
-        )}
-      </Box>
-      <Box component="main" sx={{ gridArea: 'main', ...regionSx }}>
-        {main}
-      </Box>
-      <Box sx={{ gridArea: 'dependenciesPanel', position: 'relative', ...panelRegionSx }}>
-        {dependenciesPanelOpen && (
-          <Box
-            role="separator"
-            aria-orientation="vertical"
-            aria-valuenow={dependenciesPanelWidth}
-            aria-valuemin={PANEL_MIN_WIDTH}
-            onPointerDown={onDependenciesPanelResizePointerDown}
-            onContextMenu={onDependenciesPanelResizeContextMenu}
-            sx={{ ...resizeHandleSx, left: 0, transform: 'translateX(-50%)' }}
-          />
-        )}
-        {dependenciesPanelOpen && dependenciesPanel && (
-          <Box component="aside" sx={panelAsideSx}>
-            {dependenciesPanel}
-          </Box>
-        )}
-      </Box>
-      <Box sx={{ gridArea: 'applicableRulesPanel', position: 'relative', ...panelRegionSx }}>
-        {applicableRulesPanelOpen && (
-          <Box
-            role="separator"
-            aria-orientation="vertical"
-            aria-valuenow={applicableRulesPanelWidth}
-            aria-valuemin={APPLICABLE_RULES_PANEL_MIN_WIDTH}
-            onPointerDown={onApplicableRulesPanelResizePointerDown}
-            onContextMenu={onApplicableRulesPanelResizeContextMenu}
-            sx={{ ...resizeHandleSx, left: 0, transform: 'translateX(-50%)' }}
-          />
-        )}
-        {applicableRulesPanelOpen && applicableRulesPanel && (
-          <Box component="aside" sx={panelAsideSx}>
-            {applicableRulesPanel}
-          </Box>
-        )}
+          {sidebarOpen ? (
+            <Panel
+              id="sidebar"
+              minSize={SIDEBAR_MIN_SIZE}
+              defaultSize={SIDEBAR_DEFAULT_SIZE}
+              groupResizeBehavior="preserve-pixel-size"
+            >
+              <Box component="aside" sx={sidebarPanelSx}>
+                {sidebar}
+              </Box>
+            </Panel>
+          ) : null}
+          {sidebarOpen ? <Separator className={styles.separator} /> : null}
+          <Panel id="graph" minSize={GRAPH_MIN_SIZE}>
+            <Box component="main" sx={panelContentSx}>
+              {main}
+            </Box>
+          </Panel>
+          {showDependencies ? <Separator className={styles.separator} /> : null}
+          {showDependencies ? (
+            <Panel
+              id="dependencies"
+              minSize={PANEL_MIN_SIZE}
+              defaultSize={PANEL_DEFAULT_SIZE}
+              groupResizeBehavior="preserve-pixel-size"
+            >
+              <Box component="aside" sx={rightPanelSx}>
+                {dependenciesPanel}
+              </Box>
+            </Panel>
+          ) : null}
+          {showApplicableRules ? <Separator className={styles.separator} /> : null}
+          {showApplicableRules ? (
+            <Panel
+              id="applicableRules"
+              minSize={PANEL_MIN_SIZE}
+              defaultSize={PANEL_DEFAULT_SIZE}
+              groupResizeBehavior="preserve-pixel-size"
+            >
+              <Box component="aside" sx={rightPanelSx}>
+                {applicableRulesPanel}
+              </Box>
+            </Panel>
+          ) : null}
+        </Group>
       </Box>
       {overlay}
       <Box component="footer" sx={{ gridArea: 'footer', ...regionSx }}>

@@ -259,7 +259,7 @@ function DependencyGraphInner({
         >
           <Background color={theme.palette.divider} />
           <Panel position="top-right">
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mr: 1 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
               <GraphLayoutToggle checked={autoLayoutOnly} onChange={onAutoLayoutOnlyChange} />
               <GraphLegend />
             </Box>

@@ -1,4 +1,3 @@
-export * from './clampWidth';
 export * from './copyToClipboard';
 export * from './downloadTextFile';
 export * from './formatShortcut';

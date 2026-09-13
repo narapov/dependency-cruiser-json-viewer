@@ -40,16 +40,5 @@ export const muiTheme = createTheme({
     },
     MuiMenuItem: { defaultProps: { dense: true } },
     MuiListItem: { defaultProps: { dense: true } },
-    MuiCssBaseline: {
-      styleOverrides: {
-        '@global': {
-          'body.resizingSidebar, body.resizingPanel': {
-            cursor: 'col-resize',
-            userSelect: 'none',
-            touchAction: 'none',
-          },
-        },
-      },
-    },
   },
 });

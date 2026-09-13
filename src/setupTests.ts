@@ -15,6 +15,15 @@ import ru from './i18n/locales/ru.json';
 // https://markus.oberlehner.net/blog/using-testing-library-jest-dom-with-vitest
 expect.extend(matchers);
 
+// jsdom has no layout engine / ResizeObserver; react-resizable-panels needs one on mount.
+if (typeof globalThis.ResizeObserver === 'undefined') {
+  globalThis.ResizeObserver = class {
+    observe(): void {}
+    unobserve(): void {}
+    disconnect(): void {}
+  };
+}
+
 await i18n.use(initReactI18next).init({
   resources: {
     en: { translation: en },
