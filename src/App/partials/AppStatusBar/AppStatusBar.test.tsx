@@ -25,16 +25,24 @@ describe('AppStatusBar', () => {
   it('shows no-selection label without action buttons', () => {
     const { result: i18n } = renderHook(() => useTranslation());
 
-    renderWithTheme(<AppStatusBar activePath={null} onFocusActivePath={vi.fn()} onShowDependenciesPanel={vi.fn()} />);
+    renderWithTheme(
+      <AppStatusBar
+        activePath={null}
+        onFocusActivePath={vi.fn()}
+        onShowDependenciesPanel={vi.fn()}
+        onShowApplicableRulesPanel={vi.fn()}
+      />,
+    );
 
     expect(screen.getByText(i18n.current.t('statusBar.noSelection'))).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: i18n.current.t('actions.copyPath') })).not.toBeInTheDocument();
   });
 
-  it('renders path and invokes focus, dependencies, and copy actions', async () => {
+  it('renders path and invokes focus, dependencies, applicable rules, and copy actions', async () => {
     const { result: i18n } = renderHook(() => useTranslation());
     const onFocusActivePath = vi.fn();
     const onShowDependenciesPanel = vi.fn();
+    const onShowApplicableRulesPanel = vi.fn();
     const { copyToClipboard } = await import('@/Shared');
 
     renderWithTheme(
@@ -42,6 +50,7 @@ describe('AppStatusBar', () => {
         activePath="src/foo/a.ts"
         onFocusActivePath={onFocusActivePath}
         onShowDependenciesPanel={onShowDependenciesPanel}
+        onShowApplicableRulesPanel={onShowApplicableRulesPanel}
       />,
     );
 
@@ -52,6 +61,9 @@ describe('AppStatusBar', () => {
 
     fireEvent.click(screen.getByRole('button', { name: i18n.current.t('actions.viewDependencies') }));
     expect(onShowDependenciesPanel).toHaveBeenCalledWith('src/foo/a.ts');
+
+    fireEvent.click(screen.getByRole('button', { name: i18n.current.t('actions.viewApplicableRules') }));
+    expect(onShowApplicableRulesPanel).toHaveBeenCalledWith('src/foo/a.ts');
 
     fireEvent.click(screen.getByRole('button', { name: i18n.current.t('actions.copyPath') }));
     expect(copyToClipboard).toHaveBeenCalledWith('src/foo/a.ts');

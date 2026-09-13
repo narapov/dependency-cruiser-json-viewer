@@ -37,6 +37,7 @@
     "showInGraphAndFileTree": "Show in graph and file tree",
     "showInFileTree": "Show in file tree",
     "viewDependencies": "View dependencies panel",
+    "viewApplicableRules": "View applicable rules panel",
     "hideOthers": "Hide others",
     "showDirectDependencies": "Show direct dependencies",
     "showDirectDependents": "Show direct dependents",
@@ -56,6 +57,7 @@
     "showActive": "Show Active Item",
     "copyActive": "Copy Active Item",
     "viewActiveItemDependenciesPanel": "View active item dependencies panel",
+    "viewActiveItemApplicableRulesPanel": "View active item applicable rules panel",
     "expandActive": "Expand Active Item",
     "expandActiveRecursive": "Expand Active Item Recursive",
     "collapseActive": "Collapse Active Item",
@@ -135,6 +137,10 @@
     "dependents": "Dependents",
     "noDependencies": "No dependencies",
     "hidden": "Hidden ({{count}})"
+  },
+  "applicableRulesPanel": {
+    "title": "Applicable rules",
+    "empty": "No applicable rules for this path."
   },
   "statusBar": {
     "noSelection": "No selection"

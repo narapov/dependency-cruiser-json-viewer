@@ -10,6 +10,7 @@ export interface ViewerWorkspaceSettings {
   selectedFiles: string[];
   expandedKeys: string[];
   dependenciesPath: string | null;
+  applicableRulesPath: string | null;
   userEdgeHighlights: Record<string, string>;
   folderColors: Record<string, FolderBaseColor>;
   autoLayoutOnly: boolean;
@@ -21,6 +22,7 @@ export interface MergedViewerWorkspaceView {
   selectedFiles: string[];
   expandedKeys: string[];
   dependenciesPath: string | null;
+  applicableRulesPath: string | null;
   userEdgeHighlights: ReadonlyMap<string, string>;
   folderColors: Record<string, FolderBaseColor>;
   autoLayoutOnly: boolean;

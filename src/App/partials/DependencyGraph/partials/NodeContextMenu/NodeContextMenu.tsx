@@ -31,6 +31,7 @@ export function NodeContextMenu({
     onExpandRecursive,
     onShowInFileTree,
     onShowDependenciesPanel,
+    onShowApplicableRulesPanel,
     onHideOthers,
     onShowDirectDependencies,
     onShowDirectDependents,
@@ -90,6 +91,9 @@ export function NodeContextMenu({
           {t('actions.showDirectDependents')}
         </MenuItem>
         <MenuItem onClick={handleAction(() => onShowDependenciesPanel(path))}>{t('actions.viewDependencies')}</MenuItem>
+        <MenuItem onClick={handleAction(() => onShowApplicableRulesPanel(path))}>
+          {t('actions.viewApplicableRules')}
+        </MenuItem>
       </Menu>
     </>
   );

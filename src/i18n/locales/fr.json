@@ -37,6 +37,7 @@
     "showInGraphAndFileTree": "Afficher dans le graphe et l'arborescence",
     "showInFileTree": "Afficher dans l'arborescence",
     "viewDependencies": "Voir le panneau des dépendances",
+    "viewApplicableRules": "Voir le panneau des règles applicables",
     "hideOthers": "Masquer les autres",
     "showDirectDependencies": "Afficher les dépendances directes",
     "showDirectDependents": "Afficher les dépendants directs",
@@ -56,6 +57,7 @@
     "showActive": "Afficher l'élément actif",
     "copyActive": "Copier l'élément actif",
     "viewActiveItemDependenciesPanel": "Voir le panneau des dépendances de l'élément actif",
+    "viewActiveItemApplicableRulesPanel": "Voir le panneau des règles applicables de l'élément actif",
     "expandActive": "Développer l'élément actif",
     "expandActiveRecursive": "Développer récursivement l'élément actif",
     "collapseActive": "Réduire l'élément actif",
@@ -135,6 +137,10 @@
     "dependents": "Dépendants",
     "noDependencies": "Aucune dépendance",
     "hidden": "Masquées ({{count}})"
+  },
+  "applicableRulesPanel": {
+    "title": "Règles applicables",
+    "empty": "Aucune règle applicable pour ce chemin."
   },
   "statusBar": {
     "noSelection": "Aucune sélection"

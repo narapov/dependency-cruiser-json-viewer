@@ -34,6 +34,7 @@ import {
 import { AboutDialog } from './partials/AboutDialog';
 import { AppHeader } from './partials/AppHeader';
 import { AppLayout, useSidebarOpen, useSidebarShortcut, useSidebarView, type SidebarView } from './partials/AppLayout';
+import { ApplicableRulesPanel } from './partials/ApplicableRulesPanel';
 import { AppSidebar } from './partials/AppSidebar';
 import { AppStatusBar } from './partials/AppStatusBar';
 import { CruiseResultDropOverlay } from './partials/CruiseResultDropOverlay';
@@ -374,6 +375,7 @@ function App() {
           onExpandRecursive={orch.expandRecursive}
           onShowInGraph={orch.showInGraph}
           onShowDependenciesPanel={orch.handleShowDependenciesPanel}
+          onShowApplicableRulesPanel={orch.handleShowApplicableRulesPanel}
           activePath={orch.activePath}
           ruleSetUsed={data.summary.ruleSetUsed}
           violations={data.summary.violations}
@@ -397,6 +399,7 @@ function App() {
           onExpandRecursive={orch.expandRecursive}
           onShowInFileTree={handleShowInFileTree}
           onShowDependenciesPanel={orch.handleShowDependenciesPanel}
+          onShowApplicableRulesPanel={orch.handleShowApplicableRulesPanel}
           onHideOthers={orch.hideOthers}
           onShowDirectDependencies={orch.showDirectDependencies}
           onShowDirectDependents={orch.showDirectDependents}
@@ -407,10 +410,10 @@ function App() {
           onClearAllHighlights={orch.clearAllHighlights}
         />
       }
-      panel={
-        orch.panelOpen ? (
+      dependenciesPanel={
+        orch.dependenciesPath != null ? (
           <DependencyPanel
-            path={orch.dependenciesPath!}
+            path={orch.dependenciesPath}
             modules={modules}
             selectedPaths={orch.selectedPaths}
             expandedKeys={orch.expandedKeys}
@@ -418,6 +421,19 @@ function App() {
             onShowInGraph={orch.showInGraph}
             userEdgeHighlights={orch.userEdgeHighlights}
             onSetUserDependencyHighlight={orch.setUserDependencyHighlight}
+          />
+        ) : null
+      }
+      applicableRulesPanel={
+        orch.applicableRulesPath != null ? (
+          <ApplicableRulesPanel
+            path={orch.applicableRulesPath}
+            modules={modules}
+            ruleSetUsed={data.summary.ruleSetUsed}
+            violations={data.summary.violations}
+            onClose={orch.handleCloseApplicableRulesPanel}
+            onShowInGraph={orch.showInGraph}
+            onSelectViolationPaths={handleShowDependencyConnection}
           />
         ) : null
       }
@@ -475,9 +491,11 @@ function App() {
           activePath={orch.activePath}
           onFocusActivePath={orch.focusActivePath}
           onShowDependenciesPanel={orch.handleShowDependenciesPanel}
+          onShowApplicableRulesPanel={orch.handleShowApplicableRulesPanel}
         />
       }
-      panelOpen={orch.panelOpen}
+      dependenciesPanelOpen={orch.dependenciesPanelOpen}
+      applicableRulesPanelOpen={orch.applicableRulesPanelOpen}
       sidebarOpen={sidebarOpen}
       sidebarView={sidebarView}
       onSelectSidebarView={handleSelectSidebarView}

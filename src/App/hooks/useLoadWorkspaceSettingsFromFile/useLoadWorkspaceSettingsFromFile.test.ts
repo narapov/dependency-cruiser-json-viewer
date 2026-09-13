@@ -43,6 +43,7 @@ const settings = {
   selectedFiles: ['a.ts'],
   expandedKeys: [],
   dependenciesPath: null,
+  applicableRulesPath: null,
   userEdgeHighlights: {},
   folderColors: {},
   autoLayoutOnly: true,

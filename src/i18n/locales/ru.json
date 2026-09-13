@@ -37,6 +37,7 @@
     "showInGraphAndFileTree": "Показать на графе и в дереве",
     "showInFileTree": "Показать в дереве файлов",
     "viewDependencies": "Панель зависимостей",
+    "viewApplicableRules": "Панель применимых правил",
     "hideOthers": "Скрыть другие",
     "showDirectDependencies": "Показать прямые зависимости",
     "showDirectDependents": "Показать прямые зависимые",
@@ -56,6 +57,7 @@
     "showActive": "Показать активный элемент",
     "copyActive": "Копировать активный элемент",
     "viewActiveItemDependenciesPanel": "Панель зависимостей активного элемента",
+    "viewActiveItemApplicableRulesPanel": "Панель применимых правил активного элемента",
     "expandActive": "Развернуть активный элемент",
     "expandActiveRecursive": "Развернуть активный элемент рекурсивно",
     "collapseActive": "Свернуть активный элемент",
@@ -135,6 +137,10 @@
     "dependents": "Зависимые",
     "noDependencies": "Нет зависимостей",
     "hidden": "Скрытые ({{count}})"
+  },
+  "applicableRulesPanel": {
+    "title": "Применимые правила",
+    "empty": "Нет применимых правил для этого пути."
   },
   "statusBar": {
     "noSelection": "Ничего не выбрано"
