@@ -29,7 +29,9 @@ The usual workflow meant constantly tweaking filters, `collapsePattern`, and `ex
 - **Drag-and-drop layout** — rearrange graph nodes by dragging; custom positions persist when you expand or collapse folders. Turn off **Auto layout only** in the graph legend to enable dragging; use **Auto layout** in a folder's context menu to reset layout.
 - **Edge highlighting** — highlight dependencies via the edge context menu (or the dependencies panel); highlights are tied to the underlying import relation and persist when you expand or collapse nodes. Open the **Highlights** sidebar to browse connections by color, jump to one in the graph, or remove a single highlight, a whole color group, or all highlights.
 - **Hide others** — from a graph node context menu, keep only that file (or already-selected modules under a folder) in the selection so the rest of the graph is hidden.
+- **Dependencies panel** — inspect dependencies and dependents for a path in the right panel.
 - **Rules panel** — browse the cruise `ruleSetUsed` with violation counts; fuzzy-filter by rule name; expand a rule to see violations and click one to select/navigate to the offending modules in the tree and graph.
+- **Applicable rules panel** — see which cruise rules apply to a path and jump to their violations.
 - **Circular dependencies** — open the Circular panel to browse distinct cycles; expand a cycle for member paths, or show the cycle in the graph without unrelated modules.
 - **Drill-down navigation** — expanding a folder in the tree rebuilds the graph for that scope, so you can walk from high-level architecture down to individual files.
 - **Load cruise JSON** — load a cruise result via the command palette (**Load dependency-cruiser JSON**) or by dragging a `.json` file onto the window (disabled while watch mode is active).

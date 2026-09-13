@@ -10,6 +10,7 @@ export interface FileTreeContextValue {
   canShowInGraph: (key: string) => boolean;
   onExpandRecursive?: (path: string) => void;
   onShowDependenciesPanel?: (path: string) => void;
+  onShowApplicableRulesPanel?: (path: string) => void;
   onShowInGraph?: (path: string) => void;
   onToggleExpand: (key: string) => void;
 }

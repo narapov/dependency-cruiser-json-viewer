@@ -37,6 +37,7 @@
     "showInGraphAndFileTree": "Im Graphen und Dateibaum anzeigen",
     "showInFileTree": "Im Dateibaum anzeigen",
     "viewDependencies": "Abhängigkeiten-Panel anzeigen",
+    "viewApplicableRules": "Anwendbare-Regeln-Panel anzeigen",
     "hideOthers": "Andere ausblenden",
     "showDirectDependencies": "Direkte Abhängigkeiten anzeigen",
     "showDirectDependents": "Direkte Abhängige anzeigen",
@@ -56,6 +57,7 @@
     "showActive": "Aktives Element anzeigen",
     "copyActive": "Aktives Element kopieren",
     "viewActiveItemDependenciesPanel": "Abhängigkeiten-Panel des aktiven Elements anzeigen",
+    "viewActiveItemApplicableRulesPanel": "Anwendbare-Regeln-Panel des aktiven Elements anzeigen",
     "expandActive": "Aktives Element erweitern",
     "expandActiveRecursive": "Aktives Element rekursiv erweitern",
     "collapseActive": "Aktives Element einklappen",
@@ -135,6 +137,10 @@
     "dependents": "Abhängige",
     "noDependencies": "Keine Abhängigkeiten",
     "hidden": "Ausgeblendet ({{count}})"
+  },
+  "applicableRulesPanel": {
+    "title": "Anwendbare Regeln",
+    "empty": "Keine anwendbaren Regeln für diesen Pfad."
   },
   "statusBar": {
     "noSelection": "Keine Auswahl"

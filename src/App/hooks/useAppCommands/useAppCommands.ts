@@ -7,6 +7,7 @@ export interface AppCommandsOrchestration {
   focusActivePath: () => void;
   copyActive: () => void;
   viewActiveItemDependenciesPanel: () => void;
+  viewActiveItemApplicableRulesPanel: () => void;
   expandActive: () => void;
   expandActiveRecursive: () => void;
   collapseActive: () => void;
@@ -61,6 +62,7 @@ export function useAppCommands({
     focusActivePath,
     copyActive,
     viewActiveItemDependenciesPanel,
+    viewActiveItemApplicableRulesPanel,
     expandActive,
     expandActiveRecursive,
     collapseActive,
@@ -84,6 +86,11 @@ export function useAppCommands({
       id: 'viewActiveItemDependenciesPanel',
       label: t('commands.viewActiveItemDependenciesPanel'),
       onExecute: viewActiveItemDependenciesPanel,
+    },
+    {
+      id: 'viewActiveItemApplicableRulesPanel',
+      label: t('commands.viewActiveItemApplicableRulesPanel'),
+      onExecute: viewActiveItemApplicableRulesPanel,
     },
     { id: 'expandActive', label: t('commands.expandActive'), onExecute: expandActive },
     {

@@ -37,6 +37,7 @@
     "showInGraphAndFileTree": "Mostrar en el grafo y el árbol de archivos",
     "showInFileTree": "Mostrar en el árbol de archivos",
     "viewDependencies": "Ver panel de dependencias",
+    "viewApplicableRules": "Ver panel de reglas aplicables",
     "hideOthers": "Ocultar otros",
     "showDirectDependencies": "Mostrar dependencias directas",
     "showDirectDependents": "Mostrar dependientes directos",
@@ -56,6 +57,7 @@
     "showActive": "Mostrar elemento activo",
     "copyActive": "Copiar elemento activo",
     "viewActiveItemDependenciesPanel": "Ver panel de dependencias del elemento activo",
+    "viewActiveItemApplicableRulesPanel": "Ver panel de reglas aplicables del elemento activo",
     "expandActive": "Expandir elemento activo",
     "expandActiveRecursive": "Expandir recursivamente el elemento activo",
     "collapseActive": "Contraer elemento activo",
@@ -135,6 +137,10 @@
     "dependents": "Dependientes",
     "noDependencies": "Sin dependencias",
     "hidden": "Ocultas ({{count}})"
+  },
+  "applicableRulesPanel": {
+    "title": "Reglas aplicables",
+    "empty": "No hay reglas aplicables para esta ruta."
   },
   "statusBar": {
     "noSelection": "Sin selección"

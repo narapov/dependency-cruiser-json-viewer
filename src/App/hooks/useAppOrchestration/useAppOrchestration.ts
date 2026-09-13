@@ -44,6 +44,7 @@ interface WorkspaceViewState {
   expandedKeys: string[];
   activePath: string | null;
   dependenciesPath: string | null;
+  applicableRulesPath: string | null;
   userEdgeHighlights: ReadonlyMap<string, string>;
   folderBaseColors: Record<string, FolderBaseColor>;
   pendingLayout: GraphLayoutState | null;
@@ -75,6 +76,7 @@ type WorkspaceViewAction =
   | { type: 'activatePath'; path: string }
   | { type: 'setSelectedPaths'; paths: string[] }
   | { type: 'setDependenciesPath'; path: string | null }
+  | { type: 'setApplicableRulesPath'; path: string | null }
   | { type: 'setUserEdgeHighlights'; highlights: ReadonlyMap<string, string> }
   | { type: 'setUserDependencyHighlight'; keys: readonly string[]; color: string | null }
   | { type: 'clearAllHighlights' }
@@ -100,6 +102,7 @@ function createInitialWorkspaceViewState(
     expandedKeys: initial.expandedKeys,
     activePath: null,
     dependenciesPath: null,
+    applicableRulesPath: null,
     userEdgeHighlights: new Map(),
     folderBaseColors: defaultFolderColorsRecord(sources),
     pendingLayout: null,
@@ -122,6 +125,7 @@ function syncWorkspaceViewFromProps(
       expandedKeys: initial.expandedKeys,
       activePath: null,
       dependenciesPath: null,
+      applicableRulesPath: null,
       userEdgeHighlights: new Map(),
       folderBaseColors: defaultFolderColorsRecord(sources),
       pendingLayout: { autoLayoutOnly: true, nodePositions: {} },
@@ -162,6 +166,7 @@ function applyWorkspaceViewState(
     selectedPaths: expandSelectionWithSelectedAncestors(view.selectedFiles, sourcesFromSourcesKey(sourcesKey)),
     expandedKeys: view.expandedKeys,
     dependenciesPath: view.dependenciesPath,
+    applicableRulesPath: view.applicableRulesPath,
     userEdgeHighlights: view.userEdgeHighlights,
     folderBaseColors: view.folderColors,
     activePath: null,
@@ -228,6 +233,9 @@ function workspaceViewReducer(state: WorkspaceViewState, action: WorkspaceViewAc
 
     case 'setDependenciesPath':
       return { ...state, dependenciesPath: action.path };
+
+    case 'setApplicableRulesPath':
+      return { ...state, applicableRulesPath: action.path };
 
     case 'setUserEdgeHighlights':
       return { ...state, userEdgeHighlights: action.highlights };
@@ -297,12 +305,17 @@ export function useAppOrchestration({
     state.activePath != null && isPathInSources(state.activePath, sources) ? state.activePath : null;
   const resolvedDependenciesPath =
     state.dependenciesPath != null && isPathInSources(state.dependenciesPath, sources) ? state.dependenciesPath : null;
+  const resolvedApplicableRulesPath =
+    state.applicableRulesPath != null && isPathInSources(state.applicableRulesPath, sources)
+      ? state.applicableRulesPath
+      : null;
 
   const treeData = useMemo(() => buildFileTree(sources), [sources]);
   const allKeys = useMemo(() => getAllKeys(treeData), [treeData]);
   const allFolderKeys = useMemo(() => getAllFolderKeys(treeData), [treeData]);
 
-  const panelOpen = resolvedDependenciesPath != null;
+  const dependenciesPanelOpen = resolvedDependenciesPath != null;
+  const applicableRulesPanelOpen = resolvedApplicableRulesPath != null;
 
   const updateExpandedKeys = (updater: string[] | ((prev: string[]) => string[])) => {
     dispatch({ type: 'updateExpandedKeys', updater });
@@ -336,6 +349,14 @@ export function useAppOrchestration({
 
   const handleClosePanel = () => {
     dispatch({ type: 'setDependenciesPath', path: null });
+  };
+
+  const handleShowApplicableRulesPanel = (path: string) => {
+    dispatch({ type: 'setApplicableRulesPath', path });
+  };
+
+  const handleCloseApplicableRulesPanel = () => {
+    dispatch({ type: 'setApplicableRulesPath', path: null });
   };
 
   const focusPath = (path: string) => {
@@ -379,6 +400,13 @@ export function useAppOrchestration({
       return;
     }
     handleShowDependenciesPanel(resolvedActivePath);
+  };
+
+  const viewActiveItemApplicableRulesPanel = () => {
+    if (resolvedActivePath == null) {
+      return;
+    }
+    handleShowApplicableRulesPanel(resolvedActivePath);
   };
 
   const expandActive = () => {
@@ -441,6 +469,7 @@ export function useAppOrchestration({
       ),
       expandedKeys: state.expandedKeys,
       dependenciesPath: resolvedDependenciesPath,
+      applicableRulesPath: resolvedApplicableRulesPath,
       userEdgeHighlights: Object.fromEntries(state.userEdgeHighlights.entries()),
       folderColors: state.folderBaseColors,
       autoLayoutOnly: layout.autoLayoutOnly,
@@ -549,11 +578,13 @@ export function useAppOrchestration({
   };
 
   return {
-    panelOpen,
+    dependenciesPanelOpen,
+    applicableRulesPanelOpen,
     selectedPaths: state.selectedPaths,
     expandedKeys: state.expandedKeys,
     activePath: resolvedActivePath,
     dependenciesPath: resolvedDependenciesPath,
+    applicableRulesPath: resolvedApplicableRulesPath,
     userEdgeHighlights: state.userEdgeHighlights,
     folderBaseColors: state.folderBaseColors,
     setUserEdgeHighlights: (highlights: ReadonlyMap<string, string>) => {
@@ -571,11 +602,14 @@ export function useAppOrchestration({
     expandRecursive,
     handleShowDependenciesPanel,
     handleClosePanel,
+    handleShowApplicableRulesPanel,
+    handleCloseApplicableRulesPanel,
     handleQuickPickSelect,
     focusActivePath,
     clearLocalStorage,
     copyActive,
     viewActiveItemDependenciesPanel,
+    viewActiveItemApplicableRulesPanel,
     expandActive,
     expandActiveRecursive,
     collapseActive,

@@ -19,6 +19,7 @@ export const viewerWorkspaceSettingsSchema = object({
   selectedFiles: array(string()),
   expandedKeys: array(string()),
   dependenciesPath: string().nullable(),
+  applicableRulesPath: string().nullable().optional().default(null),
   userEdgeHighlights: record(string(), string()),
   folderColors: record(string(), folderBaseColorSchema),
   autoLayoutOnly: boolean(),

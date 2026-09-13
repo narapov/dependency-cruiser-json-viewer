@@ -82,6 +82,9 @@ function settingsFullyCorrespond(
   if (settings.dependenciesPath != null && !isPathInSources(settings.dependenciesPath, sources)) {
     return false;
   }
+  if (settings.applicableRulesPath != null && !isPathInSources(settings.applicableRulesPath, sources)) {
+    return false;
+  }
   if (!Object.keys(settings.userEdgeHighlights).every(key => dependencyKeys.has(key))) {
     return false;
   }
@@ -106,6 +109,10 @@ function filterScalarSettings(settings: ViewerWorkspaceSettings, sources: string
     dependenciesPath:
       settings.dependenciesPath != null && isPathInSources(settings.dependenciesPath, sources)
         ? settings.dependenciesPath
+        : null,
+    applicableRulesPath:
+      settings.applicableRulesPath != null && isPathInSources(settings.applicableRulesPath, sources)
+        ? settings.applicableRulesPath
         : null,
   };
 }
@@ -134,6 +141,7 @@ export function replaceWorkspaceSettings({
       selectedFiles: settings.selectedFiles,
       expandedKeys: settings.expandedKeys,
       dependenciesPath: settings.dependenciesPath,
+      applicableRulesPath: settings.applicableRulesPath,
       userEdgeHighlights: new Map(Object.entries(settings.userEdgeHighlights)),
       folderColors: settings.folderColors,
       autoLayoutOnly: settings.autoLayoutOnly,
@@ -141,7 +149,10 @@ export function replaceWorkspaceSettings({
     };
   }
 
-  const { selectedFiles, expandedKeys, dependenciesPath } = filterScalarSettings(settings, sources);
+  const { selectedFiles, expandedKeys, dependenciesPath, applicableRulesPath } = filterScalarSettings(
+    settings,
+    sources,
+  );
 
   const userEdgeHighlights = new Map(
     Object.entries(settings.userEdgeHighlights).filter(([key]) => dependencyKeys.has(key)),
@@ -163,6 +174,7 @@ export function replaceWorkspaceSettings({
     selectedFiles,
     expandedKeys,
     dependenciesPath,
+    applicableRulesPath,
     userEdgeHighlights,
     folderColors,
     autoLayoutOnly,

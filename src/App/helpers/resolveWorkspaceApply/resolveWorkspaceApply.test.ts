@@ -44,6 +44,7 @@ function makeSettings(overrides: Partial<ViewerWorkspaceSettings> = {}): ViewerW
     selectedFiles: ['src/a.ts', 'src/b.ts'],
     expandedKeys: ['src'],
     dependenciesPath: null,
+    applicableRulesPath: null,
     userEdgeHighlights: { [makeDependencyKey('src/a.ts', 'src/b.ts')]: '#ff0000' },
     folderColors: {
       src: { hue: 10, lightnessIndex: 0 },

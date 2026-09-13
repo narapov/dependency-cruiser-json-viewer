@@ -58,6 +58,7 @@ interface DependencyGraphInnerProps {
   onExpandRecursive: (path: string) => void;
   onShowInFileTree: (path: string) => void;
   onShowDependenciesPanel: (path: string) => void;
+  onShowApplicableRulesPanel: (path: string) => void;
   onHideOthers: (path: string) => void;
   onShowDirectDependencies: (path: string) => void;
   onShowDirectDependents: (path: string) => void;
@@ -80,6 +81,7 @@ function DependencyGraphInner({
   onExpandRecursive,
   onShowInFileTree,
   onShowDependenciesPanel,
+  onShowApplicableRulesPanel,
   onHideOthers,
   onShowDirectDependencies,
   onShowDirectDependents,
@@ -220,6 +222,7 @@ function DependencyGraphInner({
     onExpandRecursive,
     onShowInFileTree,
     onShowDependenciesPanel,
+    onShowApplicableRulesPanel,
     onHideOthers,
     onShowDirectDependencies,
     onShowDirectDependents,
@@ -256,7 +259,7 @@ function DependencyGraphInner({
         >
           <Background color={theme.palette.divider} />
           <Panel position="top-right">
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mr: 1 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
               <GraphLayoutToggle checked={autoLayoutOnly} onChange={onAutoLayoutOnlyChange} />
               <GraphLegend />
             </Box>

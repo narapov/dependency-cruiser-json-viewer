@@ -14,6 +14,7 @@ export interface FileTreeContextMenuOptions {
   onExpandRecursive?: (path: string) => void;
   onShowInGraph?: (path: string) => void;
   onShowDependenciesPanel?: (path: string) => void;
+  onShowApplicableRulesPanel?: (path: string) => void;
 }
 
 export function useFileTreeContextMenu({
@@ -24,6 +25,7 @@ export function useFileTreeContextMenu({
   onExpandRecursive,
   onShowInGraph,
   onShowDependenciesPanel,
+  onShowApplicableRulesPanel,
 }: FileTreeContextMenuOptions) {
   const { t } = useTranslation();
   const [anchorPosition, setAnchorPosition] = useState<{ top: number; left: number } | null>(null);
@@ -67,6 +69,11 @@ export function useFileTreeContextMenu({
       )}
       {onShowDependenciesPanel && (
         <MenuItem onClick={handleAction(() => onShowDependenciesPanel(path))}>{t('actions.viewDependencies')}</MenuItem>
+      )}
+      {onShowApplicableRulesPanel && (
+        <MenuItem onClick={handleAction(() => onShowApplicableRulesPanel(path))}>
+          {t('actions.viewApplicableRules')}
+        </MenuItem>
       )}
     </Menu>
   );

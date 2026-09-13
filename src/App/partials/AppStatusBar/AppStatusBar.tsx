@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import AccountTreeOutlined from '@mui/icons-material/AccountTreeOutlined';
 import ContentCopyOutlined from '@mui/icons-material/ContentCopyOutlined';
 import MyLocationOutlined from '@mui/icons-material/MyLocationOutlined';
+import RuleOutlined from '@mui/icons-material/RuleOutlined';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
@@ -16,9 +17,15 @@ interface AppStatusBarProps {
   activePath: string | null;
   onFocusActivePath: () => void;
   onShowDependenciesPanel: (path: string) => void;
+  onShowApplicableRulesPanel: (path: string) => void;
 }
 
-export function AppStatusBar({ activePath, onFocusActivePath, onShowDependenciesPanel }: AppStatusBarProps) {
+export function AppStatusBar({
+  activePath,
+  onFocusActivePath,
+  onShowDependenciesPanel,
+  onShowApplicableRulesPanel,
+}: AppStatusBarProps) {
   const { t } = useTranslation();
   const hasSelection = activePath != null;
   const label = activePath ?? t('statusBar.noSelection');
@@ -59,6 +66,16 @@ export function AppStatusBar({ activePath, onFocusActivePath, onShowDependencies
                 sx={{ p: 0.5 }}
               >
                 <AccountTreeOutlined sx={{ fontSize: 16 }} />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title={t('actions.viewApplicableRules')}>
+              <IconButton
+                size="small"
+                aria-label={t('actions.viewApplicableRules')}
+                onClick={() => onShowApplicableRulesPanel(activePath)}
+                sx={{ p: 0.5 }}
+              >
+                <RuleOutlined sx={{ fontSize: 16 }} />
               </IconButton>
             </Tooltip>
             <Tooltip title={t('actions.copyPath')}>

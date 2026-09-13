@@ -100,6 +100,7 @@ describe('useCruiseResultWatch', () => {
       selectedFiles: ['src/a.ts'],
       expandedKeys: ['src'],
       dependenciesPath: null,
+      applicableRulesPath: null,
       userEdgeHighlights: {},
       folderColors: {},
       autoLayoutOnly: true,

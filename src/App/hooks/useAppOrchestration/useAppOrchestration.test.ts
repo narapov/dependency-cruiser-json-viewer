@@ -101,7 +101,8 @@ describe('useAppOrchestration', () => {
     expect(result.current.selectedPaths).toEqual(['src/a.ts']);
     expect(result.current.expandedKeys).toEqual(['src']);
     expect(result.current.activePath).toBeNull();
-    expect(result.current.panelOpen).toBe(false);
+    expect(result.current.dependenciesPanelOpen).toBe(false);
+    expect(result.current.applicableRulesPanelOpen).toBe(false);
   });
 
   it('resets selection when sources change', () => {
@@ -184,13 +185,41 @@ describe('useAppOrchestration', () => {
       result.current.handleShowDependenciesPanel('src/a.ts');
     });
     expect(result.current.dependenciesPath).toBe('src/a.ts');
-    expect(result.current.panelOpen).toBe(true);
+    expect(result.current.dependenciesPanelOpen).toBe(true);
+    expect(result.current.applicableRulesPanelOpen).toBe(false);
 
     act(() => {
       result.current.handleClosePanel();
     });
     expect(result.current.dependenciesPath).toBeNull();
-    expect(result.current.panelOpen).toBe(false);
+    expect(result.current.dependenciesPanelOpen).toBe(false);
+  });
+
+  it('opens and closes applicable rules panel independently of dependencies panel', () => {
+    const { result } = renderOrchestration();
+
+    act(() => {
+      result.current.handleShowDependenciesPanel('src/a.ts');
+      result.current.handleShowApplicableRulesPanel('src/b/c.ts');
+    });
+    expect(result.current.dependenciesPath).toBe('src/a.ts');
+    expect(result.current.applicableRulesPath).toBe('src/b/c.ts');
+    expect(result.current.dependenciesPanelOpen).toBe(true);
+    expect(result.current.applicableRulesPanelOpen).toBe(true);
+
+    act(() => {
+      result.current.handleClosePanel();
+    });
+    expect(result.current.dependenciesPath).toBeNull();
+    expect(result.current.applicableRulesPath).toBe('src/b/c.ts');
+    expect(result.current.dependenciesPanelOpen).toBe(false);
+    expect(result.current.applicableRulesPanelOpen).toBe(true);
+
+    act(() => {
+      result.current.handleCloseApplicableRulesPanel();
+    });
+    expect(result.current.applicableRulesPath).toBeNull();
+    expect(result.current.applicableRulesPanelOpen).toBe(false);
   });
 
   it('resolves activePath to null when path leaves sources', () => {
@@ -613,6 +642,19 @@ describe('useAppOrchestration', () => {
     expect(result.current.dependenciesPath).toBe('src/a.ts');
   });
 
+  it('viewActiveItemApplicableRulesPanel opens applicable rules panel for active path', () => {
+    const { result } = renderOrchestration();
+
+    act(() => {
+      result.current.activatePath('src/a.ts');
+    });
+    act(() => {
+      result.current.viewActiveItemApplicableRulesPanel();
+    });
+
+    expect(result.current.applicableRulesPath).toBe('src/a.ts');
+  });
+
   it('clearAllHighlights clears user edge highlights', () => {
     const { result } = renderOrchestration();
 
@@ -730,6 +772,7 @@ describe('useAppOrchestration', () => {
       selectedFiles: ['src/a.ts', 'src/b/c.ts', 'src/b/d.ts', 'src/e/f/g.ts'],
       expandedKeys: restoredExpanded,
       dependenciesPath: null,
+      applicableRulesPath: null,
       userEdgeHighlights: new Map<string, string>(),
       folderColors: {
         src: { hue: 10, lightnessIndex: 0 },
@@ -816,6 +859,7 @@ describe('useAppOrchestration', () => {
           selectedFiles: [],
           expandedKeys: [],
           dependenciesPath: null,
+          applicableRulesPath: null,
           userEdgeHighlights: new Map(),
           folderColors: {},
           autoLayoutOnly: true,
@@ -841,6 +885,7 @@ describe('useAppOrchestration', () => {
       selectedFiles: ['src/a.ts', 'src/b/c.ts', 'src/b/d.ts', 'src/e/f/g.ts'],
       expandedKeys: ['src'],
       dependenciesPath: null,
+      applicableRulesPath: null,
       userEdgeHighlights: new Map<string, string>(),
       folderColors: {
         src: { hue: 10, lightnessIndex: 0 },

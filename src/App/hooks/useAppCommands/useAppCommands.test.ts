@@ -11,6 +11,7 @@ function createOrch(): AppCommandsOrchestration {
     focusActivePath: vi.fn(),
     copyActive: vi.fn(),
     viewActiveItemDependenciesPanel: vi.fn(),
+    viewActiveItemApplicableRulesPanel: vi.fn(),
     expandActive: vi.fn(),
     expandActiveRecursive: vi.fn(),
     collapseActive: vi.fn(),
