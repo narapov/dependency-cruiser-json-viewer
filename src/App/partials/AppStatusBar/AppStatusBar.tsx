@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 
 import AccountTreeOutlined from '@mui/icons-material/AccountTreeOutlined';
 import ContentCopyOutlined from '@mui/icons-material/ContentCopyOutlined';
+import DataObjectOutlined from '@mui/icons-material/DataObjectOutlined';
 import MyLocationOutlined from '@mui/icons-material/MyLocationOutlined';
 import RuleOutlined from '@mui/icons-material/RuleOutlined';
 import Box from '@mui/material/Box';
@@ -18,6 +19,7 @@ interface AppStatusBarProps {
   onFocusActivePath: () => void;
   onShowDependenciesPanel: (path: string) => void;
   onShowApplicableRulesPanel: (path: string) => void;
+  onViewModuleJson: (path: string) => void;
 }
 
 export function AppStatusBar({
@@ -25,6 +27,7 @@ export function AppStatusBar({
   onFocusActivePath,
   onShowDependenciesPanel,
   onShowApplicableRulesPanel,
+  onViewModuleJson,
 }: AppStatusBarProps) {
   const { t } = useTranslation();
   const hasSelection = activePath != null;
@@ -76,6 +79,16 @@ export function AppStatusBar({
                 sx={{ p: 0.5 }}
               >
                 <RuleOutlined sx={{ fontSize: 16 }} />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title={t('moduleJson.view')}>
+              <IconButton
+                size="small"
+                aria-label={t('moduleJson.view')}
+                onClick={() => onViewModuleJson(activePath)}
+                sx={{ p: 0.5 }}
+              >
+                <DataObjectOutlined sx={{ fontSize: 16 }} />
               </IconButton>
             </Tooltip>
             <Tooltip title={t('actions.copyPath')}>

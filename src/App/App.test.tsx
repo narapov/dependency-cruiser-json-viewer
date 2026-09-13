@@ -69,6 +69,10 @@ vi.mock('./hooks', () => ({
   }),
   useAppCommands: () => [],
   useCruiseResultWatch: vi.fn(),
+  useModuleJsonDialog: () => ({
+    openModuleJson: vi.fn(),
+    moduleJsonDialog: null,
+  }),
 }));
 
 vi.mock('./partials/FileTree', () => ({

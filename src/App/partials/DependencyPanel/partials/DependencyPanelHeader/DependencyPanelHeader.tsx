@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 
 import CloseOutlined from '@mui/icons-material/CloseOutlined';
+import DataObjectOutlined from '@mui/icons-material/DataObjectOutlined';
 import MyLocationOutlined from '@mui/icons-material/MyLocationOutlined';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
@@ -11,9 +12,10 @@ interface DependencyPanelHeaderProps {
   path: string;
   onClose: () => void;
   onShowInGraph: (path: string) => void;
+  onViewModuleJson: (path: string) => void;
 }
 
-export function DependencyPanelHeader({ path, onClose, onShowInGraph }: DependencyPanelHeaderProps) {
+export function DependencyPanelHeader({ path, onClose, onShowInGraph, onViewModuleJson }: DependencyPanelHeaderProps) {
   const { t } = useTranslation();
 
   return (
@@ -33,6 +35,11 @@ export function DependencyPanelHeader({ path, onClose, onShowInGraph }: Dependen
         <Tooltip title={t('actions.showInGraph')}>
           <IconButton color="primary" aria-label={t('actions.showInGraph')} onClick={() => onShowInGraph(path)}>
             <MyLocationOutlined fontSize="small" />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title={t('moduleJson.view')}>
+          <IconButton aria-label={t('moduleJson.view')} onClick={() => onViewModuleJson(path)}>
+            <DataObjectOutlined fontSize="small" />
           </IconButton>
         </Tooltip>
         <Tooltip title={t('actions.close')}>

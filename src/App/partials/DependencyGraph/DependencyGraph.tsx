@@ -59,6 +59,7 @@ interface DependencyGraphInnerProps {
   onShowInFileTree: (path: string) => void;
   onShowDependenciesPanel: (path: string) => void;
   onShowApplicableRulesPanel: (path: string) => void;
+  onViewModuleJson: (path: string) => void;
   onHideOthers: (path: string) => void;
   onShowDirectDependencies: (path: string) => void;
   onShowDirectDependents: (path: string) => void;
@@ -82,6 +83,7 @@ function DependencyGraphInner({
   onShowInFileTree,
   onShowDependenciesPanel,
   onShowApplicableRulesPanel,
+  onViewModuleJson,
   onHideOthers,
   onShowDirectDependencies,
   onShowDirectDependents,
@@ -221,6 +223,7 @@ function DependencyGraphInner({
     onShowInFileTree,
     onShowDependenciesPanel,
     onShowApplicableRulesPanel,
+    onViewModuleJson,
     onHideOthers,
     onShowDirectDependencies,
     onShowDirectDependents,

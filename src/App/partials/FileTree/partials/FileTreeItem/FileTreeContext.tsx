@@ -12,6 +12,7 @@ export interface FileTreeContextValue {
   onShowDependenciesPanel?: (path: string) => void;
   onShowApplicableRulesPanel?: (path: string) => void;
   onShowInGraph?: (path: string) => void;
+  onViewModuleJson: (path: string) => void;
   onToggleExpand: (key: string) => void;
 }
 

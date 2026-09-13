@@ -11,6 +11,14 @@ import type { FileTreeHandle } from './types';
 
 const SOURCES = ['src/a.ts', 'src/b/c.ts'];
 
+const defaultProps = {
+  sources: SOURCES,
+  selectedKeys: SOURCES,
+  expandedKeys: ['src', 'src/b'],
+  onExpand: vi.fn(),
+  onViewModuleJson: vi.fn(),
+};
+
 describe('FileTree', () => {
   beforeEach(() => {
     Element.prototype.scrollIntoView = vi.fn();
@@ -26,15 +34,7 @@ describe('FileTree', () => {
     const onShowInGraph = vi.fn();
     const onExpand = vi.fn();
 
-    renderWithTheme(
-      <FileTree
-        sources={SOURCES}
-        selectedKeys={SOURCES}
-        expandedKeys={['src', 'src/b']}
-        onExpand={onExpand}
-        onShowInGraph={onShowInGraph}
-      />,
-    );
+    renderWithTheme(<FileTree {...defaultProps} onExpand={onExpand} onShowInGraph={onShowInGraph} />);
 
     fireEvent.click(screen.getByText('a.ts'));
     expect(onShowInGraph).not.toHaveBeenCalled();
@@ -49,15 +49,7 @@ describe('FileTree', () => {
   it('does not show unselected paths in graph on click', () => {
     const onShowInGraph = vi.fn();
 
-    renderWithTheme(
-      <FileTree
-        sources={SOURCES}
-        selectedKeys={['src/a.ts']}
-        expandedKeys={['src', 'src/b']}
-        onExpand={vi.fn()}
-        onShowInGraph={onShowInGraph}
-      />,
-    );
+    renderWithTheme(<FileTree {...defaultProps} selectedKeys={['src/a.ts']} onShowInGraph={onShowInGraph} />);
 
     fireEvent.click(screen.getByText('c.ts'));
     act(() => {
@@ -70,15 +62,7 @@ describe('FileTree', () => {
   it('does not show in graph when clicking the checkbox', () => {
     const onShowInGraph = vi.fn();
 
-    renderWithTheme(
-      <FileTree
-        sources={SOURCES}
-        selectedKeys={SOURCES}
-        expandedKeys={['src', 'src/b']}
-        onExpand={vi.fn()}
-        onShowInGraph={onShowInGraph}
-      />,
-    );
+    renderWithTheme(<FileTree {...defaultProps} onShowInGraph={onShowInGraph} />);
 
     const treeItem = screen.getByText('a.ts').closest('[role="treeitem"]');
     expect(treeItem).toBeInTheDocument();
@@ -93,15 +77,7 @@ describe('FileTree', () => {
   it('exposes focusPath that scrolls and focuses the item', () => {
     const ref = createRef<FileTreeHandle>();
 
-    renderWithTheme(
-      <FileTree
-        ref={ref}
-        sources={SOURCES}
-        selectedKeys={SOURCES}
-        expandedKeys={['src', 'src/b']}
-        onExpand={vi.fn()}
-      />,
-    );
+    renderWithTheme(<FileTree {...defaultProps} ref={ref} />);
 
     act(() => {
       ref.current?.focusPath('src/a.ts');
@@ -117,9 +93,7 @@ describe('FileTree', () => {
   it('toggles expand via FileTreeItem double-click on folders', () => {
     const onExpand = vi.fn();
 
-    renderWithTheme(
-      <FileTree sources={SOURCES} selectedKeys={SOURCES} expandedKeys={['src', 'src/b']} onExpand={onExpand} />,
-    );
+    renderWithTheme(<FileTree {...defaultProps} onExpand={onExpand} />);
 
     fireEvent.doubleClick(screen.getByText('b'));
 
@@ -129,15 +103,7 @@ describe('FileTree', () => {
   it('shows in graph on Enter for navigable FileTreeItem', () => {
     const onShowInGraph = vi.fn();
 
-    renderWithTheme(
-      <FileTree
-        sources={SOURCES}
-        selectedKeys={SOURCES}
-        expandedKeys={['src', 'src/b']}
-        onExpand={vi.fn()}
-        onShowInGraph={onShowInGraph}
-      />,
-    );
+    renderWithTheme(<FileTree {...defaultProps} onShowInGraph={onShowInGraph} />);
 
     const treeItem = screen.getByText('a.ts').closest('[role="treeitem"]');
     expect(treeItem).toBeInTheDocument();

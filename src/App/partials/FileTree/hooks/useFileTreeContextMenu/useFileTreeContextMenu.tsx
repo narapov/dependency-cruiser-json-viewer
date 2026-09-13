@@ -15,6 +15,7 @@ export interface FileTreeContextMenuOptions {
   onShowInGraph?: (path: string) => void;
   onShowDependenciesPanel?: (path: string) => void;
   onShowApplicableRulesPanel?: (path: string) => void;
+  onViewModuleJson: (path: string) => void;
 }
 
 export function useFileTreeContextMenu({
@@ -26,6 +27,7 @@ export function useFileTreeContextMenu({
   onShowInGraph,
   onShowDependenciesPanel,
   onShowApplicableRulesPanel,
+  onViewModuleJson,
 }: FileTreeContextMenuOptions) {
   const { t } = useTranslation();
   const [anchorPosition, setAnchorPosition] = useState<{ top: number; left: number } | null>(null);
@@ -75,6 +77,7 @@ export function useFileTreeContextMenu({
           {t('actions.viewApplicableRules')}
         </MenuItem>
       )}
+      <MenuItem onClick={handleAction(() => onViewModuleJson(path))}>{t('moduleJson.view')}</MenuItem>
     </Menu>
   );
 

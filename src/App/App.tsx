@@ -29,6 +29,7 @@ import {
   useInitialDependencyCruiserState,
   useLoadCruiseResultFromFile,
   useLoadWorkspaceSettingsFromFile,
+  useModuleJsonDialog,
   type LoadedCruiseResultFile,
 } from './hooks';
 import { AboutDialog } from './partials/AboutDialog';
@@ -241,6 +242,8 @@ function App() {
 
   const { showInFileTree, setSelectedPaths, selectedPaths, showInGraph, activatePath } = orch;
 
+  const { openModuleJson, moduleJsonDialog } = useModuleJsonDialog(data?.modules ?? []);
+
   const handleShowInFileTree = useCallback(
     (path: string) => {
       setSidebarView('files');
@@ -380,6 +383,7 @@ function App() {
           onShowInGraph={orch.showInGraph}
           onShowDependenciesPanel={orch.handleShowDependenciesPanel}
           onShowApplicableRulesPanel={orch.handleShowApplicableRulesPanel}
+          onViewModuleJson={openModuleJson}
           activePath={orch.activePath}
           ruleSetUsed={data.summary.ruleSetUsed}
           violations={data.summary.violations}
@@ -404,6 +408,7 @@ function App() {
           onShowInFileTree={handleShowInFileTree}
           onShowDependenciesPanel={orch.handleShowDependenciesPanel}
           onShowApplicableRulesPanel={orch.handleShowApplicableRulesPanel}
+          onViewModuleJson={openModuleJson}
           onHideOthers={orch.hideOthers}
           onShowDirectDependencies={orch.showDirectDependencies}
           onShowDirectDependents={orch.showDirectDependents}
@@ -423,6 +428,7 @@ function App() {
             expandedKeys={orch.expandedKeys}
             onClose={orch.handleClosePanel}
             onShowInGraph={orch.showInGraph}
+            onViewModuleJson={openModuleJson}
             userEdgeHighlights={orch.userEdgeHighlights}
             onSetUserDependencyHighlight={orch.setUserDependencyHighlight}
           />
@@ -496,6 +502,7 @@ function App() {
             shouldExpandNode={level => level < 4}
             fullScreen
           />
+          {moduleJsonDialog}
         </>
       }
       footer={
@@ -504,6 +511,7 @@ function App() {
           onFocusActivePath={orch.focusActivePath}
           onShowDependenciesPanel={orch.handleShowDependenciesPanel}
           onShowApplicableRulesPanel={orch.handleShowApplicableRulesPanel}
+          onViewModuleJson={openModuleJson}
         />
       }
       dependenciesPanelOpen={orch.dependenciesPanelOpen}

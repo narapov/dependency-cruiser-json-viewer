@@ -8,3 +8,4 @@ export * from './useIgnorePatterns';
 export * from './useInitialDependencyCruiserState';
 export * from './useLoadCruiseResultFromFile';
 export * from './useLoadWorkspaceSettingsFromFile';
+export * from './useModuleJsonDialog';

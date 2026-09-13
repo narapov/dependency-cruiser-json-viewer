@@ -96,6 +96,7 @@ const baseProps = {
   onShowInFileTree: vi.fn(),
   onShowDependenciesPanel: vi.fn(),
   onShowApplicableRulesPanel: vi.fn(),
+  onViewModuleJson: vi.fn(),
   onHideOthers: vi.fn(),
   onShowDirectDependencies: vi.fn(),
   onShowDirectDependents: vi.fn(),

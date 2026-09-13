@@ -43,6 +43,7 @@ describe('DependencyPanel', () => {
     const { result: i18n } = renderHook(() => useTranslation());
     const onClose = vi.fn();
     const onShowInGraph = vi.fn();
+    const onViewModuleJson = vi.fn();
 
     renderWithTheme(
       <DependencyPanel
@@ -52,6 +53,7 @@ describe('DependencyPanel', () => {
         expandedKeys={[]}
         onClose={onClose}
         onShowInGraph={onShowInGraph}
+        onViewModuleJson={onViewModuleJson}
         {...highlightProps}
       />,
     );
@@ -66,8 +68,11 @@ describe('DependencyPanel', () => {
     expect(onClose).toHaveBeenCalled();
 
     const showInGraphButtons = screen.getAllByRole('button', { name: i18n.current.t('actions.showInGraph') });
-    fireEvent.click(showInGraphButtons[0]);
+    fireEvent.click(showInGraphButtons[0]!);
     expect(onShowInGraph).toHaveBeenCalledWith('src/foo/a.ts');
+
+    fireEvent.click(screen.getByRole('button', { name: i18n.current.t('moduleJson.view') }));
+    expect(onViewModuleJson).toHaveBeenCalledWith('src/foo/a.ts');
   });
 
   it('shows empty relation lists when there are no relations', () => {
@@ -81,6 +86,7 @@ describe('DependencyPanel', () => {
         expandedKeys={[]}
         onClose={vi.fn()}
         onShowInGraph={vi.fn()}
+        onViewModuleJson={vi.fn()}
         {...highlightProps}
       />,
     );
@@ -99,6 +105,7 @@ describe('DependencyPanel', () => {
         expandedKeys={[]}
         onClose={vi.fn()}
         onShowInGraph={vi.fn()}
+        onViewModuleJson={vi.fn()}
         {...highlightProps}
       />,
     );

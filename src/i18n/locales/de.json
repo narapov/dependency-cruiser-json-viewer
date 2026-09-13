@@ -144,6 +144,10 @@
     "noDependencies": "Keine Abhängigkeiten",
     "hidden": "Ausgeblendet ({{count}})"
   },
+  "moduleJson": {
+    "view": "Modul-JSON anzeigen",
+    "title": "Modul-JSON: {{path}}"
+  },
   "applicableRulesPanel": {
     "title": "Anwendbare Regeln",
     "empty": "Keine anwendbaren Regeln für diesen Pfad."

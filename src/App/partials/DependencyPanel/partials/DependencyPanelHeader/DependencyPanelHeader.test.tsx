@@ -14,13 +14,24 @@ describe('DependencyPanelHeader', () => {
     const { result: i18n } = renderHook(() => useTranslation());
     const onClose = vi.fn();
     const onShowInGraph = vi.fn();
+    const onViewModuleJson = vi.fn();
 
-    renderWithTheme(<DependencyPanelHeader path="src/foo/a.ts" onClose={onClose} onShowInGraph={onShowInGraph} />);
+    renderWithTheme(
+      <DependencyPanelHeader
+        path="src/foo/a.ts"
+        onClose={onClose}
+        onShowInGraph={onShowInGraph}
+        onViewModuleJson={onViewModuleJson}
+      />,
+    );
 
     expect(screen.getByText('src/foo/a.ts')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: i18n.current.t('actions.showInGraph') }));
     expect(onShowInGraph).toHaveBeenCalledWith('src/foo/a.ts');
+
+    fireEvent.click(screen.getByRole('button', { name: i18n.current.t('moduleJson.view') }));
+    expect(onViewModuleJson).toHaveBeenCalledWith('src/foo/a.ts');
 
     fireEvent.click(screen.getByRole('button', { name: i18n.current.t('actions.close') }));
     expect(onClose).toHaveBeenCalled();

@@ -144,6 +144,10 @@
     "noDependencies": "No dependencies",
     "hidden": "Hidden ({{count}})"
   },
+  "moduleJson": {
+    "view": "View module JSON",
+    "title": "Module JSON: {{path}}"
+  },
   "applicableRulesPanel": {
     "title": "Applicable rules",
     "empty": "No applicable rules for this path."

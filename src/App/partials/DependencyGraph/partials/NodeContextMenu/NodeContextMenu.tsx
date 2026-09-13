@@ -32,6 +32,7 @@ export function NodeContextMenu({
     onShowInFileTree,
     onShowDependenciesPanel,
     onShowApplicableRulesPanel,
+    onViewModuleJson,
     onHideOthers,
     onShowDirectDependencies,
     onShowDirectDependents,
@@ -94,6 +95,7 @@ export function NodeContextMenu({
         <MenuItem onClick={handleAction(() => onShowApplicableRulesPanel(path))}>
           {t('actions.viewApplicableRules')}
         </MenuItem>
+        <MenuItem onClick={handleAction(() => onViewModuleJson(path))}>{t('moduleJson.view')}</MenuItem>
       </Menu>
     </>
   );

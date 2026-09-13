@@ -144,6 +144,10 @@
     "noDependencies": "Нет зависимостей",
     "hidden": "Скрытые ({{count}})"
   },
+  "moduleJson": {
+    "view": "Показать JSON модуля",
+    "title": "JSON модуля: {{path}}"
+  },
   "applicableRulesPanel": {
     "title": "Применимые правила",
     "empty": "Нет применимых правил для этого пути."

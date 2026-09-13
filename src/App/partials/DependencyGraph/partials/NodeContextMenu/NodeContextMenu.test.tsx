@@ -121,4 +121,22 @@ describe('NodeContextMenu', () => {
     fireEvent.click(screen.getByText(i18n.current.t('actions.showDirectDependents')));
     expect(onShowDirectDependents).toHaveBeenCalledWith('src/a.ts');
   });
+
+  it('shows view module JSON and runs it', () => {
+    const { result: i18n } = renderHook(() => useTranslation());
+    const onViewModuleJson = vi.fn();
+    renderNodeContextMenu(
+      {
+        path: 'src/a.ts',
+        isFolder: false,
+      },
+      createMockGraphActions({ onViewModuleJson }),
+    );
+
+    fireEvent.contextMenu(screen.getByText('src/a.ts'));
+    fireEvent.click(screen.getByText(i18n.current.t('moduleJson.view')));
+
+    expect(onViewModuleJson).toHaveBeenCalledWith('src/a.ts');
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
 });

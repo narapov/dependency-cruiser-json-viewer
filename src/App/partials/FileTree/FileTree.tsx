@@ -25,6 +25,7 @@ interface FileTreeProps {
   onShowInGraph?: (path: string) => void;
   onShowDependenciesPanel?: (path: string) => void;
   onShowApplicableRulesPanel?: (path: string) => void;
+  onViewModuleJson: (path: string) => void;
   activePath?: string | null;
 }
 
@@ -39,6 +40,7 @@ export function FileTree({
   onShowInGraph,
   onShowDependenciesPanel,
   onShowApplicableRulesPanel,
+  onViewModuleJson,
   activePath = null,
 }: FileTreeProps) {
   const apiRef = useRichTreeViewApiRef();
@@ -119,6 +121,7 @@ export function FileTree({
     onShowDependenciesPanel,
     onShowApplicableRulesPanel,
     onShowInGraph: handleShowInGraph,
+    onViewModuleJson,
     onToggleExpand: toggleExpand,
   };
 
