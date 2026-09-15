@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v1.5.0...v1.6.0) (2026-09-15)
+
+### Features
+
+- add applicable rules panel ([#14](https://github.com/narapov/dependency-cruiser-json-viewer/issues/14)) ([9db8874](https://github.com/narapov/dependency-cruiser-json-viewer/commit/9db8874a198e75aa320e5c68ae3c69b5542d5e05))
+- add json preview ([#15](https://github.com/narapov/dependency-cruiser-json-viewer/issues/15)) ([1c53167](https://github.com/narapov/dependency-cruiser-json-viewer/commit/1c53167e059c49a9dab2d6713c128ab789688a55))
+
 ## [1.5.0](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v1.4.2...v1.5.0) (2026-08-29)
 
 ### Features
