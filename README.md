@@ -12,7 +12,7 @@ Built with [React](https://react.dev/), [MUI](https://mui.com/), and [@xyflow/re
 
 Try it live: [https://narapov.github.io/dependency-cruiser-json-viewer/](https://narapov.github.io/dependency-cruiser-json-viewer/)
 
-The demo loads the dependency-cruiser cruise result of this project by default. To explore your own codebase, press **F1** to open the command palette and choose **Load dependency-cruiser JSON**, or drag and drop a local `.json` file onto the window.
+The demo loads the dependency-cruiser cruise result of this project by default. To explore your own codebase, press **F1** to open the command palette and choose **Cruise Result: Load JSON**, or drag and drop a local `.json` file onto the window.
 
 ## Motivation
 
@@ -34,11 +34,11 @@ The usual workflow meant constantly tweaking filters, `collapsePattern`, and `ex
 - **Applicable rules panel** — see which cruise rules apply to a path and jump to their violations.
 - **Circular dependencies** — open the Circular panel to browse distinct cycles; expand a cycle for member paths, or show the cycle in the graph without unrelated modules.
 - **Drill-down navigation** — expanding a folder in the tree rebuilds the graph for that scope, so you can walk from high-level architecture down to individual files.
-- **Load cruise JSON** — load a cruise result via the command palette (**Load dependency-cruiser JSON**) or by dragging a `.json` file onto the window (disabled while watch mode is active).
-- **JSON preview** — interactive raw JSON (expand/collapse) for the full cruise result via the command palette (**View Cruise Result JSON**); for a module or folder from the file tree / graph node context menu, dependencies panel, status bar, or command palette (**View active item module JSON**); and for a rule from the Rules or Applicable rules panels.
+- **Load cruise JSON** — load a cruise result via the command palette (**Cruise Result: Load JSON**) or by dragging a `.json` file onto the window (disabled while watch mode is active).
+- **JSON preview** — interactive raw JSON (expand/collapse) for the full cruise result via the command palette (**Cruise Result: View JSON**); for a module or folder from the file tree / graph node context menu, dependencies panel, status bar, or command palette (**Active Item: View Module JSON**); and for a rule from the Rules or Applicable rules panels.
 - **Quick search & commands** — fuzzy file search (`Cmd/Ctrl+P`) and command palette (`F1`); see Keyboard shortcuts below.
-- **DOT export** — export the current graph layout as a Graphviz `.dot` file via the command palette (**Export Graph DOT**), or open it in [Graphviz Online](https://dreampuf.github.io/GraphvizOnline/?engine=nop2) (**View Graph DOT Online**); render locally with `neato -n2 -Tsvg graph.dot` or `dot -Knop2 -Tsvg graph.dot`.
-- **Workspace save/load** — save selection, expansion, ignore patterns, edge highlights, folder colors, and layout into the cruise JSON under `dependency-cruiser-json-viewer` (**Save Workspace**). Both **Load dependency-cruiser JSON** (when the file has workspace settings) and **Load Workspace Settings** always clear the current view and replace selection, expansion, the dependencies panel path, ignore patterns, edge highlights, folder colors, and layout from the file, dropping entries that no longer match the relevant cruise data (e.g. references to files or dependencies that no longer exist).
+- **DOT export** — export the current graph layout as a Graphviz `.dot` file via the command palette (**Graph: Export DOT**), or open it in [Graphviz Online](https://dreampuf.github.io/GraphvizOnline/?engine=nop2) (**Graph: View DOT Online**); render locally with `neato -n2 -Tsvg graph.dot` or `dot -Knop2 -Tsvg graph.dot`.
+- **Workspace save/load** — save selection, expansion, ignore patterns, edge highlights, folder colors, and layout into the cruise JSON under `dependency-cruiser-json-viewer` (**Workspace: Save**). Both **Cruise Result: Load JSON** (when the file has workspace settings) and **Workspace: Load Settings** always clear the current view and replace selection, expansion, the dependencies panel path, ignore patterns, edge highlights, folder colors, and layout from the file, dropping entries that no longer match the relevant cruise data (e.g. references to files or dependencies that no longer exist).
 - **Ignore patterns** — glob patterns to exclude modules from tree and graph.
 - **Watch mode** — reload the cruise JSON when the file changes on disk and keep the current workspace (see [Watch mode](#watch-mode)).
 
@@ -81,7 +81,7 @@ The CLI serves the built viewer from `dist` and streams your JSON file at `/crui
 
 ## Watch mode
 
-When watch mode is on, the viewer reloads `/cruise-result.json` whenever that file changes on disk and re-applies the current workspace (selection, ignore patterns, edge highlights, folder colors, and layout). Manual **Load dependency-cruiser JSON** and drag-and-drop load are disabled while watch is active.
+When watch mode is on, the viewer reloads `/cruise-result.json` whenever that file changes on disk and re-applies the current workspace (selection, ignore patterns, edge highlights, folder colors, and layout). Manual **Cruise Result: Load JSON** and drag-and-drop load are disabled while watch is active.
 
 ### CLI
 
