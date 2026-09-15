@@ -31,6 +31,8 @@ interface UseAppCommandsOptions {
   openLoadCruiseResult: () => void;
   openLoadSettings: () => void;
   openAbout: () => void;
+  openViewCruiseResultJson: () => void;
+  openViewActiveModuleJson: () => void;
   showFileTree: () => void;
   showRulesPanel: () => void;
   showCircularPanel: () => void;
@@ -38,6 +40,7 @@ interface UseAppCommandsOptions {
   toggleSidebar: () => void;
   fileLoadInProgress?: boolean;
   cruiseWatchEnabled?: boolean;
+  hasCruiseResult?: boolean;
 }
 
 export function useAppCommands({
@@ -48,6 +51,8 @@ export function useAppCommands({
   openLoadCruiseResult,
   openLoadSettings,
   openAbout,
+  openViewCruiseResultJson,
+  openViewActiveModuleJson,
   showFileTree,
   showRulesPanel,
   showCircularPanel,
@@ -55,6 +60,7 @@ export function useAppCommands({
   toggleSidebar,
   fileLoadInProgress = false,
   cruiseWatchEnabled = false,
+  hasCruiseResult = false,
 }: UseAppCommandsOptions): QuickPickCommand[] {
   const { t } = useTranslation();
   const {
@@ -91,6 +97,11 @@ export function useAppCommands({
       id: 'viewActiveItemApplicableRulesPanel',
       label: t('commands.viewActiveItemApplicableRulesPanel'),
       onExecute: viewActiveItemApplicableRulesPanel,
+    },
+    {
+      id: 'viewActiveItemModuleJson',
+      label: t('commands.viewActiveItemModuleJson'),
+      onExecute: openViewActiveModuleJson,
     },
     { id: 'expandActive', label: t('commands.expandActive'), onExecute: expandActive },
     {
@@ -154,6 +165,12 @@ export function useAppCommands({
       disabled: fileLoadInProgress,
     },
     { id: 'about', label: t('commands.about'), onExecute: openAbout },
+    {
+      id: 'viewCruiseResultJson',
+      label: t('commands.viewCruiseResultJson'),
+      onExecute: openViewCruiseResultJson,
+      disabled: !hasCruiseResult,
+    },
     { id: 'showFileTree', label: t('commands.showFileTree'), onExecute: showFileTree },
     { id: 'showRulesPanel', label: t('commands.showRulesPanel'), onExecute: showRulesPanel },
     { id: 'showCircularPanel', label: t('commands.showCircularPanel'), onExecute: showCircularPanel },

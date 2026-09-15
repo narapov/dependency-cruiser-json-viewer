@@ -1,7 +1,10 @@
 // @vitest-environment jsdom
+import { useTranslation } from 'react-i18next';
 import { describe, expect, it, vi } from 'vitest';
 
-import { act, renderHook } from '@testing-library/react';
+import { act, renderHook, screen } from '@testing-library/react';
+
+import { renderWithTheme } from '@/testsUtils';
 
 import { useFileTreeContextMenu } from './useFileTreeContextMenu';
 
@@ -19,6 +22,7 @@ describe('useFileTreeContextMenu', () => {
       useFileTreeContextMenu({
         path: 'src/a.ts',
         onShowInGraph: vi.fn(),
+        onViewModuleJson: vi.fn(),
       }),
     );
 
@@ -42,6 +46,7 @@ describe('useFileTreeContextMenu', () => {
     const { result } = renderHook(() =>
       useFileTreeContextMenu({
         path: 'src/a.ts',
+        onViewModuleJson: vi.fn(),
       }),
     );
 
@@ -58,5 +63,26 @@ describe('useFileTreeContextMenu', () => {
       result.current.contextMenu.props.onClose();
     });
     expect(result.current.contextMenu.props.open).toBe(false);
+  });
+
+  it('always includes view module JSON menu item', () => {
+    const { result: i18n } = renderHook(() => useTranslation());
+    const { result } = renderHook(() =>
+      useFileTreeContextMenu({
+        path: 'src/a.ts',
+        onViewModuleJson: vi.fn(),
+      }),
+    );
+
+    act(() => {
+      result.current.onContextMenu({
+        preventDefault: vi.fn(),
+        clientX: 1,
+        clientY: 2,
+      } as never);
+    });
+
+    renderWithTheme(result.current.contextMenu);
+    expect(screen.getByText(i18n.current.t('moduleJson.view'))).toBeInTheDocument();
   });
 });

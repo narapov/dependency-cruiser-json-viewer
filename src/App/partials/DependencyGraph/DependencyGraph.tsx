@@ -12,7 +12,7 @@ import { Background, Controls, MiniMap, Panel, ReactFlow, ReactFlowProvider, typ
 import '@xyflow/react/dist/style.css';
 
 import type { FolderBaseColor } from '@/domain';
-import { downloadTextFile, openGraphvizOnline } from '@/Shared';
+import { downloadTextFile, openGraphvizOnline, useResolvedColorMode } from '@/Shared';
 
 import { GraphActionsProvider } from './contexts';
 import { buildEdgeDependencyKeyMap, getMinimapNodeColor, serializeGraphToDot } from './helpers';
@@ -59,6 +59,7 @@ interface DependencyGraphInnerProps {
   onShowInFileTree: (path: string) => void;
   onShowDependenciesPanel: (path: string) => void;
   onShowApplicableRulesPanel: (path: string) => void;
+  onViewModuleJson: (path: string) => void;
   onHideOthers: (path: string) => void;
   onShowDirectDependencies: (path: string) => void;
   onShowDirectDependents: (path: string) => void;
@@ -82,6 +83,7 @@ function DependencyGraphInner({
   onShowInFileTree,
   onShowDependenciesPanel,
   onShowApplicableRulesPanel,
+  onViewModuleJson,
   onHideOthers,
   onShowDirectDependencies,
   onShowDirectDependents,
@@ -95,10 +97,8 @@ function DependencyGraphInner({
 }: DependencyGraphInnerProps) {
   const { t } = useTranslation();
   const theme = useTheme();
-  const { mode, systemMode } = useColorScheme();
-  const resolvedMode = mode === 'system' ? systemMode : mode;
-
-  const colorMode = resolvedMode ?? 'light';
+  const { mode } = useColorScheme();
+  const colorMode = useResolvedColorMode();
   const folderColors = useThemedFolderColors(folderBaseColors, colorMode);
 
   const { graphResult, isBuildingGraph, buildFailed, clearBuildFailed, expandedFolders } = useBuildGraph({
@@ -223,6 +223,7 @@ function DependencyGraphInner({
     onShowInFileTree,
     onShowDependenciesPanel,
     onShowApplicableRulesPanel,
+    onViewModuleJson,
     onHideOthers,
     onShowDirectDependencies,
     onShowDirectDependents,
@@ -269,9 +270,9 @@ function DependencyGraphInner({
             pannable
             zoomable
             nodeColor={miniMapNodeColor}
-            nodeStrokeColor={resolvedMode === 'dark' ? theme.palette.grey[600] : theme.palette.grey[500]}
+            nodeStrokeColor={colorMode === 'dark' ? theme.palette.grey[600] : theme.palette.grey[500]}
             nodeStrokeWidth={1}
-            maskStrokeColor={resolvedMode === 'dark' ? theme.palette.common.white : theme.palette.common.black}
+            maskStrokeColor={colorMode === 'dark' ? theme.palette.common.white : theme.palette.common.black}
             maskStrokeWidth={2}
             style={{ width: 160, height: 120 }}
           />

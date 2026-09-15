@@ -52,12 +52,18 @@
     "highlight": "Подсветить",
     "clear": "Очистить"
   },
+  "jsonView": {
+    "initial": "Исходное",
+    "expandAll": "Развернуть всё",
+    "collapseAll": "Свернуть всё"
+  },
   "commands": {
     "clearLocalStorage": "Очистить локальное хранилище",
     "showActive": "Показать активный элемент",
     "copyActive": "Копировать активный элемент",
     "viewActiveItemDependenciesPanel": "Панель зависимостей активного элемента",
     "viewActiveItemApplicableRulesPanel": "Панель применимых правил активного элемента",
+    "viewActiveItemModuleJson": "Показать JSON модуля активного элемента",
     "expandActive": "Развернуть активный элемент",
     "expandActiveRecursive": "Развернуть активный элемент рекурсивно",
     "collapseActive": "Свернуть активный элемент",
@@ -81,7 +87,8 @@
     "toggleSidebar": "Переключить боковую панель",
     "unselectAll": "Снять выделение",
     "about": "О приложении",
-    "saveWorkspace": "Сохранить рабочее пространство"
+    "saveWorkspace": "Сохранить рабочее пространство",
+    "viewCruiseResultJson": "Показать JSON результата cruise"
   },
   "quickPick": {
     "commandPlaceholder": "Введите название команды...",
@@ -137,6 +144,10 @@
     "dependents": "Зависимые",
     "noDependencies": "Нет зависимостей",
     "hidden": "Скрытые ({{count}})"
+  },
+  "moduleJson": {
+    "view": "Показать JSON модуля",
+    "title": "JSON модуля: {{path}}"
   },
   "applicableRulesPanel": {
     "title": "Применимые правила",

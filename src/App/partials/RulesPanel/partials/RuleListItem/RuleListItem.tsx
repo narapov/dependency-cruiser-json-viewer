@@ -20,8 +20,8 @@ import Typography from '@mui/material/Typography';
 import type { RuleWithViolations } from '@/domain';
 import { HighlightedMatchText, MatchHighlight } from '@/Shared';
 
+import { RuleJsonDialog } from '../../../RuleJsonDialog';
 import { findSubstringMatchIndexes } from '../../helpers/findSubstringMatchIndexes';
-import { RuleJsonDialog } from '../RuleJsonDialog';
 
 interface RuleListItemProps {
   entry: RuleWithViolations;
@@ -108,16 +108,16 @@ export function RuleListItem({ entry, nameFilter, onSelectViolationPaths }: Rule
             variant="outlined"
             sx={{ height: 20, fontSize: 10, flexShrink: 0 }}
           />
-          {hasViolations ? (
+          {hasViolations && (
             <Chip
               size="small"
               label={t('rules.violationsCount', { count })}
               color="error"
               sx={{ height: 20, fontSize: 11, flexShrink: 0 }}
             />
-          ) : null}
+          )}
         </Stack>
-        {canViewJson ? (
+        {canViewJson && (
           <Tooltip title={t('rules.viewJson')}>
             <IconButton
               size="small"
@@ -128,9 +128,9 @@ export function RuleListItem({ entry, nameFilter, onSelectViolationPaths }: Rule
               <DataObjectOutlined fontSize="small" />
             </IconButton>
           </Tooltip>
-        ) : null}
+        )}
       </ListItem>
-      {hasViolations ? (
+      {hasViolations && (
         <Collapse in={expanded} timeout="auto" unmountOnExit>
           <List dense disablePadding sx={{ pl: 4, pb: 0.5 }}>
             {entry.violations.map(violation => {
@@ -159,10 +159,10 @@ export function RuleListItem({ entry, nameFilter, onSelectViolationPaths }: Rule
             })}
           </List>
         </Collapse>
-      ) : null}
-      {canViewJson ? (
+      )}
+      {canViewJson && (
         <RuleJsonDialog open={jsonOpen} ruleName={entry.name} rule={entry.rule} onClose={() => setJsonOpen(false)} />
-      ) : null}
+      )}
     </>
   );
 }

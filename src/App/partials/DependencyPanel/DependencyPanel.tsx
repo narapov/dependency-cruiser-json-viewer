@@ -18,6 +18,7 @@ interface DependencyPanelProps {
   expandedKeys: string[];
   onClose: () => void;
   onShowInGraph: (path: string) => void;
+  onViewModuleJson: (path: string) => void;
   userEdgeHighlights: ReadonlyMap<string, string>;
   onSetUserDependencyHighlight: (dependencyKeys: readonly string[], color: string | null) => void;
 }
@@ -29,6 +30,7 @@ export function DependencyPanel({
   expandedKeys,
   onClose,
   onShowInGraph,
+  onViewModuleJson,
   userEdgeHighlights,
   onSetUserDependencyHighlight,
 }: DependencyPanelProps) {
@@ -42,7 +44,12 @@ export function DependencyPanel({
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
-      <DependencyPanelHeader path={path} onClose={onClose} onShowInGraph={onShowInGraph} />
+      <DependencyPanelHeader
+        path={path}
+        onClose={onClose}
+        onShowInGraph={onShowInGraph}
+        onViewModuleJson={onViewModuleJson}
+      />
       <Divider />
       <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto', px: 2, py: 1.5 }}>
         <Typography variant="subtitle1" gutterBottom>

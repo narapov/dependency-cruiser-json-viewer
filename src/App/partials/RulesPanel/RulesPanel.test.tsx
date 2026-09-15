@@ -4,7 +4,7 @@ import type { IFlattenedRuleSet, IViolation } from 'dependency-cruiser';
 import { useTranslation } from 'react-i18next';
 import { describe, expect, it, vi } from 'vitest';
 
-import { fireEvent, renderHook, screen } from '@testing-library/react';
+import { fireEvent, renderHook, screen, within } from '@testing-library/react';
 
 import { renderWithTheme } from '@/testsUtils';
 
@@ -192,8 +192,9 @@ describe('RulesPanel', () => {
     const jsonButtons = screen.getAllByRole('button', { name: i18n.current.t('rules.viewJson') });
     fireEvent.click(jsonButtons[0]!);
 
-    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    const dialog = screen.getByRole('dialog');
+    expect(dialog).toBeInTheDocument();
     expect(screen.getByText(i18n.current.t('rules.jsonTitle', { name: 'domain-only-domain' }))).toBeInTheDocument();
-    expect(screen.getByText(/"name": "domain-only-domain"/)).toBeInTheDocument();
+    expect(within(dialog).getByText('"domain-only-domain"')).toBeInTheDocument();
   });
 });

@@ -51,13 +51,13 @@ export function useRelationRowContextMenu({
     >
       <MenuItem onClick={handleAction(() => void copyToClipboard(path))}>{t('actions.copyPath')}</MenuItem>
       <MenuItem onClick={handleAction(() => onShowInGraph(path))}>{t('actions.showInGraph')}</MenuItem>
-      {highlightEnabled && onSetHighlight != null ? (
+      {highlightEnabled && onSetHighlight != null && (
         <EdgeHighlightSubmenu
           currentHighlight={currentHighlight}
           onSetHighlight={onSetHighlight}
           onClose={handleClose}
         />
-      ) : null}
+      )}
     </Menu>
   );
 

@@ -117,7 +117,7 @@ export function RelationRow({
         ) : (
           <Box sx={{ width: 24, flexShrink: 0 }} />
         )}
-        {highlightEnabled && currentHighlight != null ? (
+        {highlightEnabled && currentHighlight != null && (
           <Box
             aria-hidden
             sx={{
@@ -130,7 +130,7 @@ export function RelationRow({
               border: '1px solid rgba(0, 0, 0, 0.2)',
             }}
           />
-        ) : null}
+        )}
         <ListItemText
           primary={getBaseName(item.path)}
           sx={{ flex: 1, minWidth: 0, m: 0 }}
@@ -147,7 +147,7 @@ export function RelationRow({
           }}
         />
         <Stack className="relationRowActions" direction="row" sx={{ flexShrink: 0, alignItems: 'center' }}>
-          {highlightEnabled ? (
+          {highlightEnabled && (
             <Tooltip title={t('actions.highlight')}>
               <IconButton
                 edge="end"
@@ -158,7 +158,7 @@ export function RelationRow({
                 sx={{ p: 0.25, position: 'relative' }}
               >
                 <ColorizeOutlined fontSize="small" />
-                {currentHighlight != null ? (
+                {currentHighlight != null && (
                   <Box
                     sx={{
                       position: 'absolute',
@@ -171,10 +171,10 @@ export function RelationRow({
                       border: '1px solid rgba(0, 0, 0, 0.25)',
                     }}
                   />
-                ) : null}
+                )}
               </IconButton>
             </Tooltip>
-          ) : null}
+          )}
           <Tooltip title={t('actions.copyPath')}>
             <IconButton
               edge="end"
@@ -200,7 +200,7 @@ export function RelationRow({
         </Stack>
       </ListItem>
       {contextMenu}
-      {highlightEnabled ? (
+      {highlightEnabled && (
         <Menu
           anchorEl={highlightMenuAnchor}
           open={highlightMenuAnchor != null}
@@ -215,8 +215,8 @@ export function RelationRow({
             }}
           />
         </Menu>
-      ) : null}
-      {hasChildren ? (
+      )}
+      {hasChildren && (
         <Collapse in={expanded} timeout="auto" unmountOnExit>
           <List dense disablePadding>
             {item.children!.map(child => (
@@ -237,7 +237,7 @@ export function RelationRow({
             ))}
           </List>
         </Collapse>
-      ) : null}
+      )}
     </>
   );
 }

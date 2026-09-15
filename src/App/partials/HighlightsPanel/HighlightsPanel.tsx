@@ -29,13 +29,13 @@ export function HighlightsPanel({
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
-      {!isEmpty ? (
+      {!isEmpty && (
         <Stack direction="row" sx={{ px: 1, py: 0.5, flexShrink: 0, justifyContent: 'flex-end' }}>
           <Button size="small" color="error" onClick={onClearAll}>
             {t('highlights.clearAll')}
           </Button>
         </Stack>
-      ) : null}
+      )}
       <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto', px: 0.5 }}>
         {isEmpty ? (
           <Typography variant="body2" color="text.secondary" sx={{ px: 1, py: 1 }}>

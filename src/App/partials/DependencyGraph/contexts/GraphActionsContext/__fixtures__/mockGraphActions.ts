@@ -10,6 +10,7 @@ export function createMockGraphActions(overrides: Partial<GraphActionsContextVal
     onShowInFileTree: vi.fn(),
     onShowDependenciesPanel: vi.fn(),
     onShowApplicableRulesPanel: vi.fn(),
+    onViewModuleJson: vi.fn(),
     onHideOthers: vi.fn(),
     onShowDirectDependencies: vi.fn(),
     onShowDirectDependents: vi.fn(),

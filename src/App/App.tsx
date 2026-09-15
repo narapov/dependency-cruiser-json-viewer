@@ -29,6 +29,7 @@ import {
   useInitialDependencyCruiserState,
   useLoadCruiseResultFromFile,
   useLoadWorkspaceSettingsFromFile,
+  useModuleJsonDialog,
   type LoadedCruiseResultFile,
 } from './hooks';
 import { AboutDialog } from './partials/AboutDialog';
@@ -43,6 +44,7 @@ import { DependencyGraph, type DependencyGraphHandle } from './partials/Dependen
 import { DependencyPanel } from './partials/DependencyPanel';
 import { type FileTreeHandle } from './partials/FileTree';
 import { IgnorePatternsDialog } from './partials/IgnorePatternsDialog';
+import { JsonViewDialog } from './partials/JsonViewDialog';
 import { LanguagePickerDialog } from './partials/LanguagePickerDialog';
 import { QuickPick, type QuickPickHandle } from './partials/QuickPick';
 import { ThemePickerDialog } from './partials/ThemePickerDialog';
@@ -64,6 +66,7 @@ function App() {
   const [languagePickerOpen, setLanguagePickerOpen] = useState(false);
   const [ignorePatternsOpen, setIgnorePatternsOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [cruiseResultJsonOpen, setCruiseResultJsonOpen] = useState(false);
 
   const filteredData = useMemo(() => (data ? filterCruiseResult(data, patterns) : undefined), [data, patterns]);
 
@@ -239,6 +242,8 @@ function App() {
 
   const { showInFileTree, setSelectedPaths, selectedPaths, showInGraph, activatePath } = orch;
 
+  const { openModuleJson, moduleJsonDialog } = useModuleJsonDialog(data?.modules ?? []);
+
   const handleShowInFileTree = useCallback(
     (path: string) => {
       setSidebarView('files');
@@ -278,6 +283,12 @@ function App() {
     openLoadCruiseResult,
     openLoadSettings,
     openAbout: () => setAboutOpen(true),
+    openViewCruiseResultJson: () => setCruiseResultJsonOpen(true),
+    openViewActiveModuleJson: () => {
+      if (orch.activePath != null) {
+        openModuleJson(orch.activePath);
+      }
+    },
     showFileTree: () => {
       setSidebarView('files');
       setSidebarOpen(true);
@@ -297,6 +308,7 @@ function App() {
     toggleSidebar: toggleSidebarOpen,
     fileLoadInProgress: isFileLoading,
     cruiseWatchEnabled,
+    hasCruiseResult: data != null,
   });
 
   if (isPending) {
@@ -376,6 +388,7 @@ function App() {
           onShowInGraph={orch.showInGraph}
           onShowDependenciesPanel={orch.handleShowDependenciesPanel}
           onShowApplicableRulesPanel={orch.handleShowApplicableRulesPanel}
+          onViewModuleJson={openModuleJson}
           activePath={orch.activePath}
           ruleSetUsed={data.summary.ruleSetUsed}
           violations={data.summary.violations}
@@ -400,6 +413,7 @@ function App() {
           onShowInFileTree={handleShowInFileTree}
           onShowDependenciesPanel={orch.handleShowDependenciesPanel}
           onShowApplicableRulesPanel={orch.handleShowApplicableRulesPanel}
+          onViewModuleJson={openModuleJson}
           onHideOthers={orch.hideOthers}
           onShowDirectDependencies={orch.showDirectDependencies}
           onShowDirectDependents={orch.showDirectDependents}
@@ -419,6 +433,7 @@ function App() {
             expandedKeys={orch.expandedKeys}
             onClose={orch.handleClosePanel}
             onShowInGraph={orch.showInGraph}
+            onViewModuleJson={openModuleJson}
             userEdgeHighlights={orch.userEdgeHighlights}
             onSetUserDependencyHighlight={orch.setUserDependencyHighlight}
           />
@@ -484,6 +499,15 @@ function App() {
             onSave={setPatterns}
           />
           <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} />
+          <JsonViewDialog
+            open={cruiseResultJsonOpen}
+            title={t('commands.viewCruiseResultJson')}
+            data={data ?? null}
+            onClose={() => setCruiseResultJsonOpen(false)}
+            shouldExpandNode={level => level < 4}
+            fullScreen
+          />
+          {moduleJsonDialog}
         </>
       }
       footer={
@@ -492,6 +516,7 @@ function App() {
           onFocusActivePath={orch.focusActivePath}
           onShowDependenciesPanel={orch.handleShowDependenciesPanel}
           onShowApplicableRulesPanel={orch.handleShowApplicableRulesPanel}
+          onViewModuleJson={openModuleJson}
         />
       }
       dependenciesPanelOpen={orch.dependenciesPanelOpen}

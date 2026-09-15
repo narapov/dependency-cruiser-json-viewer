@@ -31,6 +31,7 @@ export const FileTreeItem = forwardRef<HTMLLIElement, TreeItemProps>(function Fi
     onShowInGraph: navigable ? ctx.onShowInGraph : undefined,
     onShowDependenciesPanel: navigable ? ctx.onShowDependenciesPanel : undefined,
     onShowApplicableRulesPanel: navigable ? ctx.onShowApplicableRulesPanel : undefined,
+    onViewModuleJson: ctx.onViewModuleJson,
   });
 
   return (

@@ -52,12 +52,18 @@
     "highlight": "Highlight",
     "clear": "Clear"
   },
+  "jsonView": {
+    "initial": "Initial",
+    "expandAll": "Expand all",
+    "collapseAll": "Collapse all"
+  },
   "commands": {
     "clearLocalStorage": "Clear Local Storage",
     "showActive": "Show Active Item",
     "copyActive": "Copy Active Item",
     "viewActiveItemDependenciesPanel": "View active item dependencies panel",
     "viewActiveItemApplicableRulesPanel": "View active item applicable rules panel",
+    "viewActiveItemModuleJson": "View active item module JSON",
     "expandActive": "Expand Active Item",
     "expandActiveRecursive": "Expand Active Item Recursive",
     "collapseActive": "Collapse Active Item",
@@ -81,7 +87,8 @@
     "toggleSidebar": "Toggle Sidebar",
     "unselectAll": "Unselect All",
     "about": "About",
-    "saveWorkspace": "Save Workspace"
+    "saveWorkspace": "Save Workspace",
+    "viewCruiseResultJson": "View Cruise Result JSON"
   },
   "quickPick": {
     "commandPlaceholder": "Type the name of a command to run...",
@@ -137,6 +144,10 @@
     "dependents": "Dependents",
     "noDependencies": "No dependencies",
     "hidden": "Hidden ({{count}})"
+  },
+  "moduleJson": {
+    "view": "View module JSON",
+    "title": "Module JSON: {{path}}"
   },
   "applicableRulesPanel": {
     "title": "Applicable rules",

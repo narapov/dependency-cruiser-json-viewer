@@ -48,7 +48,7 @@ export function RelationList({
 
   return (
     <Box>
-      {items.length > 0 ? (
+      {items.length > 0 && (
         <List dense disablePadding>
           {items.map(item => {
             const expandKey = item.path;
@@ -70,9 +70,9 @@ export function RelationList({
             );
           })}
         </List>
-      ) : null}
+      )}
 
-      {hiddenItems.length > 0 ? (
+      {hiddenItems.length > 0 && (
         <Box sx={{ mt: items.length > 0 ? 0.5 : 0 }}>
           <HiddenRelationsSection
             hiddenItems={hiddenItems}
@@ -84,7 +84,7 @@ export function RelationList({
             onShowInGraph={onShowInGraph}
           />
         </Box>
-      ) : null}
+      )}
     </Box>
   );
 }

@@ -52,12 +52,18 @@
     "highlight": "Surligner",
     "clear": "Effacer"
   },
+  "jsonView": {
+    "initial": "Initial",
+    "expandAll": "Tout développer",
+    "collapseAll": "Tout réduire"
+  },
   "commands": {
     "clearLocalStorage": "Effacer le stockage local",
     "showActive": "Afficher l'élément actif",
     "copyActive": "Copier l'élément actif",
     "viewActiveItemDependenciesPanel": "Voir le panneau des dépendances de l'élément actif",
     "viewActiveItemApplicableRulesPanel": "Voir le panneau des règles applicables de l'élément actif",
+    "viewActiveItemModuleJson": "Voir le JSON du module de l'élément actif",
     "expandActive": "Développer l'élément actif",
     "expandActiveRecursive": "Développer récursivement l'élément actif",
     "collapseActive": "Réduire l'élément actif",
@@ -81,7 +87,8 @@
     "toggleSidebar": "Afficher/Masquer la barre latérale",
     "unselectAll": "Tout désélectionner",
     "about": "À propos",
-    "saveWorkspace": "Enregistrer l'espace de travail"
+    "saveWorkspace": "Enregistrer l'espace de travail",
+    "viewCruiseResultJson": "Voir le JSON du résultat cruise"
   },
   "quickPick": {
     "commandPlaceholder": "Tapez le nom d'une commande à exécuter...",
@@ -137,6 +144,10 @@
     "dependents": "Dépendants",
     "noDependencies": "Aucune dépendance",
     "hidden": "Masquées ({{count}})"
+  },
+  "moduleJson": {
+    "view": "Voir le JSON du module",
+    "title": "JSON du module : {{path}}"
   },
   "applicableRulesPanel": {
     "title": "Règles applicables",

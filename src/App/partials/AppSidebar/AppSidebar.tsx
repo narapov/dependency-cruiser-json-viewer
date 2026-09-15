@@ -21,6 +21,7 @@ interface AppSidebarProps {
   onShowInGraph: (path: string) => void;
   onShowDependenciesPanel: (path: string) => void;
   onShowApplicableRulesPanel: (path: string) => void;
+  onViewModuleJson: (path: string) => void;
   activePath: string | null;
   ruleSetUsed: IFlattenedRuleSet | undefined;
   violations: readonly IViolation[] | undefined;
@@ -62,6 +63,7 @@ export function AppSidebar({
   onShowInGraph,
   onShowDependenciesPanel,
   onShowApplicableRulesPanel,
+  onViewModuleJson,
   activePath,
   ruleSetUsed,
   violations,
@@ -87,6 +89,7 @@ export function AppSidebar({
           onShowInGraph={onShowInGraph}
           onShowDependenciesPanel={onShowDependenciesPanel}
           onShowApplicableRulesPanel={onShowApplicableRulesPanel}
+          onViewModuleJson={onViewModuleJson}
           activePath={activePath}
         />
       </ViewPanel>

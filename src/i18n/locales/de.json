@@ -52,12 +52,18 @@
     "highlight": "Hervorheben",
     "clear": "Löschen"
   },
+  "jsonView": {
+    "initial": "Ausgangszustand",
+    "expandAll": "Alle erweitern",
+    "collapseAll": "Alle einklappen"
+  },
   "commands": {
     "clearLocalStorage": "Lokalen Speicher leeren",
     "showActive": "Aktives Element anzeigen",
     "copyActive": "Aktives Element kopieren",
     "viewActiveItemDependenciesPanel": "Abhängigkeiten-Panel des aktiven Elements anzeigen",
     "viewActiveItemApplicableRulesPanel": "Anwendbare-Regeln-Panel des aktiven Elements anzeigen",
+    "viewActiveItemModuleJson": "Modul-JSON des aktiven Elements anzeigen",
     "expandActive": "Aktives Element erweitern",
     "expandActiveRecursive": "Aktives Element rekursiv erweitern",
     "collapseActive": "Aktives Element einklappen",
@@ -81,7 +87,8 @@
     "toggleSidebar": "Seitenleiste ein-/ausblenden",
     "unselectAll": "Auswahl aufheben",
     "about": "Über",
-    "saveWorkspace": "Workspace speichern"
+    "saveWorkspace": "Workspace speichern",
+    "viewCruiseResultJson": "Cruise-Result-JSON anzeigen"
   },
   "quickPick": {
     "commandPlaceholder": "Geben Sie den Namen eines Befehls ein...",
@@ -137,6 +144,10 @@
     "dependents": "Abhängige",
     "noDependencies": "Keine Abhängigkeiten",
     "hidden": "Ausgeblendet ({{count}})"
+  },
+  "moduleJson": {
+    "view": "Modul-JSON anzeigen",
+    "title": "Modul-JSON: {{path}}"
   },
   "applicableRulesPanel": {
     "title": "Anwendbare Regeln",

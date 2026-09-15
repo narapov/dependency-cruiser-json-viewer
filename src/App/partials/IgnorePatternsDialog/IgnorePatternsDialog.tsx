@@ -127,9 +127,9 @@ export function IgnorePatternsDialog({ open, patterns, onClose, onSave }: Ignore
       sx={{ '& .MuiDialog-container': { alignItems: 'flex-start', pt: '12vh' } }}
     >
       <DialogTitle sx={{ pb: 1, fontSize: 16 }}>{t('ignorePatterns.setIgnorePatterns')}</DialogTitle>
-      {open ? (
+      {open && (
         <IgnorePatternsForm key={patternsToText(patterns)} patterns={patterns} onClose={onClose} onSave={onSave} />
-      ) : null}
+      )}
     </Dialog>
   );
 }

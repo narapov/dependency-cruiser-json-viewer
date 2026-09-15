@@ -31,6 +31,7 @@ describe('AppStatusBar', () => {
         onFocusActivePath={vi.fn()}
         onShowDependenciesPanel={vi.fn()}
         onShowApplicableRulesPanel={vi.fn()}
+        onViewModuleJson={vi.fn()}
       />,
     );
 
@@ -38,11 +39,12 @@ describe('AppStatusBar', () => {
     expect(screen.queryByRole('button', { name: i18n.current.t('actions.copyPath') })).not.toBeInTheDocument();
   });
 
-  it('renders path and invokes focus, dependencies, applicable rules, and copy actions', async () => {
+  it('renders path and invokes focus, dependencies, applicable rules, module JSON, and copy actions', async () => {
     const { result: i18n } = renderHook(() => useTranslation());
     const onFocusActivePath = vi.fn();
     const onShowDependenciesPanel = vi.fn();
     const onShowApplicableRulesPanel = vi.fn();
+    const onViewModuleJson = vi.fn();
     const { copyToClipboard } = await import('@/Shared');
 
     renderWithTheme(
@@ -51,6 +53,7 @@ describe('AppStatusBar', () => {
         onFocusActivePath={onFocusActivePath}
         onShowDependenciesPanel={onShowDependenciesPanel}
         onShowApplicableRulesPanel={onShowApplicableRulesPanel}
+        onViewModuleJson={onViewModuleJson}
       />,
     );
 
@@ -64,6 +67,9 @@ describe('AppStatusBar', () => {
 
     fireEvent.click(screen.getByRole('button', { name: i18n.current.t('actions.viewApplicableRules') }));
     expect(onShowApplicableRulesPanel).toHaveBeenCalledWith('src/foo/a.ts');
+
+    fireEvent.click(screen.getByRole('button', { name: i18n.current.t('moduleJson.view') }));
+    expect(onViewModuleJson).toHaveBeenCalledWith('src/foo/a.ts');
 
     fireEvent.click(screen.getByRole('button', { name: i18n.current.t('actions.copyPath') }));
     expect(copyToClipboard).toHaveBeenCalledWith('src/foo/a.ts');
