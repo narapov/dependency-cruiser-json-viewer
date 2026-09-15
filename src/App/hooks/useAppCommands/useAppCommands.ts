@@ -32,6 +32,7 @@ interface UseAppCommandsOptions {
   openLoadSettings: () => void;
   openAbout: () => void;
   openViewCruiseResultJson: () => void;
+  openViewActiveModuleJson: () => void;
   showFileTree: () => void;
   showRulesPanel: () => void;
   showCircularPanel: () => void;
@@ -51,6 +52,7 @@ export function useAppCommands({
   openLoadSettings,
   openAbout,
   openViewCruiseResultJson,
+  openViewActiveModuleJson,
   showFileTree,
   showRulesPanel,
   showCircularPanel,
@@ -95,6 +97,11 @@ export function useAppCommands({
       id: 'viewActiveItemApplicableRulesPanel',
       label: t('commands.viewActiveItemApplicableRulesPanel'),
       onExecute: viewActiveItemApplicableRulesPanel,
+    },
+    {
+      id: 'viewActiveItemModuleJson',
+      label: t('commands.viewActiveItemModuleJson'),
+      onExecute: openViewActiveModuleJson,
     },
     { id: 'expandActive', label: t('commands.expandActive'), onExecute: expandActive },
     {

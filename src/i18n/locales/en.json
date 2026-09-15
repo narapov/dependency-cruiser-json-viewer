@@ -63,6 +63,7 @@
     "copyActive": "Copy Active Item",
     "viewActiveItemDependenciesPanel": "View active item dependencies panel",
     "viewActiveItemApplicableRulesPanel": "View active item applicable rules panel",
+    "viewActiveItemModuleJson": "View active item module JSON",
     "expandActive": "Expand Active Item",
     "expandActiveRecursive": "Expand Active Item Recursive",
     "collapseActive": "Collapse Active Item",

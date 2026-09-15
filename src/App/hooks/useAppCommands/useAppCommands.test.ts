@@ -38,6 +38,7 @@ function baseOptions(overrides: Partial<Parameters<typeof useAppCommands>[0]> = 
     openLoadSettings: vi.fn(),
     openAbout: vi.fn(),
     openViewCruiseResultJson: vi.fn(),
+    openViewActiveModuleJson: vi.fn(),
     showFileTree: vi.fn(),
     showRulesPanel: vi.fn(),
     showCircularPanel: vi.fn(),
@@ -62,6 +63,7 @@ describe('useAppCommands', () => {
     expect(ids).toContain('showHighlightsPanel');
     expect(ids).toContain('about');
     expect(ids).toContain('viewCruiseResultJson');
+    expect(ids).toContain('viewActiveItemModuleJson');
     expect(ids).toContain('showFileTree');
     expect(ids).toContain('showRulesPanel');
     expect(ids).toContain('showCircularPanel');
@@ -78,6 +80,7 @@ describe('useAppCommands', () => {
     const openAbout = vi.fn();
     const openLoadSettings = vi.fn();
     const openViewCruiseResultJson = vi.fn();
+    const openViewActiveModuleJson = vi.fn();
     const showFileTree = vi.fn();
     const showRulesPanel = vi.fn();
     const showCircularPanel = vi.fn();
@@ -91,6 +94,7 @@ describe('useAppCommands', () => {
           openLoadSettings,
           openAbout,
           openViewCruiseResultJson,
+          openViewActiveModuleJson,
           showFileTree,
           showRulesPanel,
           showCircularPanel,
@@ -109,6 +113,7 @@ describe('useAppCommands', () => {
     byId.showHighlightsPanel.onExecute();
     byId.about.onExecute();
     byId.viewCruiseResultJson.onExecute();
+    byId.viewActiveItemModuleJson.onExecute();
     byId.showFileTree.onExecute();
     byId.showRulesPanel.onExecute();
     byId.showCircularPanel.onExecute();
@@ -125,6 +130,7 @@ describe('useAppCommands', () => {
     expect(showHighlightsPanel).toHaveBeenCalled();
     expect(openAbout).toHaveBeenCalled();
     expect(openViewCruiseResultJson).toHaveBeenCalled();
+    expect(openViewActiveModuleJson).toHaveBeenCalled();
     expect(showFileTree).toHaveBeenCalled();
     expect(showRulesPanel).toHaveBeenCalled();
     expect(showCircularPanel).toHaveBeenCalled();

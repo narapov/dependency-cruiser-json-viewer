@@ -63,6 +63,7 @@
     "copyActive": "Копировать активный элемент",
     "viewActiveItemDependenciesPanel": "Панель зависимостей активного элемента",
     "viewActiveItemApplicableRulesPanel": "Панель применимых правил активного элемента",
+    "viewActiveItemModuleJson": "Показать JSON модуля активного элемента",
     "expandActive": "Развернуть активный элемент",
     "expandActiveRecursive": "Развернуть активный элемент рекурсивно",
     "collapseActive": "Свернуть активный элемент",

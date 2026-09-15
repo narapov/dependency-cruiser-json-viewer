@@ -63,6 +63,7 @@
     "copyActive": "Copier l'élément actif",
     "viewActiveItemDependenciesPanel": "Voir le panneau des dépendances de l'élément actif",
     "viewActiveItemApplicableRulesPanel": "Voir le panneau des règles applicables de l'élément actif",
+    "viewActiveItemModuleJson": "Voir le JSON du module de l'élément actif",
     "expandActive": "Développer l'élément actif",
     "expandActiveRecursive": "Développer récursivement l'élément actif",
     "collapseActive": "Réduire l'élément actif",

@@ -284,6 +284,11 @@ function App() {
     openLoadSettings,
     openAbout: () => setAboutOpen(true),
     openViewCruiseResultJson: () => setCruiseResultJsonOpen(true),
+    openViewActiveModuleJson: () => {
+      if (orch.activePath != null) {
+        openModuleJson(orch.activePath);
+      }
+    },
     showFileTree: () => {
       setSidebarView('files');
       setSidebarOpen(true);
