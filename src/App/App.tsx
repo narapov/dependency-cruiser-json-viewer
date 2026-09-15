@@ -501,7 +501,7 @@ function App() {
           <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} />
           <JsonViewDialog
             open={cruiseResultJsonOpen}
-            title={t('commands.viewCruiseResultJson')}
+            title={t('cruiseResultJson.title')}
             data={data ?? null}
             onClose={() => setCruiseResultJsonOpen(false)}
             shouldExpandNode={level => level < 4}
