@@ -14,9 +14,16 @@ interface RulesPanelProps {
   violations: readonly IViolation[] | undefined;
   sources: readonly string[];
   onSelectViolationPaths: (paths: string[]) => void;
+  onShowRuleViolations: (ruleName: string) => void;
 }
 
-export function RulesPanel({ ruleSetUsed, violations, sources, onSelectViolationPaths }: RulesPanelProps) {
+export function RulesPanel({
+  ruleSetUsed,
+  violations,
+  sources,
+  onSelectViolationPaths,
+  onShowRuleViolations,
+}: RulesPanelProps) {
   const [nameFilter, setNameFilter] = useState('');
   const deferredNameFilter = useDeferredValue(nameFilter);
   const rules = groupRulesWithViolations(ruleSetUsed, violations, sources);
@@ -31,6 +38,7 @@ export function RulesPanel({ ruleSetUsed, violations, sources, onSelectViolation
           filteredRules={filteredRules}
           nameFilter={deferredNameFilter}
           onSelectViolationPaths={onSelectViolationPaths}
+          onShowRuleViolations={onShowRuleViolations}
         />
       </Box>
     </Box>

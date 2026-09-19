@@ -46,6 +46,7 @@ describe('RulesPanel', () => {
         violations={violations}
         sources={['src/domain/a.ts', 'src/App/App.tsx']}
         onSelectViolationPaths={vi.fn()}
+        onShowRuleViolations={vi.fn()}
       />,
     );
 
@@ -66,6 +67,7 @@ describe('RulesPanel', () => {
         violations={violations}
         sources={['src/domain/a.ts', 'src/App/App.tsx']}
         onSelectViolationPaths={vi.fn()}
+        onShowRuleViolations={vi.fn()}
       />,
     );
 
@@ -89,6 +91,7 @@ describe('RulesPanel', () => {
         violations={violations}
         sources={['src/domain/a.ts', 'src/App/App.tsx']}
         onSelectViolationPaths={vi.fn()}
+        onShowRuleViolations={vi.fn()}
       />,
     );
 
@@ -110,6 +113,7 @@ describe('RulesPanel', () => {
         violations={violations}
         sources={['src/domain/a.ts', 'src/App/App.tsx']}
         onSelectViolationPaths={vi.fn()}
+        onShowRuleViolations={vi.fn()}
       />,
     );
 
@@ -129,6 +133,7 @@ describe('RulesPanel', () => {
         violations={violations}
         sources={['src/domain/a.ts', 'src/App/App.tsx']}
         onSelectViolationPaths={vi.fn()}
+        onShowRuleViolations={vi.fn()}
       />,
     );
 
@@ -151,6 +156,7 @@ describe('RulesPanel', () => {
         violations={violations}
         sources={['src/domain/a.ts', 'src/App/App.tsx']}
         onSelectViolationPaths={vi.fn()}
+        onShowRuleViolations={vi.fn()}
       />,
     );
 
@@ -168,6 +174,7 @@ describe('RulesPanel', () => {
         violations={violations}
         sources={['src/domain/a.ts', 'src/App/App.tsx']}
         onSelectViolationPaths={onSelectViolationPaths}
+        onShowRuleViolations={vi.fn()}
       />,
     );
 
@@ -175,6 +182,25 @@ describe('RulesPanel', () => {
     fireEvent.click(screen.getByText('src/domain/a.ts → src/App/App.tsx'));
 
     expect(onSelectViolationPaths).toHaveBeenCalledWith(['src/domain/a.ts', 'src/App/App.tsx']);
+  });
+
+  it('calls onShowRuleViolations when the show-violations button is clicked', () => {
+    const { result: i18n } = renderHook(() => useTranslation());
+    const onShowRuleViolations = vi.fn();
+
+    renderWithTheme(
+      <RulesPanel
+        ruleSetUsed={ruleSet}
+        violations={violations}
+        sources={['src/domain/a.ts', 'src/App/App.tsx']}
+        onSelectViolationPaths={vi.fn()}
+        onShowRuleViolations={onShowRuleViolations}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: i18n.current.t('rules.showViolationsOnly') }));
+
+    expect(onShowRuleViolations).toHaveBeenCalledWith('domain-only-domain');
   });
 
   it('opens rule JSON dialog from the view button', () => {
@@ -186,6 +212,7 @@ describe('RulesPanel', () => {
         violations={violations}
         sources={['src/domain/a.ts']}
         onSelectViolationPaths={vi.fn()}
+        onShowRuleViolations={vi.fn()}
       />,
     );
 

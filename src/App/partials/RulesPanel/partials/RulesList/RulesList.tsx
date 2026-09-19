@@ -11,9 +11,16 @@ interface RulesListProps {
   filteredRules: RuleWithViolations[];
   nameFilter: string;
   onSelectViolationPaths: (paths: string[]) => void;
+  onShowRuleViolations: (ruleName: string) => void;
 }
 
-export function RulesList({ rules, filteredRules, nameFilter, onSelectViolationPaths }: RulesListProps) {
+export function RulesList({
+  rules,
+  filteredRules,
+  nameFilter,
+  onSelectViolationPaths,
+  onShowRuleViolations,
+}: RulesListProps) {
   const { t } = useTranslation();
 
   if (rules.length === 0) {
@@ -42,12 +49,14 @@ export function RulesList({ rules, filteredRules, nameFilter, onSelectViolationP
         entries={withViolations}
         nameFilter={nameFilter}
         onSelectViolationPaths={onSelectViolationPaths}
+        onShowRuleViolations={onShowRuleViolations}
       />
       <RulesSection
         title={t('rules.withoutViolations')}
         entries={withoutViolations}
         nameFilter={nameFilter}
         onSelectViolationPaths={onSelectViolationPaths}
+        onShowRuleViolations={onShowRuleViolations}
       />
     </>
   );

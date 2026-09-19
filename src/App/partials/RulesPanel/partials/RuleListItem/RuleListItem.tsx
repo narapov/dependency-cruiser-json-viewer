@@ -1,12 +1,12 @@
-import type { IViolation, SeverityType } from 'dependency-cruiser';
+import type { IViolation } from 'dependency-cruiser';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import ChevronRight from '@mui/icons-material/ChevronRight';
 import DataObjectOutlined from '@mui/icons-material/DataObjectOutlined';
 import ExpandMore from '@mui/icons-material/ExpandMore';
+import VisibilityOutlined from '@mui/icons-material/VisibilityOutlined';
 import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
 import Collapse from '@mui/material/Collapse';
 import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
@@ -18,7 +18,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 
 import type { RuleWithViolations } from '@/domain';
-import { HighlightedMatchText, MatchHighlight } from '@/Shared';
+import { HighlightedMatchText, MatchHighlight, RuleSeverityChip, RuleViolationsCountChip } from '@/Shared';
 
 import { RuleJsonDialog } from '../../../RuleJsonDialog';
 import { findSubstringMatchIndexes } from '../../helpers/findSubstringMatchIndexes';
@@ -27,19 +27,7 @@ interface RuleListItemProps {
   entry: RuleWithViolations;
   nameFilter: string;
   onSelectViolationPaths: (paths: string[]) => void;
-}
-
-function severityColor(severity: SeverityType): 'error' | 'warning' | 'info' | 'default' {
-  switch (severity) {
-    case 'error':
-      return 'error';
-    case 'warn':
-      return 'warning';
-    case 'info':
-      return 'info';
-    default:
-      return 'default';
-  }
+  onShowRuleViolations: (ruleName: string) => void;
 }
 
 function formatViolationLabel(violation: IViolation): string {
@@ -56,7 +44,7 @@ function violationPaths(violation: IViolation): string[] {
   return [violation.from];
 }
 
-export function RuleListItem({ entry, nameFilter, onSelectViolationPaths }: RuleListItemProps) {
+export function RuleListItem({ entry, nameFilter, onSelectViolationPaths, onShowRuleViolations }: RuleListItemProps) {
   const { t } = useTranslation();
   const [jsonOpen, setJsonOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -64,6 +52,7 @@ export function RuleListItem({ entry, nameFilter, onSelectViolationPaths }: Rule
   const hasViolations = count > 0;
   const canViewJson = entry.rule != null;
   const nameMatchIndexes = findSubstringMatchIndexes(entry.name, nameFilter);
+  const showViolationsLabel = t('rules.showViolationsOnly');
 
   return (
     <>
@@ -101,22 +90,21 @@ export function RuleListItem({ entry, nameFilter, onSelectViolationPaths }: Rule
           >
             <HighlightedMatchText text={entry.name} indexes={nameMatchIndexes} Highlight={MatchHighlight} />
           </Typography>
-          <Chip
-            size="small"
-            label={t(`rules.severity.${entry.severity}`)}
-            color={severityColor(entry.severity)}
-            variant="outlined"
-            sx={{ height: 20, fontSize: 10, flexShrink: 0 }}
-          />
-          {hasViolations && (
-            <Chip
-              size="small"
-              label={t('rules.violationsCount', { count })}
-              color="error"
-              sx={{ height: 20, fontSize: 11, flexShrink: 0 }}
-            />
-          )}
+          <RuleSeverityChip severity={entry.severity} />
+          <RuleViolationsCountChip count={count} />
         </Stack>
+        {hasViolations && (
+          <Tooltip title={showViolationsLabel}>
+            <IconButton
+              size="small"
+              aria-label={showViolationsLabel}
+              onClick={() => onShowRuleViolations(entry.name)}
+              sx={{ p: 0.25, flexShrink: 0 }}
+            >
+              <VisibilityOutlined fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        )}
         {canViewJson && (
           <Tooltip title={t('rules.viewJson')}>
             <IconButton

@@ -75,6 +75,7 @@
     "collapseAllRecursive": "Árbol de archivos: Contraer todo recursivamente",
     "selectAll": "Selección: Seleccionar todo",
     "showCircularDependenciesOnly": "Selección: Mostrar solo dependencias circulares",
+    "showRuleViolationsOnly": "Selección: Mostrar violaciones de reglas…",
     "setTheme": "Ajustes: Elegir tema",
     "setLanguage": "Ajustes: Elegir idioma",
     "setIgnorePatterns": "Espacio de trabajo: Configurar patrones de exclusión",
@@ -167,6 +168,15 @@
     "save": "Guardar",
     "cancel": "Cancelar"
   },
+  "ruleViolationsPicker": {
+    "title": "Mostrar violaciones de reglas",
+    "ruleOptions": "Reglas con violaciones",
+    "selectAll": "Seleccionar todo",
+    "deselectAll": "Deseleccionar todo",
+    "confirm": "Mostrar",
+    "cancel": "Cancelar",
+    "empty": "No hay violaciones de reglas en este resultado de cruise."
+  },
   "highlights": {
     "empty": "No hay conexiones resaltadas.",
     "removeConnection": "Quitar resaltado de la conexión",
@@ -196,6 +206,7 @@
     "withoutViolations": "Sin violaciones",
     "violationsCount": "{{count}}",
     "viewJson": "Ver JSON de la regla",
+    "showViolationsOnly": "Mostrar solo violaciones",
     "jsonTitle": "Regla: {{name}}",
     "severity": {
       "error": "error",

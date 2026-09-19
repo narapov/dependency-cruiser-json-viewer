@@ -75,6 +75,7 @@
     "collapseAllRecursive": "Arborescence : Tout réduire récursivement",
     "selectAll": "Sélection : Tout sélectionner",
     "showCircularDependenciesOnly": "Sélection : Afficher uniquement les dépendances circulaires",
+    "showRuleViolationsOnly": "Sélection : Afficher les violations de règles…",
     "setTheme": "Paramètres : Choisir le thème",
     "setLanguage": "Paramètres : Choisir la langue",
     "setIgnorePatterns": "Espace de travail : Définir les motifs d'exclusion",
@@ -167,6 +168,15 @@
     "save": "Enregistrer",
     "cancel": "Annuler"
   },
+  "ruleViolationsPicker": {
+    "title": "Afficher les violations de règles",
+    "ruleOptions": "Règles avec violations",
+    "selectAll": "Tout sélectionner",
+    "deselectAll": "Tout désélectionner",
+    "confirm": "Afficher",
+    "cancel": "Annuler",
+    "empty": "Aucune violation de règle dans ce résultat de cruise."
+  },
   "highlights": {
     "empty": "Aucune connexion surlignée.",
     "removeConnection": "Supprimer le surlignage de la connexion",
@@ -196,6 +206,7 @@
     "withoutViolations": "Sans violations",
     "violationsCount": "{{count}}",
     "viewJson": "Voir le JSON de la règle",
+    "showViolationsOnly": "Afficher uniquement les violations",
     "jsonTitle": "Règle : {{name}}",
     "severity": {
       "error": "error",

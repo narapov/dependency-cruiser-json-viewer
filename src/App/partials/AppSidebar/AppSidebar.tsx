@@ -26,6 +26,7 @@ interface AppSidebarProps {
   ruleSetUsed: IFlattenedRuleSet | undefined;
   violations: readonly IViolation[] | undefined;
   onSelectViolationPaths: (paths: string[]) => void;
+  onShowRuleViolations: (ruleName: string) => void;
   modules: readonly IModule[];
   onShowCycle: (paths: string[]) => void;
   highlights: ReadonlyMap<string, string>;
@@ -68,6 +69,7 @@ export function AppSidebar({
   ruleSetUsed,
   violations,
   onSelectViolationPaths,
+  onShowRuleViolations,
   modules,
   onShowCycle,
   highlights,
@@ -99,6 +101,7 @@ export function AppSidebar({
           violations={violations}
           sources={sources}
           onSelectViolationPaths={onSelectViolationPaths}
+          onShowRuleViolations={onShowRuleViolations}
         />
       </ViewPanel>
       <ViewPanel active={view === 'circular'}>

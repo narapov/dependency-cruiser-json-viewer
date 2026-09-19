@@ -75,6 +75,7 @@
     "collapseAllRecursive": "Файловое дерево: Свернуть всё рекурсивно",
     "selectAll": "Выделение: Выбрать всё",
     "showCircularDependenciesOnly": "Выделение: Показать только циклические зависимости",
+    "showRuleViolationsOnly": "Выделение: Показать нарушения правил…",
     "setTheme": "Настройки: Выбрать тему",
     "setLanguage": "Настройки: Выбрать язык",
     "setIgnorePatterns": "Рабочее пространство: Настроить игнорируемые паттерны",
@@ -167,6 +168,15 @@
     "save": "Сохранить",
     "cancel": "Отмена"
   },
+  "ruleViolationsPicker": {
+    "title": "Показать нарушения правил",
+    "ruleOptions": "Правила с нарушениями",
+    "selectAll": "Выбрать все",
+    "deselectAll": "Снять выбор",
+    "confirm": "Показать",
+    "cancel": "Отмена",
+    "empty": "В этом результате cruise нет нарушений правил."
+  },
   "highlights": {
     "empty": "Нет подсвеченных связей.",
     "removeConnection": "Убрать подсветку связи",
@@ -196,6 +206,7 @@
     "withoutViolations": "Без нарушений",
     "violationsCount": "{{count}}",
     "viewJson": "Показать JSON правила",
+    "showViolationsOnly": "Показать только нарушения",
     "jsonTitle": "Правило: {{name}}",
     "severity": {
       "error": "error",
