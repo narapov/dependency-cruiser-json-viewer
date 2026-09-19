@@ -91,6 +91,32 @@ describe('QuickPick', () => {
     });
   });
 
+  it('does not restore recent commands after a command clears localStorage', async () => {
+    const { result: i18n } = renderHook(() => useTranslation());
+    const onExecute = vi.fn(() => {
+      localStorage.clear();
+    });
+    const ref = createRef<QuickPickHandle>();
+    const commands: QuickPickCommand[] = [{ id: 'clearLocalStorage', label: 'Clear Local Storage', onExecute }];
+
+    renderWithTheme(<QuickPick ref={ref} sources={SOURCES} commands={commands} onSelectPath={vi.fn()} />);
+
+    act(() => {
+      ref.current?.openCommandMode();
+    });
+
+    const input = screen.getByPlaceholderText(i18n.current.t('quickPick.commandPlaceholder'));
+    fireEvent.keyDown(getKeyboardRoot(input), { key: 'Enter' });
+
+    expect(onExecute).toHaveBeenCalled();
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(localStorage.getItem(RECENT_COMMANDS_STORAGE_KEY)).toBeNull();
+  });
+
   it('prevents Tab default and resets highlight when query changes', async () => {
     const { result: i18n } = renderHook(() => useTranslation());
     const ref = createRef<QuickPickHandle>();

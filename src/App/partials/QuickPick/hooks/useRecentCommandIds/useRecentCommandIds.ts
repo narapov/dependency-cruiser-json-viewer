@@ -6,11 +6,9 @@ export function useRecentCommandIds() {
   const [recentIds, setRecentIds] = useState(readRecentCommandIds);
 
   const recordCommandUsage = (id: string) => {
-    setRecentIds(current => {
-      const next = pushRecentCommandId(current, id);
-      writeRecentCommandIds(next);
-      return next;
-    });
+    const next = pushRecentCommandId(recentIds, id);
+    writeRecentCommandIds(next);
+    setRecentIds(next);
   };
 
   return {

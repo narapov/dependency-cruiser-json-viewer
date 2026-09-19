@@ -31,4 +31,17 @@ describe('useRecentCommandIds', () => {
     expect(result.current.recentIds).toEqual(['setTheme', 'about']);
     expect(localStorage.getItem(RECENT_COMMANDS_STORAGE_KEY)).toBe(JSON.stringify(['setTheme', 'about']));
   });
+
+  it('persists synchronously so a later clear in the same turn wins', () => {
+    localStorage.setItem(RECENT_COMMANDS_STORAGE_KEY, JSON.stringify(['about']));
+
+    const { result } = renderHook(() => useRecentCommandIds());
+
+    act(() => {
+      result.current.recordCommandUsage('setTheme');
+      localStorage.clear();
+    });
+
+    expect(localStorage.getItem(RECENT_COMMANDS_STORAGE_KEY)).toBeNull();
+  });
 });
