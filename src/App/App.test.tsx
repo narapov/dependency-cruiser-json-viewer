@@ -33,6 +33,10 @@ vi.mock('./hooks', () => ({
     fileLoadError: null,
     clearFileLoadError: vi.fn(),
   }),
+  useInitialWorkspaceSettingsFromCli: () => ({
+    fileLoadError: null,
+    clearFileLoadError: vi.fn(),
+  }),
   useCruiseResultFileDrop: () => ({ isDraggingFile: false, isDropAllowed: true }),
   useIgnorePatterns: () => ({ patterns: ['**/*.test.ts'], setPatterns: vi.fn() }),
   useInitialDependencyCruiserState: () => ({

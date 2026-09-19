@@ -20,6 +20,7 @@ const { values, positionals } = parseArgs({
     port: { type: 'string', short: 'p' },
     host: { type: 'string', short: 'h' },
     watch: { type: 'boolean', short: 'w' },
+    'workspace-settings': { type: 'string' },
     help: { type: 'boolean' },
   },
   allowPositionals: true,
@@ -27,14 +28,37 @@ const { values, positionals } = parseArgs({
 
 function printUsage() {
   console.error(
-    `Usage: dependency-cruiser-json-viewer <path-to-cruise-result.json> [--port <number>] [--host <host>] [--watch]
+    `Usage: dependency-cruiser-json-viewer <path-to-cruise-result.json> [--port <number>] [--host <host>] [--watch] [--workspace-settings <path>]
 
 Options:
-  --port, -p   HTTP port (default: ${DEFAULT_PORT})
-  --host, -h   Bind host (default: ${DEFAULT_HOST})
-  --watch, -w  Watch cruise JSON and notify the UI to reload
+  --port, -p              HTTP port (default: ${DEFAULT_PORT})
+  --host, -h              Bind host (default: ${DEFAULT_HOST})
+  --watch, -w             Watch cruise JSON and notify the UI to reload
+  --workspace-settings    Path to a saved workspace JSON applied once on startup (not watched)
 `,
   );
+}
+
+/**
+ * @param {string} filePath
+ * @param {string} label
+ */
+function assertJsonFile(filePath, label) {
+  if (!fs.existsSync(filePath)) {
+    console.error(`Error: ${label} file not found: ${filePath}`);
+    process.exit(1);
+  }
+
+  const stat = fs.statSync(filePath);
+  if (!stat.isFile()) {
+    console.error(`Error: ${label} is not a file: ${filePath}`);
+    process.exit(1);
+  }
+
+  if (!filePath.endsWith('.json')) {
+    console.error(`Error: expected a .json file for ${label}: ${filePath}`);
+    process.exit(1);
+  }
 }
 
 if (values.help || positionals.length === 0) {
@@ -44,21 +68,13 @@ if (values.help || positionals.length === 0) {
 
 const cruiseJsonPath = path.resolve(positionals[0]);
 const watchMode = values.watch === true;
+const workspaceSettingsPath = values['workspace-settings'] != null ? path.resolve(values['workspace-settings']) : null;
+const initialWorkspaceSettings = workspaceSettingsPath != null;
 
-if (!fs.existsSync(cruiseJsonPath)) {
-  console.error(`Error: file not found: ${cruiseJsonPath}`);
-  process.exit(1);
-}
+assertJsonFile(cruiseJsonPath, 'cruise result');
 
-const stat = fs.statSync(cruiseJsonPath);
-if (!stat.isFile()) {
-  console.error(`Error: not a file: ${cruiseJsonPath}`);
-  process.exit(1);
-}
-
-if (!cruiseJsonPath.endsWith('.json')) {
-  console.error(`Error: expected a .json file: ${cruiseJsonPath}`);
-  process.exit(1);
+if (workspaceSettingsPath != null) {
+  assertJsonFile(workspaceSettingsPath, 'workspace settings');
 }
 
 const port = values.port ? Number(values.port) : DEFAULT_PORT;
@@ -81,13 +97,24 @@ const server = http.createServer(async (req, res) => {
 
   if (pathname === '/envs.js') {
     res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
-    res.end(`window.envs = { watch: ${watchMode} };\n`);
+    res.end(`window.envs = { watch: ${watchMode}, initialWorkspaceSettings: ${initialWorkspaceSettings} };\n`);
     return;
   }
 
   if (pathname === '/cruise-result.json') {
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     fs.createReadStream(cruiseJsonPath).pipe(res);
+    return;
+  }
+
+  if (pathname === '/workspace-settings.json') {
+    if (workspaceSettingsPath == null) {
+      res.statusCode = 404;
+      res.end('Not found');
+      return;
+    }
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    fs.createReadStream(workspaceSettingsPath).pipe(res);
     return;
   }
 

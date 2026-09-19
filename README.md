@@ -39,9 +39,9 @@ The usual workflow meant constantly tweaking filters, `collapsePattern`, and `ex
 - **JSON preview** — interactive raw JSON (expand/collapse) for the full cruise result via the command palette (**Cruise Result: View JSON**); for a module or folder from the file tree / graph node context menu, dependencies panel, status bar, or command palette (**Active Item: View Module JSON**); and for a rule from the Rules or Applicable rules panels.
 - **Quick search & commands** — fuzzy file search (`Cmd/Ctrl+P`) and command palette (`F1`); see Keyboard shortcuts below.
 - **DOT export** — export the current graph layout as a Graphviz `.dot` file via the command palette (**Graph: Export DOT**), or open it in [Graphviz Online](https://dreampuf.github.io/GraphvizOnline/?engine=nop2) (**Graph: View DOT Online**); render locally with `neato -n2 -Tsvg graph.dot` or `dot -Knop2 -Tsvg graph.dot`.
-- **Workspace save/load** — save selection, expansion, ignore patterns, edge highlights, folder colors, and layout into the cruise JSON under `dependency-cruiser-json-viewer` (**Workspace: Save**). Both **Cruise Result: Load JSON** (when the file has workspace settings) and **Workspace: Load Settings** always clear the current view and replace selection, expansion, the dependencies panel path, ignore patterns, edge highlights, folder colors, and layout from the file, dropping entries that no longer match the relevant cruise data (e.g. references to files or dependencies that no longer exist).
+- **Workspace save/load** — save selection, expansion, ignore patterns, edge highlights, folder colors, and layout into the cruise JSON under `dependency-cruiser-json-viewer` (**Workspace: Save**). Both **Cruise Result: Load JSON** (when the file has workspace settings) and **Workspace: Load Settings** always clear the current view and replace selection, expansion, the dependencies panel path, ignore patterns, edge highlights, folder colors, and layout from the file, dropping entries that no longer match the relevant cruise data (e.g. references to files or dependencies that no longer exist). With the CLI, pass `--workspace-settings <path>` to apply a saved workspace once on startup (same as **Workspace: Load Settings**) so you do not have to load it manually every time.
 - **Ignore patterns** — glob patterns to exclude modules from tree and graph.
-- **Watch mode** — reload the cruise JSON when the file changes on disk and keep the current workspace (see [Watch mode](#watch-mode)).
+- **Watch mode** — reload the cruise JSON when the file changes on disk and keep the current workspace (see [Watch mode](#watch-mode)). A `--workspace-settings` file is applied only on startup and is not watched.
 
 ## Keyboard shortcuts
 
@@ -76,13 +76,18 @@ npx dependency-cruiser-json-viewer cruise-result.json --port 9000
 
 npx dependency-cruiser-json-viewer cruise-result.json --watch
 # or -w — reload the UI when the cruise JSON file changes
+
+npx dependency-cruiser-json-viewer cruise-result.json --workspace-settings workspace.json
+# apply a previously saved workspace once on startup (same as Workspace: Load Settings)
 ```
 
 The CLI serves the built viewer from `dist` and streams your JSON file at `/cruise-result.json` without copying it.
 
+Use `--workspace-settings` when you already have a saved workspace and do not want to load it manually every time. The file is applied once at startup using the same replace semantics as **Workspace: Load Settings**; it is **not** watched even with `--watch`. Manual **Workspace: Load Settings** remains available afterward.
+
 ## Watch mode
 
-When watch mode is on, the viewer reloads `/cruise-result.json` whenever that file changes on disk and re-applies the current workspace (selection, ignore patterns, edge highlights, folder colors, and layout). Manual **Cruise Result: Load JSON** and drag-and-drop load are disabled while watch is active.
+When watch mode is on, the viewer reloads `/cruise-result.json` whenever that file changes on disk and re-applies the current workspace (selection, ignore patterns, edge highlights, folder colors, and layout). Manual **Cruise Result: Load JSON** and drag-and-drop load are disabled while watch is active. If you started with `--workspace-settings`, that file is still not watched — only the cruise JSON is.
 
 ### CLI
 
