@@ -1,13 +1,18 @@
 import fuzzysort from 'fuzzysort';
 
 import type { QuickPickCommand } from '../../types';
+import { sortCommandsByRecentUsage } from '../recentCommandIds';
 
-/** Fuzzy-filters commands by label; empty query returns all commands. */
-export function searchCommands(commands: QuickPickCommand[], query: string): QuickPickCommand[] {
+/** Fuzzy-filters commands by label; empty query returns commands sorted by recent usage. */
+export function searchCommands(
+  commands: QuickPickCommand[],
+  query: string,
+  recentIds: string[] = [],
+): QuickPickCommand[] {
   const trimmed = query.trim();
 
   if (!trimmed) {
-    return commands;
+    return sortCommandsByRecentUsage(commands, recentIds);
   }
 
   return fuzzysort.go(trimmed, commands, { key: 'label' }).map(result => result.obj);

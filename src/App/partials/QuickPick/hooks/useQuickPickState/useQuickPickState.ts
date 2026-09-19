@@ -3,7 +3,7 @@ import { useDeferredValue, useMemo, useState } from 'react';
 import { buildSearchItems, searchCommands, searchPaths } from '../../helpers';
 import type { QuickPickCommand } from '../../types';
 
-export function useQuickPickState(sources: string[], commands: QuickPickCommand[]) {
+export function useQuickPickState(sources: string[], commands: QuickPickCommand[], recentCommandIds: string[] = []) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const allItems = useMemo(() => buildSearchItems(sources), [sources]);
@@ -13,7 +13,7 @@ export function useQuickPickState(sources: string[], commands: QuickPickCommand[
   const normalizedDeferredQuery = useDeferredValue(normalizedQuery);
 
   const fileResults = isCommandMode ? [] : searchPaths(allItems, normalizedDeferredQuery);
-  const commandResults = isCommandMode ? searchCommands(commands, normalizedDeferredQuery) : [];
+  const commandResults = isCommandMode ? searchCommands(commands, normalizedDeferredQuery, recentCommandIds) : [];
   const results = isCommandMode ? commandResults : fileResults;
 
   const close = () => {

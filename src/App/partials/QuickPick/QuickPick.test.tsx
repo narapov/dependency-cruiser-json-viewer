@@ -7,6 +7,7 @@ import { act, fireEvent, renderHook, screen, waitFor, within } from '@testing-li
 
 import { renderWithTheme } from '@/testsUtils';
 
+import { RECENT_COMMANDS_STORAGE_KEY } from './helpers/recentCommandIds';
 import { QuickPick, type QuickPickCommand, type QuickPickHandle } from './QuickPick';
 
 const SOURCES = ['src/a.ts', 'src/b/c.ts', 'src/utils/helpers.ts'];
@@ -18,10 +19,12 @@ function getKeyboardRoot(input: HTMLElement) {
 describe('QuickPick', () => {
   beforeEach(() => {
     Element.prototype.scrollIntoView = vi.fn();
+    localStorage.clear();
   });
 
   afterEach(() => {
     vi.clearAllMocks();
+    localStorage.clear();
   });
 
   it('navigates file results with arrows and selects on Enter', async () => {
@@ -82,9 +85,36 @@ describe('QuickPick', () => {
 
     expect(onExecute).toHaveBeenCalled();
     expect(onSelectPath).not.toHaveBeenCalled();
+    expect(localStorage.getItem(RECENT_COMMANDS_STORAGE_KEY)).toBe(JSON.stringify(['setTheme']));
     await waitFor(() => {
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
+  });
+
+  it('does not restore recent commands after a command clears localStorage', async () => {
+    const { result: i18n } = renderHook(() => useTranslation());
+    const onExecute = vi.fn(() => {
+      localStorage.clear();
+    });
+    const ref = createRef<QuickPickHandle>();
+    const commands: QuickPickCommand[] = [{ id: 'clearLocalStorage', label: 'Clear Local Storage', onExecute }];
+
+    renderWithTheme(<QuickPick ref={ref} sources={SOURCES} commands={commands} onSelectPath={vi.fn()} />);
+
+    act(() => {
+      ref.current?.openCommandMode();
+    });
+
+    const input = screen.getByPlaceholderText(i18n.current.t('quickPick.commandPlaceholder'));
+    fireEvent.keyDown(getKeyboardRoot(input), { key: 'Enter' });
+
+    expect(onExecute).toHaveBeenCalled();
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(localStorage.getItem(RECENT_COMMANDS_STORAGE_KEY)).toBeNull();
   });
 
   it('prevents Tab default and resets highlight when query changes', async () => {

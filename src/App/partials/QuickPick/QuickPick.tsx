@@ -6,7 +6,7 @@ import TextField from '@mui/material/TextField';
 
 import { AppDialog, AppDialogContent } from '@/Shared';
 
-import { useQuickPickShortcut, useQuickPickState } from './hooks';
+import { useQuickPickShortcut, useQuickPickState, useRecentCommandIds } from './hooks';
 import { QuickPickCommandResultsList } from './partials/QuickPickCommandResultsList';
 import { QuickPickEmptyMessage } from './partials/QuickPickEmptyMessage';
 import { QuickPickFileResultsList } from './partials/QuickPickFileResultsList';
@@ -25,6 +25,7 @@ export function QuickPick(props: QuickPickProps) {
   const { ref, sources, commands, onSelectPath } = props;
 
   const { t } = useTranslation();
+  const { recentIds, recordCommandUsage } = useRecentCommandIds();
   const {
     open,
     query,
@@ -39,7 +40,7 @@ export function QuickPick(props: QuickPickProps) {
     openFileMode,
     toggleFileMode,
     openCommandMode,
-  } = useQuickPickState(sources, commands);
+  } = useQuickPickState(sources, commands, recentIds);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
@@ -104,6 +105,7 @@ export function QuickPick(props: QuickPickProps) {
     if (command.disabled) {
       return;
     }
+    recordCommandUsage(command.id);
     command.onExecute();
     handleClose();
   };
