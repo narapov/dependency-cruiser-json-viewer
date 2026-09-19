@@ -4,7 +4,7 @@ import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { CIRCULAR_NODE_BACKGROUND, ERROR_NODE_BACKGROUND, MaterialFileSystemIcon } from '@/Shared';
 
 import type { FileNodeData } from '../../types';
-import { NodeContextMenu } from '../NodeContextMenu';
+import { NodeContextMenu, NodeContextMenuTrigger } from '../NodeContextMenu';
 
 export function FileNode({ data }: NodeProps) {
   const { label, path, highlighted, circular, couldNotResolve } = data as FileNodeData;
@@ -46,9 +46,13 @@ export function FileNode({ data }: NodeProps) {
         <Box component="span" sx={{ fontSize: 12, flexShrink: 0, display: 'inline-flex' }}>
           <MaterialFileSystemIcon name={label} />
         </Box>
-        <Box component="span" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <Box
+          component="span"
+          sx={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+        >
           {label}
         </Box>
+        <NodeContextMenuTrigger />
         <Handle type="source" position={Position.Right} />
       </Box>
     </NodeContextMenu>

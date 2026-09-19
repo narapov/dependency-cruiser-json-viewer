@@ -30,6 +30,14 @@ export function useEdgeContextMenu({
     setMenuState(null);
   }, []);
 
+  const handleMenuClose = useCallback(
+    (event: Partial<{ stopPropagation: () => void }>) => {
+      event.stopPropagation?.();
+      handleClose();
+    },
+    [handleClose],
+  );
+
   const handleAction = useCallback(
     (action: () => void) => (event: MouseEvent) => {
       event.stopPropagation();
@@ -38,6 +46,11 @@ export function useEdgeContextMenu({
     },
     [handleClose],
   );
+
+  const stopBackdropPropagation = useCallback((event: MouseEvent) => {
+    event.stopPropagation();
+    event.preventDefault();
+  }, []);
 
   const onEdgeContextMenu: EdgeMouseHandler = useCallback((event, edge) => {
     event.preventDefault();
@@ -50,10 +63,18 @@ export function useEdgeContextMenu({
   const edgeContextMenu = (
     <Menu
       open={menuState !== null}
-      onClose={handleClose}
+      onClose={handleMenuClose}
       anchorReference="anchorPosition"
       anchorPosition={menuState?.anchorPosition}
-      slotProps={{ paper: { sx: { maxWidth: 'min(500px, calc(100% - 20px))' } } }}
+      slotProps={{
+        paper: { sx: { maxWidth: 'min(500px, calc(100% - 20px))' } },
+        backdrop: {
+          onMouseDown: stopBackdropPropagation,
+          onClick: (event: MouseEvent) => {
+            event.stopPropagation();
+          },
+        },
+      }}
     >
       {menuState && (
         <>

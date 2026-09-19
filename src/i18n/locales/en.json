@@ -49,6 +49,7 @@
     "autoLayout": "Auto layout",
     "autoLayoutRecursive": "Auto layout recursive",
     "close": "Close",
+    "openNodeMenu": "Open node menu",
     "highlight": "Highlight",
     "clear": "Clear"
   },

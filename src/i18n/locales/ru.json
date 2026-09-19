@@ -49,6 +49,7 @@
     "autoLayout": "Авторазмещение",
     "autoLayoutRecursive": "Авторазмещение рекурсивно",
     "close": "Закрыть",
+    "openNodeMenu": "Открыть меню узла",
     "highlight": "Подсветить",
     "clear": "Очистить"
   },

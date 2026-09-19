@@ -49,6 +49,7 @@
     "autoLayout": "Automatisches Layout",
     "autoLayoutRecursive": "Automatisches Layout rekursiv",
     "close": "Schließen",
+    "openNodeMenu": "Knotenmenü öffnen",
     "highlight": "Hervorheben",
     "clear": "Löschen"
   },
