@@ -3,7 +3,7 @@ import { Group, Panel, Separator } from 'react-resizable-panels';
 
 import Box from '@mui/material/Box';
 
-import { useAppPanelsLayout, type SidebarView } from './hooks';
+import { APP_PANELS_GROUP_ID, useAppPanelsLayout, type SidebarView } from './hooks';
 import { SidebarToggle } from './partials/SidebarToggle';
 
 import styles from './AppLayout.module.css';
@@ -81,10 +81,17 @@ export function AppLayout({
   sidebarView,
   onSelectSidebarView,
 }: AppLayoutProps) {
-  const { defaultLayout, onLayoutChanged } = useAppPanelsLayout();
-
   const showDependencies = dependenciesPanelOpen && dependenciesPanel != null;
   const showApplicableRules = applicableRulesPanelOpen && applicableRulesPanel != null;
+
+  const panelIds = [
+    ...(sidebarOpen ? ['sidebar'] : []),
+    'graph',
+    ...(showDependencies ? ['dependencies'] : []),
+    ...(showApplicableRules ? ['applicableRules'] : []),
+  ];
+
+  const { defaultLayout, onLayoutChanged, groupRef } = useAppPanelsLayout(panelIds);
 
   return (
     <Box sx={shellSx}>
@@ -104,7 +111,8 @@ export function AppLayout({
       <Box sx={{ gridArea: 'body', display: 'flex', ...regionSx }}>
         <SidebarToggle sidebarOpen={sidebarOpen} sidebarView={sidebarView} onSelectView={onSelectSidebarView} />
         <Group
-          id="app-panels"
+          id={APP_PANELS_GROUP_ID}
+          groupRef={groupRef}
           orientation="horizontal"
           style={{ flex: 1, minWidth: 0, height: '100%' }}
           defaultLayout={defaultLayout}
