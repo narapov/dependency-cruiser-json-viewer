@@ -75,6 +75,7 @@
     "collapseAllRecursive": "Dateibaum: Alles rekursiv einklappen",
     "selectAll": "Auswahl: Alles auswählen",
     "showCircularDependenciesOnly": "Auswahl: Nur zirkuläre Abhängigkeiten anzeigen",
+    "showRuleViolationsOnly": "Auswahl: Regelverletzungen anzeigen…",
     "setTheme": "Einstellungen: Design festlegen",
     "setLanguage": "Einstellungen: Sprache festlegen",
     "setIgnorePatterns": "Workspace: Ignorier-Muster festlegen",
@@ -167,6 +168,15 @@
     "save": "Speichern",
     "cancel": "Abbrechen"
   },
+  "ruleViolationsPicker": {
+    "title": "Regelverletzungen anzeigen",
+    "ruleOptions": "Regeln mit Verletzungen",
+    "selectAll": "Alle auswählen",
+    "deselectAll": "Auswahl aufheben",
+    "confirm": "Anzeigen",
+    "cancel": "Abbrechen",
+    "empty": "Keine Regelverletzungen in diesem Cruise-Ergebnis."
+  },
   "highlights": {
     "empty": "Keine hervorgehobenen Verbindungen.",
     "removeConnection": "Hervorhebung der Verbindung entfernen",
@@ -196,6 +206,7 @@
     "withoutViolations": "Ohne Verstöße",
     "violationsCount": "{{count}}",
     "viewJson": "Regel-JSON anzeigen",
+    "showViolationsOnly": "Nur Verletzungen anzeigen",
     "jsonTitle": "Regel: {{name}}",
     "severity": {
       "error": "error",

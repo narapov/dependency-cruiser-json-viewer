@@ -33,6 +33,7 @@ interface UseAppCommandsOptions {
   openAbout: () => void;
   openViewCruiseResultJson: () => void;
   openViewActiveModuleJson: () => void;
+  openRuleViolationsPicker: () => void;
   showFileTree: () => void;
   showRulesPanel: () => void;
   showCircularPanel: () => void;
@@ -41,6 +42,7 @@ interface UseAppCommandsOptions {
   fileLoadInProgress?: boolean;
   cruiseWatchEnabled?: boolean;
   hasCruiseResult?: boolean;
+  hasRuleViolations?: boolean;
 }
 
 export function useAppCommands({
@@ -53,6 +55,7 @@ export function useAppCommands({
   openAbout,
   openViewCruiseResultJson,
   openViewActiveModuleJson,
+  openRuleViolationsPicker,
   showFileTree,
   showRulesPanel,
   showCircularPanel,
@@ -61,6 +64,7 @@ export function useAppCommands({
   fileLoadInProgress = false,
   cruiseWatchEnabled = false,
   hasCruiseResult = false,
+  hasRuleViolations = false,
 }: UseAppCommandsOptions): QuickPickCommand[] {
   const { t } = useTranslation();
   const {
@@ -150,6 +154,12 @@ export function useAppCommands({
       id: 'showCircularDependenciesOnly',
       label: t('commands.showCircularDependenciesOnly'),
       onExecute: showCircularDependenciesOnly,
+    },
+    {
+      id: 'showRuleViolationsOnly',
+      label: t('commands.showRuleViolationsOnly'),
+      onExecute: openRuleViolationsPicker,
+      disabled: !hasCruiseResult || !hasRuleViolations,
     },
     { id: 'setTheme', label: t('commands.setTheme'), onExecute: openThemePicker },
     { id: 'setLanguage', label: t('commands.setLanguage'), onExecute: openLanguagePicker },

@@ -354,6 +354,71 @@ describe('useAppOrchestration', () => {
     expect(result.current.expandedKeys).toEqual(['src', 'src/b']);
   });
 
+  it('showRuleViolationsOnly selects modules from matching violations and expands ancestors', () => {
+    const sources = ['src/a.ts', 'src/b/c.ts', 'src/b/d.ts', 'src/e/f/g.ts'];
+    const refs = createRefs();
+    const initialDependencyCruiserState = {
+      selectedKeys: sources,
+      expandedKeys: [] as string[],
+    };
+    const { result } = renderHook(() =>
+      useAppOrchestration({
+        sources,
+        unfilteredCruiseResult: {
+          modules: sources.map(source => ({
+            source,
+            dependencies: [],
+            dependents: [],
+            valid: true,
+          })),
+          summary: {
+            violations: [
+              {
+                type: 'dependency',
+                rule: { name: 'no-circular', severity: 'error' },
+                from: 'src/b/c.ts',
+                to: 'src/b/d.ts',
+              },
+              {
+                type: 'dependency',
+                rule: { name: 'other-rule', severity: 'warn' },
+                from: 'src/a.ts',
+                to: 'src/e/f/g.ts',
+              },
+            ],
+          },
+        } as never,
+        ignorePatterns: [],
+        fileTreeRef: refs.fileTreeRef,
+        graphRef: refs.graphRef,
+        initialDependencyCruiserState,
+        cruiseLoadId: 0,
+      }),
+    );
+
+    act(() => {
+      result.current.showRuleViolationsOnly(['no-circular']);
+    });
+
+    expect(result.current.selectedPaths).toEqual(expect.arrayContaining(['src/b/c.ts', 'src/b/d.ts', 'src/b']));
+    expect(result.current.selectedPaths).not.toContain('src/a.ts');
+    expect(result.current.expandedKeys).toEqual(expect.arrayContaining(['src', 'src/b']));
+  });
+
+  it('showRuleViolationsOnly clears selection when there are no matching violations', () => {
+    const { result } = renderOrchestration({
+      selectedKeys: SOURCES,
+      expandedKeys: ['src', 'src/b'],
+    });
+
+    act(() => {
+      result.current.showRuleViolationsOnly(['missing-rule']);
+    });
+
+    expect(result.current.selectedPaths).toEqual([]);
+    expect(result.current.expandedKeys).toEqual(['src', 'src/b']);
+  });
+
   it('showPathsOnly selects given paths and expands ancestors', () => {
     const { result } = renderOrchestration({
       selectedKeys: SOURCES,

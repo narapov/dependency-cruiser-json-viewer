@@ -1,4 +1,4 @@
-import type { IViolation, SeverityType } from 'dependency-cruiser';
+import type { IViolation } from 'dependency-cruiser';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -6,7 +6,6 @@ import ChevronRight from '@mui/icons-material/ChevronRight';
 import DataObjectOutlined from '@mui/icons-material/DataObjectOutlined';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
 import Collapse from '@mui/material/Collapse';
 import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
@@ -18,25 +17,13 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 
 import type { RuleWithViolations } from '@/domain';
+import { RuleSeverityChip, RuleViolationsCountChip } from '@/Shared';
 
 import { RuleJsonDialog } from '../../../RuleJsonDialog';
 
 interface ApplicableRuleListItemProps {
   entry: RuleWithViolations;
   onSelectViolationPaths: (paths: string[]) => void;
-}
-
-function severityColor(severity: SeverityType): 'error' | 'warning' | 'info' | 'default' {
-  switch (severity) {
-    case 'error':
-      return 'error';
-    case 'warn':
-      return 'warning';
-    case 'info':
-      return 'info';
-    default:
-      return 'default';
-  }
 }
 
 function formatViolationLabel(violation: IViolation): string {
@@ -97,21 +84,8 @@ export function ApplicableRuleListItem({ entry, onSelectViolationPaths }: Applic
           >
             {entry.name}
           </Typography>
-          <Chip
-            size="small"
-            label={t(`rules.severity.${entry.severity}`)}
-            color={severityColor(entry.severity)}
-            variant="outlined"
-            sx={{ height: 20, fontSize: 10, flexShrink: 0 }}
-          />
-          {hasViolations && (
-            <Chip
-              size="small"
-              label={t('rules.violationsCount', { count })}
-              color="error"
-              sx={{ height: 20, fontSize: 11, flexShrink: 0 }}
-            />
-          )}
+          <RuleSeverityChip severity={entry.severity} />
+          <RuleViolationsCountChip count={count} />
         </Stack>
         {canViewJson && (
           <Tooltip title={t('rules.viewJson')}>

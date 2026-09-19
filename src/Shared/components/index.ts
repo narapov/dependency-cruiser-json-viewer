@@ -4,3 +4,5 @@ export * from './HighlightColorSwatches';
 export * from './HighlightedMatchText';
 export * from './MatchHighlight';
 export * from './MaterialFileSystemIcon';
+export * from './RuleSeverityChip';
+export * from './RuleViolationsCountChip';

@@ -5,6 +5,7 @@ import {
   collectCircularModulePaths,
   collectRelatedModuleSources,
   collectSourcesUnderFolder,
+  collectViolationModulePaths,
   expandSelectionWithSelectedAncestors,
   filterCruiseResult,
   getAncestorKeys,
@@ -567,6 +568,15 @@ export function useAppOrchestration({
     showPathsOnly(collectCircularModulePaths(modules));
   };
 
+  const showRuleViolationsOnly = (ruleNames: readonly string[]) => {
+    if (unfilteredCruiseResult == null) {
+      return;
+    }
+    const filtered = filterCruiseResult(unfilteredCruiseResult, ignorePatterns);
+    const filteredSources = filtered.modules.map(module => module.source);
+    showPathsOnly(collectViolationModulePaths(unfilteredCruiseResult.summary.violations, ruleNames, filteredSources));
+  };
+
   const applyWorkspaceView = (input: {
     view: MergedViewerWorkspaceView;
     sourcesKey: string;
@@ -628,6 +638,7 @@ export function useAppOrchestration({
     showDirectDependencies,
     showDirectDependents,
     showCircularDependenciesOnly,
+    showRuleViolationsOnly,
     applyWorkspaceView,
   };
 }

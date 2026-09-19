@@ -11,9 +11,16 @@ interface RulesSectionProps {
   entries: RuleWithViolations[];
   nameFilter: string;
   onSelectViolationPaths: (paths: string[]) => void;
+  onShowRuleViolations: (ruleName: string) => void;
 }
 
-export function RulesSection({ title, entries, nameFilter, onSelectViolationPaths }: RulesSectionProps) {
+export function RulesSection({
+  title,
+  entries,
+  nameFilter,
+  onSelectViolationPaths,
+  onShowRuleViolations,
+}: RulesSectionProps) {
   if (entries.length === 0) {
     return null;
   }
@@ -30,6 +37,7 @@ export function RulesSection({ title, entries, nameFilter, onSelectViolationPath
             entry={entry}
             nameFilter={nameFilter}
             onSelectViolationPaths={onSelectViolationPaths}
+            onShowRuleViolations={onShowRuleViolations}
           />
         ))}
       </List>

@@ -13,6 +13,7 @@ import {
   countIgnoredModules,
   CruiseResultParseError,
   filterCruiseResult,
+  groupRulesWithViolations,
   makeDependencyKey,
   type ViewerWorkspaceSettings,
 } from '@/domain';
@@ -47,6 +48,7 @@ import { IgnorePatternsDialog } from './partials/IgnorePatternsDialog';
 import { JsonViewDialog } from './partials/JsonViewDialog';
 import { LanguagePickerDialog } from './partials/LanguagePickerDialog';
 import { QuickPick, type QuickPickHandle } from './partials/QuickPick';
+import { RuleViolationsPickerDialog } from './partials/RuleViolationsPickerDialog';
 import { ThemePickerDialog } from './partials/ThemePickerDialog';
 
 import styles from './App.module.css';
@@ -67,6 +69,7 @@ function App() {
   const [ignorePatternsOpen, setIgnorePatternsOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [cruiseResultJsonOpen, setCruiseResultJsonOpen] = useState(false);
+  const [ruleViolationsPickerOpen, setRuleViolationsPickerOpen] = useState(false);
 
   const filteredData = useMemo(() => (data ? filterCruiseResult(data, patterns) : undefined), [data, patterns]);
 
@@ -74,6 +77,22 @@ function App() {
 
   const sources = useMemo(() => filteredData?.modules.map(module => module.source) ?? [], [filteredData?.modules]);
   const modules: IModule[] = filteredData?.modules ?? [];
+  const rulesWithViolations = useMemo(
+    () =>
+      groupRulesWithViolations(data?.summary.ruleSetUsed, data?.summary.violations, sources).filter(
+        entry => entry.violations.length > 0,
+      ),
+    [data?.summary.ruleSetUsed, data?.summary.violations, sources],
+  );
+  const ruleViolationsPickerOptions = useMemo(
+    () =>
+      rulesWithViolations.map(entry => ({
+        name: entry.name,
+        severity: entry.severity,
+        violationCount: entry.violations.length,
+      })),
+    [rulesWithViolations],
+  );
   const initialDependencyCruiserState = useInitialDependencyCruiserState(sources);
   const { sidebarOpen, setSidebarOpen, toggleSidebarOpen } = useSidebarOpen();
   const { sidebarView, setSidebarView } = useSidebarView();
@@ -289,6 +308,7 @@ function App() {
         openModuleJson(orch.activePath);
       }
     },
+    openRuleViolationsPicker: () => setRuleViolationsPickerOpen(true),
     showFileTree: () => {
       setSidebarView('files');
       setSidebarOpen(true);
@@ -309,6 +329,7 @@ function App() {
     fileLoadInProgress: isFileLoading,
     cruiseWatchEnabled,
     hasCruiseResult: data != null,
+    hasRuleViolations: rulesWithViolations.length > 0,
   });
 
   if (isPending) {
@@ -393,6 +414,7 @@ function App() {
           ruleSetUsed={data.summary.ruleSetUsed}
           violations={data.summary.violations}
           onSelectViolationPaths={handleShowDependencyConnection}
+          onShowRuleViolations={ruleName => orch.showRuleViolationsOnly([ruleName])}
           modules={modules}
           onShowCycle={orch.showPathsOnly}
           highlights={orch.userEdgeHighlights}
@@ -497,6 +519,12 @@ function App() {
             patterns={patterns}
             onClose={() => setIgnorePatternsOpen(false)}
             onSave={setPatterns}
+          />
+          <RuleViolationsPickerDialog
+            open={ruleViolationsPickerOpen}
+            rules={ruleViolationsPickerOptions}
+            onClose={() => setRuleViolationsPickerOpen(false)}
+            onConfirm={ruleNames => orch.showRuleViolationsOnly(ruleNames)}
           />
           <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} />
           <JsonViewDialog

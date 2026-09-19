@@ -75,6 +75,7 @@
     "collapseAllRecursive": "File Tree: Collapse All Recursively",
     "selectAll": "Selection: Select All",
     "showCircularDependenciesOnly": "Selection: Show Circular Dependencies Only",
+    "showRuleViolationsOnly": "Selection: Show Rule Violations…",
     "setTheme": "Settings: Set Theme",
     "setLanguage": "Settings: Set Language",
     "setIgnorePatterns": "Workspace: Set Ignore Patterns",
@@ -167,6 +168,15 @@
     "save": "Save",
     "cancel": "Cancel"
   },
+  "ruleViolationsPicker": {
+    "title": "Show Rule Violations",
+    "ruleOptions": "Rules with violations",
+    "selectAll": "Select all",
+    "deselectAll": "Deselect all",
+    "confirm": "Show",
+    "cancel": "Cancel",
+    "empty": "No rule violations in this cruise result."
+  },
   "highlights": {
     "empty": "No highlighted connections.",
     "removeConnection": "Remove connection highlight",
@@ -196,6 +206,7 @@
     "withoutViolations": "Without violations",
     "violationsCount": "{{count}}",
     "viewJson": "View rule JSON",
+    "showViolationsOnly": "Show violations only",
     "jsonTitle": "Rule: {{name}}",
     "severity": {
       "error": "error",
