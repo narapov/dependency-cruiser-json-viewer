@@ -11,6 +11,7 @@ import { renderWithTheme } from '@/testsUtils';
 import { GraphActionsProvider } from '../../contexts';
 import { createMockGraphActions } from '../../contexts/GraphActionsContext/__fixtures__/mockGraphActions';
 import { NodeContextMenu } from './NodeContextMenu';
+import { NodeContextMenuTrigger } from './partials';
 
 vi.mock('@/Shared', async importOriginal => {
   const actual = await importOriginal<typeof import('@/Shared')>();
@@ -23,11 +24,13 @@ vi.mock('@/Shared', async importOriginal => {
 function renderNodeContextMenu(
   props: Omit<ComponentProps<typeof NodeContextMenu>, 'children'>,
   actions = createMockGraphActions(),
+  { withMenuButton = false }: { withMenuButton?: boolean } = {},
 ) {
   renderWithTheme(
     <GraphActionsProvider value={actions}>
       <NodeContextMenu {...props}>
         <span>{props.path}</span>
+        {withMenuButton ? <NodeContextMenuTrigger /> : null}
       </NodeContextMenu>
     </GraphActionsProvider>,
   );
@@ -54,6 +57,44 @@ describe('NodeContextMenu', () => {
     expect(screen.getByText(i18n.current.t('actions.collapse'))).toBeInTheDocument();
     expect(screen.getByText(i18n.current.t('actions.expandRecursive'))).toBeInTheDocument();
     expect(screen.getByText(i18n.current.t('actions.showInFileTree'))).toBeInTheDocument();
+  });
+
+  it('opens menu from the menu button', () => {
+    const { result: i18n } = renderHook(() => useTranslation());
+
+    renderNodeContextMenu(
+      {
+        path: 'src/a.ts',
+        isFolder: false,
+      },
+      createMockGraphActions(),
+      { withMenuButton: true },
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: i18n.current.t('actions.openNodeMenu') }));
+
+    expect(screen.getByText(i18n.current.t('actions.copyPath'))).toBeInTheDocument();
+    expect(screen.getByText(i18n.current.t('actions.showInFileTree'))).toBeInTheDocument();
+  });
+
+  it('runs action from button-opened menu and closes', async () => {
+    const { result: i18n } = renderHook(() => useTranslation());
+    const { copyToClipboard } = await import('@/Shared');
+
+    renderNodeContextMenu(
+      {
+        path: 'src/a.ts',
+        isFolder: false,
+      },
+      createMockGraphActions(),
+      { withMenuButton: true },
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: i18n.current.t('actions.openNodeMenu') }));
+    fireEvent.click(screen.getByText(i18n.current.t('actions.copyPath')));
+
+    expect(copyToClipboard).toHaveBeenCalledWith('src/a.ts');
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 
   it('runs action and closes menu', async () => {
@@ -137,6 +178,31 @@ describe('NodeContextMenu', () => {
     fireEvent.click(screen.getByText(i18n.current.t('moduleJson.view')));
 
     expect(onViewModuleJson).toHaveBeenCalledWith('src/a.ts');
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
+
+  it('does not propagate backdrop dismiss click to parent', () => {
+    const onParentClick = vi.fn();
+
+    renderWithTheme(
+      <GraphActionsProvider value={createMockGraphActions()}>
+        <div onClick={onParentClick}>
+          <NodeContextMenu path="src/a.ts" isFolder={false}>
+            <span>src/a.ts</span>
+          </NodeContextMenu>
+        </div>
+      </GraphActionsProvider>,
+    );
+
+    fireEvent.contextMenu(screen.getByText('src/a.ts'));
+    expect(screen.getByRole('menu')).toBeInTheDocument();
+
+    const backdrop = document.querySelector('.MuiBackdrop-root');
+    expect(backdrop).toBeTruthy();
+    fireEvent.mouseDown(backdrop!);
+    fireEvent.click(backdrop!);
+
+    expect(onParentClick).not.toHaveBeenCalled();
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 });

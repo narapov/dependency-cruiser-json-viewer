@@ -8,7 +8,7 @@ import { MaterialFileSystemIcon } from '@/Shared';
 import { useGraphActions } from '../../contexts';
 import type { FolderGroupNodeData } from '../../types';
 import { FolderExpandToggle } from '../FolderExpandToggle';
-import { NodeContextMenu } from '../NodeContextMenu';
+import { NodeContextMenu, NodeContextMenuTrigger } from '../NodeContextMenu';
 
 import styles from './FolderGroupNode.module.css';
 
@@ -72,9 +72,13 @@ export function FolderGroupNode({ data }: NodeProps) {
           <Box component="span" sx={{ fontSize: 12, flexShrink: 0, display: 'inline-flex' }}>
             <MaterialFileSystemIcon name={label} isFolder isOpen={expanded} />
           </Box>
-          <Box component="span" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <Box
+            component="span"
+            sx={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+          >
             {label}
           </Box>
+          <NodeContextMenuTrigger />
         </Box>
       </NodeContextMenu>
       <Handle type="source" position={Position.Right} className={styles.groupHandle} />

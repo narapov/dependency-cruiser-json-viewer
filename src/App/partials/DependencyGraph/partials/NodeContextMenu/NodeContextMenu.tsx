@@ -7,6 +7,9 @@ import MenuItem from '@mui/material/MenuItem';
 import { copyToClipboard } from '@/Shared';
 
 import { useGraphActions } from '../../contexts';
+import { NodeContextMenuControlsProvider } from './contexts';
+
+type MenuAnchor = { type: 'position'; top: number; left: number } | { type: 'element'; el: HTMLElement };
 
 interface NodeContextMenuProps {
   path: string;
@@ -37,16 +40,28 @@ export function NodeContextMenu({
     onShowDirectDependencies,
     onShowDirectDependents,
   } = useGraphActions();
-  const [anchorPosition, setAnchorPosition] = useState<{ top: number; left: number } | null>(null);
+  const [menuAnchor, setMenuAnchor] = useState<MenuAnchor | null>(null);
 
   const handleContextMenu = useCallback((event: MouseEvent) => {
     event.preventDefault();
-    setAnchorPosition({ top: event.clientY, left: event.clientX });
+    setMenuAnchor({ type: 'position', top: event.clientY, left: event.clientX });
+  }, []);
+
+  const openAtElement = useCallback((el: HTMLElement) => {
+    setMenuAnchor({ type: 'element', el });
   }, []);
 
   const handleClose = useCallback(() => {
-    setAnchorPosition(null);
+    setMenuAnchor(null);
   }, []);
+
+  const handleMenuClose = useCallback(
+    (event: Partial<{ stopPropagation: () => void }>) => {
+      event.stopPropagation?.();
+      handleClose();
+    },
+    [handleClose],
+  );
 
   const handleAction = useCallback(
     (action: () => void) => (event: MouseEvent) => {
@@ -57,14 +72,28 @@ export function NodeContextMenu({
     [handleClose],
   );
 
+  const stopBackdropPropagation = useCallback((event: MouseEvent) => {
+    event.stopPropagation();
+    event.preventDefault();
+  }, []);
+
   return (
-    <>
+    <NodeContextMenuControlsProvider value={{ openAtElement }}>
       <span onContextMenu={handleContextMenu}>{children}</span>
       <Menu
-        open={anchorPosition !== null}
-        onClose={handleClose}
-        anchorReference="anchorPosition"
-        anchorPosition={anchorPosition ?? undefined}
+        open={menuAnchor !== null}
+        onClose={handleMenuClose}
+        anchorReference={menuAnchor?.type === 'element' ? 'anchorEl' : 'anchorPosition'}
+        anchorEl={menuAnchor?.type === 'element' ? menuAnchor.el : undefined}
+        anchorPosition={menuAnchor?.type === 'position' ? { top: menuAnchor.top, left: menuAnchor.left } : undefined}
+        slotProps={{
+          backdrop: {
+            onMouseDown: stopBackdropPropagation,
+            onClick: (event: MouseEvent) => {
+              event.stopPropagation();
+            },
+          },
+        }}
       >
         <MenuItem onClick={handleAction(() => void copyToClipboard(path))}>{t('actions.copyPath')}</MenuItem>
         {isFolder && (
@@ -97,6 +126,6 @@ export function NodeContextMenu({
         </MenuItem>
         <MenuItem onClick={handleAction(() => onViewModuleJson(path))}>{t('moduleJson.view')}</MenuItem>
       </Menu>
-    </>
+    </NodeContextMenuControlsProvider>
   );
 }

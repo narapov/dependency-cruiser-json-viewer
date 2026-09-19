@@ -49,6 +49,7 @@
     "autoLayout": "Disposition automatique",
     "autoLayoutRecursive": "Disposition automatique récursive",
     "close": "Fermer",
+    "openNodeMenu": "Ouvrir le menu du nœud",
     "highlight": "Surligner",
     "clear": "Effacer"
   },

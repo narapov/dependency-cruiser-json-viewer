@@ -7,6 +7,7 @@ const BORDER = 2;
 const GAP = 6;
 const ICON_SIZE = 12;
 const FOLDER_TOGGLE_SIZE = 16;
+const MENU_BUTTON_SIZE = 16;
 
 const ASCII_CHAR_WIDTH = 7.1;
 const WIDE_CHAR_WIDTH = 8.5;
@@ -24,12 +25,13 @@ function measureLabelWidth(label: string): number {
 
 function getLeafChromeWidth(kind: LeafNodeKind): number {
   const iconAndGap = ICON_SIZE + GAP;
+  const menuButtonAndGap = MENU_BUTTON_SIZE + GAP;
 
   if (kind === 'folder') {
-    return HORIZONTAL_PADDING + BORDER + FOLDER_TOGGLE_SIZE + GAP + iconAndGap;
+    return HORIZONTAL_PADDING + BORDER + FOLDER_TOGGLE_SIZE + GAP + iconAndGap + menuButtonAndGap;
   }
 
-  return HORIZONTAL_PADDING + BORDER + iconAndGap;
+  return HORIZONTAL_PADDING + BORDER + iconAndGap + menuButtonAndGap;
 }
 
 /** Estimates leaf node width from label length and chrome for the given kind. */
