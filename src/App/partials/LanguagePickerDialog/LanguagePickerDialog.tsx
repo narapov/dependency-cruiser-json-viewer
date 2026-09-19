@@ -21,7 +21,9 @@ function getLanguageIndex(language: LanguageOptionValue | undefined): number {
   return index === -1 ? 0 : index;
 }
 
-export function LanguagePickerDialog({ open, onClose }: LanguagePickerDialogProps) {
+export function LanguagePickerDialog(props: LanguagePickerDialogProps) {
+  const { open, onClose } = props;
+
   const { i18n, t } = useTranslation();
   const currentLanguage = i18n.language as LanguageOptionValue;
   const [highlightedIndex, setHighlightedIndex] = useState(() => getLanguageIndex(currentLanguage));

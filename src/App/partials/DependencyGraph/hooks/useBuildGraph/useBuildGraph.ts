@@ -28,12 +28,9 @@ interface UseBuildGraphResult {
   expandedFolders: Set<string>;
 }
 
-export function useBuildGraph({
-  modules,
-  selectedPaths,
-  expandedKeys,
-  folderColors,
-}: UseBuildGraphInput): UseBuildGraphResult {
+export function useBuildGraph(config: UseBuildGraphInput): UseBuildGraphResult {
+  const { modules, selectedPaths, expandedKeys, folderColors } = config;
+
   const expandedFolders = useMemo(() => new Set(expandedKeys), [expandedKeys]);
 
   const [graphResult, setGraphResult] = useState<BuildGraphResult>(createEmptyGraphResult);

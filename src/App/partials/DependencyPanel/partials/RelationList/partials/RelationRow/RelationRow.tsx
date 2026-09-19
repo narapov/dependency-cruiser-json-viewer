@@ -42,19 +42,21 @@ interface RelationRowProps {
 }
 
 /** One relation row with optional expandable nested children. */
-export function RelationRow({
-  item,
-  expandKey,
-  expandedKeys,
-  onToggleExpand,
-  panelPath,
-  modules,
-  direction,
-  userEdgeHighlights,
-  onSetUserDependencyHighlight,
-  onShowInGraph,
-  depth,
-}: RelationRowProps) {
+export function RelationRow(props: RelationRowProps) {
+  const {
+    item,
+    expandKey,
+    expandedKeys,
+    onToggleExpand,
+    panelPath,
+    modules,
+    direction,
+    userEdgeHighlights,
+    onSetUserDependencyHighlight,
+    onShowInGraph,
+    depth,
+  } = props;
+
   const { t } = useTranslation();
   const hasChildren = (item.children?.length ?? 0) > 0;
   const expanded = expandedKeys.has(expandKey);

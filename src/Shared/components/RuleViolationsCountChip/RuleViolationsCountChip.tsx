@@ -7,7 +7,9 @@ interface RuleViolationsCountChipProps {
 }
 
 /** Error-colored chip showing the number of rule violations; renders nothing when count is 0. */
-export function RuleViolationsCountChip({ count }: RuleViolationsCountChipProps) {
+export function RuleViolationsCountChip(props: RuleViolationsCountChipProps) {
+  const { count } = props;
+
   const { t } = useTranslation();
 
   if (count === 0) {

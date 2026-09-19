@@ -18,7 +18,9 @@ export interface FileTreeContextValue {
 
 const FileTreeContext = createContext<FileTreeContextValue | null>(null);
 
-export function FileTreeProvider({ value, children }: { value: FileTreeContextValue; children: React.ReactNode }) {
+export function FileTreeProvider(props: { value: FileTreeContextValue; children: React.ReactNode }) {
+  const { value, children } = props;
+
   return <FileTreeContext.Provider value={value}>{children}</FileTreeContext.Provider>;
 }
 

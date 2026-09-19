@@ -31,15 +31,17 @@ interface HiddenRelationsSectionProps {
 }
 
 /** Collapsible section listing relations filtered out of the main list. */
-export function HiddenRelationsSection({
-  hiddenItems,
-  panelPath,
-  modules,
-  direction,
-  userEdgeHighlights,
-  onSetUserDependencyHighlight,
-  onShowInGraph,
-}: HiddenRelationsSectionProps) {
+export function HiddenRelationsSection(props: HiddenRelationsSectionProps) {
+  const {
+    hiddenItems,
+    panelPath,
+    modules,
+    direction,
+    userEdgeHighlights,
+    onSetUserDependencyHighlight,
+    onShowInGraph,
+  } = props;
+
   const { t } = useTranslation();
   const [hiddenExpandedKeys, setHiddenExpandedKeys] = useState(() => initialExpandedKeys(hiddenItems, 'hidden:'));
   const [hiddenSectionOpen, setHiddenSectionOpen] = useState(false);

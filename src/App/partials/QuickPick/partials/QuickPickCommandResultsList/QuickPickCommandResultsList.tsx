@@ -14,14 +14,9 @@ interface QuickPickCommandResultsListProps {
   onSelect: (command: QuickPickCommand) => void;
 }
 
-export function QuickPickCommandResultsList({
-  results,
-  query,
-  highlightedIndex,
-  listRef,
-  onHighlightIndex,
-  onSelect,
-}: QuickPickCommandResultsListProps) {
+export function QuickPickCommandResultsList(props: QuickPickCommandResultsListProps) {
+  const { results, query, highlightedIndex, listRef, onHighlightIndex, onSelect } = props;
+
   return (
     <Box
       component="ul"

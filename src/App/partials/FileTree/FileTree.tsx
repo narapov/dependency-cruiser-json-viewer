@@ -29,20 +29,22 @@ interface FileTreeProps {
   activePath?: string | null;
 }
 
-export function FileTree({
-  ref,
-  sources,
-  selectedKeys = [],
-  onSelect,
-  expandedKeys,
-  onExpand,
-  onExpandRecursive,
-  onShowInGraph,
-  onShowDependenciesPanel,
-  onShowApplicableRulesPanel,
-  onViewModuleJson,
-  activePath = null,
-}: FileTreeProps) {
+export function FileTree(props: FileTreeProps) {
+  const {
+    ref,
+    sources,
+    selectedKeys = [],
+    onSelect,
+    expandedKeys,
+    onExpand,
+    onExpandRecursive,
+    onShowInGraph,
+    onShowDependenciesPanel,
+    onShowApplicableRulesPanel,
+    onViewModuleJson,
+    activePath = null,
+  } = props;
+
   const apiRef = useRichTreeViewApiRef();
   const clickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 

@@ -14,13 +14,9 @@ export interface RelationRowContextMenuOptions {
   onSetHighlight?: (color: string | null) => void;
 }
 
-export function useRelationRowContextMenu({
-  path,
-  onShowInGraph,
-  highlightEnabled = false,
-  currentHighlight,
-  onSetHighlight,
-}: RelationRowContextMenuOptions) {
+export function useRelationRowContextMenu(config: RelationRowContextMenuOptions) {
+  const { path, onShowInGraph, highlightEnabled = false, currentHighlight, onSetHighlight } = config;
+
   const { t } = useTranslation();
   const [anchorPosition, setAnchorPosition] = useState<{ top: number; left: number } | null>(null);
 

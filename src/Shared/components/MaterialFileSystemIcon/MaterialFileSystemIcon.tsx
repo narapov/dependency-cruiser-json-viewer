@@ -7,7 +7,9 @@ interface MaterialFileSystemIconProps {
   className?: string;
 }
 
-export function MaterialFileSystemIcon({ name, isFolder, isOpen, className }: MaterialFileSystemIconProps) {
+export function MaterialFileSystemIcon(props: MaterialFileSystemIconProps) {
+  const { name, isFolder, isOpen, className } = props;
+
   const src = isFolder ? getMaterialFolderIcon(name, isOpen ?? false) : getMaterialFileIcon(name);
 
   return (

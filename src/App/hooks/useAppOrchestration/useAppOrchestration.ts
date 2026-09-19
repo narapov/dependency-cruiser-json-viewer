@@ -260,15 +260,17 @@ function workspaceViewReducer(state: WorkspaceViewState, action: WorkspaceViewAc
   }
 }
 
-export function useAppOrchestration({
-  sources,
-  unfilteredCruiseResult,
-  ignorePatterns,
-  fileTreeRef,
-  graphRef,
-  initialDependencyCruiserState,
-  cruiseLoadId,
-}: UseAppOrchestrationOptions) {
+export function useAppOrchestration(config: UseAppOrchestrationOptions) {
+  const {
+    sources,
+    unfilteredCruiseResult,
+    ignorePatterns,
+    fileTreeRef,
+    graphRef,
+    initialDependencyCruiserState,
+    cruiseLoadId,
+  } = config;
+
   const [state, dispatch] = useReducer(workspaceViewReducer, undefined, () =>
     createInitialWorkspaceViewState(sources, cruiseLoadId, initialDependencyCruiserState),
   );

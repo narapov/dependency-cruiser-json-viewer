@@ -22,13 +22,10 @@ interface AppStatusBarProps {
   onViewModuleJson: (path: string) => void;
 }
 
-export function AppStatusBar({
-  activePath,
-  onFocusActivePath,
-  onShowDependenciesPanel,
-  onShowApplicableRulesPanel,
-  onViewModuleJson,
-}: AppStatusBarProps) {
+export function AppStatusBar(props: AppStatusBarProps) {
+  const { activePath, onFocusActivePath, onShowDependenciesPanel, onShowApplicableRulesPanel, onViewModuleJson } =
+    props;
+
   const { t } = useTranslation();
   const hasSelection = activePath != null;
   const label = activePath ?? t('statusBar.noSelection');

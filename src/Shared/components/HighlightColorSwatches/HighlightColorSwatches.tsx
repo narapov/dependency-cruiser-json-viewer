@@ -13,7 +13,9 @@ interface HighlightColorSwatchesProps {
 }
 
 /** Color swatch menu items for user edge highlighting. */
-export function HighlightColorSwatches({ currentHighlight, onSelect }: HighlightColorSwatchesProps) {
+export function HighlightColorSwatches(props: HighlightColorSwatchesProps) {
+  const { currentHighlight, onSelect } = props;
+
   const { t } = useTranslation();
 
   const handleSelect = (color: string | null) => (event: MouseEvent) => {

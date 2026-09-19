@@ -10,7 +10,9 @@ interface FolderExpandToggleProps {
   onClick: (event: MouseEvent<HTMLButtonElement>) => void;
 }
 
-export function FolderExpandToggle({ expanded, onClick }: FolderExpandToggleProps) {
+export function FolderExpandToggle(props: FolderExpandToggleProps) {
+  const { expanded, onClick } = props;
+
   const { t } = useTranslation();
 
   return (

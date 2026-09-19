@@ -18,11 +18,9 @@ interface UsePendingFocusNodeResult {
  * Focuses a graph node immediately when it exists in React Flow, or queues
  * focus until after an async ELK rebuild applies the node.
  */
-export function usePendingFocusNode({
-  isBuildingGraph,
-  graphResult,
-  layoutNodes,
-}: UsePendingFocusNodeInput): UsePendingFocusNodeResult {
+export function usePendingFocusNode(config: UsePendingFocusNodeInput): UsePendingFocusNodeResult {
+  const { isBuildingGraph, graphResult, layoutNodes } = config;
+
   const { fitView, getNode } = useReactFlow();
   const pendingFocusPathRef = useRef<string | null>(null);
 

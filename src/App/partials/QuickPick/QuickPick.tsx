@@ -21,7 +21,9 @@ interface QuickPickProps {
   onSelectPath: (path: string) => void;
 }
 
-export function QuickPick({ ref, sources, commands, onSelectPath }: QuickPickProps) {
+export function QuickPick(props: QuickPickProps) {
+  const { ref, sources, commands, onSelectPath } = props;
+
   const { t } = useTranslation();
   const {
     open,

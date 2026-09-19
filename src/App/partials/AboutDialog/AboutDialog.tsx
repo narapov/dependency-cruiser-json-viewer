@@ -11,7 +11,9 @@ interface AboutDialogProps {
   onClose: () => void;
 }
 
-export function AboutDialog({ open, onClose }: AboutDialogProps) {
+export function AboutDialog(props: AboutDialogProps) {
+  const { open, onClose } = props;
+
   const { t } = useTranslation();
 
   return (

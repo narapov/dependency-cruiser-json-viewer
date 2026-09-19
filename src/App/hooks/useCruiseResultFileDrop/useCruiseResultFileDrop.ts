@@ -17,8 +17,9 @@ function dataTransferHasFiles(dataTransfer: DataTransfer | null): boolean {
 }
 
 /** App-wide file drop for cruise-result JSON: drag depth + overlay flag. */
-export function useCruiseResultFileDrop(options: UseCruiseResultFileDropOptions) {
-  const { enabled, onFile, onInvalidFile } = options;
+export function useCruiseResultFileDrop(config: UseCruiseResultFileDropOptions) {
+  const { enabled, onFile, onInvalidFile } = config;
+
   const [isDraggingFile, setIsDraggingFile] = useState(false);
   const [isDropAllowed, setIsDropAllowed] = useState(true);
   const depthRef = useRef(0);

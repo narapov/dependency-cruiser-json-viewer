@@ -13,7 +13,9 @@ interface CircularPanelProps {
   onShowInGraph: (path: string) => void;
 }
 
-export function CircularPanel({ modules, sources, onShowCycle, onShowInGraph }: CircularPanelProps) {
+export function CircularPanel(props: CircularPanelProps) {
+  const { modules, sources, onShowCycle, onShowInGraph } = props;
+
   const sourceSet = new Set(sources);
   const cycles = collectDistinctCycles(modules)
     .map(cycle => ({

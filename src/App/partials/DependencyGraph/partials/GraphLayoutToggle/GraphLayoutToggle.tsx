@@ -10,7 +10,9 @@ interface GraphLayoutToggleProps {
   onChange: (checked: boolean) => void;
 }
 
-export function GraphLayoutToggle({ checked, onChange }: GraphLayoutToggleProps) {
+export function GraphLayoutToggle(props: GraphLayoutToggleProps) {
+  const { checked, onChange } = props;
+
   const { t } = useTranslation();
   const label = t('graph.autoLayoutOnly');
   const hint = t('graph.autoLayoutOnlyHint');

@@ -19,7 +19,9 @@ interface UseQuickPickShortcutOptions {
   onOpenCommandMode: () => void;
 }
 
-export function useQuickPickShortcut({ open, onToggleFileMode, onOpenCommandMode }: UseQuickPickShortcutOptions) {
+export function useQuickPickShortcut(config: UseQuickPickShortcutOptions) {
+  const { open, onToggleFileMode, onOpenCommandMode } = config;
+
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'F1') {

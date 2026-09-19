@@ -12,7 +12,9 @@ import { NodeContextMenu, NodeContextMenuTrigger } from '../NodeContextMenu';
 
 import styles from './FolderGroupNode.module.css';
 
-export function FolderGroupNode({ data }: NodeProps) {
+export function FolderGroupNode(props: NodeProps) {
+  const { data } = props;
+
   const { label, path, expanded, highlighted, backgroundColor } = data as FolderGroupNodeData;
 
   const { onToggleFolder, onAutoLayoutGroup, onAutoLayoutGroupRecursive } = useGraphActions();

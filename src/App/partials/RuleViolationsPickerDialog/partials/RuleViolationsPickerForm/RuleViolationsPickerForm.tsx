@@ -18,7 +18,9 @@ interface RuleViolationsPickerFormProps {
   onConfirm: (ruleNames: string[]) => void;
 }
 
-export function RuleViolationsPickerForm({ rules, onClose, onConfirm }: RuleViolationsPickerFormProps) {
+export function RuleViolationsPickerForm(props: RuleViolationsPickerFormProps) {
+  const { rules, onClose, onConfirm } = props;
+
   const { t } = useTranslation();
   const form = useForm<RuleViolationsPickerFormValues>({
     resolver: zodResolver(ruleViolationsPickerSchema),

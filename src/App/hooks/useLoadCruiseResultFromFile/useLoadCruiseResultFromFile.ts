@@ -18,8 +18,9 @@ interface UseLoadCruiseResultFromFileOptions {
   onLoaded?: (loaded: LoadedCruiseResultFile) => void;
 }
 
-export function useLoadCruiseResultFromFile(options: UseLoadCruiseResultFromFileOptions = {}) {
-  const { onLoaded } = options;
+export function useLoadCruiseResultFromFile(config: UseLoadCruiseResultFromFileOptions = {}) {
+  const { onLoaded } = config;
+
   const queryClient = useQueryClient();
   const { t } = useTranslation();
   const fileInputRef = useRef<{ open: () => void }>(null);

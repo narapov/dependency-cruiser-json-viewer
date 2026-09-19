@@ -22,7 +22,9 @@ function getThemeIndex(mode: ThemeOptionValue | undefined): number {
   return index === -1 ? 0 : index;
 }
 
-export function ThemePickerDialog({ open, onClose }: ThemePickerDialogProps) {
+export function ThemePickerDialog(props: ThemePickerDialogProps) {
+  const { open, onClose } = props;
+
   const { mode, setMode } = useColorScheme();
   const { t } = useTranslation();
   const [highlightedIndex, setHighlightedIndex] = useState(() => getThemeIndex(mode));

@@ -35,7 +35,9 @@ interface AppSidebarProps {
   onClearAllHighlights: () => void;
 }
 
-function ViewPanel({ active, children }: { active: boolean; children: ReactNode }) {
+function ViewPanel(props: { active: boolean; children: ReactNode }) {
+  const { active, children } = props;
+
   return (
     <Box
       sx={{
@@ -52,31 +54,33 @@ function ViewPanel({ active, children }: { active: boolean; children: ReactNode 
   );
 }
 
-export function AppSidebar({
-  view,
-  fileTreeRef,
-  sources,
-  selectedKeys,
-  onSelect,
-  expandedKeys,
-  onExpand,
-  onExpandRecursive,
-  onShowInGraph,
-  onShowDependenciesPanel,
-  onShowApplicableRulesPanel,
-  onViewModuleJson,
-  activePath,
-  ruleSetUsed,
-  violations,
-  onSelectViolationPaths,
-  onShowRuleViolations,
-  modules,
-  onShowCycle,
-  highlights,
-  onRemoveHighlightKeys,
-  onShowHighlightConnection,
-  onClearAllHighlights,
-}: AppSidebarProps) {
+export function AppSidebar(props: AppSidebarProps) {
+  const {
+    view,
+    fileTreeRef,
+    sources,
+    selectedKeys,
+    onSelect,
+    expandedKeys,
+    onExpand,
+    onExpandRecursive,
+    onShowInGraph,
+    onShowDependenciesPanel,
+    onShowApplicableRulesPanel,
+    onViewModuleJson,
+    activePath,
+    ruleSetUsed,
+    violations,
+    onSelectViolationPaths,
+    onShowRuleViolations,
+    modules,
+    onShowCycle,
+    highlights,
+    onRemoveHighlightKeys,
+    onShowHighlightConnection,
+    onClearAllHighlights,
+  } = props;
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
       <ViewPanel active={view === 'files'}>

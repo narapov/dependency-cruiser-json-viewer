@@ -6,7 +6,9 @@ import { CIRCULAR_NODE_BACKGROUND, ERROR_NODE_BACKGROUND, MaterialFileSystemIcon
 import type { FileNodeData } from '../../types';
 import { NodeContextMenu, NodeContextMenuTrigger } from '../NodeContextMenu';
 
-export function FileNode({ data }: NodeProps) {
+export function FileNode(props: NodeProps) {
+  const { data } = props;
+
   const { label, path, highlighted, circular, couldNotResolve } = data as FileNodeData;
 
   let bgcolor: string = 'background.paper';

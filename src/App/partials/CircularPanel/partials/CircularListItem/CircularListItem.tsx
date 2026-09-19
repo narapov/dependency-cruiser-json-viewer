@@ -37,7 +37,9 @@ const circularRowActionsHoverSx = {
   },
 } as const;
 
-export function CircularListItem({ paths, onShowCycle, onShowInGraph }: CircularListItemProps) {
+export function CircularListItem(props: CircularListItemProps) {
+  const { paths, onShowCycle, onShowInGraph } = props;
+
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const label = formatCycleLabel(paths);

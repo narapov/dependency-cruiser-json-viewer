@@ -64,10 +64,9 @@ interface UseGraphLayoutNodesResult {
   onAutoLayoutGroupRecursive: (groupId: string) => void;
 }
 
-export function useGraphLayoutNodes({
-  graphResult,
-  autoLayoutOnly = false,
-}: UseGraphLayoutNodesInput): UseGraphLayoutNodesResult {
+export function useGraphLayoutNodes(config: UseGraphLayoutNodesInput): UseGraphLayoutNodesResult {
+  const { graphResult, autoLayoutOnly = false } = config;
+
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const positionCacheRef = useRef<PositionCache>(new Map());
   const prevFingerprintsRef = useRef<GroupFingerprints | null>(null);

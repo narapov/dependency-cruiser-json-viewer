@@ -60,16 +60,18 @@ interface AppHeaderProps {
   onOpenAbout: () => void;
 }
 
-export function AppHeader({
-  filteredModulesCount,
-  totalModulesCount,
-  hasIgnoredModules = false,
-  watchMode = false,
-  onOpenFileSearch,
-  onOpenCommandPalette,
-  onOpenIgnorePatterns,
-  onOpenAbout,
-}: AppHeaderProps) {
+export function AppHeader(props: AppHeaderProps) {
+  const {
+    filteredModulesCount,
+    totalModulesCount,
+    hasIgnoredModules = false,
+    watchMode = false,
+    onOpenFileSearch,
+    onOpenCommandPalette,
+    onOpenIgnorePatterns,
+    onOpenAbout,
+  } = props;
+
   const { t } = useTranslation();
   const searchFilesLabel = t('app.searchFiles', { shortcut: formatShortcut('P') });
   const commandPaletteLabel = t('app.commandPalette');

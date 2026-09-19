@@ -17,7 +17,9 @@ interface EdgeContextMenuHeaderProps {
   target: string;
 }
 
-export function EdgeContextMenuHeader({ source, target }: EdgeContextMenuHeaderProps) {
+export function EdgeContextMenuHeader(props: EdgeContextMenuHeaderProps) {
+  const { source, target } = props;
+
   return (
     <Box
       role="presentation"

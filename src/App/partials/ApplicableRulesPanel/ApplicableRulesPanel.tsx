@@ -20,15 +20,9 @@ interface ApplicableRulesPanelProps {
   onSelectViolationPaths: (paths: string[]) => void;
 }
 
-export function ApplicableRulesPanel({
-  path,
-  modules,
-  ruleSetUsed,
-  violations,
-  onClose,
-  onShowInGraph,
-  onSelectViolationPaths,
-}: ApplicableRulesPanelProps) {
+export function ApplicableRulesPanel(props: ApplicableRulesPanelProps) {
+  const { path, modules, ruleSetUsed, violations, onClose, onShowInGraph, onSelectViolationPaths } = props;
+
   const { t } = useTranslation();
   const moduleSources = modules.map(module => module.source);
   const rules = getRulesApplicableToPath(path, ruleSetUsed, violations, moduleSources);

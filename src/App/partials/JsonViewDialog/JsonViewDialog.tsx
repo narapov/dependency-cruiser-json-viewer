@@ -37,15 +37,9 @@ function resolveShouldExpandNode(expandMode: ExpandMode, initialShouldExpandNode
   return initialShouldExpandNode;
 }
 
-export function JsonViewDialog({
-  open,
-  title,
-  data,
-  onClose,
-  shouldExpandNode = allExpanded,
-  maxWidth = 'sm',
-  fullScreen = false,
-}: JsonViewDialogProps) {
+export function JsonViewDialog(props: JsonViewDialogProps) {
+  const { open, title, data, onClose, shouldExpandNode = allExpanded, maxWidth = 'sm', fullScreen = false } = props;
+
   const { t } = useTranslation();
   const colorMode = useResolvedColorMode();
   const [expandMode, setExpandMode] = useState<ExpandMode>('initial');

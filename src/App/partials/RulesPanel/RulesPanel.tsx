@@ -17,13 +17,9 @@ interface RulesPanelProps {
   onShowRuleViolations: (ruleName: string) => void;
 }
 
-export function RulesPanel({
-  ruleSetUsed,
-  violations,
-  sources,
-  onSelectViolationPaths,
-  onShowRuleViolations,
-}: RulesPanelProps) {
+export function RulesPanel(props: RulesPanelProps) {
+  const { ruleSetUsed, violations, sources, onSelectViolationPaths, onShowRuleViolations } = props;
+
   const [nameFilter, setNameFilter] = useState('');
   const deferredNameFilter = useDeferredValue(nameFilter);
   const rules = groupRulesWithViolations(ruleSetUsed, violations, sources);

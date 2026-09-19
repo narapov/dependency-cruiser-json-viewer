@@ -17,13 +17,9 @@ interface QuickPickFileResultsListItemProps {
   onClick: () => void;
 }
 
-export function QuickPickFileResultsListItem({
-  item,
-  query,
-  highlighted,
-  onMouseEnter,
-  onClick,
-}: QuickPickFileResultsListItemProps) {
+export function QuickPickFileResultsListItem(props: QuickPickFileResultsListItemProps) {
+  const { item, query, highlighted, onMouseEnter, onClick } = props;
+
   const parentPath = getParentPath(item.key);
   const { nameIndexes, pathIndexes } = useMemo(
     () => computeQuickPickHighlight(query, item.name, item.key),

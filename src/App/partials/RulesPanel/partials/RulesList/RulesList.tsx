@@ -14,13 +14,9 @@ interface RulesListProps {
   onShowRuleViolations: (ruleName: string) => void;
 }
 
-export function RulesList({
-  rules,
-  filteredRules,
-  nameFilter,
-  onSelectViolationPaths,
-  onShowRuleViolations,
-}: RulesListProps) {
+export function RulesList(props: RulesListProps) {
+  const { rules, filteredRules, nameFilter, onSelectViolationPaths, onShowRuleViolations } = props;
+
   const { t } = useTranslation();
 
   if (rules.length === 0) {

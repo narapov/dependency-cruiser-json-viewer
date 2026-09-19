@@ -3,20 +3,22 @@ import { BaseEdge, type EdgeProps } from '@xyflow/react';
 import type { DependencyEdgeData } from '../../types';
 import { getDependencyEdgePath } from './helpers/getDependencyEdgePath';
 
-export function DependencyEdge({
-  id,
-  data,
-  style,
-  markerStart,
-  markerEnd,
-  interactionWidth = 3,
-  sourceX,
-  sourceY,
-  targetX,
-  targetY,
-  sourcePosition,
-  targetPosition,
-}: EdgeProps) {
+export function DependencyEdge(props: EdgeProps) {
+  const {
+    id,
+    data,
+    style,
+    markerStart,
+    markerEnd,
+    interactionWidth = 3,
+    sourceX,
+    sourceY,
+    targetX,
+    targetY,
+    sourcePosition,
+    targetPosition,
+  } = props;
+
   const [path] = getDependencyEdgePath({
     sourceX,
     sourceY,

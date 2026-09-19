@@ -24,12 +24,9 @@ interface HighlightColorGroupProps {
   onShowConnection: (source: string, target: string) => void;
 }
 
-export function HighlightColorGroup({
-  color,
-  keys,
-  onRemoveDependencyKeys,
-  onShowConnection,
-}: HighlightColorGroupProps) {
+export function HighlightColorGroup(props: HighlightColorGroupProps) {
+  const { color, keys, onRemoveDependencyKeys, onShowConnection } = props;
+
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(true);
 

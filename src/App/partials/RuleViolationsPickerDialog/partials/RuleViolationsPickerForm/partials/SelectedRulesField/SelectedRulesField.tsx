@@ -20,7 +20,9 @@ interface SelectedRulesFieldProps {
   rules: readonly RuleViolationsPickerOption[];
 }
 
-export function SelectedRulesField({ rules }: SelectedRulesFieldProps) {
+export function SelectedRulesField(props: SelectedRulesFieldProps) {
+  const { rules } = props;
+
   const { t } = useTranslation();
   const { control } = useFormContext<RuleViolationsPickerFormValues>();
   const { field } = useController({ name: 'selectedRules', control });

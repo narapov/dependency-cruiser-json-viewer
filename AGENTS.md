@@ -101,6 +101,7 @@ Feature/
 ## Code conventions
 
 - Functional React components; `ref` is a regular prop (React 19).
+- Components take a single `props` parameter and destructure inside the body; hooks take a single `config` object parameter and destructure inside. Do not destructure in the function signature. Leave a blank line after the destructuring. Exception: simple `styled(...)` wrappers.
 - React Compiler is enabled — avoid manual `useMemo`/`useCallback` unless there is a clear reason.
 - UI: prefer MUI components and APIs (`@mui/material`, `@mui/icons-material`, `@mui/x-tree-view`) over custom markup or third-party UI libraries. Use CSS modules (`*.module.css`) only for layout or styling that MUI does not cover.
 - Naming: PascalCase folders/files for components, `useXxx` for hooks, barrel `index.ts` in each folder.

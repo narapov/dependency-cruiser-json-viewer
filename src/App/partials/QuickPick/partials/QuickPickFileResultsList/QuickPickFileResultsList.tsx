@@ -14,14 +14,9 @@ interface QuickPickFileResultsListProps {
   onSelect: (path: string) => void;
 }
 
-export function QuickPickFileResultsList({
-  results,
-  query,
-  highlightedIndex,
-  listRef,
-  onHighlightIndex,
-  onSelect,
-}: QuickPickFileResultsListProps) {
+export function QuickPickFileResultsList(props: QuickPickFileResultsListProps) {
+  const { results, query, highlightedIndex, listRef, onHighlightIndex, onSelect } = props;
+
   return (
     <Box
       component="ul"

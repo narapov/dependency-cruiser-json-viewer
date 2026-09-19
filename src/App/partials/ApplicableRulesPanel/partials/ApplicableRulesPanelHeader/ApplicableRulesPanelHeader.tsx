@@ -14,7 +14,9 @@ interface ApplicableRulesPanelHeaderProps {
   onShowInGraph: (path: string) => void;
 }
 
-export function ApplicableRulesPanelHeader({ path, onClose, onShowInGraph }: ApplicableRulesPanelHeaderProps) {
+export function ApplicableRulesPanelHeader(props: ApplicableRulesPanelHeaderProps) {
+  const { path, onClose, onShowInGraph } = props;
+
   const { t } = useTranslation();
 
   return (

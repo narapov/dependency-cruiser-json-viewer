@@ -23,13 +23,9 @@ interface UseCruiseResultWatchOptions {
 }
 
 /** Subscribe to cruise-result watch notifications and re-apply current workspace settings. */
-export function useCruiseResultWatch({
-  cruiseLoadId,
-  setCruiseLoadId,
-  setPatterns,
-  getCurrentWorkspaceSettings,
-  applyWorkspaceView,
-}: UseCruiseResultWatchOptions): void {
+export function useCruiseResultWatch(config: UseCruiseResultWatchOptions): void {
+  const { cruiseLoadId, setCruiseLoadId, setPatterns, getCurrentWorkspaceSettings, applyWorkspaceView } = config;
+
   const queryClient = useQueryClient();
   const watchEnabled = getWindowEnvs()?.watch === true;
 

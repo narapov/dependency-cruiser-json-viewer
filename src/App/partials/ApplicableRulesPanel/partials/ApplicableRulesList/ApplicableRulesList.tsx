@@ -11,7 +11,9 @@ interface ApplicableRulesListProps {
   onSelectViolationPaths: (paths: string[]) => void;
 }
 
-export function ApplicableRulesList({ rules, onSelectViolationPaths }: ApplicableRulesListProps) {
+export function ApplicableRulesList(props: ApplicableRulesListProps) {
+  const { rules, onSelectViolationPaths } = props;
+
   const { t } = useTranslation();
 
   if (rules.length === 0) {

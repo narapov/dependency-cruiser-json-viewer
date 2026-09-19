@@ -9,12 +9,9 @@ interface UseAutoFitViewInput {
   autoLayoutOnly: boolean;
 }
 
-export function useAutoFitView({
-  selectedPaths,
-  layoutNodesLength,
-  hasUserLayout,
-  autoLayoutOnly,
-}: UseAutoFitViewInput): void {
+export function useAutoFitView(config: UseAutoFitViewInput): void {
+  const { selectedPaths, layoutNodesLength, hasUserLayout, autoLayoutOnly } = config;
+
   const { fitView } = useReactFlow();
   const selectedPathsKey = selectedPaths.join('\0');
   const prevSelectedPathsKeyRef = useRef<string | null>(null);

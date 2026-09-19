@@ -13,7 +13,9 @@ interface UseHighlightedNodesResult {
   highlightedNodes: Node[];
 }
 
-export function useHighlightedNodes({ nodes, activePath }: UseHighlightedNodesInput): UseHighlightedNodesResult {
+export function useHighlightedNodes(config: UseHighlightedNodesInput): UseHighlightedNodesResult {
+  const { nodes, activePath } = config;
+
   const highlightedNodes = useMemo(() => applyActivePathNodeHighlight(nodes, activePath ?? null), [nodes, activePath]);
 
   return { highlightedNodes };

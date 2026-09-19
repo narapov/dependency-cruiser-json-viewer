@@ -10,6 +10,8 @@ const MatchHighlightRoot = styled('span')(({ theme }) => ({
 }));
 
 /** Styled span for primary-text match highlighting. */
-export function MatchHighlight({ children }: { children: ReactNode }) {
+export function MatchHighlight(props: { children: ReactNode }) {
+  const { children } = props;
+
   return <MatchHighlightRoot data-testid="match-highlight">{children}</MatchHighlightRoot>;
 }

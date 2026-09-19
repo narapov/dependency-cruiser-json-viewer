@@ -16,13 +16,9 @@ export interface GraphActionsContextValue {
 
 const GraphActionsContext = createContext<GraphActionsContextValue | null>(null);
 
-export function GraphActionsProvider({
-  value,
-  children,
-}: {
-  value: GraphActionsContextValue;
-  children: React.ReactNode;
-}) {
+export function GraphActionsProvider(props: { value: GraphActionsContextValue; children: React.ReactNode }) {
+  const { value, children } = props;
+
   return <GraphActionsContext.Provider value={value}>{children}</GraphActionsContext.Provider>;
 }
 

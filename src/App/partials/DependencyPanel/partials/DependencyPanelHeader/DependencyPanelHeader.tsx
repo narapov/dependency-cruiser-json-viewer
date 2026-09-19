@@ -16,7 +16,9 @@ interface DependencyPanelHeaderProps {
   onViewModuleJson: (path: string) => void;
 }
 
-export function DependencyPanelHeader({ path, onClose, onShowInGraph, onViewModuleJson }: DependencyPanelHeaderProps) {
+export function DependencyPanelHeader(props: DependencyPanelHeaderProps) {
+  const { path, onClose, onShowInGraph, onViewModuleJson } = props;
+
   const { t } = useTranslation();
 
   return (

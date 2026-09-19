@@ -8,7 +8,9 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
 /** MUI fallback UI for react-error-boundary. */
-export function ErrorBoundaryFallback({ error }: FallbackProps) {
+export function ErrorBoundaryFallback(props: FallbackProps) {
+  const { error } = props;
+
   const { t } = useTranslation();
   const message = error instanceof Error ? error.message : String(error);
   const stack = error instanceof Error ? error.stack : undefined;

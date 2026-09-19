@@ -13,6 +13,8 @@ const AppDialogRoot = styled(Dialog)({
 });
 
 /** App dialog shell with top-anchored positioning and fullWidth by default. */
-export function AppDialog({ fullWidth = true, fullScreen = false, ...props }: DialogProps) {
-  return <AppDialogRoot fullWidth={fullWidth} fullScreen={fullScreen} {...props} />;
+export function AppDialog(props: DialogProps) {
+  const { fullWidth = true, fullScreen = false, ...rest } = props;
+
+  return <AppDialogRoot fullWidth={fullWidth} fullScreen={fullScreen} {...rest} />;
 }

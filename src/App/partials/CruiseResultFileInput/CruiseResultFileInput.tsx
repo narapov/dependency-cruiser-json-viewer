@@ -9,7 +9,9 @@ interface CruiseResultFileInputProps {
 }
 
 export const CruiseResultFileInput = forwardRef<CruiseResultFileInputHandle, CruiseResultFileInputProps>(
-  function CruiseResultFileInput({ onFileSelect }, ref) {
+  function CruiseResultFileInput(props, ref) {
+    const { onFileSelect } = props;
+
     const inputRef = useRef<HTMLInputElement>(null);
 
     useImperativeHandle(ref, () => ({

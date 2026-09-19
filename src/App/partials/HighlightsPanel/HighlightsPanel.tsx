@@ -17,12 +17,9 @@ interface HighlightsPanelProps {
   onClearAll: () => void;
 }
 
-export function HighlightsPanel({
-  highlights,
-  onRemoveDependencyKeys,
-  onShowConnection,
-  onClearAll,
-}: HighlightsPanelProps) {
+export function HighlightsPanel(props: HighlightsPanelProps) {
+  const { highlights, onRemoveDependencyKeys, onShowConnection, onClearAll } = props;
+
   const { t } = useTranslation();
   const groups = groupHighlightsByColor(highlights);
   const isEmpty = groups.length === 0;

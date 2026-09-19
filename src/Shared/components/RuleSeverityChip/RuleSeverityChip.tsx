@@ -10,7 +10,9 @@ interface RuleSeverityChipProps {
 }
 
 /** Outlined severity chip for cruise rules (error / warn / info / ignore). */
-export function RuleSeverityChip({ severity }: RuleSeverityChipProps) {
+export function RuleSeverityChip(props: RuleSeverityChipProps) {
+  const { severity } = props;
+
   const { t } = useTranslation();
 
   return (

@@ -15,7 +15,9 @@ interface EdgeHighlightSubmenuProps {
 }
 
 /** Nested “Highlight” submenu with a color swatch grid. */
-export function EdgeHighlightSubmenu({ currentHighlight, onSetHighlight, onClose }: EdgeHighlightSubmenuProps) {
+export function EdgeHighlightSubmenu(props: EdgeHighlightSubmenuProps) {
+  const { currentHighlight, onSetHighlight, onClose } = props;
+
   const { t } = useTranslation();
   const [submenuAnchor, setSubmenuAnchor] = useState<HTMLElement | null>(null);
 

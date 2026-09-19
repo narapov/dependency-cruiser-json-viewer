@@ -11,7 +11,9 @@ interface RuleJsonDialogProps {
   onClose: () => void;
 }
 
-export function RuleJsonDialog({ open, ruleName, rule, onClose }: RuleJsonDialogProps) {
+export function RuleJsonDialog(props: RuleJsonDialogProps) {
+  const { open, ruleName, rule, onClose } = props;
+
   const { t } = useTranslation();
 
   return (

@@ -16,10 +16,9 @@ interface UseInitialWorkspaceSettingsFromCliOptions {
 }
 
 /** Apply CLI `--workspace-settings` once after the cruise result is available. */
-export function useInitialWorkspaceSettingsFromCli({
-  cruiseReady,
-  onLoaded,
-}: UseInitialWorkspaceSettingsFromCliOptions) {
+export function useInitialWorkspaceSettingsFromCli(config: UseInitialWorkspaceSettingsFromCliOptions) {
+  const { cruiseReady, onLoaded } = config;
+
   const { t } = useTranslation();
   const { fileLoadError, setFileLoadError, clearFileLoadError } = useFileLoadNotice();
   const enabled = cruiseReady && getWindowEnvs()?.initialWorkspaceSettings === true;

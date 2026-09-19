@@ -39,7 +39,9 @@ function violationPaths(violation: IViolation): string[] {
   return [violation.from];
 }
 
-export function ApplicableRuleListItem({ entry, onSelectViolationPaths }: ApplicableRuleListItemProps) {
+export function ApplicableRuleListItem(props: ApplicableRuleListItemProps) {
+  const { entry, onSelectViolationPaths } = props;
+
   const { t } = useTranslation();
   const [jsonOpen, setJsonOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);

@@ -23,17 +23,19 @@ interface DependencyPanelProps {
   onSetUserDependencyHighlight: (dependencyKeys: readonly string[], color: string | null) => void;
 }
 
-export function DependencyPanel({
-  path,
-  modules,
-  selectedPaths,
-  expandedKeys,
-  onClose,
-  onShowInGraph,
-  onViewModuleJson,
-  userEdgeHighlights,
-  onSetUserDependencyHighlight,
-}: DependencyPanelProps) {
+export function DependencyPanel(props: DependencyPanelProps) {
+  const {
+    path,
+    modules,
+    selectedPaths,
+    expandedKeys,
+    onClose,
+    onShowInGraph,
+    onViewModuleJson,
+    userEdgeHighlights,
+    onSetUserDependencyHighlight,
+  } = props;
+
   const { t } = useTranslation();
   const expandedFolders = useMemo(() => new Set(expandedKeys), [expandedKeys]);
 

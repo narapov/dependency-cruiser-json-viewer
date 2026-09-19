@@ -13,7 +13,9 @@ interface CircularListProps {
   onShowInGraph: (path: string) => void;
 }
 
-export function CircularList({ cycles, onShowCycle, onShowInGraph }: CircularListProps) {
+export function CircularList(props: CircularListProps) {
+  const { cycles, onShowCycle, onShowInGraph } = props;
+
   const { t } = useTranslation();
 
   if (cycles.length === 0) {

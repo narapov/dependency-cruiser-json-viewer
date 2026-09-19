@@ -18,17 +18,19 @@ export interface FileTreeContextMenuOptions {
   onViewModuleJson: (path: string) => void;
 }
 
-export function useFileTreeContextMenu({
-  path,
-  isFolder = false,
-  expanded,
-  onToggleExpand,
-  onExpandRecursive,
-  onShowInGraph,
-  onShowDependenciesPanel,
-  onShowApplicableRulesPanel,
-  onViewModuleJson,
-}: FileTreeContextMenuOptions) {
+export function useFileTreeContextMenu(config: FileTreeContextMenuOptions) {
+  const {
+    path,
+    isFolder = false,
+    expanded,
+    onToggleExpand,
+    onExpandRecursive,
+    onShowInGraph,
+    onShowDependenciesPanel,
+    onShowApplicableRulesPanel,
+    onViewModuleJson,
+  } = config;
+
   const { t } = useTranslation();
   const [anchorPosition, setAnchorPosition] = useState<{ top: number; left: number } | null>(null);
 

@@ -21,5 +21,6 @@ export function useLogChangedProps(label: string, props: Record<string, unknown>
   }
 
   prevRef.current = props;
+
   /* eslint-enable react-hooks/refs */
 }

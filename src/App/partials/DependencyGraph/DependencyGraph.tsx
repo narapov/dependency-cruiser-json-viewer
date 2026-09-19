@@ -72,29 +72,31 @@ interface DependencyGraphInnerProps {
   onAutoLayoutOnlyChange: (value: boolean) => void;
 }
 
-function DependencyGraphInner({
-  imperativeRef,
-  modules,
-  selectedPaths,
-  expandedKeys,
-  folderBaseColors,
-  onToggleFolder,
-  onExpandRecursive,
-  onShowInFileTree,
-  onShowDependenciesPanel,
-  onShowApplicableRulesPanel,
-  onViewModuleJson,
-  onHideOthers,
-  onShowDirectDependencies,
-  onShowDirectDependents,
-  onActivePathChange,
-  activePath,
-  userEdgeHighlights,
-  onUserEdgeHighlightsChange,
-  onClearAllHighlights,
-  autoLayoutOnly,
-  onAutoLayoutOnlyChange,
-}: DependencyGraphInnerProps) {
+function DependencyGraphInner(props: DependencyGraphInnerProps) {
+  const {
+    imperativeRef,
+    modules,
+    selectedPaths,
+    expandedKeys,
+    folderBaseColors,
+    onToggleFolder,
+    onExpandRecursive,
+    onShowInFileTree,
+    onShowDependenciesPanel,
+    onShowApplicableRulesPanel,
+    onViewModuleJson,
+    onHideOthers,
+    onShowDirectDependencies,
+    onShowDirectDependents,
+    onActivePathChange,
+    activePath,
+    userEdgeHighlights,
+    onUserEdgeHighlightsChange,
+    onClearAllHighlights,
+    autoLayoutOnly,
+    onAutoLayoutOnlyChange,
+  } = props;
+
   const { t } = useTranslation();
   const theme = useTheme();
   const { mode } = useColorScheme();
@@ -302,7 +304,9 @@ interface DependencyGraphProps extends Omit<
   ref?: Ref<DependencyGraphHandle>;
 }
 
-export function DependencyGraph({ ref, ...props }: DependencyGraphProps) {
+export function DependencyGraph(props: DependencyGraphProps) {
+  const { ref, ...rest } = props;
+
   const [autoLayoutOnly, setAutoLayoutOnly] = useState(true);
 
   return (
@@ -312,7 +316,7 @@ export function DependencyGraph({ ref, ...props }: DependencyGraphProps) {
           imperativeRef={ref}
           autoLayoutOnly={autoLayoutOnly}
           onAutoLayoutOnlyChange={setAutoLayoutOnly}
-          {...props}
+          {...rest}
         />
       </ReactFlowProvider>
     </div>

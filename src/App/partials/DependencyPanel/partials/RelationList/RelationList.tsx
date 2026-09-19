@@ -23,16 +23,18 @@ interface RelationListProps {
   onShowInGraph: (path: string) => void;
 }
 
-export function RelationList({
-  items,
-  hiddenItems = [],
-  panelPath,
-  modules,
-  direction,
-  userEdgeHighlights,
-  onSetUserDependencyHighlight,
-  onShowInGraph,
-}: RelationListProps) {
+export function RelationList(props: RelationListProps) {
+  const {
+    items,
+    hiddenItems = [],
+    panelPath,
+    modules,
+    direction,
+    userEdgeHighlights,
+    onSetUserDependencyHighlight,
+    onShowInGraph,
+  } = props;
+
   const { t } = useTranslation();
   const [expandedKeys, setExpandedKeys] = useState(() => initialExpandedKeys(items, ''));
 

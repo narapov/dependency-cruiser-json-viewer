@@ -11,7 +11,9 @@ interface RulesNameFilterProps {
   onChange: (value: string) => void;
 }
 
-export function RulesNameFilter({ value, onChange }: RulesNameFilterProps) {
+export function RulesNameFilter(props: RulesNameFilterProps) {
+  const { value, onChange } = props;
+
   const { t } = useTranslation();
 
   return (

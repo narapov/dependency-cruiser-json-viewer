@@ -20,7 +20,9 @@ interface SidebarToggleProps {
   onSelectView: (view: SidebarView) => void;
 }
 
-export function SidebarToggle({ sidebarOpen, sidebarView, onSelectView }: SidebarToggleProps) {
+export function SidebarToggle(props: SidebarToggleProps) {
+  const { sidebarOpen, sidebarView, onSelectView } = props;
+
   const { t } = useTranslation();
   const hideShortcut = formatShortcut('B');
   const filesShowShortcut = formatShortcut('E', { shift: true });

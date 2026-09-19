@@ -6,13 +6,9 @@ export interface NodeContextMenuControls {
 
 const NodeContextMenuControlsContext = createContext<NodeContextMenuControls | null>(null);
 
-export function NodeContextMenuControlsProvider({
-  value,
-  children,
-}: {
-  value: NodeContextMenuControls;
-  children: React.ReactNode;
-}) {
+export function NodeContextMenuControlsProvider(props: { value: NodeContextMenuControls; children: React.ReactNode }) {
+  const { value, children } = props;
+
   return <NodeContextMenuControlsContext.Provider value={value}>{children}</NodeContextMenuControlsContext.Provider>;
 }
 

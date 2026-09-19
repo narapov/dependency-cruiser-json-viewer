@@ -15,7 +15,9 @@ interface HighlightedMatchTextProps {
 }
 
 /** Renders text with index-based highlight spans. */
-export function HighlightedMatchText({ text, indexes, Highlight, sx }: HighlightedMatchTextProps) {
+export function HighlightedMatchText(props: HighlightedMatchTextProps) {
+  const { text, indexes, Highlight, sx } = props;
+
   if (indexes.length === 0) {
     return (
       <Box component="span" sx={sx}>

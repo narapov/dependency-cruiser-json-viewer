@@ -15,6 +15,7 @@ import { useFileTreeContext } from './FileTreeContext';
 
 export const FileTreeItem = forwardRef<HTMLLIElement, TreeItemProps>(function FileTreeItem(props, ref) {
   const { itemId, children, ...other } = props;
+
   const theme = useTheme();
   const ctx = useFileTreeContext();
   const item = useTreeItemModel<TreeNodeData>(itemId);

@@ -12,7 +12,9 @@ interface ApplicableRulesSectionProps {
   onSelectViolationPaths: (paths: string[]) => void;
 }
 
-export function ApplicableRulesSection({ title, entries, onSelectViolationPaths }: ApplicableRulesSectionProps) {
+export function ApplicableRulesSection(props: ApplicableRulesSectionProps) {
+  const { title, entries, onSelectViolationPaths } = props;
+
   if (entries.length === 0) {
     return null;
   }

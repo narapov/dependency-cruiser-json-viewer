@@ -8,13 +8,9 @@ interface UseSidebarShortcutOptions {
   onShowHighlightsPanel: () => void;
 }
 
-export function useSidebarShortcut({
-  onToggle,
-  onShowFileTree,
-  onShowRulesPanel,
-  onShowCircularPanel,
-  onShowHighlightsPanel,
-}: UseSidebarShortcutOptions) {
+export function useSidebarShortcut(config: UseSidebarShortcutOptions) {
+  const { onToggle, onShowFileTree, onShowRulesPanel, onShowCircularPanel, onShowHighlightsPanel } = config;
+
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (!(event.metaKey || event.ctrlKey)) {

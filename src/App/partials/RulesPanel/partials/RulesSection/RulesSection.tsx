@@ -14,13 +14,9 @@ interface RulesSectionProps {
   onShowRuleViolations: (ruleName: string) => void;
 }
 
-export function RulesSection({
-  title,
-  entries,
-  nameFilter,
-  onSelectViolationPaths,
-  onShowRuleViolations,
-}: RulesSectionProps) {
+export function RulesSection(props: RulesSectionProps) {
+  const { title, entries, nameFilter, onSelectViolationPaths, onShowRuleViolations } = props;
+
   if (entries.length === 0) {
     return null;
   }

@@ -20,14 +20,9 @@ interface NodeContextMenuProps {
   children: ReactNode;
 }
 
-export function NodeContextMenu({
-  path,
-  isFolder,
-  expanded,
-  onAutoLayout,
-  onAutoLayoutRecursive,
-  children,
-}: NodeContextMenuProps) {
+export function NodeContextMenu(props: NodeContextMenuProps) {
+  const { path, isFolder, expanded, onAutoLayout, onAutoLayoutRecursive, children } = props;
+
   const { t } = useTranslation();
   const {
     onToggleFolder,

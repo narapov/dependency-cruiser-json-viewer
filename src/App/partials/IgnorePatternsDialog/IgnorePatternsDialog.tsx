@@ -41,7 +41,9 @@ interface IgnorePatternsFormProps {
   onSave: (patterns: string[]) => void;
 }
 
-function IgnorePatternsForm({ patterns, onClose, onSave }: IgnorePatternsFormProps) {
+function IgnorePatternsForm(props: IgnorePatternsFormProps) {
+  const { patterns, onClose, onSave } = props;
+
   const { t } = useTranslation();
   const [draft, setDraft] = useState(() => patternsToText(patterns));
 
@@ -113,7 +115,9 @@ function IgnorePatternsForm({ patterns, onClose, onSave }: IgnorePatternsFormPro
   );
 }
 
-export function IgnorePatternsDialog({ open, patterns, onClose, onSave }: IgnorePatternsDialogProps) {
+export function IgnorePatternsDialog(props: IgnorePatternsDialogProps) {
+  const { open, patterns, onClose, onSave } = props;
+
   const { t } = useTranslation();
 
   return (

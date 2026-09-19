@@ -11,7 +11,9 @@ interface CruiseResultDropOverlayProps {
   allowed: boolean;
 }
 
-export function CruiseResultDropOverlay({ open, allowed }: CruiseResultDropOverlayProps) {
+export function CruiseResultDropOverlay(props: CruiseResultDropOverlayProps) {
+  const { open, allowed } = props;
+
   const { t } = useTranslation();
 
   if (!open) {

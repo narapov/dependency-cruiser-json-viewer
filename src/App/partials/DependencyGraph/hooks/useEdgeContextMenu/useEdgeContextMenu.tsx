@@ -15,11 +15,9 @@ export interface UseEdgeContextMenuOptions {
   onSetUserEdgeHighlight: (edgeId: string, color: string | null) => void;
 }
 
-export function useEdgeContextMenu({
-  onFocusNode,
-  getEdgeHighlight,
-  onSetUserEdgeHighlight,
-}: UseEdgeContextMenuOptions) {
+export function useEdgeContextMenu(config: UseEdgeContextMenuOptions) {
+  const { onFocusNode, getEdgeHighlight, onSetUserEdgeHighlight } = config;
+
   const { t } = useTranslation();
   const [menuState, setMenuState] = useState<{
     anchorPosition: { top: number; left: number };

@@ -15,13 +15,9 @@ interface QuickPickCommandResultsListItemProps {
   onClick: () => void;
 }
 
-export function QuickPickCommandResultsListItem({
-  command,
-  query,
-  highlighted,
-  onMouseEnter,
-  onClick,
-}: QuickPickCommandResultsListItemProps) {
+export function QuickPickCommandResultsListItem(props: QuickPickCommandResultsListItemProps) {
+  const { command, query, highlighted, onMouseEnter, onClick } = props;
+
   const highlight = useMemo(
     () => computeQuickPickHighlight(query, command.label, command.label),
     [query, command.label],

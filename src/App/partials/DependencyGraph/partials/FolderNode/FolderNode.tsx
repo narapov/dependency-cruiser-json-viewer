@@ -8,7 +8,9 @@ import type { FolderNodeData } from '../../types';
 import { FolderExpandToggle } from '../FolderExpandToggle';
 import { NodeContextMenu, NodeContextMenuTrigger } from '../NodeContextMenu';
 
-export function FolderNode({ data }: NodeProps) {
+export function FolderNode(props: NodeProps) {
+  const { data } = props;
+
   const { label, path, expanded, highlighted, circular, backgroundColor } = data as FolderNodeData;
   const { onToggleFolder } = useGraphActions();
 

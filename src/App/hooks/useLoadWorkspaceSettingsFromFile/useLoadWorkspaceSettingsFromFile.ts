@@ -12,8 +12,9 @@ interface UseLoadWorkspaceSettingsFromFileOptions {
   onLoaded?: (settings: ViewerWorkspaceSettings) => void;
 }
 
-export function useLoadWorkspaceSettingsFromFile(options: UseLoadWorkspaceSettingsFromFileOptions = {}) {
-  const { onLoaded } = options;
+export function useLoadWorkspaceSettingsFromFile(config: UseLoadWorkspaceSettingsFromFileOptions = {}) {
+  const { onLoaded } = config;
+
   const queryClient = useQueryClient();
   const { t } = useTranslation();
   const fileInputRef = useRef<{ open: () => void }>(null);

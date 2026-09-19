@@ -7,7 +7,9 @@ interface QuickPickEmptyMessageProps {
   normalizedQuery: string;
 }
 
-export function QuickPickEmptyMessage({ isCommandMode, normalizedQuery }: QuickPickEmptyMessageProps) {
+export function QuickPickEmptyMessage(props: QuickPickEmptyMessageProps) {
+  const { isCommandMode, normalizedQuery } = props;
+
   const { t } = useTranslation();
 
   let message = t('quickPick.startTyping');

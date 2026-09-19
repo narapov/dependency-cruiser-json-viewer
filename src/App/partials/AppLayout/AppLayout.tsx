@@ -67,20 +67,22 @@ const rightPanelSx = {
   borderColor: 'divider',
 } as const;
 
-export function AppLayout({
-  header,
-  sidebar,
-  main,
-  dependenciesPanel,
-  applicableRulesPanel,
-  overlay,
-  footer,
-  dependenciesPanelOpen,
-  applicableRulesPanelOpen,
-  sidebarOpen,
-  sidebarView,
-  onSelectSidebarView,
-}: AppLayoutProps) {
+export function AppLayout(props: AppLayoutProps) {
+  const {
+    header,
+    sidebar,
+    main,
+    dependenciesPanel,
+    applicableRulesPanel,
+    overlay,
+    footer,
+    dependenciesPanelOpen,
+    applicableRulesPanelOpen,
+    sidebarOpen,
+    sidebarView,
+    onSelectSidebarView,
+  } = props;
+
   const showDependencies = dependenciesPanelOpen && dependenciesPanel != null;
   const showApplicableRules = applicableRulesPanelOpen && applicableRulesPanel != null;
 

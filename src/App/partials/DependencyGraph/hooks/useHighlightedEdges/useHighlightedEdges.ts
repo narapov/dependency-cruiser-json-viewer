@@ -33,16 +33,18 @@ interface UseHighlightedEdgesResult {
   clearSelectedEdge: () => void;
 }
 
-export function useHighlightedEdges({
-  modules,
-  selectedPaths,
-  expandedFolders,
-  baseEdges,
-  visibleNodeIds,
-  activePath,
-  userEdgeHighlights,
-  onUserEdgeHighlightsChange,
-}: UseHighlightedEdgesInput): UseHighlightedEdgesResult {
+export function useHighlightedEdges(config: UseHighlightedEdgesInput): UseHighlightedEdgesResult {
+  const {
+    modules,
+    selectedPaths,
+    expandedFolders,
+    baseEdges,
+    visibleNodeIds,
+    activePath,
+    userEdgeHighlights,
+    onUserEdgeHighlightsChange,
+  } = config;
+
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
 
   const activeEdgeId =

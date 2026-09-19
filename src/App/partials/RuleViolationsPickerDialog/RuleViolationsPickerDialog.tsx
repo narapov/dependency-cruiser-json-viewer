@@ -14,7 +14,9 @@ interface RuleViolationsPickerDialogProps {
   onConfirm: (ruleNames: string[]) => void;
 }
 
-export function RuleViolationsPickerDialog({ open, onClose, rules, onConfirm }: RuleViolationsPickerDialogProps) {
+export function RuleViolationsPickerDialog(props: RuleViolationsPickerDialogProps) {
+  const { open, onClose, rules, onConfirm } = props;
+
   const { t } = useTranslation();
   const formKey = rules.map(rule => rule.name).join('\0');
 

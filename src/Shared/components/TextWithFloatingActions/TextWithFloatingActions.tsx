@@ -28,15 +28,9 @@ function mergeSx(base: Record<string, unknown>, sx?: SxProps<Theme>): SxProps<Th
  * Layout where trailing actions float to the right so wrapping text flows underneath them
  * instead of staying in a narrow flex column beside a full-height action column.
  */
-export function TextWithFloatingActions({
-  children,
-  trailing,
-  leading,
-  className,
-  sx,
-  trailingClassName,
-  trailingSx,
-}: TextWithFloatingActionsProps) {
+export function TextWithFloatingActions(props: TextWithFloatingActionsProps) {
+  const { children, trailing, leading, className, sx, trailingClassName, trailingSx } = props;
+
   return (
     <Box
       className={className}
