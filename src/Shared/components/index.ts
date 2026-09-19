@@ -7,3 +7,4 @@ export * from './MatchHighlight';
 export * from './MaterialFileSystemIcon';
 export * from './RuleSeverityChip';
 export * from './RuleViolationsCountChip';
+export * from './TextWithFloatingActions';

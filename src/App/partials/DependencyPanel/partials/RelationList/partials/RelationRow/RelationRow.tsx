@@ -12,13 +12,12 @@ import Collapse from '@mui/material/Collapse';
 import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
 import Menu from '@mui/material/Menu';
-import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
 
 import { getBaseName, getEdgeHighlightColor, type ModuleRelation } from '@/domain';
-import { copyToClipboard, highlightColorMenuListSx, HighlightColorSwatches } from '@/Shared';
+import { copyToClipboard, highlightColorMenuListSx, HighlightColorSwatches, TextWithFloatingActions } from '@/Shared';
 
 import {
   getPanelRelationDependencyKeys,
@@ -86,9 +85,7 @@ export function RelationRow({
         title={item.path}
         onContextMenu={onContextMenu}
         sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 0.25,
+          display: 'block',
           py: 0,
           pl: depth * 0.75,
           borderRadius: 1,
@@ -105,99 +102,106 @@ export function RelationRow({
           },
         }}
       >
-        {hasChildren ? (
-          <IconButton
-            size="small"
-            aria-label={expanded ? t('actions.collapse') : t('actions.expand')}
-            onClick={() => onToggleExpand(expandKey)}
-            sx={{ flexShrink: 0, p: 0.25 }}
-          >
-            {expanded ? <ExpandMore fontSize="small" /> : <ChevronRight fontSize="small" />}
-          </IconButton>
-        ) : (
-          <Box sx={{ width: 24, flexShrink: 0 }} />
-        )}
-        {highlightEnabled && currentHighlight != null && (
-          <Box
-            aria-hidden
+        <TextWithFloatingActions
+          leading={
+            <>
+              {hasChildren ? (
+                <IconButton
+                  size="small"
+                  aria-label={expanded ? t('actions.collapse') : t('actions.expand')}
+                  onClick={() => onToggleExpand(expandKey)}
+                  sx={{ flexShrink: 0, p: 0.25 }}
+                >
+                  {expanded ? <ExpandMore fontSize="small" /> : <ChevronRight fontSize="small" />}
+                </IconButton>
+              ) : (
+                <Box sx={{ width: 24, flexShrink: 0 }} />
+              )}
+              {highlightEnabled && currentHighlight != null && (
+                <Box
+                  aria-hidden
+                  sx={{
+                    width: 12,
+                    height: 12,
+                    flexShrink: 0,
+                    mr: 0.5,
+                    borderRadius: '2px',
+                    backgroundColor: currentHighlight,
+                    border: '1px solid rgba(0, 0, 0, 0.2)',
+                    alignSelf: 'center',
+                  }}
+                />
+              )}
+            </>
+          }
+          trailingClassName="relationRowActions"
+          trailing={
+            <>
+              {highlightEnabled && (
+                <Tooltip title={t('actions.highlight')}>
+                  <IconButton
+                    edge="end"
+                    size="small"
+                    aria-label={t('actions.highlight')}
+                    aria-haspopup="true"
+                    onClick={event => setHighlightMenuAnchor(event.currentTarget)}
+                    sx={{ p: 0.25, position: 'relative' }}
+                  >
+                    <ColorizeOutlined fontSize="small" />
+                    {currentHighlight != null && (
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          right: 2,
+                          bottom: 2,
+                          width: 6,
+                          height: 6,
+                          borderRadius: '50%',
+                          backgroundColor: currentHighlight,
+                          border: '1px solid rgba(0, 0, 0, 0.25)',
+                        }}
+                      />
+                    )}
+                  </IconButton>
+                </Tooltip>
+              )}
+              <Tooltip title={t('actions.copyPath')}>
+                <IconButton
+                  edge="end"
+                  size="small"
+                  aria-label={t('actions.copyPath')}
+                  onClick={() => void copyToClipboard(item.path)}
+                  sx={{ p: 0.25 }}
+                >
+                  <ContentCopyOutlined fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title={t('actions.showInGraph')}>
+                <IconButton
+                  edge="end"
+                  size="small"
+                  aria-label={t('actions.showInGraph')}
+                  onClick={() => onShowInGraph(item.path)}
+                  sx={{ p: 0.25 }}
+                >
+                  <MyLocationOutlined fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </>
+          }
+        >
+          <Typography
             sx={{
-              width: 12,
-              height: 12,
-              flexShrink: 0,
-              mr: 0.5,
-              borderRadius: '2px',
-              backgroundColor: currentHighlight,
-              border: '1px solid rgba(0, 0, 0, 0.2)',
+              fontFamily: 'monospace',
+              fontSize: 12,
+              lineHeight: 1.3,
+              wordBreak: 'break-all',
+              ...getRelationPathStyle(item),
             }}
-          />
-        )}
-        <ListItemText
-          primary={getBaseName(item.path)}
-          sx={{ flex: 1, minWidth: 0, m: 0 }}
-          slotProps={{
-            primary: {
-              sx: {
-                fontFamily: 'monospace',
-                fontSize: 12,
-                lineHeight: 1.3,
-                wordBreak: 'break-all',
-                ...getRelationPathStyle(item),
-              },
-            },
-          }}
-        />
-        <Stack className="relationRowActions" direction="row" sx={{ flexShrink: 0, alignItems: 'center' }}>
-          {highlightEnabled && (
-            <Tooltip title={t('actions.highlight')}>
-              <IconButton
-                edge="end"
-                size="small"
-                aria-label={t('actions.highlight')}
-                aria-haspopup="true"
-                onClick={event => setHighlightMenuAnchor(event.currentTarget)}
-                sx={{ p: 0.25, position: 'relative' }}
-              >
-                <ColorizeOutlined fontSize="small" />
-                {currentHighlight != null && (
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      right: 2,
-                      bottom: 2,
-                      width: 6,
-                      height: 6,
-                      borderRadius: '50%',
-                      backgroundColor: currentHighlight,
-                      border: '1px solid rgba(0, 0, 0, 0.25)',
-                    }}
-                  />
-                )}
-              </IconButton>
-            </Tooltip>
-          )}
-          <Tooltip title={t('actions.copyPath')}>
-            <IconButton
-              edge="end"
-              size="small"
-              aria-label={t('actions.copyPath')}
-              onClick={() => void copyToClipboard(item.path)}
-              sx={{ p: 0.25 }}
-            >
-              <ContentCopyOutlined fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title={t('actions.showInGraph')}>
-            <IconButton
-              edge="end"
-              size="small"
-              aria-label={t('actions.showInGraph')}
-              onClick={() => onShowInGraph(item.path)}
-              sx={{ p: 0.25 }}
-            >
-              <MyLocationOutlined fontSize="small" />
-            </IconButton>
-          </Tooltip>
-        </Stack>
+          >
+            {getBaseName(item.path)}
+          </Typography>
+        </TextWithFloatingActions>
       </ListItem>
       {contextMenu}
       {highlightEnabled && (

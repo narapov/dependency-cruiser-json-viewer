@@ -13,12 +13,17 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
-import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 
 import type { RuleWithViolations } from '@/domain';
-import { HighlightedMatchText, MatchHighlight, RuleSeverityChip, RuleViolationsCountChip } from '@/Shared';
+import {
+  HighlightedMatchText,
+  MatchHighlight,
+  RuleSeverityChip,
+  RuleViolationsCountChip,
+  TextWithFloatingActions,
+} from '@/Shared';
 
 import { RuleJsonDialog } from '../../../RuleJsonDialog';
 import { findSubstringMatchIndexes } from '../../helpers/findSubstringMatchIndexes';
@@ -60,9 +65,7 @@ export function RuleListItem({ entry, nameFilter, onSelectViolationPaths, onShow
         disableGutters
         title={entry.name}
         sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 0.25,
+          display: 'block',
           py: 0.25,
           px: 1,
           borderRadius: 1,
@@ -71,52 +74,62 @@ export function RuleListItem({ entry, nameFilter, onSelectViolationPaths, onShow
           },
         }}
       >
-        {hasViolations ? (
-          <IconButton
-            size="small"
-            aria-label={expanded ? t('actions.collapse') : t('actions.expand')}
-            onClick={() => setExpanded(open => !open)}
-            sx={{ flexShrink: 0, p: 0.25 }}
-          >
-            {expanded ? <ExpandMore fontSize="small" /> : <ChevronRight fontSize="small" />}
-          </IconButton>
-        ) : (
-          <Box sx={{ width: 24, flexShrink: 0 }} />
-        )}
-        <Stack direction="row" spacing={0.75} sx={{ alignItems: 'center', flex: 1, minWidth: 0 }}>
+        <TextWithFloatingActions
+          leading={
+            hasViolations ? (
+              <IconButton
+                size="small"
+                aria-label={expanded ? t('actions.collapse') : t('actions.expand')}
+                onClick={() => setExpanded(open => !open)}
+                sx={{ flexShrink: 0, p: 0.25 }}
+              >
+                {expanded ? <ExpandMore fontSize="small" /> : <ChevronRight fontSize="small" />}
+              </IconButton>
+            ) : (
+              <Box sx={{ width: 24, flexShrink: 0 }} />
+            )
+          }
+          trailing={
+            <>
+              {hasViolations && (
+                <Tooltip title={showViolationsLabel}>
+                  <IconButton
+                    size="small"
+                    aria-label={showViolationsLabel}
+                    onClick={() => onShowRuleViolations(entry.name)}
+                    sx={{ p: 0.25 }}
+                  >
+                    <VisibilityOutlined fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              )}
+              {canViewJson && (
+                <Tooltip title={t('rules.viewJson')}>
+                  <IconButton
+                    size="small"
+                    aria-label={t('rules.viewJson')}
+                    onClick={() => setJsonOpen(true)}
+                    sx={{ p: 0.25 }}
+                  >
+                    <DataObjectOutlined fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              )}
+            </>
+          }
+        >
           <Typography
             variant="body2"
-            sx={{ fontFamily: 'monospace', fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis' }}
+            component="span"
+            sx={{ fontFamily: 'monospace', fontSize: 12, overflowWrap: 'anywhere', mr: 0.75 }}
           >
             <HighlightedMatchText text={entry.name} indexes={nameMatchIndexes} Highlight={MatchHighlight} />
           </Typography>
-          <RuleSeverityChip severity={entry.severity} />
-          <RuleViolationsCountChip count={count} />
-        </Stack>
-        {hasViolations && (
-          <Tooltip title={showViolationsLabel}>
-            <IconButton
-              size="small"
-              aria-label={showViolationsLabel}
-              onClick={() => onShowRuleViolations(entry.name)}
-              sx={{ p: 0.25, flexShrink: 0 }}
-            >
-              <VisibilityOutlined fontSize="small" />
-            </IconButton>
-          </Tooltip>
-        )}
-        {canViewJson && (
-          <Tooltip title={t('rules.viewJson')}>
-            <IconButton
-              size="small"
-              aria-label={t('rules.viewJson')}
-              onClick={() => setJsonOpen(true)}
-              sx={{ p: 0.25, flexShrink: 0 }}
-            >
-              <DataObjectOutlined fontSize="small" />
-            </IconButton>
-          </Tooltip>
-        )}
+          <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+            <RuleSeverityChip severity={entry.severity} />
+            <RuleViolationsCountChip count={count} />
+          </Box>
+        </TextWithFloatingActions>
       </ListItem>
       {hasViolations && (
         <Collapse in={expanded} timeout="auto" unmountOnExit>
