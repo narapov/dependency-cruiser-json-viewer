@@ -15,12 +15,22 @@ const commands = [
 ];
 
 describe('searchCommands', () => {
-  it('returns all commands when query is empty', () => {
+  it('returns commands sorted by recent usage when query is empty', () => {
+    const results = searchCommands(commands, '', ['expandAllRecursive', 'showActive']);
+    expect(results.map(item => item.id)).toEqual([
+      'expandAllRecursive',
+      'showActive',
+      'clearLocalStorage',
+      'collapseAllRecursive',
+    ]);
+  });
+
+  it('returns original order when query is empty and recent ids are empty', () => {
     expect(searchCommands(commands, '')).toEqual(commands);
   });
 
   it('filters commands by label', () => {
-    const results = searchCommands(commands, 'expand');
+    const results = searchCommands(commands, 'expand', ['showActive']);
     expect(results.map(item => item.id)).toEqual(['expandAllRecursive']);
   });
 

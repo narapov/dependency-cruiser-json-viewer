@@ -7,6 +7,7 @@ import { act, fireEvent, renderHook, screen, waitFor, within } from '@testing-li
 
 import { renderWithTheme } from '@/testsUtils';
 
+import { RECENT_COMMANDS_STORAGE_KEY } from './helpers/recentCommandIds';
 import { QuickPick, type QuickPickCommand, type QuickPickHandle } from './QuickPick';
 
 const SOURCES = ['src/a.ts', 'src/b/c.ts', 'src/utils/helpers.ts'];
@@ -18,10 +19,12 @@ function getKeyboardRoot(input: HTMLElement) {
 describe('QuickPick', () => {
   beforeEach(() => {
     Element.prototype.scrollIntoView = vi.fn();
+    localStorage.clear();
   });
 
   afterEach(() => {
     vi.clearAllMocks();
+    localStorage.clear();
   });
 
   it('navigates file results with arrows and selects on Enter', async () => {
@@ -82,6 +85,7 @@ describe('QuickPick', () => {
 
     expect(onExecute).toHaveBeenCalled();
     expect(onSelectPath).not.toHaveBeenCalled();
+    expect(localStorage.getItem(RECENT_COMMANDS_STORAGE_KEY)).toBe(JSON.stringify(['setTheme']));
     await waitFor(() => {
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });

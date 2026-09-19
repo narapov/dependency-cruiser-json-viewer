@@ -53,6 +53,16 @@ describe('useQuickPickState', () => {
     expect(result.current.results).toEqual(result.current.commandResults);
   });
 
+  it('orders empty command results by recent ids', () => {
+    const { result } = renderHook(() => useQuickPickState(SOURCES, COMMANDS, ['setTheme', 'about']));
+
+    act(() => {
+      result.current.openCommandMode();
+    });
+
+    expect(result.current.commandResults.map(command => command.id)).toEqual(['setTheme', 'about', 'selectAll']);
+  });
+
   it('toggleFileMode opens then closes and clears query', () => {
     const { result } = renderHook(() => useQuickPickState(SOURCES, COMMANDS));
 
