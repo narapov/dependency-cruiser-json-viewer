@@ -2,4 +2,5 @@ dist
 node_modules
 package-lock.json
 test-data/cruise-result.json
+test-data/workspace-settings.json
 cruise-result.json

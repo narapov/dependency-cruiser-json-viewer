@@ -7,6 +7,7 @@ declare const __APP_COMMIT_HASH__: string;
 
 interface WindowEnvs {
   watch?: boolean;
+  initialWorkspaceSettings?: boolean;
 }
 
 interface Window {

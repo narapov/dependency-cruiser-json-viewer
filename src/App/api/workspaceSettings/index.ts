@@ -1,2 +1,1 @@
-export * from './cruiseResult';
 export * from './workspaceSettings';

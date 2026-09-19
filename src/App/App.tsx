@@ -28,6 +28,7 @@ import {
   useCruiseResultWatch,
   useIgnorePatterns,
   useInitialDependencyCruiserState,
+  useInitialWorkspaceSettingsFromCli,
   useLoadCruiseResultFromFile,
   useLoadWorkspaceSettingsFromFile,
   useModuleJsonDialog,
@@ -222,17 +223,25 @@ function App() {
     clearFileLoadError: clearSettingsFileLoadError,
   } = useLoadWorkspaceSettingsFromFile({ onLoaded: handleWorkspaceSettingsLoaded });
 
+  const { fileLoadError: initialSettingsFileLoadError, clearFileLoadError: clearInitialSettingsFileLoadError } =
+    useInitialWorkspaceSettingsFromCli({
+      cruiseReady: data != null,
+      onLoaded: handleWorkspaceSettingsLoaded,
+    });
+
   const isFileLoading = isCruiseFileLoading || isSettingsFileLoading;
 
   const { isDraggingFile, isDropAllowed } = useCruiseResultFileDrop({
     enabled: !cruiseWatchEnabled && !isFileLoading,
     onFile: file => {
       clearSettingsFileLoadError();
+      clearInitialSettingsFileLoadError();
       clearCruiseFileLoadError();
       void handleCruiseFileSelect(file);
     },
     onInvalidFile: () => {
       clearSettingsFileLoadError();
+      clearInitialSettingsFileLoadError();
       setCruiseFileLoadError(t('app.dropCruiseResultInvalidFile'));
     },
   });
@@ -242,6 +251,7 @@ function App() {
       return;
     }
     clearSettingsFileLoadError();
+    clearInitialSettingsFileLoadError();
     openCruiseFilePicker();
   };
 
@@ -250,13 +260,15 @@ function App() {
       return;
     }
     clearCruiseFileLoadError();
+    clearInitialSettingsFileLoadError();
     openSettingsFilePicker();
   };
 
-  const fileLoadError = cruiseFileLoadError ?? settingsFileLoadError;
+  const fileLoadError = cruiseFileLoadError ?? settingsFileLoadError ?? initialSettingsFileLoadError;
   const clearFileLoadError = () => {
     clearCruiseFileLoadError();
     clearSettingsFileLoadError();
+    clearInitialSettingsFileLoadError();
   };
 
   const { showInFileTree, setSelectedPaths, selectedPaths, showInGraph, activatePath } = orch;
