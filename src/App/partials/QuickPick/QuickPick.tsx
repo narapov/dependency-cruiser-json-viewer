@@ -2,9 +2,9 @@ import { useEffect, useImperativeHandle, useRef, useState, type KeyboardEvent, t
 import { useTranslation } from 'react-i18next';
 
 import Box from '@mui/material/Box';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
 import TextField from '@mui/material/TextField';
+
+import { AppDialog, AppDialogContent } from '@/Shared';
 
 import { useQuickPickShortcut, useQuickPickState } from './hooks';
 import { QuickPickCommandResultsList } from './partials/QuickPickCommandResultsList';
@@ -193,15 +193,8 @@ export function QuickPick({ ref, sources, commands, onSelectPath }: QuickPickPro
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={handleClose}
-      maxWidth="sm"
-      fullWidth
-      sx={{ '& .MuiDialog-container': { alignItems: 'flex-start', pt: '12vh' } }}
-      slotProps={{ transition: { onEntered: focusInput } }}
-    >
-      <DialogContent sx={{ p: 0 }}>
+    <AppDialog open={open} onClose={handleClose} maxWidth="sm" slotProps={{ transition: { onEntered: focusInput } }}>
+      <AppDialogContent sx={{ p: 0 }}>
         <Box
           sx={{
             display: 'flex',
@@ -225,7 +218,7 @@ export function QuickPick({ ref, sources, commands, onSelectPath }: QuickPickPro
           </Box>
           {renderResults()}
         </Box>
-      </DialogContent>
-    </Dialog>
+      </AppDialogContent>
+    </AppDialog>
   );
 }

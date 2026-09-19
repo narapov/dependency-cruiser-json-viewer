@@ -3,14 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { allExpanded, darkStyles, defaultStyles, JsonView } from 'react-json-view-lite';
 
 import Button from '@mui/material/Button';
-import Dialog, { type DialogProps } from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
+import { type DialogProps } from '@mui/material/Dialog';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
-import { useResolvedColorMode } from '@/Shared';
+import { AppDialog, AppDialogActions, AppDialogContent, AppDialogTitle, useResolvedColorMode } from '@/Shared';
 
 import 'react-json-view-lite/dist/index.css';
 
@@ -60,16 +57,9 @@ export function JsonViewDialog({
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth={maxWidth}
-      fullWidth
-      fullScreen={fullScreen}
-      sx={fullScreen ? undefined : { '& .MuiDialog-container': { alignItems: 'flex-start', pt: '12vh' } }}
-    >
-      <DialogTitle sx={{ pb: 1, fontSize: 16 }}>{title}</DialogTitle>
-      <DialogContent sx={{ pt: 1 }}>
+    <AppDialog open={open} onClose={onClose} maxWidth={maxWidth} fullScreen={fullScreen}>
+      <AppDialogTitle>{title}</AppDialogTitle>
+      <AppDialogContent>
         {data != null && (
           <Typography component="div" sx={{ fontFamily: 'monospace', fontSize: 12 }}>
             <JsonView
@@ -80,15 +70,15 @@ export function JsonViewDialog({
             />
           </Typography>
         )}
-      </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2, justifyContent: 'space-between' }}>
+      </AppDialogContent>
+      <AppDialogActions sx={{ justifyContent: 'space-between' }}>
         <Stack direction="row" spacing={1}>
           <Button onClick={() => remountWithMode('initial')}>{t('jsonView.initial')}</Button>
           <Button onClick={() => remountWithMode('all')}>{t('jsonView.expandAll')}</Button>
           <Button onClick={() => remountWithMode('collapsed')}>{t('jsonView.collapseAll')}</Button>
         </Stack>
         <Button onClick={onClose}>{t('actions.close')}</Button>
-      </DialogActions>
-    </Dialog>
+      </AppDialogActions>
+    </AppDialog>
   );
 }

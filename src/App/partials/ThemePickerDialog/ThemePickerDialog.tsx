@@ -2,11 +2,10 @@ import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Box from '@mui/material/Box';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
 import { useColorScheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+
+import { AppDialog, AppDialogContent, AppDialogTitle } from '@/Shared';
 
 import { THEME_OPTIONS, type ThemeOptionValue } from '../ThemeSelector';
 
@@ -82,16 +81,9 @@ export function ThemePickerDialog({ open, onClose }: ThemePickerDialogProps) {
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth="xs"
-      fullWidth
-      sx={{ '& .MuiDialog-container': { alignItems: 'flex-start', pt: '12vh' } }}
-      slotProps={{ transition: { onEntered: focusList } }}
-    >
-      <DialogTitle sx={{ pb: 1, fontSize: 16 }}>{t('theme.setTheme')}</DialogTitle>
-      <DialogContent sx={{ p: 0, pb: 1 }}>
+    <AppDialog open={open} onClose={onClose} maxWidth="xs" slotProps={{ transition: { onEntered: focusList } }}>
+      <AppDialogTitle>{t('theme.setTheme')}</AppDialogTitle>
+      <AppDialogContent sx={{ p: 0, pb: 1 }}>
         <Box ref={containerRef} tabIndex={0} onKeyDown={handleKeyDown} sx={{ outline: 'none' }}>
           <Box
             component="ul"
@@ -144,7 +136,7 @@ export function ThemePickerDialog({ open, onClose }: ThemePickerDialogProps) {
             })}
           </Box>
         </Box>
-      </DialogContent>
-    </Dialog>
+      </AppDialogContent>
+    </AppDialog>
   );
 }

@@ -2,10 +2,9 @@ import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Box from '@mui/material/Box';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
 import Typography from '@mui/material/Typography';
+
+import { AppDialog, AppDialogContent, AppDialogTitle } from '@/Shared';
 
 import { LANGUAGE_OPTIONS, type LanguageOptionValue } from '../../../i18n';
 
@@ -81,16 +80,9 @@ export function LanguagePickerDialog({ open, onClose }: LanguagePickerDialogProp
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth="xs"
-      fullWidth
-      sx={{ '& .MuiDialog-container': { alignItems: 'flex-start', pt: '12vh' } }}
-      slotProps={{ transition: { onEntered: focusList } }}
-    >
-      <DialogTitle sx={{ pb: 1, fontSize: 16 }}>{t('language.setLanguage')}</DialogTitle>
-      <DialogContent sx={{ p: 0, pb: 1 }}>
+    <AppDialog open={open} onClose={onClose} maxWidth="xs" slotProps={{ transition: { onEntered: focusList } }}>
+      <AppDialogTitle>{t('language.setLanguage')}</AppDialogTitle>
+      <AppDialogContent sx={{ p: 0, pb: 1 }}>
         <Box ref={containerRef} tabIndex={0} onKeyDown={handleKeyDown} sx={{ outline: 'none' }}>
           <Box
             component="ul"
@@ -143,7 +135,7 @@ export function LanguagePickerDialog({ open, onClose }: LanguagePickerDialogProp
             })}
           </Box>
         </Box>
-      </DialogContent>
-    </Dialog>
+      </AppDialogContent>
+    </AppDialog>
   );
 }

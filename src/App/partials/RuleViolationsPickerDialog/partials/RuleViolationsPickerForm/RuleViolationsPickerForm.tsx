@@ -3,9 +3,9 @@ import { useTranslation } from 'react-i18next';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import Button from '@mui/material/Button';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
 import Typography from '@mui/material/Typography';
+
+import { AppDialogActions, AppDialogContent } from '@/Shared';
 
 import type { RuleViolationsPickerOption } from '../../types';
 import { ruleViolationsPickerSchema } from './constants';
@@ -34,7 +34,7 @@ export function RuleViolationsPickerForm({ rules, onClose, onConfirm }: RuleViol
   return (
     <FormProvider {...form}>
       <form onSubmit={form.handleSubmit(onValid)}>
-        <DialogContent sx={{ pt: 1 }}>
+        <AppDialogContent>
           {rules.length === 0 ? (
             <Typography variant="body2" color="text.secondary">
               {t('ruleViolationsPicker.empty')}
@@ -42,15 +42,15 @@ export function RuleViolationsPickerForm({ rules, onClose, onConfirm }: RuleViol
           ) : (
             <SelectedRulesField rules={rules} />
           )}
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
+        </AppDialogContent>
+        <AppDialogActions>
           <Button type="button" onClick={onClose}>
             {t('ruleViolationsPicker.cancel')}
           </Button>
           <Button type="submit" variant="contained" disabled={!form.formState.isValid}>
             {t('ruleViolationsPicker.confirm')}
           </Button>
-        </DialogActions>
+        </AppDialogActions>
       </form>
     </FormProvider>
   );

@@ -4,14 +4,12 @@ import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+
+import { AppDialog, AppDialogActions, AppDialogContent, AppDialogTitle } from '@/Shared';
 
 import { GLOB_PATTERNS_DOCS_URL, IGNORE_PATTERN_EXAMPLES, IGNORE_PATTERN_PLACEHOLDER } from './ignorePatternsOptions';
 
@@ -58,7 +56,7 @@ function IgnorePatternsForm({ patterns, onClose, onSave }: IgnorePatternsFormPro
 
   return (
     <>
-      <DialogContent sx={{ pt: 1 }}>
+      <AppDialogContent>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
           {t('ignorePatterns.description')}
         </Typography>
@@ -104,13 +102,13 @@ function IgnorePatternsForm({ patterns, onClose, onSave }: IgnorePatternsFormPro
             ))}
           </Stack>
         </Box>
-      </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2 }}>
+      </AppDialogContent>
+      <AppDialogActions>
         <Button onClick={onClose}>{t('ignorePatterns.cancel')}</Button>
         <Button variant="contained" onClick={handleSave}>
           {t('ignorePatterns.save')}
         </Button>
-      </DialogActions>
+      </AppDialogActions>
     </>
   );
 }
@@ -119,17 +117,11 @@ export function IgnorePatternsDialog({ open, patterns, onClose, onSave }: Ignore
   const { t } = useTranslation();
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth="sm"
-      fullWidth
-      sx={{ '& .MuiDialog-container': { alignItems: 'flex-start', pt: '12vh' } }}
-    >
-      <DialogTitle sx={{ pb: 1, fontSize: 16 }}>{t('ignorePatterns.setIgnorePatterns')}</DialogTitle>
+    <AppDialog open={open} onClose={onClose} maxWidth="sm">
+      <AppDialogTitle>{t('ignorePatterns.setIgnorePatterns')}</AppDialogTitle>
       {open && (
         <IgnorePatternsForm key={patternsToText(patterns)} patterns={patterns} onClose={onClose} onSave={onSave} />
       )}
-    </Dialog>
+    </AppDialog>
   );
 }

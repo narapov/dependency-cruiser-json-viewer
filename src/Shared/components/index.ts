@@ -1,3 +1,4 @@
+export * from './AppDialog';
 export * from './EdgeHighlightSubmenu';
 export * from './ErrorBoundaryFallback';
 export * from './HighlightColorSwatches';
