@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.7.0](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v1.6.0...v1.7.0) (2026-09-19)
+
+### Features
+
+- add CLI --workspace-settings param for initial workspace load ([#19](https://github.com/narapov/dependency-cruiser-json-viewer/issues/19)) ([dbf2690](https://github.com/narapov/dependency-cruiser-json-viewer/commit/dbf26904d5e07553c86cae1ef5d0d614447c2402))
+- add graph node menu trigger button ([#18](https://github.com/narapov/dependency-cruiser-json-viewer/issues/18)) ([81cf06c](https://github.com/narapov/dependency-cruiser-json-viewer/commit/81cf06c7caa51422469742d51acd0edca9c63676))
+- add rule violations picker for selection filtering ([#17](https://github.com/narapov/dependency-cruiser-json-viewer/issues/17)) ([3602ae0](https://github.com/narapov/dependency-cruiser-json-viewer/commit/3602ae0c6aa7a66f979a22910ada1edaf95a139d))
+- sort app commands by recent usage ([#21](https://github.com/narapov/dependency-cruiser-json-viewer/issues/21)) ([87c90e0](https://github.com/narapov/dependency-cruiser-json-viewer/commit/87c90e06c654563e5b94cae1dccd4e8901348cc8))
+
+### Bug Fixes
+
+- keep app panel sizes stable when panels open or close ([#20](https://github.com/narapov/dependency-cruiser-json-viewer/issues/20)) ([f85c6f6](https://github.com/narapov/dependency-cruiser-json-viewer/commit/f85c6f6842b3d3491108c54c873ef94d62df3b44))
+- use floating actions instead of flex for better overflow ([4fc6e17](https://github.com/narapov/dependency-cruiser-json-viewer/commit/4fc6e17cc75343eaadb0da592eaef5ccbbf80087))
+
 ## [1.6.0](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v1.5.0...v1.6.0) (2026-09-15)
 
 ### Features
