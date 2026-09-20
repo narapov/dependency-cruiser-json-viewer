@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.7.1](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v1.7.0...v1.7.1) (2026-09-20)
+
+### Bug Fixes
+
+- keep only CLI runtime packages in dependencies and move other to dev deps ([#22](https://github.com/narapov/dependency-cruiser-json-viewer/issues/22)) ([0943e32](https://github.com/narapov/dependency-cruiser-json-viewer/commit/0943e32c48fabc728882154958bb48557747a4c5))
+
 ## [1.7.0](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v1.6.0...v1.7.0) (2026-09-19)
 
 ### Features
