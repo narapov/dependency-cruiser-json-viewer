@@ -115,4 +115,51 @@ describe('assignEdgeHandles', () => {
       incomingHandleCount: 1,
     });
   });
+
+  it('caps outgoing handles at 5 and round-robins overflow', () => {
+    const targets = Array.from({ length: 6 }, (_, i) => node(`t${i}`, { position: { x: 100, y: i * 10 } }));
+    const nodes = [node('source'), ...targets];
+    const edges = targets.map(t => edge('source', t.id));
+
+    const result = assignEdgeHandles(nodes, edges);
+    const sourceHandles = edges.map(e => result.edges.find(assigned => assigned.id === e.id)?.sourceHandle);
+
+    expect(result.nodes.find(n => n.id === 'source')?.data.outgoingHandleCount).toBe(5);
+    expect(sourceHandles).toEqual(['out-0', 'out-1', 'out-2', 'out-3', 'out-4', 'out-0']);
+  });
+
+  it('round-robins ten outgoing edges across two full cycles', () => {
+    const targets = Array.from({ length: 10 }, (_, i) => node(`t${i}`, { position: { x: 100, y: i * 10 } }));
+    const nodes = [node('source'), ...targets];
+    const edges = targets.map(t => edge('source', t.id));
+
+    const result = assignEdgeHandles(nodes, edges);
+    const sourceHandles = edges.map(e => result.edges.find(assigned => assigned.id === e.id)?.sourceHandle);
+
+    expect(result.nodes.find(n => n.id === 'source')?.data.outgoingHandleCount).toBe(5);
+    expect(sourceHandles).toEqual([
+      'out-0',
+      'out-1',
+      'out-2',
+      'out-3',
+      'out-4',
+      'out-0',
+      'out-1',
+      'out-2',
+      'out-3',
+      'out-4',
+    ]);
+  });
+
+  it('caps incoming handles at 5 and round-robins overflow', () => {
+    const sources = Array.from({ length: 6 }, (_, i) => node(`s${i}`, { position: { x: 0, y: i * 10 } }));
+    const nodes = [node('target', { position: { x: 200, y: 100 } }), ...sources];
+    const edges = sources.map(s => edge(s.id, 'target'));
+
+    const result = assignEdgeHandles(nodes, edges);
+    const targetHandles = edges.map(e => result.edges.find(assigned => assigned.id === e.id)?.targetHandle);
+
+    expect(result.nodes.find(n => n.id === 'target')?.data.incomingHandleCount).toBe(5);
+    expect(targetHandles).toEqual(['in-0', 'in-1', 'in-2', 'in-3', 'in-4', 'in-0']);
+  });
 });

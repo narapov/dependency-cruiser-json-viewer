@@ -2,6 +2,9 @@ import type { Edge, Node } from '@xyflow/react';
 
 import { LEAF_NODE_HEIGHT } from '../../getLeafNodeSize';
 
+/** Max source/target handles rendered per node side. */
+export const MAX_HANDLES_PER_SIDE = 5;
+
 /** Absolute vertical center of a node, walking parent position offsets. */
 function getAbsoluteCenterY(nodeId: string, nodeById: Map<string, Node>): number {
   const node = nodeById.get(nodeId);
@@ -24,9 +27,15 @@ function getAbsoluteCenterY(nodeId: string, nodeById: Map<string, Node>): number
   return absY + height / 2;
 }
 
+/** Round-robin handle slot in `0..MAX_HANDLES_PER_SIDE-1`. */
+function handleSlotIndex(index: number): number {
+  return index % MAX_HANDLES_PER_SIDE;
+}
+
 /**
- * Assigns dumb index handles after layout: `sourceHandle`/`targetHandle` = `out-i` / `in-j`,
- * and stamps `incomingHandleCount` / `outgoingHandleCount` only on nodes with degree > 0.
+ * Assigns dumb index handles after layout: `sourceHandle`/`targetHandle` = `out-i` / `in-j`
+ * (capped at {@link MAX_HANDLES_PER_SIDE} via round-robin), and stamps handle counts
+ * only on nodes with degree > 0.
  *
  * @example
  * const { nodes, edges } = assignEdgeHandles(layoutedNodes, builtEdges);
@@ -70,15 +79,15 @@ export function assignEdgeHandles(nodes: Node[], edges: Edge[]): { nodes: Node[]
     }
 
     outgoing.forEach((edge, index) => {
-      sourceHandleByEdgeId.set(edge.id, `out-${index}`);
+      sourceHandleByEdgeId.set(edge.id, `out-${handleSlotIndex(index)}`);
     });
     incoming.forEach((edge, index) => {
-      targetHandleByEdgeId.set(edge.id, `in-${index}`);
+      targetHandleByEdgeId.set(edge.id, `in-${handleSlotIndex(index)}`);
     });
 
     countsByNodeId.set(nodeId, {
-      incomingHandleCount: incoming.length,
-      outgoingHandleCount: outgoing.length,
+      incomingHandleCount: Math.min(incoming.length, MAX_HANDLES_PER_SIDE),
+      outgoingHandleCount: Math.min(outgoing.length, MAX_HANDLES_PER_SIDE),
     });
   });
 
