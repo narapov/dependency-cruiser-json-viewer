@@ -45,19 +45,33 @@ async function layoutChildrenWithElk(
 ): Promise<ElkLayoutResult> {
   const spacing = getLayoutSpacing(childIds.length);
   const childSet = new Set(childIds);
-  const edges = layoutEdges
-    .filter(edge => childSet.has(edge.source) && childSet.has(edge.target))
-    .map((edge, index) => ({
+  const siblingEdges = layoutEdges.filter(edge => childSet.has(edge.source) && childSet.has(edge.target));
+
+  const eastPortCount = new Map<string, number>();
+  const westPortCount = new Map<string, number>();
+
+  const nextPortIndex = (counts: Map<string, number>, nodeId: string) => {
+    const index = counts.get(nodeId) ?? 0;
+    counts.set(nodeId, index + 1);
+    return index;
+  };
+
+  // One EAST/WEST port per incident edge so attachments can sit anywhere along the vertical sides.
+  const edges = siblingEdges.map((edge, index) => {
+    const eastIndex = nextPortIndex(eastPortCount, edge.source);
+    const westIndex = nextPortIndex(westPortCount, edge.target);
+    return {
       id: `e${index}-${edge.source}->${edge.target}`,
-      sources: [edge.source],
-      targets: [edge.target],
+      sources: [`${edge.source}:E${eastIndex}`],
+      targets: [`${edge.target}:W${westIndex}`],
       layoutOptions: {
         // How important it is to keep this edge axis-aligned. int ≥ 0; higher = straighter.
         'elk.layered.priority.straightness': String(edge.weight),
         // How important it is to keep this edge short. int ≥ 0; higher = prefer shorter routes.
         'elk.layered.priority.shortness': String(edge.weight),
       },
-    }));
+    };
+  });
 
   profiler?.start('elk.layout');
   const layouted = await elk.layout({
@@ -98,7 +112,29 @@ async function layoutChildrenWithElk(
     },
     children: childIds.map(childId => {
       const size = childSizes.get(childId)!;
-      return { id: childId, width: size.width, height: size.height };
+      const westCount = westPortCount.get(childId) ?? 0;
+      const eastCount = eastPortCount.get(childId) ?? 0;
+      const ports = [
+        ...Array.from({ length: westCount }, (_, portIndex) => ({
+          id: `${childId}:W${portIndex}`,
+          layoutOptions: { 'elk.port.side': 'WEST' },
+        })),
+        ...Array.from({ length: eastCount }, (_, portIndex) => ({
+          id: `${childId}:E${portIndex}`,
+          layoutOptions: { 'elk.port.side': 'EAST' },
+        })),
+      ];
+
+      return {
+        id: childId,
+        width: size.width,
+        height: size.height,
+        layoutOptions: {
+          // Ports stay on vertical sides; Y along the side is free per port.
+          'elk.portConstraints': 'FIXED_SIDE',
+        },
+        ...(ports.length > 0 ? { ports } : {}),
+      };
     }),
     edges,
   });

@@ -28,6 +28,18 @@ describe('extractElkEdgeSections', () => {
     ]);
   });
 
+  it('strips EAST/WEST port suffixes from keys', () => {
+    const result = extractElkEdgeSections([
+      {
+        sources: ['src/a:E0'],
+        targets: ['src/b:W1'],
+        sections: [{ startPoint: { x: 0, y: 0 }, endPoint: { x: 1, y: 1 } }],
+      },
+    ]);
+
+    expect(result.has('src/a->src/b')).toBe(true);
+  });
+
   it('skips edges without sections or endpoints', () => {
     const result = extractElkEdgeSections([
       { sources: ['a'], targets: ['b'] },

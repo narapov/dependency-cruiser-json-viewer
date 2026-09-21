@@ -23,6 +23,11 @@ function offsetPoint(point: ElkLayoutPoint): ElkLayoutPoint {
   };
 }
 
+/** Strips `:E` / `:W` / `:E0` / `:W1` port suffixes so keys match React Flow node ids. */
+function toNodeId(portOrNodeId: string): string {
+  return portOrNodeId.replace(/:[EW]\d*$/, '');
+}
+
 /**
  * Maps ELK layout edges to offset sections keyed by `source->target`.
  * Offsets match the padding applied to child node positions.
@@ -41,7 +46,7 @@ export function extractElkEdgeSections(edges: readonly ElkLayoutEdge[] | undefin
       bendPoints: section.bendPoints?.map(offsetPoint),
     }));
 
-    map.set(`${source}->${target}`, sections);
+    map.set(`${toNodeId(source)}->${toNodeId(target)}`, sections);
     return map;
   }, new Map<string, ElkEdgeSection[]>());
 }
