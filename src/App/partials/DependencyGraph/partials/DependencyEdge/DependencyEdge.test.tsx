@@ -14,6 +14,10 @@ vi.mock('@xyflow/react', async importOriginal => {
   return {
     ...actual,
     BaseEdge: ({ id }: { id: string }) => <div data-testid={`base-edge-${id}`} />,
+    useInternalNode: () => ({
+      position: { x: 0, y: 0 },
+      internals: { positionAbsolute: { x: 0, y: 0 } },
+    }),
   };
 });
 

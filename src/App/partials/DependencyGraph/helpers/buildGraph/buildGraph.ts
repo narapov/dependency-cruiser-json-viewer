@@ -1,7 +1,8 @@
 import { NEED_PROFILE } from '@/Shared';
 
-import type { BuildGraphInput, BuildGraphResult } from '../../types';
+import type { BuildGraphInput, BuildGraphResult, ElkEdgeSection } from '../../types';
 import { sortNodesByDepth } from '../sortNodesByDepth';
+import { applyElkEdgeSections } from './applyElkEdgeSections';
 import { buildGraphEdges } from './buildGraphEdges';
 import { buildGraphNodes } from './buildGraphNodes';
 import { buildVisibleNodes } from './buildVisibleNodes';
@@ -40,6 +41,7 @@ export async function buildGraph({
     folderColors,
   });
   const groupSizes = new Map<string, NodeSize>();
+  const elkEdgeSections = new Map<string, ElkEdgeSection[]>();
   profiler.end('nodes');
 
   profiler.start('layout');
@@ -53,8 +55,10 @@ export async function buildGraph({
     parentByNode,
     modules,
     selectedSet,
+    elkEdgeSections,
     profiler,
   );
+  const edgesWithElkPaths = applyElkEdgeSections(edges, elkEdgeSections);
   profiler.end('layout');
 
   profiler.start('sort');
@@ -65,12 +69,12 @@ export async function buildGraph({
   profiler.log({
     selected: selectedPaths.length,
     nodes: nodes.length,
-    edges: edges.length,
+    edges: edgesWithElkPaths.length,
   });
 
   return {
     nodes,
-    edges,
+    edges: edgesWithElkPaths,
     visibleNodeIds,
     parentByNode,
   };

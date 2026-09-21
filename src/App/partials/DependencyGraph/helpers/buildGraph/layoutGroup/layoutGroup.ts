@@ -3,6 +3,7 @@ import ELK from 'elkjs/lib/elk.bundled.js';
 
 import type { Node } from '@xyflow/react';
 
+import type { ElkEdgeSection } from '../../../types';
 import { buildVirtualLayoutEdges, type LayoutEdge } from '../../buildVirtualLayoutEdges';
 import { LEAF_NODE_HEIGHT, LEAF_NODE_MIN_WIDTH } from '../../getLeafNodeSize';
 import type { BuildGraphProfiler } from '../createBuildGraphProfiler';
@@ -10,6 +11,7 @@ import { getDirectChildren } from '../getDirectChildren';
 import { GROUP_HEADER, GROUP_PADDING } from '../layoutConstants';
 import { applyNodeDimensions, getLeafSizeForPath } from '../nodeDimensions';
 import type { NodeSize } from '../types';
+import { extractElkEdgeSections } from './helpers/extractElkEdgeSections';
 
 const NODE_HEIGHT = LEAF_NODE_HEIGHT;
 
@@ -30,12 +32,17 @@ function getLayoutSpacing(childCount: number) {
   };
 }
 
+interface ElkLayoutResult {
+  positions: Map<string, { x: number; y: number }>;
+  edgeSections: Map<string, ElkEdgeSection[]>;
+}
+
 async function layoutChildrenWithElk(
   childIds: string[],
   childSizes: Map<string, NodeSize>,
   layoutEdges: LayoutEdge[],
   profiler?: BuildGraphProfiler,
-): Promise<Map<string, { x: number; y: number }>> {
+): Promise<ElkLayoutResult> {
   const spacing = getLayoutSpacing(childIds.length);
   const childSet = new Set(childIds);
   const edges = layoutEdges
@@ -97,7 +104,7 @@ async function layoutChildrenWithElk(
   });
   profiler?.end('elk.layout');
 
-  return new Map(
+  const positions = new Map(
     (layouted.children ?? []).map(child => [
       child.id,
       {
@@ -106,6 +113,11 @@ async function layoutChildrenWithElk(
       },
     ]),
   );
+
+  return {
+    positions,
+    edgeSections: extractElkEdgeSections(layouted.edges),
+  };
 }
 
 function applyChildPositions(
@@ -178,6 +190,7 @@ export async function layoutGroup(
   parentByNode: Map<string, string | null>,
   modules: readonly IModule[],
   selectedSet: Set<string>,
+  elkEdgeSections: Map<string, ElkEdgeSection[]>,
   profiler?: BuildGraphProfiler,
 ): Promise<NodeSize> {
   const childIds = getDirectChildren(folderId, visibleNodeIds, parentByNode);
@@ -206,6 +219,7 @@ export async function layoutGroup(
         parentByNode,
         modules,
         selectedSet,
+        elkEdgeSections,
         profiler,
       );
       acc.set(childId, size);
@@ -216,7 +230,10 @@ export async function layoutGroup(
   }, Promise.resolve(new Map<string, NodeSize>()));
 
   const layoutEdges = buildVirtualLayoutEdges(folderId, childIds, modules, selectedSet);
-  const positions = await layoutChildrenWithElk(childIds, childSizes, layoutEdges, profiler);
+  const { positions, edgeSections } = await layoutChildrenWithElk(childIds, childSizes, layoutEdges, profiler);
+  edgeSections.forEach((sections, key) => {
+    elkEdgeSections.set(key, sections);
+  });
 
   return applyChildPositions(childIds, childSizes, positions, folderId, nodeMap, groupSizes);
 }
