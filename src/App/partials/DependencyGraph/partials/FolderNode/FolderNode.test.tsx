@@ -41,6 +41,8 @@ describe('FolderNode', () => {
         path: 'src/foo',
         expanded: false,
         backgroundColor: '#eee',
+        incomingHandleCount: 0,
+        outgoingHandleCount: 0,
       },
       createMockGraphActions({ onToggleFolder }),
     );
@@ -62,6 +64,8 @@ describe('FolderNode', () => {
       circular: true,
       highlighted: true,
       backgroundColor: '#ddd',
+      incomingHandleCount: 0,
+      outgoingHandleCount: 0,
     });
 
     fireEvent.contextMenu(screen.getByText('bar'));

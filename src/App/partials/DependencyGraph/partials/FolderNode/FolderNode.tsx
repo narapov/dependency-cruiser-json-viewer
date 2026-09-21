@@ -1,17 +1,19 @@
 import Box from '@mui/material/Box';
-import { Handle, Position, type NodeProps } from '@xyflow/react';
+import type { NodeProps } from '@xyflow/react';
 
 import { CIRCULAR_NODE_BACKGROUND, MaterialFileSystemIcon } from '@/Shared';
 
 import { useGraphActions } from '../../contexts';
 import type { FolderNodeData } from '../../types';
 import { FolderExpandToggle } from '../FolderExpandToggle';
+import { NodeConnectionHandles } from '../NodeConnectionHandles';
 import { NodeContextMenu, NodeContextMenuTrigger } from '../NodeContextMenu';
 
 export function FolderNode(props: NodeProps) {
   const { data } = props;
 
-  const { label, path, expanded, highlighted, circular, backgroundColor } = data as FolderNodeData;
+  const { label, path, expanded, highlighted, circular, backgroundColor, incomingHandleCount, outgoingHandleCount } =
+    data as FolderNodeData;
   const { onToggleFolder } = useGraphActions();
 
   return (
@@ -37,7 +39,7 @@ export function FolderNode(props: NodeProps) {
           }),
         }}
       >
-        <Handle type="target" position={Position.Left} />
+        <NodeConnectionHandles incomingHandleCount={incomingHandleCount} outgoingHandleCount={outgoingHandleCount} />
         <FolderExpandToggle
           expanded={expanded}
           onClick={e => {
@@ -55,7 +57,6 @@ export function FolderNode(props: NodeProps) {
           {label}
         </Box>
         <NodeContextMenuTrigger />
-        <Handle type="source" position={Position.Right} />
       </Box>
     </NodeContextMenu>
   );

@@ -2,6 +2,7 @@ import { NEED_PROFILE } from '@/Shared';
 
 import type { BuildGraphInput, BuildGraphResult } from '../../types';
 import { sortNodesByDepth } from '../sortNodesByDepth';
+import { assignEdgeHandles } from './assignEdgeHandles';
 import { buildGraphEdges } from './buildGraphEdges';
 import { buildGraphNodes } from './buildGraphNodes';
 import { buildVisibleNodes } from './buildVisibleNodes';
@@ -58,19 +59,23 @@ export async function buildGraph({
   profiler.end('layout');
 
   profiler.start('sort');
-  const nodes = sortNodesByDepth([...nodeMap.values()]);
+  const sortedNodes = sortNodesByDepth([...nodeMap.values()]);
   profiler.end('sort');
+
+  profiler.start('assignHandles');
+  const { nodes, edges: edgesWithHandles } = assignEdgeHandles(sortedNodes, edges);
+  profiler.end('assignHandles');
 
   profiler.end('total');
   profiler.log({
     selected: selectedPaths.length,
     nodes: nodes.length,
-    edges: edges.length,
+    edges: edgesWithHandles.length,
   });
 
   return {
     nodes,
-    edges,
+    edges: edgesWithHandles,
     visibleNodeIds,
     parentByNode,
   };

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { CIRCULAR_EDGE_COLOR, TYPE_ONLY_CIRCULAR_EDGE_COLOR } from '@/Shared';
 
-import { LEAF_NODE_MIN_WIDTH } from '../getLeafNodeSize';
+import { LEAF_NODE_HEIGHT, LEAF_NODE_MIN_WIDTH } from '../getLeafNodeSize';
 import { buildGraph } from './buildGraph';
 
 function moduleAt(source: string, dependencies: IModule['dependencies'] = []): IModule {
@@ -331,7 +331,7 @@ describe('buildGraph layout', () => {
 
     const fileNode = nodes.find(node => node.id === longPath && node.type === 'file');
     expect(fileNode?.width).toBeGreaterThan(LEAF_NODE_MIN_WIDTH);
-    expect(fileNode?.height).toBe(40);
+    expect(fileNode?.height).toBe(LEAF_NODE_HEIGHT);
     expect(fileNode?.style?.width).toBe(fileNode?.width);
     expect(fileNode?.style?.height).toBe(fileNode?.height);
   });
@@ -429,5 +429,34 @@ describe('buildGraph layout', () => {
 
     expect(collapsedInner.edges.some(edge => edge.source === 'lib' && edge.target === 'src/foo/bar')).toBe(true);
     expect(collapsedInner.edges.some(edge => edge.target === 'src/foo/bar/c.ts')).toBe(false);
+  });
+});
+
+describe('buildGraph edge handles', () => {
+  it('assigns index handles and stamps handle counts on nodes', async () => {
+    const depB = { resolved: 'src/b.ts' } as IModule['dependencies'][0];
+    const depC = { resolved: 'src/c.ts' } as IModule['dependencies'][0];
+    const modules = [moduleAt('src/a.ts', [depB, depC]), moduleAt('src/b.ts'), moduleAt('src/c.ts')];
+
+    const { nodes, edges } = await buildGraph({
+      modules,
+      selectedPaths: ['src/a.ts', 'src/b.ts', 'src/c.ts'],
+      expandedFolders: new Set(['src']),
+      folderColors: new Map(),
+    });
+
+    expect(edges).toHaveLength(2);
+    edges.forEach(edge => {
+      expect(edge.sourceHandle).toMatch(/^out-\d+$/);
+      expect(edge.targetHandle).toMatch(/^in-\d+$/);
+    });
+
+    const source = nodes.find(node => node.id === 'src/a.ts');
+    expect(source?.data.outgoingHandleCount).toBe(2);
+    expect(source?.data.incomingHandleCount).toBe(0);
+
+    const targetB = nodes.find(node => node.id === 'src/b.ts');
+    expect(targetB?.data.incomingHandleCount).toBe(1);
+    expect(targetB?.data.outgoingHandleCount).toBe(0);
   });
 });

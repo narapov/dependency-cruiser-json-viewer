@@ -24,6 +24,8 @@ describe('buildGraphNodes', () => {
       path: 'src/foo',
       expanded: true,
       backgroundColor: 'rgba(1, 2, 3, 0.1)',
+      incomingHandleCount: 0,
+      outgoingHandleCount: 0,
     });
   });
 
@@ -53,6 +55,8 @@ describe('buildGraphNodes', () => {
       expanded: false,
       circular: true,
       backgroundColor: 'rgba(0, 0, 0, 0.02)',
+      incomingHandleCount: 0,
+      outgoingHandleCount: 0,
     });
     expect(node?.width).toBeGreaterThan(0);
     expect(node?.height).toBeGreaterThan(0);
@@ -78,6 +82,8 @@ describe('buildGraphNodes', () => {
       label: 'a.ts',
       path: 'src/foo/a.ts',
       circular: true,
+      incomingHandleCount: 0,
+      outgoingHandleCount: 0,
     });
     expect(node?.width).toBeGreaterThan(0);
     expect(node?.height).toBeGreaterThan(0);
@@ -102,6 +108,8 @@ describe('buildGraphNodes', () => {
       path: 'missing-module',
       couldNotResolve: true,
       circular: false,
+      incomingHandleCount: 0,
+      outgoingHandleCount: 0,
     });
   });
 

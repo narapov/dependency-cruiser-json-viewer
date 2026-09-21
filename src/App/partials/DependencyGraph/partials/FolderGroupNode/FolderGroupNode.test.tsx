@@ -42,6 +42,8 @@ describe('FolderGroupNode', () => {
         expanded: true,
         highlighted: true,
         backgroundColor: '#f5f5f5',
+        incomingHandleCount: 0,
+        outgoingHandleCount: 0,
       },
       createMockGraphActions({ onToggleFolder }),
     );
@@ -61,6 +63,8 @@ describe('FolderGroupNode', () => {
       path: 'lib',
       expanded: false,
       backgroundColor: '#fff',
+      incomingHandleCount: 0,
+      outgoingHandleCount: 0,
     });
 
     fireEvent.contextMenu(screen.getByText('lib'));
@@ -78,6 +82,8 @@ describe('FolderGroupNode', () => {
         path: 'lib',
         expanded: false,
         backgroundColor: '#fff',
+        incomingHandleCount: 0,
+        outgoingHandleCount: 0,
       },
       createMockGraphActions({ onAutoLayoutGroup, onAutoLayoutGroupRecursive }),
     );

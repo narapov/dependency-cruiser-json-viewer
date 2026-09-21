@@ -39,6 +39,8 @@ function createVisibleNode(path: string, type: 'folder' | 'file', input: BuildGr
         label: getBaseName(path),
         path,
         expanded: true,
+        incomingHandleCount: 0,
+        outgoingHandleCount: 0,
         backgroundColor: folderColors.get(path) ?? 'rgba(0, 0, 0, 0.02)',
       };
 
@@ -63,6 +65,8 @@ function createVisibleNode(path: string, type: 'folder' | 'file', input: BuildGr
       label,
       path,
       expanded: false,
+      incomingHandleCount: 0,
+      outgoingHandleCount: 0,
       circular,
       backgroundColor: folderColors.get(path) ?? 'rgba(0, 0, 0, 0.02)',
     };
@@ -83,6 +87,8 @@ function createVisibleNode(path: string, type: 'folder' | 'file', input: BuildGr
   const data: FileNodeData = {
     label,
     path,
+    incomingHandleCount: 0,
+    outgoingHandleCount: 0,
     circular: circularModules.has(path),
     couldNotResolve: unresolvedModules.has(path),
   };

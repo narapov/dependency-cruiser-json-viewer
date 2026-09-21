@@ -1,5 +1,5 @@
 /** Fixed height for file and collapsed-folder leaf nodes. */
-export const LEAF_NODE_HEIGHT = 40;
+export const LEAF_NODE_HEIGHT = 32;
 /** Minimum width for file and collapsed-folder leaf nodes. */
 export const LEAF_NODE_MIN_WIDTH = 120;
 const HORIZONTAL_PADDING = 20;
