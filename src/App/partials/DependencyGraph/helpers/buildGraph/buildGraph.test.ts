@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { CIRCULAR_EDGE_COLOR, TYPE_ONLY_CIRCULAR_EDGE_COLOR } from '@/Shared';
 
-import { LEAF_NODE_MIN_WIDTH } from '../getLeafNodeSize';
+import { LEAF_NODE_HEIGHT, LEAF_NODE_MIN_WIDTH } from '../getLeafNodeSize';
 import { buildGraph } from './buildGraph';
 
 function moduleAt(source: string, dependencies: IModule['dependencies'] = []): IModule {
@@ -331,7 +331,7 @@ describe('buildGraph layout', () => {
 
     const fileNode = nodes.find(node => node.id === longPath && node.type === 'file');
     expect(fileNode?.width).toBeGreaterThan(LEAF_NODE_MIN_WIDTH);
-    expect(fileNode?.height).toBe(40);
+    expect(fileNode?.height).toBe(LEAF_NODE_HEIGHT);
     expect(fileNode?.style?.width).toBe(fileNode?.width);
     expect(fileNode?.style?.height).toBe(fileNode?.height);
   });
