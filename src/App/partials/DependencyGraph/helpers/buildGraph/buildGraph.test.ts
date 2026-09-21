@@ -431,3 +431,32 @@ describe('buildGraph layout', () => {
     expect(collapsedInner.edges.some(edge => edge.target === 'src/foo/bar/c.ts')).toBe(false);
   });
 });
+
+describe('buildGraph edge handles', () => {
+  it('assigns index handles and stamps handle counts on nodes', async () => {
+    const depB = { resolved: 'src/b.ts' } as IModule['dependencies'][0];
+    const depC = { resolved: 'src/c.ts' } as IModule['dependencies'][0];
+    const modules = [moduleAt('src/a.ts', [depB, depC]), moduleAt('src/b.ts'), moduleAt('src/c.ts')];
+
+    const { nodes, edges } = await buildGraph({
+      modules,
+      selectedPaths: ['src/a.ts', 'src/b.ts', 'src/c.ts'],
+      expandedFolders: new Set(['src']),
+      folderColors: new Map(),
+    });
+
+    expect(edges).toHaveLength(2);
+    edges.forEach(edge => {
+      expect(edge.sourceHandle).toMatch(/^out-\d+$/);
+      expect(edge.targetHandle).toMatch(/^in-\d+$/);
+    });
+
+    const source = nodes.find(node => node.id === 'src/a.ts');
+    expect(source?.data.outgoingHandleCount).toBe(2);
+    expect(source?.data.incomingHandleCount).toBe(0);
+
+    const targetB = nodes.find(node => node.id === 'src/b.ts');
+    expect(targetB?.data.incomingHandleCount).toBe(1);
+    expect(targetB?.data.outgoingHandleCount).toBe(0);
+  });
+});

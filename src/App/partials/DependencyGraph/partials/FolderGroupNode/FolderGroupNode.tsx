@@ -1,13 +1,14 @@
 import clsx from 'clsx';
 
 import Box from '@mui/material/Box';
-import { Handle, Position, type NodeProps } from '@xyflow/react';
+import type { NodeProps } from '@xyflow/react';
 
 import { MaterialFileSystemIcon } from '@/Shared';
 
 import { useGraphActions } from '../../contexts';
 import type { FolderGroupNodeData } from '../../types';
 import { FolderExpandToggle } from '../FolderExpandToggle';
+import { NodeConnectionHandles } from '../NodeConnectionHandles';
 import { NodeContextMenu, NodeContextMenuTrigger } from '../NodeContextMenu';
 
 import styles from './FolderGroupNode.module.css';
@@ -15,7 +16,8 @@ import styles from './FolderGroupNode.module.css';
 export function FolderGroupNode(props: NodeProps) {
   const { data } = props;
 
-  const { label, path, expanded, highlighted, backgroundColor } = data as FolderGroupNodeData;
+  const { label, path, expanded, highlighted, backgroundColor, incomingHandleCount, outgoingHandleCount } =
+    data as FolderGroupNodeData;
 
   const { onToggleFolder, onAutoLayoutGroup, onAutoLayoutGroupRecursive } = useGraphActions();
 
@@ -37,7 +39,11 @@ export function FolderGroupNode(props: NodeProps) {
         }),
       }}
     >
-      <Handle type="target" position={Position.Left} className={styles.groupHandle} />
+      <NodeConnectionHandles
+        incomingHandleCount={incomingHandleCount}
+        outgoingHandleCount={outgoingHandleCount}
+        className={styles.groupHandle}
+      />
       <NodeContextMenu
         path={path}
         isFolder
@@ -83,7 +89,6 @@ export function FolderGroupNode(props: NodeProps) {
           <NodeContextMenuTrigger />
         </Box>
       </NodeContextMenu>
-      <Handle type="source" position={Position.Right} className={styles.groupHandle} />
     </Box>
   );
 }

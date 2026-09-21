@@ -38,6 +38,8 @@ describe('FileNode', () => {
     renderFileNode({
       label: 'a.ts',
       path: 'src/a.ts',
+      incomingHandleCount: 0,
+      outgoingHandleCount: 0,
     });
 
     expect(screen.getByText('a.ts')).toBeInTheDocument();
@@ -51,6 +53,8 @@ describe('FileNode', () => {
       label: 'cycle.ts',
       path: 'src/cycle.ts',
       circular: true,
+      incomingHandleCount: 0,
+      outgoingHandleCount: 0,
     });
 
     expect(screen.getByText('cycle.ts')).toBeInTheDocument();
@@ -61,6 +65,8 @@ describe('FileNode', () => {
       label: 'missing',
       path: './missing',
       couldNotResolve: true,
+      incomingHandleCount: 0,
+      outgoingHandleCount: 0,
     });
 
     expect(screen.getByText('missing')).toBeInTheDocument();
@@ -72,6 +78,8 @@ describe('FileNode', () => {
       path: 'src/both.ts',
       circular: true,
       couldNotResolve: true,
+      incomingHandleCount: 0,
+      outgoingHandleCount: 0,
     });
 
     expect(screen.getByText('both.ts')).toBeInTheDocument();

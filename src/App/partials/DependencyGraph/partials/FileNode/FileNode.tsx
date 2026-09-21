@@ -1,15 +1,17 @@
 import Box from '@mui/material/Box';
-import { Handle, Position, type NodeProps } from '@xyflow/react';
+import type { NodeProps } from '@xyflow/react';
 
 import { CIRCULAR_NODE_BACKGROUND, ERROR_NODE_BACKGROUND, MaterialFileSystemIcon } from '@/Shared';
 
 import type { FileNodeData } from '../../types';
+import { NodeConnectionHandles } from '../NodeConnectionHandles';
 import { NodeContextMenu, NodeContextMenuTrigger } from '../NodeContextMenu';
 
 export function FileNode(props: NodeProps) {
   const { data } = props;
 
-  const { label, path, highlighted, circular, couldNotResolve } = data as FileNodeData;
+  const { label, path, highlighted, circular, couldNotResolve, incomingHandleCount, outgoingHandleCount } =
+    data as FileNodeData;
 
   let bgcolor: string = 'background.paper';
   let borderColor: string = 'divider';
@@ -44,7 +46,7 @@ export function FileNode(props: NodeProps) {
           }),
         }}
       >
-        <Handle type="target" position={Position.Left} />
+        <NodeConnectionHandles incomingHandleCount={incomingHandleCount} outgoingHandleCount={outgoingHandleCount} />
         <Box component="span" sx={{ fontSize: 12, flexShrink: 0, display: 'inline-flex' }}>
           <MaterialFileSystemIcon name={label} />
         </Box>
@@ -55,7 +57,6 @@ export function FileNode(props: NodeProps) {
           {label}
         </Box>
         <NodeContextMenuTrigger />
-        <Handle type="source" position={Position.Right} />
       </Box>
     </NodeContextMenu>
   );
