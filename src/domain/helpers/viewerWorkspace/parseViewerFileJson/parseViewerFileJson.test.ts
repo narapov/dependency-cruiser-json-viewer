@@ -49,6 +49,7 @@ function makeSettings(overrides: Partial<ViewerWorkspaceSettings> = {}): ViewerW
     userEdgeHighlights: { 'src/a.ts->src/b.ts': '#ff0000' },
     folderColors: defaultFolderColors,
     autoLayoutOnly: true,
+    edgeStyle: 'bezier',
     nodePositions: {},
     ...overrides,
   };
@@ -73,6 +74,20 @@ describe('parseViewerFileJson', () => {
     const result = parseViewerFileJson(JSON.stringify(withExtension));
     expect(result.settings).toEqual(settings);
     expect(result.cruiseResult).not.toHaveProperty(VIEWER_WORKSPACE_EXTENSION_KEY);
+  });
+
+  it('defaults missing edgeStyle to bezier', () => {
+    const settingsWithoutEdgeStyle: Partial<ViewerWorkspaceSettings> = { ...makeSettings() };
+    delete settingsWithoutEdgeStyle.edgeStyle;
+    const withExtension = {
+      ...validResult,
+      [VIEWER_WORKSPACE_EXTENSION_KEY]: {
+        schemaVersion: VIEWER_WORKSPACE_SCHEMA_VERSION,
+        settings: settingsWithoutEdgeStyle,
+      },
+    };
+    const result = parseViewerFileJson(JSON.stringify(withExtension));
+    expect(result.settings?.edgeStyle).toBe('bezier');
   });
 
   it('ignores unknown schemaVersion', () => {
@@ -114,6 +129,7 @@ describe('replaceWorkspaceSettings', () => {
       selectedFiles: ['src/a.ts'],
       expandedKeys: [],
       autoLayoutOnly: false,
+      edgeStyle: 'bezier',
       nodePositions: { '': { 'src/a.ts': { x: 1, y: 2 } } },
     });
     const replaced = replaceWorkspaceSettings({
@@ -182,6 +198,7 @@ describe('replaceWorkspaceSettings', () => {
       selectedFiles: ['src/a.ts'],
       expandedKeys: [],
       autoLayoutOnly: false,
+      edgeStyle: 'bezier',
       nodePositions: {
         '': { 'src/a.ts': { x: 1, y: 2 } },
         gone: { 'gone.ts': { x: 9, y: 9 } },
@@ -202,6 +219,7 @@ describe('replaceWorkspaceSettings', () => {
       selectedFiles: ['src/a.ts'],
       expandedKeys: [],
       autoLayoutOnly: false,
+      edgeStyle: 'bezier',
       nodePositions: {
         gone: { 'gone.ts': { x: 9, y: 9 } },
       },

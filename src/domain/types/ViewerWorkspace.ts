@@ -4,6 +4,9 @@ export interface FolderBaseColor {
   lightnessIndex: number;
 }
 
+/** SVG path style for dependency graph edges. */
+export type GraphEdgeStyle = 'bezier' | 'orthogonal' | 'straight';
+
 /** Viewer UI settings stored under the cruise-result extension field. */
 export interface ViewerWorkspaceSettings {
   ignorePatterns: string[];
@@ -14,6 +17,7 @@ export interface ViewerWorkspaceSettings {
   userEdgeHighlights: Record<string, string>;
   folderColors: Record<string, FolderBaseColor>;
   autoLayoutOnly: boolean;
+  edgeStyle: GraphEdgeStyle;
   nodePositions: Record<string, Record<string, { x: number; y: number }>>;
 }
 
@@ -26,5 +30,6 @@ export interface MergedViewerWorkspaceView {
   userEdgeHighlights: ReadonlyMap<string, string>;
   folderColors: Record<string, FolderBaseColor>;
   autoLayoutOnly: boolean;
+  edgeStyle: GraphEdgeStyle;
   nodePositions: Record<string, Record<string, { x: number; y: number }>>;
 }

@@ -90,7 +90,8 @@
     "unselectAll": "Selection: Unselect All",
     "about": "Application: About",
     "saveWorkspace": "Workspace: Save",
-    "viewCruiseResultJson": "Cruise Result: View JSON"
+    "viewCruiseResultJson": "Cruise Result: View JSON",
+    "setEdgeStyle": "Graph: Set Edge Style"
   },
   "cruiseResultJson": {
     "title": "Cruise Result JSON"
@@ -142,7 +143,14 @@
     "loading": "Loading dependency graph",
     "buildError": "Failed to build the dependency graph.",
     "autoLayoutOnly": "Auto layout only",
-    "autoLayoutOnlyHint": "Always use automatic layout and disable drag-and-drop. When off, drag-and-drop is enabled; collapsing or expanding folders does not shift neighbors back; use Auto layout in the folder context menu to relayout a folder's contents."
+    "autoLayoutOnlyHint": "Always use automatic layout and disable drag-and-drop. When off, drag-and-drop is enabled; collapsing or expanding folders does not shift neighbors back; use Auto layout in the folder context menu to relayout a folder's contents.",
+    "edgeStyle": "Edge style",
+    "edgeStyleBezier": "Bezier",
+    "edgeStyleOrthogonal": "Orthogonal",
+    "edgeStyleStraight": "Straight",
+    "setEdgeStyle": "Set Edge Style",
+    "edgeStyleOptions": "Edge style options",
+    "edgeStyleActive": "(active)"
   },
   "dependencyPanel": {
     "dependencies": "Dependencies",

@@ -33,7 +33,7 @@ function createRefs() {
     clearAllHighlights: vi.fn(),
     exportDot: vi.fn(),
     openDotOnline: vi.fn(),
-    getLayoutState: vi.fn(() => ({ autoLayoutOnly: true, nodePositions: {} })),
+    getLayoutState: vi.fn(() => ({ autoLayoutOnly: true, edgeStyle: 'bezier', nodePositions: {} })),
     setLayoutState: vi.fn(),
   };
   // refs are mutable in tests
@@ -846,6 +846,7 @@ describe('useAppOrchestration', () => {
         'src/e/f': { hue: 40, lightnessIndex: 1 },
       },
       autoLayoutOnly: true,
+      edgeStyle: 'bezier' as const,
       nodePositions: {},
     };
     const emptyInitial = { selectedKeys: [] as string[], expandedKeys: [] as string[] };
@@ -928,6 +929,7 @@ describe('useAppOrchestration', () => {
           userEdgeHighlights: new Map(),
           folderColors: {},
           autoLayoutOnly: true,
+          edgeStyle: 'bezier' as const,
           nodePositions: {},
         },
         sourcesKey: '',
@@ -959,6 +961,7 @@ describe('useAppOrchestration', () => {
         'src/e/f': { hue: 40, lightnessIndex: 1 },
       },
       autoLayoutOnly: false,
+      edgeStyle: 'bezier' as const,
       nodePositions,
     };
 
@@ -994,6 +997,7 @@ describe('useAppOrchestration', () => {
 
     expect(refs.graph.setLayoutState).toHaveBeenCalledWith({
       autoLayoutOnly: false,
+      edgeStyle: 'bezier',
       nodePositions,
     });
   });
