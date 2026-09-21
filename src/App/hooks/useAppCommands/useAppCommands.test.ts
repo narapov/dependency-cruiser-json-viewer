@@ -19,6 +19,7 @@ function createOrch(): AppCommandsOrchestration {
     clearAllHighlights: vi.fn(),
     exportGraphDot: vi.fn(),
     viewGraphDotOnline: vi.fn(),
+    openEdgeStylePicker: vi.fn(),
     saveWorkspace: vi.fn(),
     expandAllRecursive: vi.fn(),
     collapseAllRecursive: vi.fn(),
@@ -62,6 +63,7 @@ describe('useAppCommands', () => {
     expect(ids).toContain('showCircularDependenciesOnly');
     expect(ids).toContain('showRuleViolationsOnly');
     expect(ids).toContain('setTheme');
+    expect(ids).toContain('setEdgeStyle');
     expect(ids).toContain('showHighlightsPanel');
     expect(ids).toContain('about');
     expect(ids).toContain('viewCruiseResultJson');
@@ -116,6 +118,7 @@ describe('useAppCommands', () => {
     byId.showCircularDependenciesOnly.onExecute();
     byId.showRuleViolationsOnly.onExecute();
     byId.setTheme.onExecute();
+    byId.setEdgeStyle.onExecute();
     byId.showHighlightsPanel.onExecute();
     byId.about.onExecute();
     byId.viewCruiseResultJson.onExecute();
@@ -134,6 +137,7 @@ describe('useAppCommands', () => {
     expect(orch.showCircularDependenciesOnly).toHaveBeenCalled();
     expect(openRuleViolationsPicker).toHaveBeenCalled();
     expect(openThemePicker).toHaveBeenCalled();
+    expect(orch.openEdgeStylePicker).toHaveBeenCalled();
     expect(showHighlightsPanel).toHaveBeenCalled();
     expect(openAbout).toHaveBeenCalled();
     expect(openViewCruiseResultJson).toHaveBeenCalled();

@@ -90,7 +90,8 @@
     "unselectAll": "Selección: Deseleccionar todo",
     "about": "Aplicación: Acerca de",
     "saveWorkspace": "Espacio de trabajo: Guardar",
-    "viewCruiseResultJson": "Resultado cruise: Ver JSON"
+    "viewCruiseResultJson": "Resultado cruise: Ver JSON",
+    "setEdgeStyle": "Grafo: Establecer estilo de aristas"
   },
   "cruiseResultJson": {
     "title": "JSON del resultado cruise"
@@ -142,7 +143,14 @@
     "loading": "Cargando el grafo de dependencias",
     "buildError": "No se pudo construir el grafo de dependencias.",
     "autoLayoutOnly": "Solo diseño automático",
-    "autoLayoutOnlyHint": "Usar siempre el diseño automático y desactivar arrastrar y soltar. Con la opción desactivada, arrastrar y soltar está disponible; al contraer o expandir carpetas los vecinos no vuelven a moverse; use «Diseño automático» en el menú contextual de la carpeta para reorganizar su contenido."
+    "autoLayoutOnlyHint": "Usar siempre el diseño automático y desactivar arrastrar y soltar. Con la opción desactivada, arrastrar y soltar está disponible; al contraer o expandir carpetas los vecinos no vuelven a moverse; use «Diseño automático» en el menú contextual de la carpeta para reorganizar su contenido.",
+    "edgeStyle": "Estilo de aristas",
+    "edgeStyleBezier": "Bezier",
+    "edgeStyleOrthogonal": "Ortogonal",
+    "edgeStyleStraight": "Recto",
+    "setEdgeStyle": "Establecer estilo de aristas",
+    "edgeStyleOptions": "Opciones de estilo de aristas",
+    "edgeStyleActive": "(activo)"
   },
   "dependencyPanel": {
     "dependencies": "Dependencias",

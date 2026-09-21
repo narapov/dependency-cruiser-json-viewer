@@ -90,7 +90,8 @@
     "unselectAll": "Sélection : Tout désélectionner",
     "about": "Application : À propos",
     "saveWorkspace": "Espace de travail : Enregistrer",
-    "viewCruiseResultJson": "Résultat cruise : Voir le JSON"
+    "viewCruiseResultJson": "Résultat cruise : Voir le JSON",
+    "setEdgeStyle": "Graphe : Choisir le style des arêtes"
   },
   "cruiseResultJson": {
     "title": "JSON du résultat cruise"
@@ -142,7 +143,14 @@
     "loading": "Chargement du graphe de dépendances",
     "buildError": "Échec de la construction du graphe de dépendances.",
     "autoLayoutOnly": "Mise en page automatique uniquement",
-    "autoLayoutOnlyHint": "Toujours utiliser la mise en page automatique et désactiver le glisser-déposer. Désactivé, le glisser-déposer est disponible ; le pliage et le dépliage des dossiers ne repositionnent pas les voisins ; utilisez « Mise en page automatique » dans le menu contextuel du dossier pour réorganiser son contenu."
+    "autoLayoutOnlyHint": "Toujours utiliser la mise en page automatique et désactiver le glisser-déposer. Désactivé, le glisser-déposer est disponible ; le pliage et le dépliage des dossiers ne repositionnent pas les voisins ; utilisez « Mise en page automatique » dans le menu contextuel du dossier pour réorganiser son contenu.",
+    "edgeStyle": "Style des arêtes",
+    "edgeStyleBezier": "Bézier",
+    "edgeStyleOrthogonal": "Orthogonal",
+    "edgeStyleStraight": "Droit",
+    "setEdgeStyle": "Choisir le style des arêtes",
+    "edgeStyleOptions": "Options de style des arêtes",
+    "edgeStyleActive": "(actif)"
   },
   "dependencyPanel": {
     "dependencies": "Dépendances",

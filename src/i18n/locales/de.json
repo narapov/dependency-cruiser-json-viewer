@@ -90,7 +90,8 @@
     "unselectAll": "Auswahl: Auswahl aufheben",
     "about": "Anwendung: Über",
     "saveWorkspace": "Workspace: Speichern",
-    "viewCruiseResultJson": "Cruise-Ergebnis: JSON anzeigen"
+    "viewCruiseResultJson": "Cruise-Ergebnis: JSON anzeigen",
+    "setEdgeStyle": "Graph: Kantenstil festlegen"
   },
   "cruiseResultJson": {
     "title": "Cruise-Result-JSON"
@@ -142,7 +143,14 @@
     "loading": "Abhängigkeitsgraph wird geladen",
     "buildError": "Abhängigkeitsgraph konnte nicht erstellt werden.",
     "autoLayoutOnly": "Nur automatisches Layout",
-    "autoLayoutOnlyHint": "Immer automatisches Layout verwenden und Drag-and-drop deaktivieren. Wenn aus, ist Drag-and-drop möglich; Nachbarn verschieben sich beim Ein- und Ausklappen von Ordnern nicht zurück; verwenden Sie „Automatisches Layout“ im Ordner-Kontextmenü, um den Ordnerinhalt neu anzuordnen."
+    "autoLayoutOnlyHint": "Immer automatisches Layout verwenden und Drag-and-drop deaktivieren. Wenn aus, ist Drag-and-drop möglich; Nachbarn verschieben sich beim Ein- und Ausklappen von Ordnern nicht zurück; verwenden Sie „Automatisches Layout“ im Ordner-Kontextmenü, um den Ordnerinhalt neu anzuordnen.",
+    "edgeStyle": "Kantenstil",
+    "edgeStyleBezier": "Bezier",
+    "edgeStyleOrthogonal": "Orthogonal",
+    "edgeStyleStraight": "Gerade",
+    "setEdgeStyle": "Kantenstil festlegen",
+    "edgeStyleOptions": "Kantenstil-Optionen",
+    "edgeStyleActive": "(aktiv)"
   },
   "dependencyPanel": {
     "dependencies": "Abhängigkeiten",
