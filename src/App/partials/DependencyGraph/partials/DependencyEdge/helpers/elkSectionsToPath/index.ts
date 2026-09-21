@@ -1,1 +1,0 @@
-export { elkSectionsToPath } from './elkSectionsToPath';

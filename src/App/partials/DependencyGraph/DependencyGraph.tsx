@@ -15,7 +15,7 @@ import type { FolderBaseColor } from '@/domain';
 import { downloadTextFile, openGraphvizOnline, useResolvedColorMode } from '@/Shared';
 
 import { GraphActionsProvider } from './contexts';
-import { buildEdgeDependencyKeyMap, getMinimapNodeColor, serializeGraphToDot } from './helpers';
+import { buildEdgeDependencyKeyMap, getMinimapNodeColor, mergeAvoidRoutes, serializeGraphToDot } from './helpers';
 import {
   useAutoFitView,
   useBuildGraph,
@@ -112,6 +112,7 @@ function DependencyGraphInner(props: DependencyGraphInnerProps) {
 
   const {
     nodes: layoutNodes,
+    avoidRoutes,
     onNodesChange,
     onNodeDrag,
     onNodeDragStop,
@@ -125,7 +126,8 @@ function DependencyGraphInner(props: DependencyGraphInnerProps) {
     autoLayoutOnly,
   });
 
-  const { edges: baseEdges, visibleNodeIds } = graphResult;
+  const baseEdges = mergeAvoidRoutes(graphResult.edges, avoidRoutes);
+  const { visibleNodeIds } = graphResult;
 
   const { highlightedNodes } = useHighlightedNodes({
     nodes: layoutNodes,

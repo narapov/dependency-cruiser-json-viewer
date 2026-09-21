@@ -17,6 +17,7 @@ import {
   preserveExpandedGroupPositions,
   reflowForDrag,
   reflowParentSiblings,
+  routeEdgesWithLibavoid,
   serializePositionCache,
   updateGroupCacheFromNodes,
   updateGroupPositionCache,
@@ -25,7 +26,7 @@ import {
   type NodeSize,
   type PositionCache,
 } from '../../helpers';
-import type { BuildGraphResult } from '../../types';
+import type { AvoidRoute, BuildGraphResult } from '../../types';
 
 /**
  * Applies ELK-built graph nodes onto React Flow state with a position cache.
@@ -42,6 +43,8 @@ import type { BuildGraphResult } from '../../types';
  *   ancestor group caches on drag stop; `hasUserLayout` then suppresses auto fit-view.
  * - Manual "Auto layout" on a folder invalidates that group's cache (or subtree)
  *   and re-applies ELK layout for that scope before reflow.
+ * - After settled node positions (layout + drag stop + auto layout), libavoid routes
+ *   all RF edges into `avoidRoutes` (absolute). Stale async results are ignored.
  */
 interface UseGraphLayoutNodesInput {
   graphResult: BuildGraphResult;
@@ -54,6 +57,8 @@ export interface GraphLayoutSnapshot {
 
 interface UseGraphLayoutNodesResult {
   nodes: Node[];
+  avoidRoutes: ReadonlyMap<string, AvoidRoute>;
+  isRoutingEdges: boolean;
   onNodesChange: (changes: NodeChange[]) => void;
   onNodeDrag: OnNodeDrag<Node>;
   onNodeDragStop: OnNodeDrag<Node>;
@@ -68,6 +73,8 @@ export function useGraphLayoutNodes(config: UseGraphLayoutNodesInput): UseGraphL
   const { graphResult, autoLayoutOnly = false } = config;
 
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+  const [avoidRoutes, setAvoidRoutes] = useState<Map<string, AvoidRoute>>(() => new Map());
+  const [isRoutingEdges, setIsRoutingEdges] = useState(false);
   const positionCacheRef = useRef<PositionCache>(new Map());
   const prevFingerprintsRef = useRef<GroupFingerprints | null>(null);
   const prevSizesRef = useRef<Map<string, NodeSize>>(new Map());
@@ -77,6 +84,50 @@ export function useGraphLayoutNodes(config: UseGraphLayoutNodesInput): UseGraphL
   const [layoutSeed, setLayoutSeed] = useState(0);
   const pendingRestoreRef = useRef<GraphLayoutSnapshot | null>(null);
   const skipStaleGroupPurgeRef = useRef(false);
+  const routeGenerationRef = useRef(0);
+
+  const scheduleEdgeRouting = useCallback(
+    (nodesToRoute: readonly Node[]) => {
+      const generation = routeGenerationRef.current + 1;
+      routeGenerationRef.current = generation;
+
+      const { edges, parentByNode } = graphResult;
+
+      // Defer setState so the layout effect stays sync-clean for react-hooks/set-state-in-effect.
+      void Promise.resolve().then(() => {
+        if (generation !== routeGenerationRef.current) {
+          return;
+        }
+
+        if (nodesToRoute.length === 0 || edges.length === 0) {
+          setAvoidRoutes(new Map());
+          setIsRoutingEdges(false);
+          return;
+        }
+
+        setIsRoutingEdges(true);
+        void routeEdgesWithLibavoid({
+          nodes: nodesToRoute,
+          edges,
+          parentByNode,
+        })
+          .then(routes => {
+            if (generation !== routeGenerationRef.current) {
+              return;
+            }
+            setAvoidRoutes(routes);
+            setIsRoutingEdges(false);
+          })
+          .catch(() => {
+            if (generation !== routeGenerationRef.current) {
+              return;
+            }
+            setIsRoutingEdges(false);
+          });
+      });
+    },
+    [graphResult],
+  );
 
   useEffect(() => {
     if (!autoLayoutOnly) {
@@ -92,6 +143,7 @@ export function useGraphLayoutNodes(config: UseGraphLayoutNodesInput): UseGraphL
       if (graphResult.nodes.length === 0) {
         // Wait for the rebuilt graph; applying against an empty result would wipe the cache.
         setNodes([]);
+        scheduleEdgeRouting([]);
         return;
       }
       positionCacheRef.current = deserializePositionCache(pendingRestoreRef.current.nodePositions);
@@ -156,7 +208,8 @@ export function useGraphLayoutNodes(config: UseGraphLayoutNodesInput): UseGraphL
     prevNodesRef.current = nextNodes;
     prevParentByNodeRef.current = new Map(parentByNode);
     setNodes(nextNodes);
-  }, [autoLayoutOnly, graphResult, layoutSeed, setNodes]);
+    scheduleEdgeRouting(nextNodes);
+  }, [autoLayoutOnly, graphResult, layoutSeed, scheduleEdgeRouting, setNodes]);
 
   const getLayoutSnapshot = useCallback((): GraphLayoutSnapshot => {
     return { nodePositions: serializePositionCache(positionCacheRef.current) };
@@ -218,10 +271,11 @@ export function useGraphLayoutNodes(config: UseGraphLayoutNodesInput): UseGraphL
         }
 
         prevSizesRef.current = collectNodeSizes(reflowed);
+        scheduleEdgeRouting(reflowed);
         return reflowed;
       });
     },
-    [autoLayoutOnly, graphResult.parentByNode, setNodes],
+    [autoLayoutOnly, graphResult.parentByNode, scheduleEdgeRouting, setNodes],
   );
 
   const runAutoLayout = useCallback(
@@ -260,10 +314,11 @@ export function useGraphLayoutNodes(config: UseGraphLayoutNodesInput): UseGraphL
         prevSizesRef.current = collectNodeSizes(nextNodes);
         prevNodesRef.current = nextNodes;
         prevParentByNodeRef.current = new Map(parentByNode);
+        scheduleEdgeRouting(nextNodes);
         return nextNodes;
       });
     },
-    [graphResult, setNodes],
+    [graphResult, scheduleEdgeRouting, setNodes],
   );
 
   const onAutoLayoutGroup = useCallback((groupId: string) => runAutoLayout(groupId, false), [runAutoLayout]);
@@ -277,6 +332,8 @@ export function useGraphLayoutNodes(config: UseGraphLayoutNodesInput): UseGraphL
 
   return {
     nodes: layoutNodes,
+    avoidRoutes,
+    isRoutingEdges,
     onNodesChange,
     onNodeDrag,
     onNodeDragStop,

@@ -11,3 +11,4 @@ export * from './assignFolderColors';
 export * from './withEdgeStrokeStyle';
 export * from './serializeGraphToDot';
 export * from './sortNodesByDepth';
+export * from './routeEdgesWithLibavoid';

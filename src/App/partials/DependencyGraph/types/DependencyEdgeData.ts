@@ -1,13 +1,13 @@
-export interface ElkEdgePoint {
+export interface EdgePoint {
   x: number;
   y: number;
 }
 
-/** ELK edge section geometry in parent-relative node space (after group padding offset). */
-export interface ElkEdgeSection {
-  startPoint: ElkEdgePoint;
-  endPoint: ElkEdgePoint;
-  bendPoints?: ElkEdgePoint[];
+/** Absolute libavoid route in React Flow canvas coordinates. */
+export interface AvoidRoute {
+  sourcePoint: EdgePoint;
+  targetPoint: EdgePoint;
+  bendPoints: EdgePoint[];
 }
 
 export interface DependencyEdgeData {
@@ -17,6 +17,6 @@ export interface DependencyEdgeData {
   couldNotResolve?: boolean;
   severity?: 'error' | 'warn';
   ruleNames?: string[];
-  /** Debug: ELK-routed sections for sibling layout edges. */
-  elkSections?: ElkEdgeSection[];
+  /** Obstacle-avoiding route from libavoid (absolute canvas coords). */
+  avoidRoute?: AvoidRoute;
 }

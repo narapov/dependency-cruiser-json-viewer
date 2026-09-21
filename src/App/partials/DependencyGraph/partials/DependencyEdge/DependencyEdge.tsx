@@ -1,15 +1,14 @@
-import { BaseEdge, useInternalNode, type EdgeProps } from '@xyflow/react';
+import { BaseEdge, type EdgeProps } from '@xyflow/react';
 
 import { SELECTED_EDGE_COLOR } from '@/Shared';
 
 import type { DependencyEdgeData } from '../../types';
-import { elkSectionsToPath } from './helpers/elkSectionsToPath';
+import { avoidRouteToPath } from './helpers/avoidRouteToPath';
 import { getDependencyEdgePath } from './helpers/getDependencyEdgePath';
 
 export function DependencyEdge(props: EdgeProps) {
   const {
     id,
-    source,
     data,
     style,
     markerStart,
@@ -23,9 +22,8 @@ export function DependencyEdge(props: EdgeProps) {
     targetPosition,
   } = props;
 
-  const sourceNode = useInternalNode(source);
   const edgeData = data as DependencyEdgeData | undefined;
-  const elkSections = edgeData?.elkSections;
+  const avoidRoute = edgeData?.avoidRoute;
   const isSelected = style?.stroke === SELECTED_EDGE_COLOR;
 
   const [path] = getDependencyEdgePath({
@@ -37,13 +35,7 @@ export function DependencyEdge(props: EdgeProps) {
     targetPosition,
   });
 
-  const elkPath =
-    elkSections?.length && sourceNode
-      ? elkSectionsToPath(elkSections, {
-          x: sourceNode.internals.positionAbsolute.x - sourceNode.position.x,
-          y: sourceNode.internals.positionAbsolute.y - sourceNode.position.y,
-        })
-      : null;
+  const avoidPath = avoidRoute ? avoidRouteToPath(avoidRoute) : null;
 
   const title = edgeData?.title;
 
@@ -57,10 +49,10 @@ export function DependencyEdge(props: EdgeProps) {
         markerEnd={markerEnd}
         interactionWidth={interactionWidth}
       />
-      {elkPath && (
+      {avoidPath && (
         <BaseEdge
-          id={`${id}-elk`}
-          path={elkPath}
+          id={`${id}-avoid`}
+          path={avoidPath}
           style={{ stroke: isSelected ? '#f00' : '#000', strokeWidth: isSelected ? 2 : 1 }}
         />
       )}

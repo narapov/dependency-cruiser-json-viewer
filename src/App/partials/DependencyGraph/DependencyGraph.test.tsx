@@ -65,6 +65,8 @@ vi.mock('./hooks', async importOriginal => {
     useBuildGraph: () => buildGraphState,
     useGraphLayoutNodes: () => ({
       nodes: [],
+      avoidRoutes: new Map(),
+      isRoutingEdges: false,
       onNodesChange: vi.fn(),
       onNodeDrag: vi.fn(),
       onNodeDragStop: vi.fn(),

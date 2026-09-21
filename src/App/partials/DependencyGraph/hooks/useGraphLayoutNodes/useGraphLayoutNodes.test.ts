@@ -27,6 +27,7 @@ vi.mock('../../helpers', async importOriginal => {
     applyAutoLayoutGroupLevel: vi.fn((current: Node[]) => current),
     updateSubtreeGroupCaches: vi.fn(),
     updateGroupPositionCache: vi.fn(),
+    routeEdgesWithLibavoid: vi.fn(async () => new Map()),
   };
 });
 
@@ -39,10 +40,10 @@ function makeNode(id: string, overrides: Partial<Node> = {}): Node {
   };
 }
 
-function makeGraphResult(nodes: Node[]): BuildGraphResult {
+function makeGraphResult(nodes: Node[], edges: BuildGraphResult['edges'] = []): BuildGraphResult {
   return {
     nodes,
-    edges: [],
+    edges,
     visibleNodeIds: new Set(nodes.map(node => node.id)),
     parentByNode: new Map(),
   };
@@ -97,6 +98,90 @@ describe('useGraphLayoutNodes', () => {
     });
 
     expect(result.current.hasUserLayout).toBe(false);
+  });
+
+  it('routes edges after settled layout and after drag stop', async () => {
+    const { routeEdgesWithLibavoid } = await import('../../helpers');
+    const route = {
+      sourcePoint: { x: 0, y: 0 },
+      targetPoint: { x: 10, y: 10 },
+      bendPoints: [] as { x: number; y: number }[],
+    };
+    vi.mocked(routeEdgesWithLibavoid).mockResolvedValue(new Map([['a.ts->b.ts', route]]));
+
+    const graphResult = makeGraphResult(
+      [makeNode('a.ts', { type: 'file' }), makeNode('b.ts', { type: 'file' })],
+      [{ id: 'a.ts->b.ts', source: 'a.ts', target: 'b.ts' }],
+    );
+
+    const { result } = renderHook(() => useGraphLayoutNodes({ graphResult }));
+
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(routeEdgesWithLibavoid).toHaveBeenCalled();
+    expect(result.current.avoidRoutes.get('a.ts->b.ts')).toEqual(route);
+
+    vi.mocked(routeEdgesWithLibavoid).mockClear();
+    vi.mocked(routeEdgesWithLibavoid).mockResolvedValue(
+      new Map([['a.ts->b.ts', { ...route, bendPoints: [{ x: 5, y: 0 }] }]]),
+    );
+
+    act(() => {
+      const node = {
+        ...result.current.nodes[0],
+        position: { x: 40, y: 10 },
+      };
+      result.current.onNodeDragStop({} as never, node, [node]);
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(routeEdgesWithLibavoid).toHaveBeenCalled();
+    expect(result.current.avoidRoutes.get('a.ts->b.ts')?.bendPoints).toEqual([{ x: 5, y: 0 }]);
+  });
+
+  it('ignores stale async routing results', async () => {
+    const { routeEdgesWithLibavoid } = await import('../../helpers');
+    let resolveFirst!: (value: Map<string, never>) => void;
+    const firstPromise = new Promise<Map<string, never>>(resolve => {
+      resolveFirst = resolve;
+    });
+    vi.mocked(routeEdgesWithLibavoid)
+      .mockImplementationOnce(() => firstPromise)
+      .mockResolvedValueOnce(new Map());
+
+    const firstGraph = makeGraphResult(
+      [makeNode('a.ts', { type: 'file' }), makeNode('b.ts', { type: 'file' })],
+      [{ id: 'a.ts->b.ts', source: 'a.ts', target: 'b.ts' }],
+    );
+    const secondGraph = makeGraphResult([makeNode('c.ts', { type: 'file' })]);
+
+    const { result, rerender } = renderHook(({ graphResult }) => useGraphLayoutNodes({ graphResult }), {
+      initialProps: { graphResult: firstGraph },
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    rerender({ graphResult: secondGraph });
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      resolveFirst(new Map([['a.ts->b.ts', undefined as never]]));
+      await Promise.resolve();
+    });
+
+    expect(result.current.avoidRoutes.size).toBe(0);
   });
 
   it('sets hasUserLayout after drag stop', async () => {
