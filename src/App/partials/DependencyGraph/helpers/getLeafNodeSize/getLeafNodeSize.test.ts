@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
-import { getLeafNodeSize, LEAF_NODE_MIN_WIDTH } from './getLeafNodeSize';
+import { getLeafNodeSize, LEAF_NODE_HEIGHT, LEAF_NODE_MIN_WIDTH } from './getLeafNodeSize';
 
 describe('getLeafNodeSize', () => {
   it('uses minimum width for short file labels', () => {
-    expect(getLeafNodeSize('a.ts', 'file')).toEqual({ width: LEAF_NODE_MIN_WIDTH, height: 40 });
+    expect(getLeafNodeSize('a.ts', 'file')).toEqual({ width: LEAF_NODE_MIN_WIDTH, height: LEAF_NODE_HEIGHT });
   });
 
   it('uses minimum width for short folder labels', () => {
-    expect(getLeafNodeSize('foo', 'folder')).toEqual({ width: LEAF_NODE_MIN_WIDTH, height: 40 });
+    expect(getLeafNodeSize('foo', 'folder')).toEqual({ width: LEAF_NODE_MIN_WIDTH, height: LEAF_NODE_HEIGHT });
   });
 
   it('grows file width for long labels', () => {
