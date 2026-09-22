@@ -4,6 +4,7 @@ import type { Edge, Node } from '@xyflow/react';
 import { NEED_PROFILE } from '@/Shared';
 
 import type { AvoidRoute } from '../../types';
+import { collectSiblingRoutingLevels } from './collectSiblingRoutingLevels';
 import { nodesToLibavoidGraph } from './nodesToLibavoidGraph';
 
 export interface RouteEdgesWithLibavoidInput {
@@ -45,20 +46,33 @@ function createLibavoidProfiler(enabled: boolean) {
       marks.delete(label);
       totals.set(label, (totals.get(label) ?? 0) + (performance.now() - startedAt));
     },
-    log(meta: { obstacles: number; routedEdges: number; rfNodes: number; rfEdges: number }) {
+    log(meta: { levels: number; obstacles: number; routedEdges: number; rfNodes: number; rfEdges: number }) {
       if (!enabled) {
         return;
       }
       const lines = [...totals.entries()].map(([label, ms]) => `  ${label}: ${ms.toFixed(1)}ms`).join('\n');
       console.log(
-        `[libavoid] obstacles=${meta.obstacles} routedEdges=${meta.routedEdges} rfNodes=${meta.rfNodes} rfEdges=${meta.rfEdges}\n${lines}`,
+        `[libavoid] levels=${meta.levels} obstacles=${meta.obstacles} routedEdges=${meta.routedEdges} rfNodes=${meta.rfNodes} rfEdges=${meta.rfEdges}\n${lines}`,
       );
     },
   };
 }
 
+function toAvoidRoute(route: {
+  sourcePoint: { x: number; y: number };
+  targetPoint: { x: number; y: number };
+  bendPoints: { x: number; y: number }[];
+}): AvoidRoute {
+  return {
+    sourcePoint: { ...route.sourcePoint },
+    targetPoint: { ...route.targetPoint },
+    bendPoints: route.bendPoints.map(point => ({ ...point })),
+  };
+}
+
 /**
- * Routes all RF edges with libavoid using current node positions as fixed obstacles.
+ * Routes sibling RF edges per folder level with libavoid (bottom-up).
+ * Cross-parent edges are skipped; node positions stay fixed.
  * Returns absolute canvas routes keyed by edge id.
  */
 export async function routeEdgesWithLibavoid(input: RouteEdgesWithLibavoidInput): Promise<Map<string, AvoidRoute>> {
@@ -68,22 +82,17 @@ export async function routeEdgesWithLibavoid(input: RouteEdgesWithLibavoidInput)
 
   if (nodes.length === 0 || edges.length === 0) {
     profiler.end('total');
-    profiler.log({ obstacles: 0, routedEdges: 0, rfNodes: nodes.length, rfEdges: edges.length });
+    profiler.log({ levels: 0, obstacles: 0, routedEdges: 0, rfNodes: nodes.length, rfEdges: edges.length });
     return new Map();
   }
 
-  profiler.start('buildGraph');
-  const graph = nodesToLibavoidGraph(nodes, edges, parentByNode);
-  profiler.end('buildGraph');
+  profiler.start('collectLevels');
+  const levels = collectSiblingRoutingLevels(nodes, edges, parentByNode);
+  profiler.end('collectLevels');
 
-  if (graph.children.length === 0 || graph.edges.length === 0) {
+  if (levels.length === 0) {
     profiler.end('total');
-    profiler.log({
-      obstacles: graph.children.length,
-      routedEdges: graph.edges.length,
-      rfNodes: nodes.length,
-      rfEdges: edges.length,
-    });
+    profiler.log({ levels: 0, obstacles: 0, routedEdges: 0, rfNodes: nodes.length, rfEdges: edges.length });
     return new Map();
   }
 
@@ -91,28 +100,42 @@ export async function routeEdgesWithLibavoid(input: RouteEdgesWithLibavoidInput)
   await ensureLibavoidInit();
   profiler.end('init');
 
-  profiler.start('routeEdges');
-  const routes = await routeEdges(graph, {
-    routingType: 'orthogonal',
-    shapeBufferDistance: 8,
-  });
-  profiler.end('routeEdges');
+  const result = new Map<string, AvoidRoute>();
+  let totalObstacles = 0;
+  let totalRoutedEdges = 0;
 
-  profiler.start('mapResult');
-  const result = [...routes.entries()].reduce((acc, [edgeId, route]) => {
-    acc.set(edgeId, {
-      sourcePoint: { ...route.sourcePoint },
-      targetPoint: { ...route.targetPoint },
-      bendPoints: route.bendPoints.map(point => ({ ...point })),
+  for (const level of levels) {
+    profiler.start('buildGraph');
+    const graph = nodesToLibavoidGraph(level.nodes, level.edges, parentByNode, nodes);
+    profiler.end('buildGraph');
+
+    if (graph.children.length === 0 || graph.edges.length === 0) {
+      continue;
+    }
+
+    totalObstacles += graph.children.length;
+    totalRoutedEdges += graph.edges.length;
+
+    profiler.start('routeEdges');
+    const routes = await routeEdges(graph, {
+      routingType: 'orthogonal',
+      shapeBufferDistance: 8,
+      crossingPenalty: 250,
     });
-    return acc;
-  }, new Map<string, AvoidRoute>());
-  profiler.end('mapResult');
+    profiler.end('routeEdges');
+
+    profiler.start('mapResult');
+    routes.forEach((route, edgeId) => {
+      result.set(edgeId, toAvoidRoute(route));
+    });
+    profiler.end('mapResult');
+  }
 
   profiler.end('total');
   profiler.log({
-    obstacles: graph.children.length,
-    routedEdges: graph.edges.length,
+    levels: levels.length,
+    obstacles: totalObstacles,
+    routedEdges: totalRoutedEdges,
     rfNodes: nodes.length,
     rfEdges: edges.length,
   });

@@ -1,3 +1,6 @@
+export { collectCrossingJumps, routeToSegments } from './collectCrossingJumps';
+export { collectSiblingRoutingLevels } from './collectSiblingRoutingLevels';
+export type { SiblingRoutingLevel } from './collectSiblingRoutingLevels';
 export { mergeAvoidRoutes } from './mergeAvoidRoutes';
 export { nodesToLibavoidGraph } from './nodesToLibavoidGraph';
 export { routeEdgesWithLibavoid } from './routeEdgesWithLibavoid';

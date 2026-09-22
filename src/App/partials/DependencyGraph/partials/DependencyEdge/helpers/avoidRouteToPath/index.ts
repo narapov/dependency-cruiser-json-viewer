@@ -1,1 +1,1 @@
-export { avoidRouteToPath } from './avoidRouteToPath';
+export { CROSSING_JUMP_RADIUS, avoidRouteToPath } from './avoidRouteToPath';

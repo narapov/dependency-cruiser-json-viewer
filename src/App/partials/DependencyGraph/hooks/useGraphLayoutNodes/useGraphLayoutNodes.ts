@@ -44,7 +44,8 @@ import type { AvoidRoute, BuildGraphResult } from '../../types';
  * - Manual "Auto layout" on a folder invalidates that group's cache (or subtree)
  *   and re-applies ELK layout for that scope before reflow.
  * - After settled node positions (layout + drag stop + auto layout), libavoid routes
- *   all RF edges into `avoidRoutes` (absolute). Stale async results are ignored.
+ *   sibling RF edges per folder level (bottom-up) into `avoidRoutes` (absolute).
+ *   Cross-parent edges keep the bezier fallback. Stale async results are ignored.
  */
 interface UseGraphLayoutNodesInput {
   graphResult: BuildGraphResult;

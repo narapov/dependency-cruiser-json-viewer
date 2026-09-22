@@ -32,4 +32,36 @@ describe('mergeAvoidRoutes', () => {
     expect(result[1]?.data).toEqual({ title: 'c → d' });
     expect(edges[0]?.data).toEqual({ title: 'a → b' });
   });
+
+  it('attaches crossingJumps on horizontal edges that cross vertical routes', () => {
+    const edges: Edge[] = [
+      { id: 'h', source: 'a', target: 'b', data: { title: 'h' } },
+      { id: 'v', source: 'c', target: 'd', data: { title: 'v' } },
+    ];
+    const horizontal: AvoidRoute = {
+      sourcePoint: { x: 0, y: 10 },
+      bendPoints: [],
+      targetPoint: { x: 40, y: 10 },
+    };
+    const vertical: AvoidRoute = {
+      sourcePoint: { x: 20, y: 0 },
+      bendPoints: [],
+      targetPoint: { x: 20, y: 30 },
+    };
+
+    const result = mergeAvoidRoutes(
+      edges,
+      new Map([
+        ['h', horizontal],
+        ['v', vertical],
+      ]),
+    );
+
+    expect(result[0]?.data).toEqual({
+      title: 'h',
+      avoidRoute: horizontal,
+      crossingJumps: [{ x: 20, y: 10 }],
+    });
+    expect(result[1]?.data).toEqual({ title: 'v', avoidRoute: vertical });
+  });
 });

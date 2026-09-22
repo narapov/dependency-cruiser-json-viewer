@@ -19,4 +19,6 @@ export interface DependencyEdgeData {
   ruleNames?: string[];
   /** Obstacle-avoiding route from libavoid (absolute canvas coords). */
   avoidRoute?: AvoidRoute;
+  /** Points on horizontal avoid segments where a schematic jump arc is drawn. */
+  crossingJumps?: EdgePoint[];
 }
