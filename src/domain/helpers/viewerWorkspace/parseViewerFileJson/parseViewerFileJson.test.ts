@@ -49,6 +49,7 @@ function makeSettings(overrides: Partial<ViewerWorkspaceSettings> = {}): ViewerW
     userEdgeHighlights: { 'src/a.ts->src/b.ts': '#ff0000' },
     folderColors: defaultFolderColors,
     autoLayoutOnly: true,
+    edgesType: 'bezier',
     nodePositions: {},
     ...overrides,
   };

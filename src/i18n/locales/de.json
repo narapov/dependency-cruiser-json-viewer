@@ -72,6 +72,7 @@
     "clearAllHighlights": "Hervorhebungen: Alle löschen",
     "exportGraphDot": "Graph: DOT exportieren",
     "viewGraphDotOnline": "Graph: DOT online anzeigen",
+    "selectEdgesType": "Graph: Kantentyp festlegen",
     "expandAllRecursive": "Dateibaum: Alles rekursiv erweitern",
     "collapseAllRecursive": "Dateibaum: Alles rekursiv einklappen",
     "selectAll": "Auswahl: Alles auswählen",
@@ -142,7 +143,14 @@
     "loading": "Abhängigkeitsgraph wird geladen",
     "buildError": "Abhängigkeitsgraph konnte nicht erstellt werden.",
     "autoLayoutOnly": "Nur automatisches Layout",
-    "autoLayoutOnlyHint": "Immer automatisches Layout verwenden und Drag-and-drop deaktivieren. Wenn aus, ist Drag-and-drop möglich; Nachbarn verschieben sich beim Ein- und Ausklappen von Ordnern nicht zurück; verwenden Sie „Automatisches Layout“ im Ordner-Kontextmenü, um den Ordnerinhalt neu anzuordnen."
+    "autoLayoutOnlyHint": "Immer automatisches Layout verwenden und Drag-and-drop deaktivieren. Wenn aus, ist Drag-and-drop möglich; Nachbarn verschieben sich beim Ein- und Ausklappen von Ordnern nicht zurück; verwenden Sie „Automatisches Layout“ im Ordner-Kontextmenü, um den Ordnerinhalt neu anzuordnen.",
+    "edgesType": "Kantentyp",
+    "edgesTypeBezier": "Bezier",
+    "edgesTypeStraight": "Gerade",
+    "edgesTypeSimpleOrthogonal": "Einfach orthogonal",
+    "selectEdgesType": "Kantentyp festlegen",
+    "edgesTypeOptions": "Kantentyp-Optionen",
+    "edgesTypeActive": "(aktiv)"
   },
   "dependencyPanel": {
     "dependencies": "Abhängigkeiten",

@@ -33,8 +33,9 @@ function createRefs() {
     clearAllHighlights: vi.fn(),
     exportDot: vi.fn(),
     openDotOnline: vi.fn(),
-    getLayoutState: vi.fn(() => ({ autoLayoutOnly: true, nodePositions: {} })),
+    getLayoutState: vi.fn(() => ({ autoLayoutOnly: true, edgesType: 'bezier', nodePositions: {} })),
     setLayoutState: vi.fn(),
+    openEdgesTypePicker: vi.fn(),
   };
   // refs are mutable in tests
   (fileTreeRef as { current: FileTreeHandle }).current = fileTree as unknown as FileTreeHandle;
@@ -755,6 +756,16 @@ describe('useAppOrchestration', () => {
     expect(graph.openDotOnline).toHaveBeenCalled();
   });
 
+  it('openEdgesTypePicker delegates to the graph handle', () => {
+    const { result, graph } = renderOrchestration();
+
+    act(() => {
+      result.current.openEdgesTypePicker();
+    });
+
+    expect(graph.openEdgesTypePicker).toHaveBeenCalled();
+  });
+
   it('focusActivePath focuses tree and graph when path is selected', () => {
     const { result, graph, fileTree } = renderOrchestration({
       selectedKeys: SOURCES,
@@ -846,6 +857,7 @@ describe('useAppOrchestration', () => {
         'src/e/f': { hue: 40, lightnessIndex: 1 },
       },
       autoLayoutOnly: true,
+      edgesType: 'bezier' as const,
       nodePositions: {},
     };
     const emptyInitial = { selectedKeys: [] as string[], expandedKeys: [] as string[] };
@@ -928,6 +940,7 @@ describe('useAppOrchestration', () => {
           userEdgeHighlights: new Map(),
           folderColors: {},
           autoLayoutOnly: true,
+          edgesType: 'bezier' as const,
           nodePositions: {},
         },
         sourcesKey: '',
@@ -959,6 +972,7 @@ describe('useAppOrchestration', () => {
         'src/e/f': { hue: 40, lightnessIndex: 1 },
       },
       autoLayoutOnly: false,
+      edgesType: 'bezier' as const,
       nodePositions,
     };
 
@@ -994,6 +1008,7 @@ describe('useAppOrchestration', () => {
 
     expect(refs.graph.setLayoutState).toHaveBeenCalledWith({
       autoLayoutOnly: false,
+      edgesType: 'bezier',
       nodePositions,
     });
   });

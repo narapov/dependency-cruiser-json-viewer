@@ -19,6 +19,7 @@ function createOrch(): AppCommandsOrchestration {
     clearAllHighlights: vi.fn(),
     exportGraphDot: vi.fn(),
     viewGraphDotOnline: vi.fn(),
+    openEdgesTypePicker: vi.fn(),
     saveWorkspace: vi.fn(),
     expandAllRecursive: vi.fn(),
     collapseAllRecursive: vi.fn(),
@@ -56,6 +57,7 @@ describe('useAppCommands', () => {
     const ids = result.current.map(command => command.id);
     expect(ids).toContain('exportGraphDot');
     expect(ids).toContain('viewGraphDotOnline');
+    expect(ids).toContain('selectEdgesType');
     expect(ids).toContain('saveWorkspace');
     expect(ids).toContain('loadWorkspaceSettings');
     expect(ids).toContain('selectAll');
@@ -127,6 +129,7 @@ describe('useAppCommands', () => {
     byId.copyActive.onExecute();
     byId.exportGraphDot.onExecute();
     byId.viewGraphDotOnline.onExecute();
+    byId.selectEdgesType.onExecute();
     byId.saveWorkspace.onExecute();
     byId.loadWorkspaceSettings.onExecute();
 
@@ -145,6 +148,7 @@ describe('useAppCommands', () => {
     expect(orch.copyActive).toHaveBeenCalled();
     expect(orch.exportGraphDot).toHaveBeenCalled();
     expect(orch.viewGraphDotOnline).toHaveBeenCalled();
+    expect(orch.openEdgesTypePicker).toHaveBeenCalled();
     expect(orch.saveWorkspace).toHaveBeenCalled();
     expect(openLoadSettings).toHaveBeenCalled();
     expect(byId.viewCruiseResultJson.disabled).toBe(false);

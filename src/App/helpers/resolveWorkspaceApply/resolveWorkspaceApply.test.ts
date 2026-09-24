@@ -50,6 +50,7 @@ function makeSettings(overrides: Partial<ViewerWorkspaceSettings> = {}): ViewerW
       src: { hue: 10, lightnessIndex: 0 },
     },
     autoLayoutOnly: true,
+    edgesType: 'bezier',
     nodePositions: {},
     ...overrides,
   };

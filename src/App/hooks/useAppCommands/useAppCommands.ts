@@ -15,6 +15,7 @@ export interface AppCommandsOrchestration {
   clearAllHighlights: () => void;
   exportGraphDot: () => void;
   viewGraphDotOnline: () => void;
+  openEdgesTypePicker: () => void;
   saveWorkspace: () => void;
   expandAllRecursive: () => void;
   collapseAllRecursive: () => void;
@@ -60,6 +61,7 @@ export function useAppCommands(config: UseAppCommandsOptions): QuickPickCommand[
       clearAllHighlights,
       exportGraphDot,
       viewGraphDotOnline,
+      openEdgesTypePicker,
       saveWorkspace,
       expandAllRecursive,
       collapseAllRecursive,
@@ -134,6 +136,11 @@ export function useAppCommands(config: UseAppCommandsOptions): QuickPickCommand[
       id: 'viewGraphDotOnline',
       label: t('commands.viewGraphDotOnline'),
       onExecute: viewGraphDotOnline,
+    },
+    {
+      id: 'selectEdgesType',
+      label: t('commands.selectEdgesType'),
+      onExecute: openEdgesTypePicker,
     },
     {
       id: 'saveWorkspace',
