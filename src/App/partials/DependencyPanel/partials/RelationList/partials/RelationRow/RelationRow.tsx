@@ -16,15 +16,16 @@ import Menu from '@mui/material/Menu';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 
-import { getBaseName, getEdgeHighlightColor, type ModuleRelation } from '@/domain';
+import {
+  getBaseName,
+  getDependencyKeysBetweenPaths,
+  getEdgeHighlightColor,
+  type DependencyKeysDirection,
+  type ModuleRelation,
+} from '@/domain';
 import { copyToClipboard, highlightColorMenuListSx, HighlightColorSwatches, TextWithFloatingActions } from '@/Shared';
 
-import {
-  getPanelRelationDependencyKeys,
-  getRelationPathStyle,
-  keyPrefixForChild,
-  type PanelRelationDirection,
-} from '../../helpers';
+import { getRelationPathStyle, keyPrefixForChild } from '../../helpers';
 import { useRelationRowContextMenu } from '../../hooks';
 
 interface RelationRowProps {
@@ -34,7 +35,7 @@ interface RelationRowProps {
   onToggleExpand: (key: string) => void;
   panelPath: string;
   modules: IModule[];
-  direction: PanelRelationDirection;
+  direction: DependencyKeysDirection;
   userEdgeHighlights: ReadonlyMap<string, string>;
   onSetUserDependencyHighlight: (dependencyKeys: readonly string[], color: string | null) => void;
   onShowInGraph: (path: string) => void;
@@ -62,7 +63,7 @@ export function RelationRow(props: RelationRowProps) {
   const expanded = expandedKeys.has(expandKey);
   const highlightEnabled = !hasChildren;
   const dependencyKeys = highlightEnabled
-    ? getPanelRelationDependencyKeys(panelPath, item.path, direction, modules)
+    ? getDependencyKeysBetweenPaths(panelPath, item.path, direction, modules)
     : [];
   const currentHighlight = highlightEnabled ? getEdgeHighlightColor(dependencyKeys, userEdgeHighlights) : undefined;
 
