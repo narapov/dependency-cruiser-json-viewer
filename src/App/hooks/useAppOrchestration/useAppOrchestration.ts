@@ -129,7 +129,7 @@ function syncWorkspaceViewFromProps(
       applicableRulesPath: null,
       userEdgeHighlights: new Map(),
       folderBaseColors: defaultFolderColorsRecord(sources),
-      pendingLayout: { autoLayoutOnly: true, nodePositions: {} },
+      pendingLayout: { autoLayoutOnly: true, edgesType: 'bezier', nodePositions: {} },
       sourcesKey,
       cruiseLoadId,
       lastInitialSelectedKeys: initial.selectedKeys,
@@ -173,6 +173,7 @@ function applyWorkspaceViewState(
     activePath: null,
     pendingLayout: {
       autoLayoutOnly: view.autoLayoutOnly,
+      edgesType: view.edgesType,
       nodePositions: view.nodePositions,
     },
     sourcesKey,
@@ -460,11 +461,19 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
     graphRef.current?.openDotOnline();
   };
 
+  const openEdgesTypePicker = () => {
+    graphRef.current?.openEdgesTypePicker();
+  };
+
   const getCurrentWorkspaceSettings = (): ViewerWorkspaceSettings | null => {
     if (unfilteredCruiseResult == null) {
       return null;
     }
-    const layout = graphRef.current?.getLayoutState() ?? { autoLayoutOnly: true, nodePositions: {} };
+    const layout = graphRef.current?.getLayoutState() ?? {
+      autoLayoutOnly: true,
+      edgesType: 'bezier',
+      nodePositions: {},
+    };
     return {
       ignorePatterns,
       selectedFiles: state.selectedPaths.filter(key =>
@@ -476,6 +485,7 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
       userEdgeHighlights: Object.fromEntries(state.userEdgeHighlights.entries()),
       folderColors: state.folderBaseColors,
       autoLayoutOnly: layout.autoLayoutOnly,
+      edgesType: layout.edgesType,
       nodePositions: layout.autoLayoutOnly ? {} : layout.nodePositions,
     };
   };
@@ -629,6 +639,7 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
     clearAllHighlights,
     exportGraphDot,
     viewGraphDotOnline,
+    openEdgesTypePicker,
     saveWorkspace,
     getCurrentWorkspaceSettings,
     expandAllRecursive,

@@ -145,6 +145,7 @@ export function replaceWorkspaceSettings({
       userEdgeHighlights: new Map(Object.entries(settings.userEdgeHighlights)),
       folderColors: settings.folderColors,
       autoLayoutOnly: settings.autoLayoutOnly,
+      edgesType: settings.edgesType,
       nodePositions: settings.nodePositions,
     };
   }
@@ -178,6 +179,7 @@ export function replaceWorkspaceSettings({
     userEdgeHighlights,
     folderColors,
     autoLayoutOnly,
+    edgesType: settings.edgesType,
     nodePositions: filteredPositions,
   };
 }

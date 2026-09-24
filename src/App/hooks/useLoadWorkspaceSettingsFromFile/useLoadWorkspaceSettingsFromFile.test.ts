@@ -47,6 +47,7 @@ const settings = {
   userEdgeHighlights: {},
   folderColors: {},
   autoLayoutOnly: true,
+  edgesType: 'bezier',
   nodePositions: {},
 };
 

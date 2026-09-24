@@ -104,6 +104,7 @@ describe('useCruiseResultWatch', () => {
       userEdgeHighlights: {},
       folderColors: {},
       autoLayoutOnly: true,
+      edgesType: 'bezier' as const,
       nodePositions: {},
     }));
 

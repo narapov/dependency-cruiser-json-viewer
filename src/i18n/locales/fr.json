@@ -72,6 +72,7 @@
     "clearAllHighlights": "Surlignages : Tout effacer",
     "exportGraphDot": "Graphe : Exporter DOT",
     "viewGraphDotOnline": "Graphe : Voir DOT en ligne",
+    "selectEdgesType": "Graphe : Choisir le type des arêtes",
     "expandAllRecursive": "Arborescence : Tout développer récursivement",
     "collapseAllRecursive": "Arborescence : Tout réduire récursivement",
     "selectAll": "Sélection : Tout sélectionner",
@@ -142,7 +143,14 @@
     "loading": "Chargement du graphe de dépendances",
     "buildError": "Échec de la construction du graphe de dépendances.",
     "autoLayoutOnly": "Mise en page automatique uniquement",
-    "autoLayoutOnlyHint": "Toujours utiliser la mise en page automatique et désactiver le glisser-déposer. Désactivé, le glisser-déposer est disponible ; le pliage et le dépliage des dossiers ne repositionnent pas les voisins ; utilisez « Mise en page automatique » dans le menu contextuel du dossier pour réorganiser son contenu."
+    "autoLayoutOnlyHint": "Toujours utiliser la mise en page automatique et désactiver le glisser-déposer. Désactivé, le glisser-déposer est disponible ; le pliage et le dépliage des dossiers ne repositionnent pas les voisins ; utilisez « Mise en page automatique » dans le menu contextuel du dossier pour réorganiser son contenu.",
+    "edgesType": "Type des arêtes",
+    "edgesTypeBezier": "Bézier",
+    "edgesTypeStraight": "Droit",
+    "edgesTypeSimpleOrthogonal": "Orthogonal simple",
+    "selectEdgesType": "Choisir le type des arêtes",
+    "edgesTypeOptions": "Options de type des arêtes",
+    "edgesTypeActive": "(actif)"
   },
   "dependencyPanel": {
     "dependencies": "Dépendances",

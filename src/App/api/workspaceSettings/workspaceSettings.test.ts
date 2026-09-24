@@ -16,6 +16,7 @@ const settings = {
   userEdgeHighlights: {},
   folderColors: { src: { hue: 10, lightnessIndex: 0 } },
   autoLayoutOnly: true,
+  edgesType: 'bezier',
   nodePositions: {},
 };
 

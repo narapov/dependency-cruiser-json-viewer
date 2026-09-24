@@ -72,6 +72,7 @@
     "clearAllHighlights": "Resaltados: Limpiar todos",
     "exportGraphDot": "Grafo: Exportar DOT",
     "viewGraphDotOnline": "Grafo: Ver DOT en línea",
+    "selectEdgesType": "Grafo: Seleccionar tipo de aristas",
     "expandAllRecursive": "Árbol de archivos: Expandir todo recursivamente",
     "collapseAllRecursive": "Árbol de archivos: Contraer todo recursivamente",
     "selectAll": "Selección: Seleccionar todo",
@@ -142,7 +143,14 @@
     "loading": "Cargando el grafo de dependencias",
     "buildError": "No se pudo construir el grafo de dependencias.",
     "autoLayoutOnly": "Solo diseño automático",
-    "autoLayoutOnlyHint": "Usar siempre el diseño automático y desactivar arrastrar y soltar. Con la opción desactivada, arrastrar y soltar está disponible; al contraer o expandir carpetas los vecinos no vuelven a moverse; use «Diseño automático» en el menú contextual de la carpeta para reorganizar su contenido."
+    "autoLayoutOnlyHint": "Usar siempre el diseño automático y desactivar arrastrar y soltar. Con la opción desactivada, arrastrar y soltar está disponible; al contraer o expandir carpetas los vecinos no vuelven a moverse; use «Diseño automático» en el menú contextual de la carpeta para reorganizar su contenido.",
+    "edgesType": "Tipo de aristas",
+    "edgesTypeBezier": "Bezier",
+    "edgesTypeStraight": "Rectas",
+    "edgesTypeSimpleOrthogonal": "Ortogonal simple",
+    "selectEdgesType": "Seleccionar tipo de aristas",
+    "edgesTypeOptions": "Opciones de tipo de aristas",
+    "edgesTypeActive": "(activo)"
   },
   "dependencyPanel": {
     "dependencies": "Dependencias",

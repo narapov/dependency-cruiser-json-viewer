@@ -1,4 +1,4 @@
-import { array, boolean, literal, number, object, record, string, type ZodType } from 'zod';
+import { array, boolean, literal, number, object, record, string, enum as zodEnum, type ZodType } from 'zod';
 
 import type { FolderBaseColor, ViewerWorkspaceSettings } from '../../../types';
 import { VIEWER_WORKSPACE_EXTENSION_KEY, VIEWER_WORKSPACE_SCHEMA_VERSION } from '../constants';
@@ -13,6 +13,8 @@ const position2DSchema = object({
   y: number(),
 });
 
+const graphEdgesTypeSchema = zodEnum(['bezier', 'straight', 'simpleOrthogonal']);
+
 /** Zod schema for viewer workspace settings (schemaVersion 1). */
 export const viewerWorkspaceSettingsSchema = object({
   ignorePatterns: array(string()),
@@ -23,6 +25,7 @@ export const viewerWorkspaceSettingsSchema = object({
   userEdgeHighlights: record(string(), string()),
   folderColors: record(string(), folderBaseColorSchema),
   autoLayoutOnly: boolean(),
+  edgesType: graphEdgesTypeSchema.optional().default('bezier'),
   nodePositions: record(string(), record(string(), position2DSchema)),
 }) satisfies ZodType<ViewerWorkspaceSettings>;
 

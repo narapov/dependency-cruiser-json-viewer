@@ -1,4 +1,6 @@
-import { getBezierPath, type Position } from '@xyflow/react';
+import { getBezierPath, getSmoothStepPath, getStraightPath, type Position } from '@xyflow/react';
+
+import type { GraphEdgesType } from '@/domain';
 
 /** Max |sourceY - targetY| treated as the same horizontal row. */
 const SAME_Y_EPSILON = 100;
@@ -16,6 +18,7 @@ export type GetDependencyEdgePathParams = {
   targetY: number;
   sourcePosition: Position;
   targetPosition: Position;
+  edgesType?: GraphEdgesType;
 };
 
 function clamp(value: number, min: number, max: number): number {
@@ -54,15 +57,20 @@ function getReverseHorizontalPath(
   ];
 }
 
+function isReverseSameY(sourceX: number, sourceY: number, targetX: number, targetY: number): boolean {
+  return Math.abs(sourceY - targetY) <= SAME_Y_EPSILON && targetX < sourceX;
+}
+
 /**
  * Builds an SVG path for a dependency edge.
- * Reverse near-horizontal edges (target left of source) use a custom downward bulge;
- * otherwise delegates to React Flow `getBezierPath`.
+ * Reverse near-horizontal edges (target left of source) use a custom downward bulge for
+ * bezier and straight types; simpleOrthogonal uses React Flow smooth-step without reverse bulge.
  *
  * @example
  * getDependencyEdgePath({
  *   sourceX: 100, sourceY: 50, sourcePosition: Position.Right,
  *   targetX: 20, targetY: 50, targetPosition: Position.Left,
+ *   edgesType: 'bezier',
  * })
  */
 export function getDependencyEdgePath({
@@ -72,9 +80,30 @@ export function getDependencyEdgePath({
   targetY,
   sourcePosition,
   targetPosition,
+  edgesType = 'bezier',
 }: GetDependencyEdgePathParams): [path: string, labelX: number, labelY: number, offsetX: number, offsetY: number] {
-  if (Math.abs(sourceY - targetY) <= SAME_Y_EPSILON && targetX < sourceX) {
+  if (edgesType !== 'simpleOrthogonal' && isReverseSameY(sourceX, sourceY, targetX, targetY)) {
     return getReverseHorizontalPath(sourceX, sourceY, targetX, targetY);
+  }
+
+  if (edgesType === 'simpleOrthogonal') {
+    return getSmoothStepPath({
+      sourceX,
+      sourceY,
+      sourcePosition,
+      targetX,
+      targetY,
+      targetPosition,
+    });
+  }
+
+  if (edgesType === 'straight') {
+    return getStraightPath({
+      sourceX,
+      sourceY,
+      targetX,
+      targetY,
+    });
   }
 
   return getBezierPath({
