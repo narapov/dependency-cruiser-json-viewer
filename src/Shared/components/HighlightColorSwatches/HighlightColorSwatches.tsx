@@ -26,7 +26,12 @@ export function HighlightColorSwatches(props: HighlightColorSwatchesProps) {
   return (
     <>
       {USER_EDGE_HIGHLIGHT_COLORS.map(color => (
-        <MenuItem key={color} onClick={handleSelect(color)} sx={{ p: 0.5, minHeight: 0, justifyContent: 'center' }}>
+        <MenuItem
+          key={color}
+          onClick={handleSelect(color)}
+          aria-label={color}
+          sx={{ p: 0.5, minHeight: 0, justifyContent: 'center' }}
+        >
           <Box
             sx={{
               position: 'relative',

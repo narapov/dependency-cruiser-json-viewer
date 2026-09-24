@@ -70,6 +70,7 @@
     "collapseActive": "Élément actif : Réduire",
     "collapseActiveRecursive": "Élément actif : Réduire récursivement",
     "clearAllHighlights": "Surlignages : Tout effacer",
+    "highlightEdge": "Surlignages : Surligner une arête…",
     "exportGraphDot": "Graphe : Exporter DOT",
     "viewGraphDotOnline": "Graphe : Voir DOT en ligne",
     "selectEdgesType": "Graphe : Choisir le type des arêtes",
@@ -103,6 +104,11 @@
     "typeToFilterCommands": "Tapez pour filtrer les commandes",
     "noMatchingFiles": "Aucun fichier ou dossier correspondant",
     "startTyping": "Commencez à taper pour rechercher"
+  },
+  "highlightEdge": {
+    "selectSource": "Sélectionner la source",
+    "selectTarget": "Sélectionner la cible",
+    "selectColor": "Sélectionner une couleur"
   },
   "theme": {
     "label": "Thème",

@@ -10,21 +10,16 @@ import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
 import Typography from '@mui/material/Typography';
 
-import type { ModuleRelation } from '@/domain';
+import type { DependencyKeysDirection, ModuleRelation } from '@/domain';
 
-import {
-  countRelationLeaves,
-  initialExpandedKeys,
-  toggleExpandedKey,
-  type PanelRelationDirection,
-} from '../../helpers';
+import { countRelationLeaves, initialExpandedKeys, toggleExpandedKey } from '../../helpers';
 import { RelationRow } from '../RelationRow';
 
 interface HiddenRelationsSectionProps {
   hiddenItems: ModuleRelation[];
   panelPath: string;
   modules: IModule[];
-  direction: PanelRelationDirection;
+  direction: DependencyKeysDirection;
   userEdgeHighlights: ReadonlyMap<string, string>;
   onSetUserDependencyHighlight: (dependencyKeys: readonly string[], color: string | null) => void;
   onShowInGraph: (path: string) => void;

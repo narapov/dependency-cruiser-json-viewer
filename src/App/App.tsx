@@ -45,6 +45,7 @@ import { CruiseResultFileInput } from './partials/CruiseResultFileInput';
 import { DependencyGraph, type DependencyGraphHandle } from './partials/DependencyGraph';
 import { DependencyPanel } from './partials/DependencyPanel';
 import { type FileTreeHandle } from './partials/FileTree';
+import { HighlightEdgeDialog } from './partials/HighlightEdgeDialog';
 import { IgnorePatternsDialog } from './partials/IgnorePatternsDialog';
 import { JsonViewDialog } from './partials/JsonViewDialog';
 import { LanguagePickerDialog } from './partials/LanguagePickerDialog';
@@ -71,6 +72,7 @@ function App() {
   const [aboutOpen, setAboutOpen] = useState(false);
   const [cruiseResultJsonOpen, setCruiseResultJsonOpen] = useState(false);
   const [ruleViolationsPickerOpen, setRuleViolationsPickerOpen] = useState(false);
+  const [highlightEdgeOpen, setHighlightEdgeOpen] = useState(false);
 
   const filteredData = useMemo(() => (data ? filterCruiseResult(data, patterns) : undefined), [data, patterns]);
 
@@ -321,6 +323,7 @@ function App() {
       }
     },
     openRuleViolationsPicker: () => setRuleViolationsPickerOpen(true),
+    openHighlightEdge: () => setHighlightEdgeOpen(true),
     showFileTree: () => {
       setSidebarView('files');
       setSidebarOpen(true);
@@ -537,6 +540,14 @@ function App() {
             rules={ruleViolationsPickerOptions}
             onClose={() => setRuleViolationsPickerOpen(false)}
             onConfirm={ruleNames => orch.showRuleViolationsOnly(ruleNames)}
+          />
+          <HighlightEdgeDialog
+            open={highlightEdgeOpen}
+            sources={sources}
+            modules={modules}
+            userEdgeHighlights={orch.userEdgeHighlights}
+            onConfirm={orch.setUserDependencyHighlight}
+            onClose={() => setHighlightEdgeOpen(false)}
           />
           <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} />
           <JsonViewDialog

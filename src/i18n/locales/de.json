@@ -70,6 +70,7 @@
     "collapseActive": "Aktives Element: Einklappen",
     "collapseActiveRecursive": "Aktives Element: Rekursiv einklappen",
     "clearAllHighlights": "Hervorhebungen: Alle löschen",
+    "highlightEdge": "Hervorhebungen: Kante hervorheben…",
     "exportGraphDot": "Graph: DOT exportieren",
     "viewGraphDotOnline": "Graph: DOT online anzeigen",
     "selectEdgesType": "Graph: Kantentyp festlegen",
@@ -103,6 +104,11 @@
     "typeToFilterCommands": "Tippen, um Befehle zu filtern",
     "noMatchingFiles": "Keine passenden Dateien oder Ordner",
     "startTyping": "Tippen, um zu suchen"
+  },
+  "highlightEdge": {
+    "selectSource": "Quelle auswählen",
+    "selectTarget": "Ziel auswählen",
+    "selectColor": "Farbe auswählen"
   },
   "theme": {
     "label": "Design",

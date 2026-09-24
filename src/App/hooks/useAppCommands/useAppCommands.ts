@@ -35,6 +35,7 @@ interface UseAppCommandsOptions {
   openViewCruiseResultJson: () => void;
   openViewActiveModuleJson: () => void;
   openRuleViolationsPicker: () => void;
+  openHighlightEdge: () => void;
   showFileTree: () => void;
   showRulesPanel: () => void;
   showCircularPanel: () => void;
@@ -78,6 +79,7 @@ export function useAppCommands(config: UseAppCommandsOptions): QuickPickCommand[
     openViewCruiseResultJson,
     openViewActiveModuleJson,
     openRuleViolationsPicker,
+    openHighlightEdge,
     showFileTree,
     showRulesPanel,
     showCircularPanel,
@@ -126,6 +128,12 @@ export function useAppCommands(config: UseAppCommandsOptions): QuickPickCommand[
       id: 'clearAllHighlights',
       label: t('commands.clearAllHighlights'),
       onExecute: clearAllHighlights,
+    },
+    {
+      id: 'highlightEdge',
+      label: t('commands.highlightEdge'),
+      onExecute: openHighlightEdge,
+      disabled: !hasCruiseResult,
     },
     {
       id: 'exportGraphDot',

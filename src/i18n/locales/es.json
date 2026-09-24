@@ -70,6 +70,7 @@
     "collapseActive": "Elemento activo: Contraer",
     "collapseActiveRecursive": "Elemento activo: Contraer recursivamente",
     "clearAllHighlights": "Resaltados: Limpiar todos",
+    "highlightEdge": "Resaltados: Resaltar arista…",
     "exportGraphDot": "Grafo: Exportar DOT",
     "viewGraphDotOnline": "Grafo: Ver DOT en línea",
     "selectEdgesType": "Grafo: Seleccionar tipo de aristas",
@@ -103,6 +104,11 @@
     "typeToFilterCommands": "Escribe para filtrar comandos",
     "noMatchingFiles": "No hay archivos o carpetas coincidentes",
     "startTyping": "Empieza a escribir para buscar"
+  },
+  "highlightEdge": {
+    "selectSource": "Seleccionar origen",
+    "selectTarget": "Seleccionar destino",
+    "selectColor": "Seleccionar color"
   },
   "theme": {
     "label": "Tema",

@@ -70,6 +70,7 @@
     "collapseActive": "Active Item: Collapse",
     "collapseActiveRecursive": "Active Item: Collapse Recursively",
     "clearAllHighlights": "Highlights: Clear All",
+    "highlightEdge": "Highlights: Highlight Edge…",
     "exportGraphDot": "Graph: Export DOT",
     "viewGraphDotOnline": "Graph: View DOT Online",
     "selectEdgesType": "Graph: Select Edges Type",
@@ -103,6 +104,11 @@
     "typeToFilterCommands": "Type to filter commands",
     "noMatchingFiles": "No matching files or folders",
     "startTyping": "Start typing to search"
+  },
+  "highlightEdge": {
+    "selectSource": "Select source",
+    "selectTarget": "Select target",
+    "selectColor": "Select color"
   },
   "theme": {
     "label": "Theme",

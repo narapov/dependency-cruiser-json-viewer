@@ -6,9 +6,9 @@ import Box from '@mui/material/Box';
 import List from '@mui/material/List';
 import Typography from '@mui/material/Typography';
 
-import type { ModuleRelation } from '@/domain';
+import type { DependencyKeysDirection, ModuleRelation } from '@/domain';
 
-import { initialExpandedKeys, toggleExpandedKey, type PanelRelationDirection } from './helpers';
+import { initialExpandedKeys, toggleExpandedKey } from './helpers';
 import { HiddenRelationsSection } from './partials/HiddenRelationsSection';
 import { RelationRow } from './partials/RelationRow';
 
@@ -17,7 +17,7 @@ interface RelationListProps {
   hiddenItems?: ModuleRelation[];
   panelPath: string;
   modules: IModule[];
-  direction: PanelRelationDirection;
+  direction: DependencyKeysDirection;
   userEdgeHighlights: ReadonlyMap<string, string>;
   onSetUserDependencyHighlight: (dependencyKeys: readonly string[], color: string | null) => void;
   onShowInGraph: (path: string) => void;
