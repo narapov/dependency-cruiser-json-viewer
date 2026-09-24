@@ -1,6 +1,5 @@
 import clsx from 'clsx';
-import type { IModule } from 'dependency-cruiser';
-import { useImperativeHandle, useState, type MouseEvent as ReactMouseEvent, type Ref } from 'react';
+import { useImperativeHandle, useMemo, useState, type MouseEvent as ReactMouseEvent, type Ref } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Alert from '@mui/material/Alert';
@@ -11,9 +10,10 @@ import { Background, Controls, MiniMap, Panel, ReactFlow, ReactFlowProvider, typ
 
 import '@xyflow/react/dist/style.css';
 
-import type { FolderBaseColor, GraphEdgesType } from '@/domain';
+import { getCruiseModules, type FolderBaseColor, type GraphEdgesType } from '@/domain';
 import { downloadTextFile, openGraphvizOnline, useResolvedColorMode } from '@/Shared';
 
+import { useCruiseTreeRequired } from '../../contexts';
 import { EdgesTypeProvider, GraphActionsProvider } from './contexts';
 import { buildEdgeDependencyKeyMap, getMinimapNodeColor, serializeGraphToDot } from './helpers';
 import {
@@ -51,7 +51,6 @@ const edgeTypes = {
 
 interface DependencyGraphInnerProps {
   imperativeRef?: Ref<DependencyGraphHandle>;
-  modules: IModule[];
   selectedPaths: string[];
   expandedKeys: string[];
   folderBaseColors: Readonly<Record<string, FolderBaseColor>>;
@@ -79,7 +78,6 @@ interface DependencyGraphInnerProps {
 function DependencyGraphInner(props: DependencyGraphInnerProps) {
   const {
     imperativeRef,
-    modules,
     selectedPaths,
     expandedKeys,
     folderBaseColors,
@@ -104,14 +102,17 @@ function DependencyGraphInner(props: DependencyGraphInnerProps) {
     onOpenEdgesTypePicker,
   } = props;
 
+  const cruiseTree = useCruiseTreeRequired();
   const { t } = useTranslation();
   const theme = useTheme();
   const { mode } = useColorScheme();
   const colorMode = useResolvedColorMode();
   const folderColors = useThemedFolderColors(folderBaseColors, colorMode);
+  // Stable identity keeps the edge/highlight memos from recomputing on every render.
+  const modules = useMemo(() => getCruiseModules(cruiseTree), [cruiseTree]);
 
   const { graphResult, isBuildingGraph, buildFailed, clearBuildFailed, expandedFolders } = useBuildGraph({
-    modules,
+    cruiseTree,
     selectedPaths,
     expandedKeys,
     folderColors,

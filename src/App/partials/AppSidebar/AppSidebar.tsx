@@ -1,4 +1,4 @@
-import type { IFlattenedRuleSet, IModule, IViolation } from 'dependency-cruiser';
+import type { IFlattenedRuleSet, IViolation } from 'dependency-cruiser';
 import type { ReactNode, Ref } from 'react';
 
 import Box from '@mui/material/Box';
@@ -12,7 +12,6 @@ import { RulesPanel } from '../RulesPanel';
 interface AppSidebarProps {
   view: SidebarView;
   fileTreeRef?: Ref<FileTreeHandle>;
-  sources: string[];
   selectedKeys: string[];
   onSelect: (keys: string[]) => void;
   expandedKeys: string[];
@@ -27,7 +26,6 @@ interface AppSidebarProps {
   violations: readonly IViolation[] | undefined;
   onSelectViolationPaths: (paths: string[]) => void;
   onShowRuleViolations: (ruleName: string) => void;
-  modules: readonly IModule[];
   onShowCycle: (paths: string[]) => void;
   highlights: ReadonlyMap<string, string>;
   onRemoveHighlightKeys: (keys: readonly string[]) => void;
@@ -58,7 +56,6 @@ export function AppSidebar(props: AppSidebarProps) {
   const {
     view,
     fileTreeRef,
-    sources,
     selectedKeys,
     onSelect,
     expandedKeys,
@@ -73,7 +70,6 @@ export function AppSidebar(props: AppSidebarProps) {
     violations,
     onSelectViolationPaths,
     onShowRuleViolations,
-    modules,
     onShowCycle,
     highlights,
     onRemoveHighlightKeys,
@@ -86,7 +82,6 @@ export function AppSidebar(props: AppSidebarProps) {
       <ViewPanel active={view === 'files'}>
         <FileTree
           ref={fileTreeRef}
-          sources={sources}
           selectedKeys={selectedKeys}
           onSelect={onSelect}
           expandedKeys={expandedKeys}
@@ -103,13 +98,12 @@ export function AppSidebar(props: AppSidebarProps) {
         <RulesPanel
           ruleSetUsed={ruleSetUsed}
           violations={violations}
-          sources={sources}
           onSelectViolationPaths={onSelectViolationPaths}
           onShowRuleViolations={onShowRuleViolations}
         />
       </ViewPanel>
       <ViewPanel active={view === 'circular'}>
-        <CircularPanel modules={modules} sources={sources} onShowCycle={onShowCycle} onShowInGraph={onShowInGraph} />
+        <CircularPanel onShowCycle={onShowCycle} onShowInGraph={onShowInGraph} />
       </ViewPanel>
       <ViewPanel active={view === 'highlights'}>
         <HighlightsPanel

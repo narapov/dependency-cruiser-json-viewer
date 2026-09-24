@@ -6,13 +6,23 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { fireEvent, renderHook, screen } from '@testing-library/react';
 
+import { buildCruiseTreeSnapshot } from '@/domain';
 import { USER_EDGE_HIGHLIGHT_COLORS } from '@/Shared';
 import { renderWithTheme } from '@/testsUtils';
 
+import { CruiseTreeProvider } from '../../contexts';
 import { HighlightEdgeDialog } from './HighlightEdgeDialog';
 
 function moduleAt(source: string, dependencies: IModule['dependencies'] = []): IModule {
   return { source, dependencies, dependents: [], valid: true } as IModule;
+}
+
+function renderDialog(modules: IModule[], onConfirm = vi.fn(), onClose = vi.fn()) {
+  return renderWithTheme(
+    <CruiseTreeProvider value={buildCruiseTreeSnapshot(modules)}>
+      <HighlightEdgeDialog open userEdgeHighlights={new Map()} onConfirm={onConfirm} onClose={onClose} />
+    </CruiseTreeProvider>,
+  );
 }
 
 describe('HighlightEdgeDialog', () => {
@@ -29,16 +39,7 @@ describe('HighlightEdgeDialog', () => {
       moduleAt('src/b.ts'),
     ];
 
-    renderWithTheme(
-      <HighlightEdgeDialog
-        open
-        sources={['src/a.ts', 'src/b.ts']}
-        modules={modules}
-        userEdgeHighlights={new Map()}
-        onConfirm={onConfirm}
-        onClose={onClose}
-      />,
-    );
+    renderDialog(modules, onConfirm, onClose);
 
     expect(screen.getByText(i18n.current.t('highlightEdge.selectSource'))).toBeInTheDocument();
 
@@ -73,16 +74,7 @@ describe('HighlightEdgeDialog', () => {
       moduleAt('src/foo/c.ts'),
     ];
 
-    renderWithTheme(
-      <HighlightEdgeDialog
-        open
-        sources={['src/a.ts', 'src/foo/b.ts', 'src/foo/c.ts']}
-        modules={modules}
-        userEdgeHighlights={new Map()}
-        onConfirm={onConfirm}
-        onClose={onClose}
-      />,
-    );
+    renderDialog(modules, onConfirm, onClose);
 
     const sourceInput = screen.getByPlaceholderText(i18n.current.t('quickPick.filePlaceholder'));
     fireEvent.change(sourceInput, { target: { value: 'a.ts' } });

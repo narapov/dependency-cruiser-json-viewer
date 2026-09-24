@@ -1,3 +1,4 @@
+import { getCruiseModules } from '@/domain';
 import { NEED_PROFILE } from '@/Shared';
 
 import type { BuildGraphInput, BuildGraphResult } from '../../types';
@@ -11,7 +12,7 @@ import type { NodeSize } from './types';
 
 /** Builds visible nodes, edges, and ELK layout for the dependency graph. */
 export async function buildGraph({
-  modules,
+  cruiseTree,
   selectedPaths,
   expandedFolders,
   folderColors,
@@ -19,9 +20,11 @@ export async function buildGraph({
   const profiler = createBuildGraphProfiler(NEED_PROFILE);
   profiler.start('total');
 
+  const modules = getCruiseModules(cruiseTree);
+
   profiler.start('visibleNodes');
   const { selectedSet, childrenIndex, circularModules, unresolvedModules, visibleNodes, visibleNodeIds, parentByNode } =
-    buildVisibleNodes(modules, selectedPaths, expandedFolders);
+    buildVisibleNodes(cruiseTree, selectedPaths, expandedFolders);
   profiler.end('visibleNodes');
 
   profiler.start('edges');

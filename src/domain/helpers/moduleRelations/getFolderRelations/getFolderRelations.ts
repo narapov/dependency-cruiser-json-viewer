@@ -1,6 +1,6 @@
 import type { IModule } from 'dependency-cruiser';
 
-import type { ModuleRelations } from '../../../types';
+import type { CruiseTreeSnapshot, ModuleRelations } from '../../../types';
 import type { DependencyRelationFlags } from '../../dependencyUtils';
 import { getRepresentative, isUnderFolder } from '../../pathUtils';
 import { buildRelationPathTree } from '../buildRelationPathTree';
@@ -29,6 +29,13 @@ interface FolderContext {
   expanded: boolean;
   maps: RelationMaps;
 }
+
+const EMPTY_RELATIONS: ModuleRelations = {
+  dependencies: [],
+  dependents: [],
+  hiddenDependencies: [],
+  hiddenDependents: [],
+};
 
 /** Whether a module endpoint belongs to the focused folder node given expansion state. */
 function belongsToFolder(
@@ -129,15 +136,36 @@ function collectRelationCandidates(modules: IModule[], ctx: FolderContext): Rela
   });
 }
 
+/** Modules needed to resolve leave/enter edges for a folder (descendants + inbound sources). */
+function modulesForFolderRelations(folderPath: string, snapshot: CruiseTreeSnapshot): IModule[] {
+  const node = snapshot.nodes.get(folderPath);
+  if (node == null) {
+    return [];
+  }
+
+  const needed = new Set(node.descendantModules);
+  node.dependents.forEach(edge => needed.add(edge.path));
+
+  return [...needed].flatMap(path => {
+    const module = snapshot.nodes.get(path)?.module;
+    return module != null ? [module] : [];
+  });
+}
+
 /** Incoming and outgoing relations for a folder node as a nested path tree. */
 export function getFolderRelations(
   folderPath: string,
-  modules: IModule[],
+  snapshot: CruiseTreeSnapshot,
   selectedPaths: string[],
   expandedFolders: Set<string>,
 ): ModuleRelations {
+  const node = snapshot.nodes.get(folderPath);
+  if (node == null || !node.isFolder) {
+    return EMPTY_RELATIONS;
+  }
+
   const selectedSet = new Set(selectedPaths);
-  const moduleSources = new Set(modules.map(module => module.source));
+  const moduleSources = new Set(snapshot.modulePaths);
   const maps: RelationMaps = {
     dependencies: new Map(),
     dependents: new Map(),
@@ -145,7 +173,7 @@ export function getFolderRelations(
     hiddenDependents: new Map(),
   };
 
-  collectRelationCandidates(modules, {
+  collectRelationCandidates(modulesForFolderRelations(folderPath, snapshot), {
     folderPath,
     selectedSet,
     moduleSources,

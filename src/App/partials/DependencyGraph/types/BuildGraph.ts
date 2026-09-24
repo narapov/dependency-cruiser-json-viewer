@@ -1,9 +1,9 @@
-import type { IModule } from 'dependency-cruiser';
-
 import type { Edge, Node } from '@xyflow/react';
 
+import type { CruiseTreeSnapshot } from '@/domain';
+
 export interface BuildGraphInput {
-  modules: IModule[];
+  cruiseTree: CruiseTreeSnapshot;
   selectedPaths: string[];
   expandedFolders: Set<string>;
   folderColors: ReadonlyMap<string, string>;

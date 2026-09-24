@@ -1,6 +1,7 @@
 import type { IModule } from 'dependency-cruiser';
 import { describe, expect, it } from 'vitest';
 
+import { buildCruiseTreeSnapshot } from '../../cruiseTree';
 import { getFolderRelations } from './getFolderRelations';
 
 function moduleAt(source: string, dependencies: IModule['dependencies'] = []): IModule {
@@ -28,7 +29,7 @@ describe('getFolderRelations', () => {
   const selectedPaths = ['src/foo', 'src/foo/a.ts', 'src/foo/b.ts', 'src/bar/c.ts', 'lib/y.ts'];
 
   it('aggregates outgoing dependencies for collapsed folder as a path tree', () => {
-    const { dependencies } = getFolderRelations('src/foo', modules, selectedPaths, new Set());
+    const { dependencies } = getFolderRelations('src/foo', buildCruiseTreeSnapshot(modules), selectedPaths, new Set());
 
     expect(dependencies).toEqual([
       {
@@ -48,7 +49,7 @@ describe('getFolderRelations', () => {
   });
 
   it('aggregates incoming dependents for collapsed folder as a path tree', () => {
-    const { dependents } = getFolderRelations('src/foo', modules, selectedPaths, new Set());
+    const { dependents } = getFolderRelations('src/foo', buildCruiseTreeSnapshot(modules), selectedPaths, new Set());
 
     expect(dependents).toEqual([
       {
@@ -65,7 +66,7 @@ describe('getFolderRelations', () => {
 
     const { dependencies, dependents } = getFolderRelations(
       'src/foo',
-      modules,
+      buildCruiseTreeSnapshot(modules),
       halfCheckedSelected,
       new Set(['src/foo']),
     );
@@ -103,7 +104,7 @@ describe('getFolderRelations', () => {
 
     const { dependencies } = getFolderRelations(
       'src/foo',
-      [moduleAt('src/foo/a.ts', [typeOnlyDep])],
+      buildCruiseTreeSnapshot([moduleAt('src/foo/a.ts', [typeOnlyDep]), moduleAt('src/bar/c.ts')]),
       ['src/foo', 'src/foo/a.ts', 'src/bar/c.ts'],
       new Set(),
     );
@@ -136,8 +137,8 @@ describe('getFolderRelations', () => {
 
     const { dependencies } = getFolderRelations(
       'src/foo',
-      [moduleAt('src/foo', [typeOnlyCircularDep]), moduleAt('src/bar/c.ts')],
-      ['src/foo', 'src/bar/c.ts'],
+      buildCruiseTreeSnapshot([moduleAt('src/foo/a.ts', [typeOnlyCircularDep]), moduleAt('src/bar/c.ts')]),
+      ['src/foo', 'src/foo/a.ts', 'src/bar/c.ts'],
       new Set(['src/foo']),
     );
 
@@ -163,14 +164,14 @@ describe('getFolderRelations', () => {
   it('nests multiple real file endpoints under shared folders', () => {
     const { dependencies } = getFolderRelations(
       'src/foo',
-      [
+      buildCruiseTreeSnapshot([
         moduleAt('src/foo/a.ts', [
           { resolved: 'src/bar/x.ts' } as IModule['dependencies'][0],
           { resolved: 'src/bar/y.ts' } as IModule['dependencies'][0],
         ]),
         moduleAt('src/bar/x.ts'),
         moduleAt('src/bar/y.ts'),
-      ],
+      ]),
       ['src/foo', 'src/foo/a.ts', 'src/bar', 'src/bar/x.ts', 'src/bar/y.ts'],
       new Set(),
     );
@@ -198,11 +199,11 @@ describe('getFolderRelations', () => {
   it('puts unselected crossing edges into hidden path trees', () => {
     const { dependents, hiddenDependents } = getFolderRelations(
       'src/foo',
-      [
+      buildCruiseTreeSnapshot([
         moduleAt('src/foo/a.ts'),
         moduleAt('lib/vendor/y.ts', [{ resolved: 'src/foo/a.ts' } as IModule['dependencies'][0]]),
         moduleAt('lib/vendor/z.ts', [{ resolved: 'src/foo/a.ts' } as IModule['dependencies'][0]]),
-      ],
+      ]),
       ['src/foo', 'src/foo/a.ts'],
       new Set(),
     );

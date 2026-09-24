@@ -5,8 +5,10 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { fireEvent, renderHook, screen } from '@testing-library/react';
 
+import { buildCruiseTreeSnapshot } from '@/domain';
 import { renderWithTheme } from '@/testsUtils';
 
+import { CruiseTreeProvider } from '../../contexts';
 import { DependencyPanel } from './DependencyPanel';
 
 vi.mock('@/Shared', async importOriginal => {
@@ -46,16 +48,17 @@ describe('DependencyPanel', () => {
     const onViewModuleJson = vi.fn();
 
     renderWithTheme(
-      <DependencyPanel
-        path="src/foo/a.ts"
-        modules={modules}
-        selectedPaths={selectedPaths}
-        expandedKeys={[]}
-        onClose={onClose}
-        onShowInGraph={onShowInGraph}
-        onViewModuleJson={onViewModuleJson}
-        {...highlightProps}
-      />,
+      <CruiseTreeProvider value={buildCruiseTreeSnapshot(modules)}>
+        <DependencyPanel
+          path="src/foo/a.ts"
+          selectedPaths={selectedPaths}
+          expandedKeys={[]}
+          onClose={onClose}
+          onShowInGraph={onShowInGraph}
+          onViewModuleJson={onViewModuleJson}
+          {...highlightProps}
+        />
+      </CruiseTreeProvider>,
     );
 
     expect(screen.getByText('src/foo/a.ts')).toBeInTheDocument();
@@ -79,16 +82,17 @@ describe('DependencyPanel', () => {
     const { result: i18n } = renderHook(() => useTranslation());
 
     renderWithTheme(
-      <DependencyPanel
-        path="src/bar/c.ts"
-        modules={[moduleAt('src/bar/c.ts')]}
-        selectedPaths={['src/bar/c.ts']}
-        expandedKeys={[]}
-        onClose={vi.fn()}
-        onShowInGraph={vi.fn()}
-        onViewModuleJson={vi.fn()}
-        {...highlightProps}
-      />,
+      <CruiseTreeProvider value={buildCruiseTreeSnapshot([moduleAt('src/bar/c.ts')])}>
+        <DependencyPanel
+          path="src/bar/c.ts"
+          selectedPaths={['src/bar/c.ts']}
+          expandedKeys={[]}
+          onClose={vi.fn()}
+          onShowInGraph={vi.fn()}
+          onViewModuleJson={vi.fn()}
+          {...highlightProps}
+        />
+      </CruiseTreeProvider>,
     );
 
     expect(screen.getAllByText(i18n.current.t('dependencyPanel.noDependencies'))).toHaveLength(2);
@@ -98,16 +102,17 @@ describe('DependencyPanel', () => {
     const { result: i18n } = renderHook(() => useTranslation());
 
     renderWithTheme(
-      <DependencyPanel
-        path="src/foo/a.ts"
-        modules={modules}
-        selectedPaths={selectedPaths}
-        expandedKeys={[]}
-        onClose={vi.fn()}
-        onShowInGraph={vi.fn()}
-        onViewModuleJson={vi.fn()}
-        {...highlightProps}
-      />,
+      <CruiseTreeProvider value={buildCruiseTreeSnapshot(modules)}>
+        <DependencyPanel
+          path="src/foo/a.ts"
+          selectedPaths={selectedPaths}
+          expandedKeys={[]}
+          onClose={vi.fn()}
+          onShowInGraph={vi.fn()}
+          onViewModuleJson={vi.fn()}
+          {...highlightProps}
+        />
+      </CruiseTreeProvider>,
     );
 
     expect(screen.getByText(i18n.current.t('dependencyPanel.hidden', { count: 1 }))).toBeInTheDocument();

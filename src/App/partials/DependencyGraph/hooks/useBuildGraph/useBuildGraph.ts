@@ -1,5 +1,6 @@
-import type { IModule } from 'dependency-cruiser';
 import { useEffect, useMemo, useState } from 'react';
+
+import type { CruiseTreeSnapshot } from '@/domain';
 
 import { buildGraph } from '../../helpers';
 import type { BuildGraphResult } from '../../types';
@@ -14,7 +15,7 @@ function createEmptyGraphResult(): BuildGraphResult {
 }
 
 interface UseBuildGraphInput {
-  modules: IModule[];
+  cruiseTree: CruiseTreeSnapshot;
   selectedPaths: string[];
   expandedKeys: string[];
   folderColors: ReadonlyMap<string, string>;
@@ -29,7 +30,7 @@ interface UseBuildGraphResult {
 }
 
 export function useBuildGraph(config: UseBuildGraphInput): UseBuildGraphResult {
-  const { modules, selectedPaths, expandedKeys, folderColors } = config;
+  const { cruiseTree, selectedPaths, expandedKeys, folderColors } = config;
 
   const expandedFolders = useMemo(() => new Set(expandedKeys), [expandedKeys]);
 
@@ -53,7 +54,7 @@ export function useBuildGraph(config: UseBuildGraphInput): UseBuildGraphResult {
     setIsBuildingGraph(true);
 
     void buildGraph({
-      modules,
+      cruiseTree,
       selectedPaths,
       expandedFolders,
       folderColors,
@@ -81,7 +82,7 @@ export function useBuildGraph(config: UseBuildGraphInput): UseBuildGraphResult {
     return () => {
       cancelled = true;
     };
-  }, [modules, selectedPaths, expandedFolders, folderColors]);
+  }, [cruiseTree, selectedPaths, expandedFolders, folderColors]);
 
   const clearBuildFailed = () => {
     setBuildFailed(false);

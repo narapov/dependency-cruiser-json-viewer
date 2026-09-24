@@ -1,8 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
+import { buildCruiseTreeSnapshot } from '@/domain';
+
 import type { QuickPickFileItem } from '../../types';
 import { buildSearchItems } from './buildSearchItems';
 import { getPathSearchTier, PathSearchTier, searchPaths } from './searchPaths';
+
+function snapshotFromSources(sources: string[]) {
+  return buildCruiseTreeSnapshot(sources.map(source => ({ source, dependencies: [], dependents: [], valid: true })));
+}
 
 const sources = ['src/components/App.tsx', 'src/components/Button.tsx', 'src/index.ts', 'package.json'];
 
@@ -10,7 +16,7 @@ const fuzzySources = ['src/TaskTracker/contexts/SearchTaskQueryKeyContext', 'src
 
 describe('buildSearchItems', () => {
   it('returns all files and folders in tree order', () => {
-    expect(buildSearchItems(sources).map(item => item.key)).toEqual([
+    expect(buildSearchItems(snapshotFromSources(sources)).map(item => item.key)).toEqual([
       'src',
       'src/components',
       'src/components/App.tsx',
@@ -21,7 +27,7 @@ describe('buildSearchItems', () => {
   });
 
   it('marks folders and files correctly', () => {
-    const items = buildSearchItems(sources);
+    const items = buildSearchItems(snapshotFromSources(sources));
     expect(items.find(item => item.key === 'src/components')?.isFolder).toBe(true);
     expect(items.find(item => item.key === 'src/index.ts')?.isFolder).toBe(false);
   });
@@ -58,7 +64,7 @@ describe('getPathSearchTier', () => {
 });
 
 describe('searchPaths', () => {
-  const items = buildSearchItems(sources);
+  const items = buildSearchItems(snapshotFromSources(sources));
 
   it('returns no items for an empty query', () => {
     expect(searchPaths(items, '')).toEqual([]);
@@ -83,7 +89,7 @@ describe('searchPaths', () => {
   });
 
   it('matches scattered query characters across the full path', () => {
-    const fuzzyItems = buildSearchItems(fuzzySources);
+    const fuzzyItems = buildSearchItems(snapshotFromSources(fuzzySources));
 
     expect(searchPaths(fuzzyItems, 'srconteSearque').map(item => item.key)).toContain(
       'src/TaskTracker/contexts/SearchTaskQueryKeyContext',
@@ -91,13 +97,13 @@ describe('searchPaths', () => {
   });
 
   it('matches subsequence characters in path segments', () => {
-    const fuzzyItems = buildSearchItems(fuzzySources);
+    const fuzzyItems = buildSearchItems(snapshotFromSources(fuzzySources));
 
     expect(searchPaths(fuzzyItems, 'scm').map(item => item.key)).toContain('src/components');
   });
 
   it('does not match when query letters are out of order', () => {
-    const fuzzyItems = buildSearchItems(fuzzySources);
+    const fuzzyItems = buildSearchItems(snapshotFromSources(fuzzySources));
 
     expect(searchPaths(fuzzyItems, 'rsc').map(item => item.key)).not.toContain('src');
   });

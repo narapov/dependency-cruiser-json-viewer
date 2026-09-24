@@ -1,19 +1,25 @@
-import type { IModule } from 'dependency-cruiser';
-
-import type { ModuleRelations } from '../../../types';
+import type { CruiseTreeSnapshot, ModuleRelations } from '../../../types';
 import { getFolderRelations } from '../getFolderRelations';
 import { getModuleRelations } from '../getModuleRelations';
 
 /** Relations for a graph node: module relations for files, folder relations otherwise. */
 export function getNodeRelations(
   path: string,
-  modules: IModule[],
+  snapshot: CruiseTreeSnapshot,
   selectedPaths: string[],
   expandedFolders: Set<string>,
 ): ModuleRelations {
-  const isFile = modules.some(m => m.source === path);
-  if (isFile) {
-    return getModuleRelations(path, modules, selectedPaths);
+  const node = snapshot.nodes.get(path);
+  if (node == null) {
+    return {
+      dependencies: [],
+      dependents: [],
+      hiddenDependencies: [],
+      hiddenDependents: [],
+    };
   }
-  return getFolderRelations(path, modules, selectedPaths, expandedFolders);
+  if (!node.isFolder) {
+    return getModuleRelations(path, snapshot, selectedPaths);
+  }
+  return getFolderRelations(path, snapshot, selectedPaths, expandedFolders);
 }

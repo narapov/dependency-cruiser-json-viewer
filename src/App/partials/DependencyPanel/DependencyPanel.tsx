@@ -1,4 +1,3 @@
-import type { IModule } from 'dependency-cruiser';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -6,14 +5,14 @@ import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
 
-import { getNodeRelations } from '@/domain';
+import { getCruiseModules, getNodeRelations } from '@/domain';
 
+import { useCruiseTreeRequired } from '../../contexts';
 import { DependencyPanelHeader } from './partials/DependencyPanelHeader';
 import { RelationList } from './partials/RelationList';
 
 interface DependencyPanelProps {
   path: string;
-  modules: IModule[];
   selectedPaths: string[];
   expandedKeys: string[];
   onClose: () => void;
@@ -26,7 +25,6 @@ interface DependencyPanelProps {
 export function DependencyPanel(props: DependencyPanelProps) {
   const {
     path,
-    modules,
     selectedPaths,
     expandedKeys,
     onClose,
@@ -37,11 +35,13 @@ export function DependencyPanel(props: DependencyPanelProps) {
   } = props;
 
   const { t } = useTranslation();
+  const cruiseTree = useCruiseTreeRequired();
   const expandedFolders = useMemo(() => new Set(expandedKeys), [expandedKeys]);
+  const modules = useMemo(() => getCruiseModules(cruiseTree), [cruiseTree]);
 
   const relations = useMemo(
-    () => getNodeRelations(path, modules, selectedPaths, expandedFolders),
-    [path, modules, selectedPaths, expandedFolders],
+    () => getNodeRelations(path, cruiseTree, selectedPaths, expandedFolders),
+    [path, cruiseTree, selectedPaths, expandedFolders],
   );
 
   return (

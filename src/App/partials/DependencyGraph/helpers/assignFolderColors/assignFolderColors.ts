@@ -1,4 +1,4 @@
-import type { FolderBaseColor } from '@/domain';
+import type { CruiseTreeSnapshot, FolderBaseColor } from '@/domain';
 
 /** Theme mode used when picking pastel folder background hues. */
 export type FolderColorMode = 'light' | 'dark';
@@ -20,22 +20,18 @@ const GOLDEN_ANGLE = 137.508;
 const MIN_PARENT_HUE_DELTA = 40;
 const MIN_SIBLING_HUE_DELTA = 25;
 
-function buildChildrenIndex(sources: string[]): Map<string, string[]> {
-  const children = sources.reduce((acc, source) => {
-    const parts = source.split('/');
-    return parts.slice(0, -1).reduce((innerAcc, _, i) => {
-      const folder = parts.slice(0, i + 1).join('/');
-      const parentKey = i === 0 ? '' : parts.slice(0, i).join('/');
-      const siblings = innerAcc.get(parentKey) ?? new Set<string>();
-      siblings.add(folder);
-      innerAcc.set(parentKey, siblings);
-      return innerAcc;
-    }, acc);
-  }, new Map<string, Set<string>>());
+function sortPaths(paths: readonly string[]): string[] {
+  return [...paths].sort((a, b) => a.localeCompare(b));
+}
 
-  return new Map(
-    [...children.entries()].map(([parent, childSet]) => [parent, [...childSet].sort((a, b) => a.localeCompare(b))]),
-  );
+function buildChildrenIndex(snapshot: CruiseTreeSnapshot): Map<string, string[]> {
+  const folderNodes = [...snapshot.nodes.values()].filter(node => node.isFolder);
+  const rootFolders = snapshot.rootPaths.filter(path => snapshot.nodes.get(path)?.isFolder === true);
+
+  return new Map([
+    ['', sortPaths(rootFolders)],
+    ...folderNodes.map(node => [node.path, sortPaths(node.childFolders)] as const),
+  ]);
 }
 
 function hueDistance(a: number, b: number): number {
@@ -79,8 +75,8 @@ function assignBaseColorsForChildren(
 }
 
 /** Assigns theme-independent base colors (hue + lightnessIndex) to each folder path. */
-export function assignFolderBaseColors(sources: string[]): ReadonlyMap<string, FolderBaseColor> {
-  const childrenIndex = buildChildrenIndex(sources);
+export function assignFolderBaseColors(snapshot: CruiseTreeSnapshot): ReadonlyMap<string, FolderBaseColor> {
+  const childrenIndex = buildChildrenIndex(snapshot);
   return assignBaseColorsForChildren('', null, childrenIndex);
 }
 
@@ -103,9 +99,12 @@ export function mapFolderBaseColorsToThemed(
   return new Map(entries.map(([path, base]) => [path, toThemedFolderColor(base, mode)]));
 }
 
-/** Assigns distinct pastel HSL colors to each folder path in the source tree. */
-export function assignFolderColors(sources: string[], mode: FolderColorMode = 'light'): ReadonlyMap<string, string> {
-  return mapFolderBaseColorsToThemed(assignFolderBaseColors(sources), mode);
+/** Assigns distinct pastel HSL colors to each folder path in the cruise tree. */
+export function assignFolderColors(
+  snapshot: CruiseTreeSnapshot,
+  mode: FolderColorMode = 'light',
+): ReadonlyMap<string, string> {
+  return mapFolderBaseColorsToThemed(assignFolderBaseColors(snapshot), mode);
 }
 
 /** Parses an `hsl(h, s%, l%)` string into numeric components, or null if invalid. */

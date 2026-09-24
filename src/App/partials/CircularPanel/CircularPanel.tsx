@@ -1,23 +1,19 @@
-import type { IModule } from 'dependency-cruiser';
-
 import Box from '@mui/material/Box';
 
-import { collectDistinctCycles } from '@/domain';
-
+import { useCruiseTreeRequired } from '../../contexts';
 import { CircularList } from './partials/CircularList';
 
 interface CircularPanelProps {
-  modules: readonly IModule[];
-  sources: readonly string[];
   onShowCycle: (paths: string[]) => void;
   onShowInGraph: (path: string) => void;
 }
 
 export function CircularPanel(props: CircularPanelProps) {
-  const { modules, sources, onShowCycle, onShowInGraph } = props;
+  const { onShowCycle, onShowInGraph } = props;
 
-  const sourceSet = new Set(sources);
-  const cycles = collectDistinctCycles(modules)
+  const cruiseTree = useCruiseTreeRequired();
+  const sourceSet = new Set(cruiseTree.modulePaths);
+  const cycles = cruiseTree.cycles
     .map(cycle => ({
       paths: cycle.paths.filter(path => sourceSet.has(path)),
     }))

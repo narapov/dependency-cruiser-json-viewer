@@ -1,9 +1,11 @@
 // @vitest-environment jsdom
+import type { IModule } from 'dependency-cruiser';
 import { createRef } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { act, renderHook } from '@testing-library/react';
 
+import { buildCruiseTreeSnapshot } from '@/domain';
 import { LANGUAGE_STORAGE_KEY } from '@/i18n';
 import { APP_STORAGE_PREFIX, copyToClipboard, downloadTextFile, THEME_STORAGE_KEY } from '@/Shared';
 
@@ -21,6 +23,22 @@ vi.mock('@/Shared', async importOriginal => {
 });
 
 const SOURCES = ['src/a.ts', 'src/b/c.ts', 'src/b/d.ts', 'src/e/f/g.ts'];
+
+function modulesOf(sources: readonly string[]): IModule[] {
+  return sources.map(source => ({ source, dependencies: [], dependents: [], valid: true }) as IModule);
+}
+
+function cruiseTreeOf(sources: readonly string[]) {
+  return buildCruiseTreeSnapshot(modulesOf(sources));
+}
+
+function modulesWithDependency(from: string, to: string, sources: readonly string[]): IModule[] {
+  return modulesOf(sources).map(module =>
+    module.source === from
+      ? ({ ...module, dependencies: [{ resolved: to, dependencyTypes: ['local'] }] } as IModule)
+      : module,
+  );
+}
 
 function createRefs() {
   const fileTreeRef = createRef<FileTreeHandle | null>();
@@ -51,21 +69,17 @@ function renderOrchestration(
   }> = {},
 ) {
   const refs = createRefs();
+  const sources = overrides.sources ?? SOURCES;
   const initialDependencyCruiserState = {
     selectedKeys: overrides.selectedKeys ?? SOURCES,
     expandedKeys: overrides.expandedKeys ?? ['src', 'src/b'],
   };
   const hook = renderHook(
-    ({ sources, initialDependencyCruiserState: initial }) =>
+    ({ cruiseTree, initialDependencyCruiserState: initial }) =>
       useAppOrchestration({
-        sources,
+        cruiseTree,
         unfilteredCruiseResult: {
-          modules: (overrides.sources ?? SOURCES).map(source => ({
-            source,
-            dependencies: [],
-            dependents: [],
-            valid: true,
-          })),
+          modules: modulesOf(sources),
           summary: {},
         } as never,
         ignorePatterns: [],
@@ -76,7 +90,7 @@ function renderOrchestration(
       }),
     {
       initialProps: {
-        sources: overrides.sources ?? SOURCES,
+        cruiseTree: cruiseTreeOf(sources),
         initialDependencyCruiserState,
       },
     },
@@ -117,7 +131,7 @@ describe('useAppOrchestration', () => {
     });
 
     rerender({
-      sources: ['src/b/c.ts'],
+      cruiseTree: cruiseTreeOf(['src/b/c.ts']),
       initialDependencyCruiserState: {
         selectedKeys: ['src/b/c.ts'],
         expandedKeys: ['src', 'src/b'],
@@ -232,7 +246,7 @@ describe('useAppOrchestration', () => {
     expect(result.current.activePath).toBe('src/a.ts');
 
     rerender({
-      sources: ['src/b/c.ts'],
+      cruiseTree: cruiseTreeOf(['src/b/c.ts']),
       initialDependencyCruiserState: {
         selectedKeys: ['src/b/c.ts'],
         expandedKeys: ['src', 'src/b'],
@@ -279,48 +293,49 @@ describe('useAppOrchestration', () => {
       selectedKeys: sources,
       expandedKeys: [] as string[],
     };
+    const modules = [
+      {
+        source: 'src/a.ts',
+        dependencies: [],
+        dependents: [],
+        valid: true,
+      },
+      {
+        source: 'src/b/c.ts',
+        dependencies: [
+          {
+            resolved: 'src/b/d.ts',
+            circular: true,
+            dependencyTypes: ['local', 'import'],
+          },
+        ],
+        dependents: [],
+        valid: true,
+      },
+      {
+        source: 'src/b/d.ts',
+        dependencies: [],
+        dependents: [],
+        valid: true,
+      },
+      {
+        source: 'src/e/f/g.ts',
+        dependencies: [
+          {
+            resolved: 'src/a.ts',
+            circular: true,
+            dependencyTypes: ['local', 'type-only', 'import'],
+          },
+        ],
+        dependents: [],
+        valid: true,
+      },
+    ] as unknown as IModule[];
     const { result } = renderHook(() =>
       useAppOrchestration({
-        sources,
+        cruiseTree: buildCruiseTreeSnapshot(modules),
         unfilteredCruiseResult: {
-          modules: [
-            {
-              source: 'src/a.ts',
-              dependencies: [],
-              dependents: [],
-              valid: true,
-            },
-            {
-              source: 'src/b/c.ts',
-              dependencies: [
-                {
-                  resolved: 'src/b/d.ts',
-                  circular: true,
-                  dependencyTypes: ['local', 'import'],
-                },
-              ],
-              dependents: [],
-              valid: true,
-            },
-            {
-              source: 'src/b/d.ts',
-              dependencies: [],
-              dependents: [],
-              valid: true,
-            },
-            {
-              source: 'src/e/f/g.ts',
-              dependencies: [
-                {
-                  resolved: 'src/a.ts',
-                  circular: true,
-                  dependencyTypes: ['local', 'type-only', 'import'],
-                },
-              ],
-              dependents: [],
-              valid: true,
-            },
-          ],
+          modules,
           summary: {},
         } as never,
         ignorePatterns: [],
@@ -364,14 +379,9 @@ describe('useAppOrchestration', () => {
     };
     const { result } = renderHook(() =>
       useAppOrchestration({
-        sources,
+        cruiseTree: cruiseTreeOf(sources),
         unfilteredCruiseResult: {
-          modules: sources.map(source => ({
-            source,
-            dependencies: [],
-            dependents: [],
-            valid: true,
-          })),
+          modules: modulesOf(sources),
           summary: {
             violations: [
               {
@@ -487,30 +497,12 @@ describe('useAppOrchestration', () => {
       selectedKeys: ['src/a.ts'],
       expandedKeys: [] as string[],
     };
+    const modules = modulesWithDependency('src/a.ts', 'src/b/c.ts', sources);
     const { result } = renderHook(() =>
       useAppOrchestration({
-        sources,
+        cruiseTree: buildCruiseTreeSnapshot(modules),
         unfilteredCruiseResult: {
-          modules: [
-            {
-              source: 'src/a.ts',
-              dependencies: [{ resolved: 'src/b/c.ts', dependencyTypes: ['local'] }],
-              dependents: [],
-              valid: true,
-            },
-            {
-              source: 'src/b/c.ts',
-              dependencies: [],
-              dependents: [],
-              valid: true,
-            },
-            {
-              source: 'src/b/d.ts',
-              dependencies: [],
-              dependents: [],
-              valid: true,
-            },
-          ],
+          modules,
           summary: {},
         } as never,
         ignorePatterns: [],
@@ -537,30 +529,12 @@ describe('useAppOrchestration', () => {
       selectedKeys: ['src/a.ts', 'src/b/c.ts'],
       expandedKeys: [] as string[],
     };
+    const modules = modulesWithDependency('src/a.ts', 'src/b/c.ts', sources);
     const { result } = renderHook(() =>
       useAppOrchestration({
-        sources,
+        cruiseTree: buildCruiseTreeSnapshot(modules),
         unfilteredCruiseResult: {
-          modules: [
-            {
-              source: 'src/a.ts',
-              dependencies: [{ resolved: 'src/b/c.ts', dependencyTypes: ['local'] }],
-              dependents: [],
-              valid: true,
-            },
-            {
-              source: 'src/b/c.ts',
-              dependencies: [],
-              dependents: [],
-              valid: true,
-            },
-            {
-              source: 'src/b/d.ts',
-              dependencies: [],
-              dependents: [],
-              valid: true,
-            },
-          ],
+          modules,
           summary: {},
         } as never,
         ignorePatterns: [],
@@ -585,30 +559,12 @@ describe('useAppOrchestration', () => {
       selectedKeys: ['src/a.ts'],
       expandedKeys: [] as string[],
     };
+    const modules = modulesWithDependency('src/b/c.ts', 'src/a.ts', sources);
     const { result } = renderHook(() =>
       useAppOrchestration({
-        sources,
+        cruiseTree: buildCruiseTreeSnapshot(modules),
         unfilteredCruiseResult: {
-          modules: [
-            {
-              source: 'src/a.ts',
-              dependencies: [],
-              dependents: [],
-              valid: true,
-            },
-            {
-              source: 'src/b/c.ts',
-              dependencies: [{ resolved: 'src/a.ts', dependencyTypes: ['local'] }],
-              dependents: [],
-              valid: true,
-            },
-            {
-              source: 'src/b/d.ts',
-              dependencies: [],
-              dependents: [],
-              valid: true,
-            },
-          ],
+          modules,
           summary: {},
         } as never,
         ignorePatterns: [],
@@ -864,9 +820,9 @@ describe('useAppOrchestration', () => {
     const readyInitial = { selectedKeys: SOURCES, expandedKeys: ['src'] };
 
     const { result, rerender } = renderHook(
-      ({ sources, initialDependencyCruiserState, cruiseLoadId }) =>
+      ({ cruiseTree, initialDependencyCruiserState, cruiseLoadId }) =>
         useAppOrchestration({
-          sources,
+          cruiseTree,
           unfilteredCruiseResult: undefined,
           ignorePatterns: [],
           fileTreeRef: refs.fileTreeRef,
@@ -876,7 +832,7 @@ describe('useAppOrchestration', () => {
         }),
       {
         initialProps: {
-          sources: [] as string[],
+          cruiseTree: cruiseTreeOf([]),
           initialDependencyCruiserState: emptyInitial,
           cruiseLoadId: 0,
         },
@@ -895,7 +851,7 @@ describe('useAppOrchestration', () => {
       });
       // Same batch as App: props catch up with the eagerly resolved sourcesKey.
       rerender({
-        sources: SOURCES,
+        cruiseTree: cruiseTreeOf(SOURCES),
         initialDependencyCruiserState: readyInitial,
         cruiseLoadId: 1,
       });
@@ -919,7 +875,7 @@ describe('useAppOrchestration', () => {
     const { result, rerender } = renderHook(
       ({ cruiseLoadId }) =>
         useAppOrchestration({
-          sources: [],
+          cruiseTree: cruiseTreeOf([]),
           unfilteredCruiseResult,
           ignorePatterns: ['**/*'],
           fileTreeRef: refs.fileTreeRef,
@@ -978,14 +934,9 @@ describe('useAppOrchestration', () => {
 
     const { result } = renderHook(() =>
       useAppOrchestration({
-        sources: SOURCES,
+        cruiseTree: cruiseTreeOf(SOURCES),
         unfilteredCruiseResult: {
-          modules: SOURCES.map(source => ({
-            source,
-            dependencies: [],
-            dependents: [],
-            valid: true,
-          })),
+          modules: modulesOf(SOURCES),
           summary: {},
         } as never,
         ignorePatterns: [],

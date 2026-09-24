@@ -7,4 +7,5 @@ export * from './moduleRelations';
 export * from './cruiseResultFilter';
 export * from './cruiseResult';
 export * from './cruiseRules';
+export * from './cruiseTree';
 export * from './viewerWorkspace';

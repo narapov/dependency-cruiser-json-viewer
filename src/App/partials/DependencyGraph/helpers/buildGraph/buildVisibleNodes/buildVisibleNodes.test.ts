@@ -1,6 +1,8 @@
 import type { IModule } from 'dependency-cruiser';
 import { describe, expect, it } from 'vitest';
 
+import { buildCruiseTreeSnapshot } from '@/domain';
+
 import { buildVisibleNodes, folderHasCircularDescendant } from './buildVisibleNodes';
 
 function moduleAt(source: string, dependencies: IModule['dependencies'] = []): IModule {
@@ -9,10 +11,10 @@ function moduleAt(source: string, dependencies: IModule['dependencies'] = []): I
 
 describe('buildVisibleNodes', () => {
   const sources = ['src/foo/a.ts', 'src/foo/b.ts', 'src/bar/c.ts', 'lib/y.ts'];
-  const modules = sources.map(source => moduleAt(source));
+  const cruiseTree = buildCruiseTreeSnapshot(sources.map(source => moduleAt(source)));
 
   it('includes half-checked ancestor folders when only a nested file is selected', () => {
-    const { visibleNodes } = buildVisibleNodes(modules, ['src/foo/a.ts'], new Set(['src']));
+    const { visibleNodes } = buildVisibleNodes(cruiseTree, ['src/foo/a.ts'], new Set(['src']));
 
     expect(visibleNodes.get('src')).toBe('folder');
     expect(visibleNodes.get('src/foo')).toBe('folder');
@@ -20,14 +22,14 @@ describe('buildVisibleNodes', () => {
   });
 
   it('shows selected files inside expanded half-checked folders', () => {
-    const { visibleNodes } = buildVisibleNodes(modules, ['src/foo/a.ts'], new Set(['src', 'src/foo']));
+    const { visibleNodes } = buildVisibleNodes(cruiseTree, ['src/foo/a.ts'], new Set(['src', 'src/foo']));
 
     expect(visibleNodes.get('src/foo/a.ts')).toBe('file');
     expect(visibleNodes.has('src/foo/b.ts')).toBe(false);
   });
 
   it('sets parentByNode only when parent is visible and expanded', () => {
-    const { parentByNode } = buildVisibleNodes(modules, ['src/foo/a.ts'], new Set(['src', 'src/foo']));
+    const { parentByNode } = buildVisibleNodes(cruiseTree, ['src/foo/a.ts'], new Set(['src', 'src/foo']));
 
     expect(parentByNode.get('src')).toBeNull();
     expect(parentByNode.get('src/foo')).toBe('src');
@@ -35,7 +37,7 @@ describe('buildVisibleNodes', () => {
   });
 
   it('keeps collapsed children as root-level parents when ancestor is not expanded', () => {
-    const { parentByNode } = buildVisibleNodes(modules, ['src/foo/a.ts'], new Set(['src']));
+    const { parentByNode } = buildVisibleNodes(cruiseTree, ['src/foo/a.ts'], new Set(['src']));
 
     expect(parentByNode.get('src/foo')).toBe('src');
     expect(parentByNode.has('src/foo/a.ts')).toBe(false);
@@ -43,7 +45,7 @@ describe('buildVisibleNodes', () => {
 
   it('uses separate container roots for unrelated branches', () => {
     const { parentByNode, visibleNodes } = buildVisibleNodes(
-      modules,
+      cruiseTree,
       ['src/foo/a.ts', 'lib/y.ts'],
       new Set(['src', 'lib']),
     );
@@ -74,7 +76,7 @@ describe('buildVisibleNodes', () => {
     ];
 
     const { circularModules } = buildVisibleNodes(
-      modulesWithCircular,
+      buildCruiseTreeSnapshot(modulesWithCircular),
       ['src/foo/a.ts', 'src/foo/b.ts', 'src/bar/c.ts', 'src/bar/d.ts'],
       new Set(['src', 'src/foo', 'src/bar']),
     );
@@ -95,7 +97,7 @@ describe('buildVisibleNodes', () => {
     ];
 
     const { unresolvedModules } = buildVisibleNodes(
-      modulesWithUnresolved,
+      buildCruiseTreeSnapshot(modulesWithUnresolved),
       ['src/foo/a.ts', 'missing-module'],
       new Set(['src', 'src/foo']),
     );

@@ -9,17 +9,17 @@ import { QuickPickFileResultsList } from '../../../QuickPick';
 import { usePathSearchState } from '../../hooks';
 
 interface PathSearchBodyProps {
-  sources: string[];
-  exactSourcesOnly?: boolean;
+  /** When set, only these paths are searchable (e.g. module files without ancestor folders). */
+  allowedPaths?: readonly string[];
   onSelect: (path: string) => void;
 }
 
 /** Fuzzy file/folder search field and results list (QuickPick file-mode chrome). */
 export function PathSearchBody(props: PathSearchBodyProps) {
-  const { sources, exactSourcesOnly = false, onSelect } = props;
+  const { allowedPaths, onSelect } = props;
 
   const { t } = useTranslation();
-  const { query, setQuery, deferredQuery, results } = usePathSearchState({ sources, exactSourcesOnly });
+  const { query, setQuery, deferredQuery, results } = usePathSearchState({ allowedPaths });
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);

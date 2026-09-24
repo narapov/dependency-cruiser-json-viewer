@@ -1,44 +1,18 @@
-import type { IModule } from 'dependency-cruiser';
-
-import { getParentPath, isTypeOnlyDependency } from '@/domain';
+import { getParentPath, type CruiseTreeSnapshot } from '@/domain';
 
 import type { FolderChildren } from '../../../types';
 
-type IndexEntry = { folders: Set<string>; files: Set<string> };
-
-function ensureIndexEntry(index: Map<string, IndexEntry>, folder: string): IndexEntry {
-  const existing = index.get(folder);
-  if (existing) {
-    return existing;
-  }
-  const created: IndexEntry = { folders: new Set(), files: new Set() };
-  index.set(folder, created);
-  return created;
-}
-
-function buildChildrenIndex(sources: string[]): Map<string, FolderChildren> {
-  const index = sources.reduce((acc, source) => {
-    const parts = source.split('/');
-    return parts.slice(0, -1).reduce((innerAcc, _, i) => {
-      const folder = parts.slice(0, i + 1).join('/');
-      if (i + 1 === parts.length - 1) {
-        ensureIndexEntry(innerAcc, folder).files.add(source);
-      } else {
-        const subfolder = parts.slice(0, i + 2).join('/');
-        ensureIndexEntry(innerAcc, folder).folders.add(subfolder);
-      }
-      return innerAcc;
-    }, acc);
-  }, new Map<string, IndexEntry>());
-
+function buildChildrenIndex(snapshot: CruiseTreeSnapshot): Map<string, FolderChildren> {
   return new Map(
-    [...index.entries()].map(([folder, children]) => [
-      folder,
-      {
-        folders: [...children.folders].sort(),
-        files: [...children.files].sort(),
-      },
-    ]),
+    [...snapshot.nodes.values()]
+      .filter(node => node.isFolder)
+      .map(node => [
+        node.path,
+        {
+          folders: [...node.childFolders],
+          files: [...node.childFiles],
+        },
+      ]),
   );
 }
 
@@ -66,20 +40,17 @@ function hasSelectedDescendants(
   );
 }
 
-function collectCircularModules(modules: IModule[]): Set<string> {
+function collectCircularModules(snapshot: CruiseTreeSnapshot): Set<string> {
   return new Set(
-    modules
-      .filter(
-        module =>
-          Array.isArray(module.dependencies) &&
-          module.dependencies.some(dep => dep.circular === true && !isTypeOnlyDependency(dep)),
-      )
-      .map(module => module.source),
+    snapshot.modulePaths.filter(path => {
+      const node = snapshot.nodes.get(path);
+      return node?.dependencies.some(edge => edge.circular) === true;
+    }),
   );
 }
 
-function collectUnresolvedModules(modules: IModule[]): Set<string> {
-  return new Set(modules.filter(module => module.couldNotResolve === true).map(module => module.source));
+function collectUnresolvedModules(snapshot: CruiseTreeSnapshot): Set<string> {
+  return new Set(snapshot.modulePaths.filter(path => snapshot.nodes.get(path)?.module?.couldNotResolve === true));
 }
 
 /** Whether any selected circular module lives under this folder. */
@@ -203,15 +174,15 @@ export interface BuildVisibleNodesResult {
 
 /** Collects visible file/folder nodes, circular modules, and parent links. */
 export function buildVisibleNodes(
-  modules: readonly IModule[],
+  snapshot: CruiseTreeSnapshot,
   selectedPaths: string[],
   expandedFolders: Set<string>,
 ): BuildVisibleNodesResult {
   const selectedSet = new Set(selectedPaths);
-  const moduleSources = new Set(modules.map(m => m.source));
-  const childrenIndex = buildChildrenIndex(modules.map(m => m.source));
-  const circularModules = collectCircularModules([...modules]);
-  const unresolvedModules = collectUnresolvedModules([...modules]);
+  const moduleSources = new Set(snapshot.modulePaths);
+  const childrenIndex = buildChildrenIndex(snapshot);
+  const circularModules = collectCircularModules(snapshot);
+  const unresolvedModules = collectUnresolvedModules(snapshot);
 
   const roots = getRootSelectedPaths(selectedPaths, selectedSet, childrenIndex);
   const visibleNodes = collectVisibleNodes(roots, selectedSet, expandedFolders, moduleSources, childrenIndex);

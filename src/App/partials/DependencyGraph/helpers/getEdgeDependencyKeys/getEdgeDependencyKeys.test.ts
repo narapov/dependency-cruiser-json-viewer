@@ -1,6 +1,8 @@
 import type { IModule } from 'dependency-cruiser';
 import { describe, expect, it } from 'vitest';
 
+import { buildCruiseTreeSnapshot } from '@/domain';
+
 import { buildGraph } from '../buildGraph';
 import {
   buildEdgeDependencyKeyMap,
@@ -31,13 +33,13 @@ describe('getEdgeDependencyKeys', () => {
     const collapsedFolders = new Set(['src', 'src/bar']);
     const expandedFolders = new Set(['src', 'src/foo', 'src/bar']);
     const collapsedGraph = await buildGraph({
-      modules,
+      cruiseTree: buildCruiseTreeSnapshot(modules),
       selectedPaths,
       expandedFolders: collapsedFolders,
       ...graphArgs,
     });
     const expandedGraph = await buildGraph({
-      modules,
+      cruiseTree: buildCruiseTreeSnapshot(modules),
       selectedPaths,
       expandedFolders,
       ...graphArgs,
@@ -79,7 +81,7 @@ describe('getEdgeDependencyKeys', () => {
   it('aggregates multiple file-level pairs into one visual edge', async () => {
     const expandedFolders = new Set(['src', 'src/bar']);
     const { edges, visibleNodeIds } = await buildGraph({
-      modules,
+      cruiseTree: buildCruiseTreeSnapshot(modules),
       selectedPaths,
       expandedFolders,
       ...graphArgs,
@@ -105,7 +107,7 @@ describe('getEdgeDependencyKeys', () => {
   it('builds a map from visual edge ids to dependency keys', async () => {
     const expandedFolders = new Set(['src', 'src/foo', 'src/bar']);
     const { edges, visibleNodeIds } = await buildGraph({
-      modules,
+      cruiseTree: buildCruiseTreeSnapshot(modules),
       selectedPaths,
       expandedFolders,
       ...graphArgs,

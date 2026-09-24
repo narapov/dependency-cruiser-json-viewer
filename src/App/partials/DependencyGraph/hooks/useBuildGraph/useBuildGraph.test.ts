@@ -3,6 +3,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { act, renderHook, waitFor } from '@testing-library/react';
 
+import { buildCruiseTreeSnapshot } from '@/domain';
+
 import type { BuildGraphResult } from '../../types';
 import { useBuildGraph } from './useBuildGraph';
 
@@ -18,10 +20,10 @@ vi.mock('../../helpers', async importOriginal => {
 
 const FOLDER_COLORS = new Map<string, string>();
 
-const modules = [
+const cruiseTree = buildCruiseTreeSnapshot([
   { source: 'a.ts', dependencies: [] },
   { source: 'b.ts', dependencies: [] },
-] as never[];
+] as never[]);
 
 const EMPTY_EXPANDED: string[] = [];
 const SELECTED_A = ['a.ts'];
@@ -35,7 +37,7 @@ const graphResult: BuildGraphResult = {
 };
 
 const hookInputBase = {
-  modules,
+  cruiseTree,
   folderColors: FOLDER_COLORS,
 };
 

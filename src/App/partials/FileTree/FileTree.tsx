@@ -6,6 +6,7 @@ import { RichTreeView } from '@mui/x-tree-view/RichTreeView';
 
 import { isPathVisibleInSelection } from '@/domain';
 
+import { useCruiseTreeRequired } from '../../contexts';
 import { buildFileTree, buildTreeIndex } from './helpers';
 import { FileTreeItem, FileTreeProvider } from './partials/FileTreeItem';
 import type { FileTreeHandle } from './types';
@@ -16,7 +17,6 @@ const SELECTION_PROPAGATION = { descendants: true, parents: true } as const;
 
 interface FileTreeProps {
   ref?: Ref<FileTreeHandle>;
-  sources: string[];
   selectedKeys?: string[];
   onSelect?: (keys: string[]) => void;
   expandedKeys: string[];
@@ -32,7 +32,6 @@ interface FileTreeProps {
 export function FileTree(props: FileTreeProps) {
   const {
     ref,
-    sources,
     selectedKeys = [],
     onSelect,
     expandedKeys,
@@ -45,10 +44,11 @@ export function FileTree(props: FileTreeProps) {
     activePath = null,
   } = props;
 
+  const cruiseTree = useCruiseTreeRequired();
   const apiRef = useRichTreeViewApiRef();
   const clickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const treeData = buildFileTree(sources);
+  const treeData = buildFileTree(cruiseTree);
   const treeIndex = buildTreeIndex(treeData);
 
   const canShowNodeInGraph = (key: string) => isPathVisibleInSelection(key, selectedKeys);

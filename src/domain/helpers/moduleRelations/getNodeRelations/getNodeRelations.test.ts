@@ -1,6 +1,7 @@
 import type { IModule } from 'dependency-cruiser';
 import { describe, expect, it } from 'vitest';
 
+import { buildCruiseTreeSnapshot } from '../../cruiseTree';
 import { getNodeRelations } from './getNodeRelations';
 
 function moduleAt(source: string, dependencies: IModule['dependencies'] = []): IModule {
@@ -14,7 +15,12 @@ describe('getNodeRelations', () => {
   ];
 
   it('uses module relations for files', () => {
-    const relations = getNodeRelations('src/foo/a.ts', modules, ['src/foo/a.ts', 'src/bar/c.ts'], new Set());
+    const relations = getNodeRelations(
+      'src/foo/a.ts',
+      buildCruiseTreeSnapshot(modules),
+      ['src/foo/a.ts', 'src/bar/c.ts'],
+      new Set(),
+    );
 
     expect(relations.dependencies).toEqual([
       {
@@ -36,7 +42,12 @@ describe('getNodeRelations', () => {
   });
 
   it('uses folder relations for folders', () => {
-    const relations = getNodeRelations('src/foo', modules, ['src/foo', 'src/foo/a.ts', 'src/bar/c.ts'], new Set());
+    const relations = getNodeRelations(
+      'src/foo',
+      buildCruiseTreeSnapshot(modules),
+      ['src/foo', 'src/foo/a.ts', 'src/bar/c.ts'],
+      new Set(),
+    );
 
     expect(relations.dependencies).toEqual([
       {

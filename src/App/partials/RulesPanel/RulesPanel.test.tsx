@@ -6,8 +6,10 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { fireEvent, renderHook, screen, within } from '@testing-library/react';
 
+import { buildCruiseTreeSnapshot } from '@/domain';
 import { renderWithTheme } from '@/testsUtils';
 
+import { CruiseTreeProvider } from '../../contexts';
 import { RulesPanel } from './RulesPanel';
 
 const ruleSet: IFlattenedRuleSet = {
@@ -36,15 +38,28 @@ const violations: IViolation[] = [
   },
 ];
 
+const DEFAULT_SOURCES = ['src/domain/a.ts', 'src/App/App.tsx'];
+
+const CRUISE_TREE = buildCruiseTreeSnapshot(
+  DEFAULT_SOURCES.map(source => ({ source, dependencies: [], dependents: [], valid: true })),
+);
+
+const SINGLE_SOURCE_TREE = buildCruiseTreeSnapshot([
+  { source: 'src/domain/a.ts', dependencies: [], dependents: [], valid: true },
+]);
+
+function renderRulesPanel(ui: Parameters<typeof renderWithTheme>[0], tree = CRUISE_TREE) {
+  return renderWithTheme(<CruiseTreeProvider value={tree}>{ui}</CruiseTreeProvider>);
+}
+
 describe('RulesPanel', () => {
   it('renders rule names under with/without violation sections', () => {
     const { result: i18n } = renderHook(() => useTranslation());
 
-    renderWithTheme(
+    renderRulesPanel(
       <RulesPanel
         ruleSetUsed={ruleSet}
         violations={violations}
-        sources={['src/domain/a.ts', 'src/App/App.tsx']}
         onSelectViolationPaths={vi.fn()}
         onShowRuleViolations={vi.fn()}
       />,
@@ -61,11 +76,10 @@ describe('RulesPanel', () => {
   it('filters rules by name', () => {
     const { result: i18n } = renderHook(() => useTranslation());
 
-    renderWithTheme(
+    renderRulesPanel(
       <RulesPanel
         ruleSetUsed={ruleSet}
         violations={violations}
-        sources={['src/domain/a.ts', 'src/App/App.tsx']}
         onSelectViolationPaths={vi.fn()}
         onShowRuleViolations={vi.fn()}
       />,
@@ -85,11 +99,10 @@ describe('RulesPanel', () => {
   it('filters rules with fuzzy match', () => {
     const { result: i18n } = renderHook(() => useTranslation());
 
-    renderWithTheme(
+    renderRulesPanel(
       <RulesPanel
         ruleSetUsed={ruleSet}
         violations={violations}
-        sources={['src/domain/a.ts', 'src/App/App.tsx']}
         onSelectViolationPaths={vi.fn()}
         onShowRuleViolations={vi.fn()}
       />,
@@ -107,11 +120,10 @@ describe('RulesPanel', () => {
   it('shows no-matches message when filter excludes all rules', () => {
     const { result: i18n } = renderHook(() => useTranslation());
 
-    renderWithTheme(
+    renderRulesPanel(
       <RulesPanel
         ruleSetUsed={ruleSet}
         violations={violations}
-        sources={['src/domain/a.ts', 'src/App/App.tsx']}
         onSelectViolationPaths={vi.fn()}
         onShowRuleViolations={vi.fn()}
       />,
@@ -127,11 +139,10 @@ describe('RulesPanel', () => {
   it('clears the name filter from the clear button', () => {
     const { result: i18n } = renderHook(() => useTranslation());
 
-    renderWithTheme(
+    renderRulesPanel(
       <RulesPanel
         ruleSetUsed={ruleSet}
         violations={violations}
-        sources={['src/domain/a.ts', 'src/App/App.tsx']}
         onSelectViolationPaths={vi.fn()}
         onShowRuleViolations={vi.fn()}
       />,
@@ -150,11 +161,10 @@ describe('RulesPanel', () => {
   it('does not show an expand button for a rule with no violations', () => {
     const { result: i18n } = renderHook(() => useTranslation());
 
-    renderWithTheme(
+    renderRulesPanel(
       <RulesPanel
         ruleSetUsed={ruleSet}
         violations={violations}
-        sources={['src/domain/a.ts', 'src/App/App.tsx']}
         onSelectViolationPaths={vi.fn()}
         onShowRuleViolations={vi.fn()}
       />,
@@ -168,11 +178,10 @@ describe('RulesPanel', () => {
     const { result: i18n } = renderHook(() => useTranslation());
     const onSelectViolationPaths = vi.fn();
 
-    renderWithTheme(
+    renderRulesPanel(
       <RulesPanel
         ruleSetUsed={ruleSet}
         violations={violations}
-        sources={['src/domain/a.ts', 'src/App/App.tsx']}
         onSelectViolationPaths={onSelectViolationPaths}
         onShowRuleViolations={vi.fn()}
       />,
@@ -188,11 +197,10 @@ describe('RulesPanel', () => {
     const { result: i18n } = renderHook(() => useTranslation());
     const onShowRuleViolations = vi.fn();
 
-    renderWithTheme(
+    renderRulesPanel(
       <RulesPanel
         ruleSetUsed={ruleSet}
         violations={violations}
-        sources={['src/domain/a.ts', 'src/App/App.tsx']}
         onSelectViolationPaths={vi.fn()}
         onShowRuleViolations={onShowRuleViolations}
       />,
@@ -206,14 +214,14 @@ describe('RulesPanel', () => {
   it('opens rule JSON dialog from the view button', () => {
     const { result: i18n } = renderHook(() => useTranslation());
 
-    renderWithTheme(
+    renderRulesPanel(
       <RulesPanel
         ruleSetUsed={ruleSet}
         violations={violations}
-        sources={['src/domain/a.ts']}
         onSelectViolationPaths={vi.fn()}
         onShowRuleViolations={vi.fn()}
       />,
+      SINGLE_SOURCE_TREE,
     );
 
     const jsonButtons = screen.getAllByRole('button', { name: i18n.current.t('rules.viewJson') });

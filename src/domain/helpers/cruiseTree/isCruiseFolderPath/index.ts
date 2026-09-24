@@ -1,0 +1,1 @@
+export { isCruiseFolderPath } from './isCruiseFolderPath';

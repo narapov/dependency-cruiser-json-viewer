@@ -1,31 +1,26 @@
-import type { IFlattenedRuleSet, IModule, IViolation } from 'dependency-cruiser';
 import { useTranslation } from 'react-i18next';
 
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
 
-import { getRulesApplicableToPath } from '@/domain';
-
+import { useCruiseTreeRequired } from '../../contexts';
 import { ApplicableRulesList } from './partials/ApplicableRulesList';
 import { ApplicableRulesPanelHeader } from './partials/ApplicableRulesPanelHeader';
 
 interface ApplicableRulesPanelProps {
   path: string;
-  modules: IModule[];
-  ruleSetUsed: IFlattenedRuleSet | undefined;
-  violations: readonly IViolation[] | undefined;
   onClose: () => void;
   onShowInGraph: (path: string) => void;
   onSelectViolationPaths: (paths: string[]) => void;
 }
 
 export function ApplicableRulesPanel(props: ApplicableRulesPanelProps) {
-  const { path, modules, ruleSetUsed, violations, onClose, onShowInGraph, onSelectViolationPaths } = props;
+  const { path, onClose, onShowInGraph, onSelectViolationPaths } = props;
 
   const { t } = useTranslation();
-  const moduleSources = modules.map(module => module.source);
-  const rules = getRulesApplicableToPath(path, ruleSetUsed, violations, moduleSources);
+  const cruiseTree = useCruiseTreeRequired();
+  const rules = cruiseTree.nodes.get(path)?.applicableRules ?? [];
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>

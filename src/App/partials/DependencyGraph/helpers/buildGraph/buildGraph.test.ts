@@ -1,6 +1,7 @@
 import type { IModule } from 'dependency-cruiser';
 import { describe, expect, it } from 'vitest';
 
+import { buildCruiseTreeSnapshot } from '@/domain';
 import { CIRCULAR_EDGE_COLOR, TYPE_ONLY_CIRCULAR_EDGE_COLOR } from '@/Shared';
 
 import { LEAF_NODE_HEIGHT, LEAF_NODE_MIN_WIDTH } from '../getLeafNodeSize';
@@ -17,7 +18,7 @@ describe('buildGraph half-checked folders', () => {
 
   it('includes half-checked ancestor folders when only a nested file is selected', async () => {
     const { nodes } = await buildGraph({
-      modules,
+      cruiseTree: buildCruiseTreeSnapshot(modules),
       selectedPaths: ['src/foo/a.ts'],
       expandedFolders: new Set(['src']),
       folderColors: new Map(),
@@ -32,7 +33,7 @@ describe('buildGraph half-checked folders', () => {
 
   it('shows selected files inside expanded half-checked folders', async () => {
     const { nodes } = await buildGraph({
-      modules,
+      cruiseTree: buildCruiseTreeSnapshot(modules),
       selectedPaths: ['src/foo/a.ts'],
       expandedFolders: new Set(['src', 'src/foo']),
       folderColors: new Map(),
@@ -46,7 +47,7 @@ describe('buildGraph half-checked folders', () => {
     const selectedPaths = sources.filter(source => source.startsWith('src/'));
 
     const { nodes } = await buildGraph({
-      modules,
+      cruiseTree: buildCruiseTreeSnapshot(modules),
       selectedPaths,
       expandedFolders: new Set(['src', 'src/foo', 'src/bar']),
       folderColors: new Map(),
@@ -62,7 +63,7 @@ describe('buildGraph half-checked folders', () => {
 
   it('uses separate container roots for unrelated branches', async () => {
     const { nodes } = await buildGraph({
-      modules,
+      cruiseTree: buildCruiseTreeSnapshot(modules),
       selectedPaths: ['src/foo/a.ts', 'lib/y.ts'],
       expandedFolders: new Set(['src', 'src/foo', 'lib']),
       folderColors: new Map(),
@@ -87,7 +88,7 @@ describe('buildGraph circular dependencies', () => {
 
   it('marks file nodes with circular dependencies', async () => {
     const { nodes } = await buildGraph({
-      modules,
+      cruiseTree: buildCruiseTreeSnapshot(modules),
       selectedPaths: ['src/foo/a.ts', 'src/foo/b.ts'],
       expandedFolders: new Set(['src', 'src/foo']),
       folderColors: new Map(),
@@ -99,7 +100,7 @@ describe('buildGraph circular dependencies', () => {
 
   it('marks collapsed folders containing circular files', async () => {
     const { nodes } = await buildGraph({
-      modules,
+      cruiseTree: buildCruiseTreeSnapshot(modules),
       selectedPaths: ['src/foo/a.ts', 'src/foo/b.ts'],
       expandedFolders: new Set(['src']),
       folderColors: new Map(),
@@ -111,7 +112,7 @@ describe('buildGraph circular dependencies', () => {
 
   it('does not mark expanded folder groups as circular', async () => {
     const { nodes } = await buildGraph({
-      modules,
+      cruiseTree: buildCruiseTreeSnapshot(modules),
       selectedPaths: ['src/foo/a.ts', 'src/foo/b.ts'],
       expandedFolders: new Set(['src', 'src/foo']),
       folderColors: new Map(),
@@ -123,7 +124,7 @@ describe('buildGraph circular dependencies', () => {
 
   it('colors circular edges red', async () => {
     const { edges } = await buildGraph({
-      modules,
+      cruiseTree: buildCruiseTreeSnapshot(modules),
       selectedPaths: ['src/foo/a.ts', 'src/foo/b.ts'],
       expandedFolders: new Set(['src', 'src/foo']),
       folderColors: new Map(),
@@ -147,7 +148,7 @@ describe('buildGraph unresolved modules', () => {
     ];
 
     const { nodes } = await buildGraph({
-      modules,
+      cruiseTree: buildCruiseTreeSnapshot(modules),
       selectedPaths: ['src/foo/a.ts', 'missing-module'],
       expandedFolders: new Set(['src', 'src/foo']),
       folderColors: new Map(),
@@ -182,7 +183,7 @@ describe('buildGraph type-only dependencies', () => {
     const modules = [moduleAt('src/foo/a.ts', [typeOnlyDep('src/foo/b.ts')]), moduleAt('src/foo/b.ts')];
 
     const { edges } = await buildGraph({
-      modules,
+      cruiseTree: buildCruiseTreeSnapshot(modules),
       selectedPaths: ['src/foo/a.ts', 'src/foo/b.ts'],
       expandedFolders: new Set(['src', 'src/foo']),
       ...noopArgs,
@@ -200,7 +201,7 @@ describe('buildGraph type-only dependencies', () => {
     ];
 
     const { edges } = await buildGraph({
-      modules,
+      cruiseTree: buildCruiseTreeSnapshot(modules),
       selectedPaths: ['src/foo/a.ts', 'src/foo/b.ts'],
       expandedFolders: new Set(['src', 'src/foo']),
       ...noopArgs,
@@ -218,7 +219,7 @@ describe('buildGraph type-only dependencies', () => {
     ];
 
     const { nodes, edges } = await buildGraph({
-      modules,
+      cruiseTree: buildCruiseTreeSnapshot(modules),
       selectedPaths: ['src/foo/a.ts', 'src/foo/b.ts'],
       expandedFolders: new Set(['src', 'src/foo']),
       ...noopArgs,
@@ -236,7 +237,7 @@ describe('buildGraph type-only dependencies', () => {
     const modules = [moduleAt('src/foo/a.ts', [valueDep('src/foo/b.ts', true)]), moduleAt('src/foo/b.ts')];
 
     const { nodes, edges } = await buildGraph({
-      modules,
+      cruiseTree: buildCruiseTreeSnapshot(modules),
       selectedPaths: ['src/foo/a.ts', 'src/foo/b.ts'],
       expandedFolders: new Set(['src', 'src/foo']),
       ...noopArgs,
@@ -262,7 +263,7 @@ describe('buildGraph layout', () => {
     const modules = sources.map(source => moduleAt(source));
 
     const { nodes } = await buildGraph({
-      modules,
+      cruiseTree: buildCruiseTreeSnapshot(modules),
       selectedPaths: sources,
       expandedFolders: new Set(['src', 'src/foo']),
       ...noopArgs,
@@ -280,7 +281,7 @@ describe('buildGraph layout', () => {
     const modules = [moduleAt('src/foo/a.ts', [depB]), moduleAt('src/foo/b.ts', [depC]), moduleAt('src/foo/c.ts')];
 
     const { nodes } = await buildGraph({
-      modules,
+      cruiseTree: buildCruiseTreeSnapshot(modules),
       selectedPaths: ['src/foo/a.ts', 'src/foo/b.ts', 'src/foo/c.ts'],
       expandedFolders: new Set(['src', 'src/foo']),
       ...noopArgs,
@@ -298,13 +299,13 @@ describe('buildGraph layout', () => {
     const largeModules = largeSources.map(source => moduleAt(source));
 
     const mediumGraph = await buildGraph({
-      modules: mediumModules,
+      cruiseTree: buildCruiseTreeSnapshot(mediumModules),
       selectedPaths: mediumSources,
       expandedFolders: new Set(['src', 'src/foo']),
       ...noopArgs,
     });
     const largeGraph = await buildGraph({
-      modules: largeModules,
+      cruiseTree: buildCruiseTreeSnapshot(largeModules),
       selectedPaths: largeSources,
       expandedFolders: new Set(['src', 'src/foo']),
       ...noopArgs,
@@ -323,7 +324,7 @@ describe('buildGraph layout', () => {
     const modules = [moduleAt(longPath)];
 
     const { nodes } = await buildGraph({
-      modules,
+      cruiseTree: buildCruiseTreeSnapshot(modules),
       selectedPaths: [longPath],
       expandedFolders: new Set(['src', 'src/foo']),
       ...noopArgs,
@@ -346,13 +347,13 @@ describe('buildGraph layout', () => {
     const longModules = longSources.map(source => moduleAt(source));
 
     const shortGraph = await buildGraph({
-      modules: shortModules,
+      cruiseTree: buildCruiseTreeSnapshot(shortModules),
       selectedPaths: shortSources,
       expandedFolders: new Set(['src', 'src/foo']),
       ...noopArgs,
     });
     const longGraph = await buildGraph({
-      modules: longModules,
+      cruiseTree: buildCruiseTreeSnapshot(longModules),
       selectedPaths: longSources,
       expandedFolders: new Set(['src', 'src/foo']),
       ...noopArgs,
@@ -370,7 +371,7 @@ describe('buildGraph layout', () => {
     const depToBar = { resolved: 'src/bar/c.ts' } as IModule['dependencies'][0];
     const modules = [moduleAt('src/foo/a.ts', [depToBar]), moduleAt('src/bar/c.ts'), moduleAt('src/baz/e.ts')];
     const graphArgs = {
-      modules,
+      cruiseTree: buildCruiseTreeSnapshot(modules),
       selectedPaths: ['src/foo/a.ts', 'src/bar/c.ts', 'src/baz/e.ts'],
       ...noopArgs,
     };
@@ -394,7 +395,7 @@ describe('buildGraph layout', () => {
     const depToBar = { resolved: 'src/bar/c.ts' } as IModule['dependencies'][0];
     const modules = [moduleAt('src/foo/a.ts', [depToBar]), moduleAt('src/bar/c.ts')];
     const graphArgs = {
-      modules,
+      cruiseTree: buildCruiseTreeSnapshot(modules),
       selectedPaths: ['src/foo', 'src/foo/a.ts', 'src/bar/c.ts'],
       ...noopArgs,
     };
@@ -417,7 +418,7 @@ describe('buildGraph layout', () => {
     const depToBar = { resolved: 'src/foo/bar/c.ts' } as IModule['dependencies'][0];
     const modules = [moduleAt('src/foo/bar/c.ts'), moduleAt('lib/x.ts', [depToBar])];
     const graphArgs = {
-      modules,
+      cruiseTree: buildCruiseTreeSnapshot(modules),
       selectedPaths: ['lib/x.ts', 'src/foo/bar/c.ts'],
       ...noopArgs,
     };

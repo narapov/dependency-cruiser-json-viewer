@@ -1,17 +1,21 @@
-import type { IModule } from 'dependency-cruiser';
 import { useTranslation } from 'react-i18next';
 
-import { collectRelatedModuleSources, getDependencyKeysBetweenPaths, getEdgeHighlightColor } from '@/domain';
+import {
+  buildCruiseTreeSnapshot,
+  collectRelatedModuleSources,
+  getCruiseModules,
+  getDependencyKeysBetweenPaths,
+  getEdgeHighlightColor,
+} from '@/domain';
 import { AppDialog, AppDialogContent, AppDialogTitle } from '@/Shared';
 
+import { CruiseTreeProvider, useCruiseTreeRequired } from '../../contexts';
 import { PathSearchBody } from '../PathSearchDialog';
 import { useHighlightEdgeDialogState } from './hooks';
 import { HighlightEdgeColorStep } from './partials';
 
 interface HighlightEdgeDialogProps {
   open: boolean;
-  sources: string[];
-  modules: readonly IModule[];
   userEdgeHighlights: ReadonlyMap<string, string>;
   onConfirm: (dependencyKeys: readonly string[], color: string | null) => void;
   onClose: () => void;
@@ -28,20 +32,21 @@ function titleKeyForStep(step: 'source' | 'target' | 'color'): string {
 }
 
 interface HighlightEdgeDialogContentProps {
-  sources: string[];
-  modules: readonly IModule[];
   userEdgeHighlights: ReadonlyMap<string, string>;
   onConfirm: (dependencyKeys: readonly string[], color: string | null) => void;
   onClose: () => void;
 }
 
 function HighlightEdgeDialogContent(props: HighlightEdgeDialogContentProps) {
-  const { sources, modules, userEdgeHighlights, onConfirm, onClose } = props;
+  const { userEdgeHighlights, onConfirm, onClose } = props;
 
+  const cruiseTree = useCruiseTreeRequired();
   const { t } = useTranslation();
   const { step, sourcePath, targetPath, selectSource, selectTarget } = useHighlightEdgeDialogState();
 
+  const modules = getCruiseModules(cruiseTree);
   const targetSources = sourcePath != null ? collectRelatedModuleSources(sourcePath, modules, 'dependencies') : [];
+  const targetCruiseTree = buildCruiseTreeSnapshot(getCruiseModules(cruiseTree, targetSources));
 
   const dependencyKeys =
     sourcePath != null && targetPath != null
@@ -63,8 +68,12 @@ function HighlightEdgeDialogContent(props: HighlightEdgeDialogContentProps) {
     <>
       <AppDialogTitle>{t(titleKeyForStep(step))}</AppDialogTitle>
       <AppDialogContent sx={{ p: 0 }}>
-        {step === 'source' && <PathSearchBody sources={sources} onSelect={selectSource} />}
-        {step === 'target' && <PathSearchBody sources={targetSources} onSelect={selectTarget} />}
+        {step === 'source' && <PathSearchBody onSelect={selectSource} />}
+        {step === 'target' && (
+          <CruiseTreeProvider value={targetCruiseTree}>
+            <PathSearchBody onSelect={selectTarget} />
+          </CruiseTreeProvider>
+        )}
         {step === 'color' && (
           <HighlightEdgeColorStep currentHighlight={currentHighlight} onSelect={handleColorSelect} />
         )}
@@ -75,18 +84,12 @@ function HighlightEdgeDialogContent(props: HighlightEdgeDialogContentProps) {
 
 /** Multi-step dialog to pick source, target, and color for an edge highlight. */
 export function HighlightEdgeDialog(props: HighlightEdgeDialogProps) {
-  const { open, sources, modules, userEdgeHighlights, onConfirm, onClose } = props;
+  const { open, userEdgeHighlights, onConfirm, onClose } = props;
 
   return (
     <AppDialog open={open} onClose={onClose} maxWidth="sm">
       {open && (
-        <HighlightEdgeDialogContent
-          sources={sources}
-          modules={modules}
-          userEdgeHighlights={userEdgeHighlights}
-          onConfirm={onConfirm}
-          onClose={onClose}
-        />
+        <HighlightEdgeDialogContent userEdgeHighlights={userEdgeHighlights} onConfirm={onConfirm} onClose={onClose} />
       )}
     </AppDialog>
   );

@@ -1,48 +1,78 @@
-import type { IModule } from 'dependency-cruiser';
-
-import type { ModuleRelations } from '../../../types';
-import type { DependencyRelationFlags } from '../../dependencyUtils';
+import type { CruiseEdge, CruiseTreeSnapshot, ModuleRelations } from '../../../types';
+import { finalizeDependencyRelationFlags, type DependencyRelationFlags } from '../../dependencyUtils';
 import { buildRelationPathTree } from '../buildRelationPathTree';
-import { flagsMapToSortedRelations, mergeRelation } from '../mergeRelationGroups';
+import { flagsMapToSortedRelations } from '../mergeRelationGroups';
+
+const EMPTY_RELATIONS: ModuleRelations = {
+  dependencies: [],
+  dependents: [],
+  hiddenDependencies: [],
+  hiddenDependents: [],
+};
+
+/** Convert a snapshot edge into mutable relation flags. */
+function cruiseEdgeToFlags(edge: CruiseEdge): DependencyRelationFlags {
+  return {
+    typeOnly: edge.typeOnly,
+    valueCircular: edge.circular,
+    typeOnlyCircular: edge.typeOnlyCircular,
+  };
+}
+
+/** Merge a precomputed cruise edge into a path → flags map. */
+function mergeCruiseEdge(map: Map<string, DependencyRelationFlags>, edge: CruiseEdge): void {
+  const existing = map.get(edge.path);
+  if (!existing) {
+    map.set(edge.path, cruiseEdgeToFlags(edge));
+    return;
+  }
+
+  existing.typeOnly = existing.typeOnly && edge.typeOnly;
+  if (edge.circular) {
+    existing.valueCircular = true;
+  }
+  if (edge.typeOnlyCircular) {
+    existing.typeOnlyCircular = true;
+  }
+  finalizeDependencyRelationFlags(existing);
+}
 
 /** Incoming and outgoing relations for a single module path among selected and hidden paths. */
-export function getModuleRelations(path: string, modules: IModule[], selectedPaths: string[]): ModuleRelations {
+export function getModuleRelations(
+  path: string,
+  snapshot: CruiseTreeSnapshot,
+  selectedPaths: string[],
+): ModuleRelations {
+  const node = snapshot.nodes.get(path);
+  if (node == null || node.isFolder) {
+    return EMPTY_RELATIONS;
+  }
+
   const selectedSet = new Set(selectedPaths);
-  const moduleSources = new Set(modules.map(module => module.source));
-  const module = modules.find(m => m.source === path);
+  const moduleSources = new Set(snapshot.modulePaths);
 
   const dependencies = new Map<string, DependencyRelationFlags>();
   const dependents = new Map<string, DependencyRelationFlags>();
   const hiddenDependencies = new Map<string, DependencyRelationFlags>();
   const hiddenDependents = new Map<string, DependencyRelationFlags>();
 
-  if (module && Array.isArray(module.dependencies)) {
-    module.dependencies
-      .filter((dep): dep is typeof dep & { resolved: string } => Boolean(dep.resolved))
-      .forEach(dep => {
-        if (selectedSet.has(dep.resolved)) {
-          mergeRelation(dependencies, dep.resolved, dep);
-          return;
-        }
-        if (moduleSources.has(dep.resolved)) {
-          mergeRelation(hiddenDependencies, dep.resolved, dep);
-        }
-      });
-  }
+  node.dependencies.forEach(edge => {
+    if (selectedSet.has(edge.path)) {
+      mergeCruiseEdge(dependencies, edge);
+      return;
+    }
+    if (moduleSources.has(edge.path)) {
+      mergeCruiseEdge(hiddenDependencies, edge);
+    }
+  });
 
-  modules
-    .filter(other => Array.isArray(other.dependencies))
-    .forEach(other => {
-      other.dependencies
-        .filter(dep => dep.resolved === path)
-        .forEach(dep => {
-          if (selectedSet.has(other.source)) {
-            mergeRelation(dependents, other.source, dep);
-            return;
-          }
-          mergeRelation(hiddenDependents, other.source, dep);
-        });
-    });
+  node.dependents.forEach(edge => {
+    if (selectedSet.has(edge.path)) {
+      mergeCruiseEdge(dependents, edge);
+      return;
+    }
+    mergeCruiseEdge(hiddenDependents, edge);
+  });
 
   return {
     dependencies: buildRelationPathTree(flagsMapToSortedRelations(dependencies)),

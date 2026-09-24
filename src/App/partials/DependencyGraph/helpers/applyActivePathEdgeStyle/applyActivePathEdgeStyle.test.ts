@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { MarkerType, type Edge } from '@xyflow/react';
 
+import { buildCruiseTreeSnapshot } from '@/domain';
 import {
   CIRCULAR_EDGE_COLOR,
   DEFAULT_EDGE_COLOR,
@@ -72,7 +73,7 @@ describe('applyActivePathEdgeStyle', () => {
 
     const modules = [moduleAt('src/foo/a.ts', [circularDep]), moduleAt('src/foo/b.ts')];
     const { edges } = await buildGraph({
-      modules,
+      cruiseTree: buildCruiseTreeSnapshot(modules),
       selectedPaths: ['src/foo/a.ts', 'src/foo/b.ts'],
       expandedFolders: new Set(['src', 'src/foo']),
       folderColors: new Map(),

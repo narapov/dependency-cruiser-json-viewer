@@ -1,6 +1,7 @@
 import type { ICruiseResult } from 'dependency-cruiser';
 
 import {
+  buildCruiseTreeSnapshot,
   filterCruiseResult,
   getInitialDependencyCruiserState,
   replaceWorkspaceSettings,
@@ -25,13 +26,14 @@ export interface ResolvedWorkspaceApply {
 /** Compute a fully-resolved workspace view from raw cruise data and loaded settings. */
 export function resolveWorkspaceApply({ cruiseResult, settings }: ResolveWorkspaceApplyInput): ResolvedWorkspaceApply {
   const filtered = filterCruiseResult(cruiseResult, settings.ignorePatterns);
-  const sources = filtered.modules.map(module => module.source);
+  const cruiseTree = buildCruiseTreeSnapshot(filtered.modules);
+  const sources = cruiseTree.modulePaths;
   const initial = getInitialDependencyCruiserState(sources);
   const view = replaceWorkspaceSettings({
     sources,
     modules: filtered.modules,
     settings,
-    defaultFolderColors: defaultFolderColorsRecord(sources),
+    defaultFolderColors: defaultFolderColorsRecord(cruiseTree),
   });
   return {
     sourcesKey: sources.join('\0'),

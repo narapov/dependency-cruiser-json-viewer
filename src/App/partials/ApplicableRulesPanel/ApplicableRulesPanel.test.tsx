@@ -6,8 +6,10 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { renderHook, screen } from '@testing-library/react';
 
+import { buildCruiseTreeSnapshot } from '@/domain';
 import { renderWithTheme } from '@/testsUtils';
 
+import { CruiseTreeProvider } from '../../contexts';
 import { ApplicableRulesPanel } from './ApplicableRulesPanel';
 
 const ruleSet: IFlattenedRuleSet = {
@@ -43,15 +45,14 @@ describe('ApplicableRulesPanel', () => {
     const { result: i18n } = renderHook(() => useTranslation());
 
     renderWithTheme(
-      <ApplicableRulesPanel
-        path="src/domain/a.ts"
-        modules={modules}
-        ruleSetUsed={ruleSet}
-        violations={violations}
-        onClose={vi.fn()}
-        onShowInGraph={vi.fn()}
-        onSelectViolationPaths={vi.fn()}
-      />,
+      <CruiseTreeProvider value={buildCruiseTreeSnapshot(modules, ruleSet, violations)}>
+        <ApplicableRulesPanel
+          path="src/domain/a.ts"
+          onClose={vi.fn()}
+          onShowInGraph={vi.fn()}
+          onSelectViolationPaths={vi.fn()}
+        />
+      </CruiseTreeProvider>,
     );
 
     expect(screen.getByText(i18n.current.t('applicableRulesPanel.title'))).toBeInTheDocument();
@@ -64,25 +65,29 @@ describe('ApplicableRulesPanel', () => {
   it('shows empty state when no rules apply', () => {
     const { result: i18n } = renderHook(() => useTranslation());
 
+    const snapshot = buildCruiseTreeSnapshot(
+      [{ source: 'src/other/a.ts', dependencies: [], dependents: [], valid: true }] as IModule[],
+      {
+        forbidden: [
+          {
+            name: 'domain-only',
+            severity: 'error',
+            from: { path: '^src/domain/' },
+            to: {},
+          },
+        ],
+      },
+    );
+
     renderWithTheme(
-      <ApplicableRulesPanel
-        path="src/other/a.ts"
-        modules={[{ source: 'src/other/a.ts', dependencies: [], dependents: [], valid: true }] as IModule[]}
-        ruleSetUsed={{
-          forbidden: [
-            {
-              name: 'domain-only',
-              severity: 'error',
-              from: { path: '^src/domain/' },
-              to: {},
-            },
-          ],
-        }}
-        violations={undefined}
-        onClose={vi.fn()}
-        onShowInGraph={vi.fn()}
-        onSelectViolationPaths={vi.fn()}
-      />,
+      <CruiseTreeProvider value={snapshot}>
+        <ApplicableRulesPanel
+          path="src/other/a.ts"
+          onClose={vi.fn()}
+          onShowInGraph={vi.fn()}
+          onSelectViolationPaths={vi.fn()}
+        />
+      </CruiseTreeProvider>,
     );
 
     expect(screen.getByText(i18n.current.t('applicableRulesPanel.empty'))).toBeInTheDocument();

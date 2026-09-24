@@ -6,9 +6,11 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { fireEvent, renderHook, screen } from '@testing-library/react';
 
+import { buildCruiseTreeSnapshot } from '@/domain';
 import { copyToClipboard } from '@/Shared';
 import { renderWithTheme } from '@/testsUtils';
 
+import { CruiseTreeProvider } from '../../contexts';
 import { CircularPanel } from './CircularPanel';
 
 vi.mock('@/Shared', async importOriginal => {
@@ -46,6 +48,16 @@ const modulesWithCycles: IModule[] = [
   ]),
 ];
 
+function renderPanel(modules: IModule[], handlers: { onShowCycle?: () => void; onShowInGraph?: () => void } = {}) {
+  const { onShowCycle = vi.fn(), onShowInGraph = vi.fn() } = handlers;
+
+  return renderWithTheme(
+    <CruiseTreeProvider value={buildCruiseTreeSnapshot(modules)}>
+      <CircularPanel onShowCycle={onShowCycle} onShowInGraph={onShowInGraph} />
+    </CruiseTreeProvider>,
+  );
+}
+
 describe('CircularPanel', () => {
   afterEach(() => {
     vi.clearAllMocks();
@@ -54,14 +66,7 @@ describe('CircularPanel', () => {
   it('shows empty state when there are no cycles', () => {
     const { result: i18n } = renderHook(() => useTranslation());
 
-    renderWithTheme(
-      <CircularPanel
-        modules={[moduleAt('src/a.ts')]}
-        sources={['src/a.ts']}
-        onShowCycle={vi.fn()}
-        onShowInGraph={vi.fn()}
-      />,
-    );
+    renderPanel([moduleAt('src/a.ts')]);
 
     expect(screen.getByText(i18n.current.t('circular.empty'))).toBeInTheDocument();
   });
@@ -70,14 +75,7 @@ describe('CircularPanel', () => {
     const { result: i18n } = renderHook(() => useTranslation());
     const onShowCycle = vi.fn();
 
-    renderWithTheme(
-      <CircularPanel
-        modules={modulesWithCycles}
-        sources={['src/a.ts', 'src/b.ts']}
-        onShowCycle={onShowCycle}
-        onShowInGraph={vi.fn()}
-      />,
-    );
+    renderPanel(modulesWithCycles, { onShowCycle });
 
     expect(screen.getByText('b.ts → a.ts')).toBeInTheDocument();
 
@@ -88,14 +86,7 @@ describe('CircularPanel', () => {
   it('expands cycle members with full paths', () => {
     const { result: i18n } = renderHook(() => useTranslation());
 
-    renderWithTheme(
-      <CircularPanel
-        modules={modulesWithCycles}
-        sources={['src/a.ts', 'src/b.ts']}
-        onShowCycle={vi.fn()}
-        onShowInGraph={vi.fn()}
-      />,
-    );
+    renderPanel(modulesWithCycles);
 
     expect(screen.queryByText('src/b.ts')).not.toBeInTheDocument();
     expect(screen.queryByText('src/a.ts')).not.toBeInTheDocument();
@@ -110,14 +101,7 @@ describe('CircularPanel', () => {
     const { result: i18n } = renderHook(() => useTranslation());
     const onShowInGraph = vi.fn();
 
-    renderWithTheme(
-      <CircularPanel
-        modules={modulesWithCycles}
-        sources={['src/a.ts', 'src/b.ts']}
-        onShowCycle={vi.fn()}
-        onShowInGraph={onShowInGraph}
-      />,
-    );
+    renderPanel(modulesWithCycles, { onShowInGraph });
 
     fireEvent.click(screen.getByRole('button', { name: i18n.current.t('actions.expand') }));
 
@@ -130,17 +114,20 @@ describe('CircularPanel', () => {
     expect(onShowInGraph).toHaveBeenCalledWith('src/b.ts');
   });
 
-  it('hides cycles whose paths are all outside sources', () => {
+  it('hides cycles whose paths are all outside the cruise tree modules', () => {
     const { result: i18n } = renderHook(() => useTranslation());
+    const moduleWithFilteredCycle = moduleAt('src/other.ts', [
+      {
+        resolved: 'src/ignored/a.ts',
+        circular: true,
+        cycle: [
+          { name: 'src/ignored/a.ts', dependencyTypes: ['local'] },
+          { name: 'src/ignored/b.ts', dependencyTypes: ['local'] },
+        ],
+      } as IModule['dependencies'][0],
+    ]);
 
-    renderWithTheme(
-      <CircularPanel
-        modules={modulesWithCycles}
-        sources={['src/other.ts']}
-        onShowCycle={vi.fn()}
-        onShowInGraph={vi.fn()}
-      />,
-    );
+    renderPanel([moduleWithFilteredCycle]);
 
     expect(screen.getByText(i18n.current.t('circular.empty'))).toBeInTheDocument();
   });

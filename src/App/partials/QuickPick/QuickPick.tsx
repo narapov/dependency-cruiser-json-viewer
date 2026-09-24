@@ -16,13 +16,12 @@ export type { QuickPickCommand, QuickPickFileItem, QuickPickHandle } from './Qui
 
 interface QuickPickProps {
   ref?: Ref<QuickPickHandle>;
-  sources: string[];
   commands: QuickPickCommand[];
   onSelectPath: (path: string) => void;
 }
 
 export function QuickPick(props: QuickPickProps) {
-  const { ref, sources, commands, onSelectPath } = props;
+  const { ref, commands, onSelectPath } = props;
 
   const { t } = useTranslation();
   const { recentIds, recordCommandUsage } = useRecentCommandIds();
@@ -40,7 +39,7 @@ export function QuickPick(props: QuickPickProps) {
     openFileMode,
     toggleFileMode,
     openCommandMode,
-  } = useQuickPickState(sources, commands, recentIds);
+  } = useQuickPickState(commands, recentIds);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
