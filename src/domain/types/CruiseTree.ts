@@ -19,16 +19,16 @@ export interface CruisePathNode {
   ancestors: string[];
   isFolder: boolean;
   parentPath: string | null;
-  childFolders: string[];
-  childFiles: string[];
-  /** Files under this folder; `[path]` for a file node. */
-  descendantModules: string[];
+  /** Direct child paths: folders first, then files; empty for file nodes. */
+  childPaths: string[];
+  /** File sources under this folder; empty for file nodes. */
+  descendantFiles: string[];
   module?: IModule;
   /** File: direct deps; folder: edges that leave the subtree. */
   dependencies: CruiseEdge[];
   /** File: reverse deps; folder: edges that enter the subtree. */
   dependents: CruiseEdge[];
-  /** File: self if circular; folder: descendant modules in any cycle. */
+  /** Descendant files in any cycle; empty for file nodes. */
   circularPaths: string[];
   /** Rules whose path restrictions apply; folders union descendants. */
   applicableRules: RuleWithViolations[];
@@ -38,6 +38,7 @@ export interface CruisePathNode {
 export interface CruiseTreeSnapshot {
   nodes: Map<string, CruisePathNode>;
   rootPaths: string[];
-  modulePaths: string[];
+  /** All file sources in the cruise result. */
+  descendantFiles: string[];
   cycles: DistinctCycle[];
 }

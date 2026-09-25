@@ -49,7 +49,7 @@ export function getModuleRelations(
   }
 
   const selectedSet = new Set(selectedPaths);
-  const moduleSources = new Set(snapshot.modulePaths);
+  const moduleSources = new Set(snapshot.descendantFiles);
 
   const dependencies = new Map<string, DependencyRelationFlags>();
   const dependents = new Map<string, DependencyRelationFlags>();

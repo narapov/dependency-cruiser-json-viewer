@@ -18,20 +18,19 @@ describe('buildCruiseTreeSnapshot', () => {
       isFolder: false,
       ancestors: ['src/a/b', 'src/a', 'src'],
       parentPath: 'src/a/b',
-      descendantModules: ['src/a/b/c.ts'],
+      descendantFiles: [],
     });
 
     const folder = snapshot.nodes.get('src/a');
     expect(folder).toMatchObject({
       isFolder: true,
       name: 'a',
-      childFolders: ['src/a/b'],
-      childFiles: ['src/a/d.ts'],
-      descendantModules: ['src/a/b/c.ts', 'src/a/d.ts'],
+      childPaths: ['src/a/b', 'src/a/d.ts'],
+      descendantFiles: ['src/a/b/c.ts', 'src/a/d.ts'],
     });
 
     expect(snapshot.rootPaths).toEqual(['src']);
-    expect(snapshot.modulePaths).toEqual(['src/a/b/c.ts', 'src/a/d.ts']);
+    expect(snapshot.descendantFiles).toEqual(['src/a/b/c.ts', 'src/a/d.ts']);
   });
 
   it('indexes file dependencies and reverse dependents', () => {
@@ -70,7 +69,7 @@ describe('buildCruiseTreeSnapshot', () => {
 
     const snapshot = buildCruiseTreeSnapshot([moduleAt('src/a.ts', [dep]), moduleAt('src/b.ts')]);
 
-    expect(snapshot.nodes.get('src/a.ts')?.circularPaths).toEqual(['src/a.ts']);
+    expect(snapshot.nodes.get('src/a.ts')?.circularPaths).toEqual([]);
     expect(snapshot.nodes.get('src')?.circularPaths).toEqual(['src/a.ts', 'src/b.ts']);
     expect(snapshot.cycles).toEqual([{ paths: ['src/a.ts', 'src/b.ts'] }]);
   });
@@ -126,7 +125,7 @@ describe('buildCruiseTreeSnapshot', () => {
     const snapshot = buildCruiseTreeSnapshot([]);
     expect(snapshot.nodes.size).toBe(0);
     expect(snapshot.rootPaths).toEqual([]);
-    expect(snapshot.modulePaths).toEqual([]);
+    expect(snapshot.descendantFiles).toEqual([]);
     expect(snapshot.cycles).toEqual([]);
   });
 });

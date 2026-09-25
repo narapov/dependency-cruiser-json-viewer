@@ -34,7 +34,7 @@ import { buildFileTree, getAllFolderKeys, getAllKeys, type FileTreeHandle } from
 const EMPTY_CRUISE_TREE: CruiseTreeSnapshot = {
   nodes: new Map(),
   rootPaths: [],
-  modulePaths: [],
+  descendantFiles: [],
   cycles: [],
 };
 
@@ -115,7 +115,7 @@ function createInitialWorkspaceViewState(
     userEdgeHighlights: new Map(),
     folderBaseColors: defaultFolderColorsRecord(cruiseTree),
     pendingLayout: null,
-    sourcesKey: cruiseTree.modulePaths.join('\0'),
+    sourcesKey: cruiseTree.descendantFiles.join('\0'),
     cruiseLoadId,
     lastInitialSelectedKeys: initial.selectedKeys,
     lastInitialExpandedKeys: initial.expandedKeys,
@@ -281,7 +281,7 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
   } = config;
 
   const tree = cruiseTree ?? EMPTY_CRUISE_TREE;
-  const sources = tree.modulePaths;
+  const sources = tree.descendantFiles;
 
   const [state, dispatch] = useReducer(workspaceViewReducer, undefined, () =>
     createInitialWorkspaceViewState(tree, cruiseLoadId, initialDependencyCruiserState),
@@ -575,7 +575,18 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
   };
 
   const showCircularDependenciesOnly = () => {
-    showPathsOnly(sources.filter(path => (tree.nodes.get(path)?.circularPaths.length ?? 0) > 0));
+    showPathsOnly(
+      sources.filter(path => {
+        const node = tree.nodes.get(path);
+        if (node == null) {
+          return false;
+        }
+        return (
+          node.dependencies.some(edge => edge.circular || edge.typeOnlyCircular) ||
+          node.dependents.some(edge => edge.circular || edge.typeOnlyCircular)
+        );
+      }),
+    );
   };
 
   const showRuleViolationsOnly = (ruleNames: readonly string[]) => {

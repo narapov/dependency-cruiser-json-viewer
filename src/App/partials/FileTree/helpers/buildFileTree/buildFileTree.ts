@@ -17,7 +17,7 @@ export function buildFileTree(snapshot: CruiseTreeSnapshot): TreeNodeData[] {
       return {
         key: path,
         title: node.name,
-        children: walk([...node.childFolders, ...node.childFiles]),
+        children: walk(node.childPaths),
       };
     });
 

@@ -143,7 +143,7 @@ function modulesForFolderRelations(folderPath: string, snapshot: CruiseTreeSnaps
     return [];
   }
 
-  const needed = new Set(node.descendantModules);
+  const needed = new Set(node.descendantFiles);
   node.dependents.forEach(edge => needed.add(edge.path));
 
   return [...needed].flatMap(path => {
@@ -165,7 +165,7 @@ export function getFolderRelations(
   }
 
   const selectedSet = new Set(selectedPaths);
-  const moduleSources = new Set(snapshot.modulePaths);
+  const moduleSources = new Set(snapshot.descendantFiles);
   const maps: RelationMaps = {
     dependencies: new Map(),
     dependents: new Map(),

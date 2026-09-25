@@ -6,13 +6,18 @@ function buildChildrenIndex(snapshot: CruiseTreeSnapshot): Map<string, FolderChi
   return new Map(
     [...snapshot.nodes.values()]
       .filter(node => node.isFolder)
-      .map(node => [
-        node.path,
-        {
-          folders: [...node.childFolders],
-          files: [...node.childFiles],
-        },
-      ]),
+      .map(node => {
+        const folders: string[] = [];
+        const files: string[] = [];
+        node.childPaths.forEach(path => {
+          if (snapshot.nodes.get(path)?.isFolder === true) {
+            folders.push(path);
+            return;
+          }
+          files.push(path);
+        });
+        return [node.path, { folders, files }] as const;
+      }),
   );
 }
 
@@ -42,7 +47,7 @@ function hasSelectedDescendants(
 
 function collectCircularModules(snapshot: CruiseTreeSnapshot): Set<string> {
   return new Set(
-    snapshot.modulePaths.filter(path => {
+    snapshot.descendantFiles.filter(path => {
       const node = snapshot.nodes.get(path);
       return node?.dependencies.some(edge => edge.circular) === true;
     }),
@@ -50,7 +55,7 @@ function collectCircularModules(snapshot: CruiseTreeSnapshot): Set<string> {
 }
 
 function collectUnresolvedModules(snapshot: CruiseTreeSnapshot): Set<string> {
-  return new Set(snapshot.modulePaths.filter(path => snapshot.nodes.get(path)?.module?.couldNotResolve === true));
+  return new Set(snapshot.descendantFiles.filter(path => snapshot.nodes.get(path)?.module?.couldNotResolve === true));
 }
 
 /** Whether any selected circular module lives under this folder. */
@@ -179,7 +184,7 @@ export function buildVisibleNodes(
   expandedFolders: Set<string>,
 ): BuildVisibleNodesResult {
   const selectedSet = new Set(selectedPaths);
-  const moduleSources = new Set(snapshot.modulePaths);
+  const moduleSources = new Set(snapshot.descendantFiles);
   const childrenIndex = buildChildrenIndex(snapshot);
   const circularModules = collectCircularModules(snapshot);
   const unresolvedModules = collectUnresolvedModules(snapshot);

@@ -149,13 +149,13 @@ export function buildCruiseTreeSnapshot(
   childFoldersByParent.forEach(siblings => siblings.sort(compareByBaseName));
   childFilesByParent.forEach(siblings => siblings.sort(compareByBaseName));
 
-  const descendantModulesByPath = new Map<string, string[]>();
+  const descendantFilesByPath = new Map<string, string[]>();
   allPaths.forEach(path => {
     if (modulePathSet.has(path)) {
-      descendantModulesByPath.set(path, [path]);
+      descendantFilesByPath.set(path, []);
       return;
     }
-    descendantModulesByPath.set(
+    descendantFilesByPath.set(
       path,
       modulePaths.filter(source => isUnderFolder(source, path) && source !== path),
     );
@@ -221,11 +221,8 @@ export function buildCruiseTreeSnapshot(
   allPaths.forEach(path => {
     const isFolder = !modulePathSet.has(path);
     const ancestors = getAncestorKeys(path);
-    const descendantModules = descendantModulesByPath.get(path) ?? [];
-    const ownCircularPaths = circularModuleSet.has(path) ? [path] : [];
-    const circularPaths = isFolder
-      ? descendantModules.filter(modulePath => circularModuleSet.has(modulePath))
-      : ownCircularPaths;
+    const descendantFiles = descendantFilesByPath.get(path) ?? [];
+    const circularPaths = isFolder ? descendantFiles.filter(modulePath => circularModuleSet.has(modulePath)) : [];
 
     nodes.set(path, {
       path,
@@ -233,14 +230,13 @@ export function buildCruiseTreeSnapshot(
       ancestors,
       isFolder,
       parentPath: getParentPath(path),
-      childFolders: childFoldersByParent.get(path) ?? [],
-      childFiles: childFilesByParent.get(path) ?? [],
-      descendantModules,
+      childPaths: [...(childFoldersByParent.get(path) ?? []), ...(childFilesByParent.get(path) ?? [])],
+      descendantFiles,
       module: moduleBySource.get(path),
       dependencies: flagsMapsToEdges(dependencyFlags.get(path) ?? new Map()),
       dependents: flagsMapsToEdges(dependentFlags.get(path) ?? new Map()),
       circularPaths,
-      applicableRules: buildApplicableRules(descendantModules, namedRules, allViolations),
+      applicableRules: buildApplicableRules(isFolder ? descendantFiles : [path], namedRules, allViolations),
     });
   });
 
@@ -257,7 +253,7 @@ export function buildCruiseTreeSnapshot(
   return {
     nodes,
     rootPaths: sortedRoots,
-    modulePaths,
+    descendantFiles: modulePaths,
     cycles: collectDistinctCycles(modules),
   };
 }

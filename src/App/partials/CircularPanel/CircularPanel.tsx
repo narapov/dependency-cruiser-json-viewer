@@ -12,7 +12,7 @@ export function CircularPanel(props: CircularPanelProps) {
   const { onShowCycle, onShowInGraph } = props;
 
   const cruiseTree = useCruiseTreeRequired();
-  const sourceSet = new Set(cruiseTree.modulePaths);
+  const sourceSet = new Set(cruiseTree.descendantFiles);
   const cycles = cruiseTree.cycles
     .map(cycle => ({
       paths: cycle.paths.filter(path => sourceSet.has(path)),

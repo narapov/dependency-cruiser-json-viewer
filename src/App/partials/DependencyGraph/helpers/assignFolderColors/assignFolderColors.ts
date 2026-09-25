@@ -20,20 +20,6 @@ const GOLDEN_ANGLE = 137.508;
 const MIN_PARENT_HUE_DELTA = 40;
 const MIN_SIBLING_HUE_DELTA = 25;
 
-function sortPaths(paths: readonly string[]): string[] {
-  return [...paths].sort((a, b) => a.localeCompare(b));
-}
-
-function buildChildrenIndex(snapshot: CruiseTreeSnapshot): Map<string, string[]> {
-  const folderNodes = [...snapshot.nodes.values()].filter(node => node.isFolder);
-  const rootFolders = snapshot.rootPaths.filter(path => snapshot.nodes.get(path)?.isFolder === true);
-
-  return new Map([
-    ['', sortPaths(rootFolders)],
-    ...folderNodes.map(node => [node.path, sortPaths(node.childFolders)] as const),
-  ]);
-}
-
 function hueDistance(a: number, b: number): number {
   const diff = Math.abs(a - b) % 360;
   return Math.min(diff, 360 - diff);
@@ -51,33 +37,31 @@ function pickHue(parentHue: number | null, siblingIndex: number, usedHues: numbe
   );
 }
 
-function assignBaseColorsForChildren(
-  parentKey: string,
-  parentHue: number | null,
-  childrenIndex: Map<string, string[]>,
-): Map<string, FolderBaseColor> {
-  const childPaths = childrenIndex.get(parentKey) ?? [];
+/** Assigns theme-independent base colors (hue + lightnessIndex) to each folder path. */
+export function assignFolderBaseColors(snapshot: CruiseTreeSnapshot): ReadonlyMap<string, FolderBaseColor> {
+  const colors = new Map<string, FolderBaseColor>();
 
-  const { colors } = childPaths.reduce<{ colors: Map<string, FolderBaseColor>; usedHues: number[] }>(
-    (acc, path, i) => {
-      const hue = pickHue(parentHue, i, acc.usedHues);
-      acc.colors.set(path, { hue, lightnessIndex: i });
-      const nested = assignBaseColorsForChildren(path, hue, childrenIndex);
-      return {
-        colors: new Map([...acc.colors, ...nested]),
-        usedHues: [...acc.usedHues, hue],
-      };
-    },
-    { colors: new Map<string, FolderBaseColor>(), usedHues: [] },
+  const assignForFolders = (folderPaths: readonly string[], parentHue: number | null) => {
+    const usedHues: number[] = [];
+
+    folderPaths.forEach((path, i) => {
+      const hue = pickHue(parentHue, i, usedHues);
+      colors.set(path, { hue, lightnessIndex: i });
+      usedHues.push(hue);
+
+      const childFolders = (snapshot.nodes.get(path)?.childPaths ?? []).filter(
+        childPath => snapshot.nodes.get(childPath)?.isFolder === true,
+      );
+      assignForFolders(childFolders, hue);
+    });
+  };
+
+  assignForFolders(
+    snapshot.rootPaths.filter(path => snapshot.nodes.get(path)?.isFolder === true),
+    null,
   );
 
   return colors;
-}
-
-/** Assigns theme-independent base colors (hue + lightnessIndex) to each folder path. */
-export function assignFolderBaseColors(snapshot: CruiseTreeSnapshot): ReadonlyMap<string, FolderBaseColor> {
-  const childrenIndex = buildChildrenIndex(snapshot);
-  return assignBaseColorsForChildren('', null, childrenIndex);
 }
 
 /** Converts a base folder color into a pastel HSL string for the given theme mode. */

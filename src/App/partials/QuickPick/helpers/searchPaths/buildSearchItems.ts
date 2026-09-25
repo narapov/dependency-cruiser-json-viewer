@@ -15,7 +15,7 @@ export function buildSearchItems(snapshot: CruiseTreeSnapshot): QuickPickFileIte
         name: node.name,
         isFolder: node.isFolder,
       };
-      return node.isFolder ? [item, ...walk([...node.childFolders, ...node.childFiles])] : [item];
+      return node.isFolder ? [item, ...walk(node.childPaths)] : [item];
     });
 
   return walk(snapshot.rootPaths);

@@ -23,7 +23,7 @@ export function RulesPanel(props: RulesPanelProps) {
   const cruiseTree = useCruiseTreeRequired();
   const [nameFilter, setNameFilter] = useState('');
   const deferredNameFilter = useDeferredValue(nameFilter);
-  const rules = groupRulesWithViolations(ruleSetUsed, violations, cruiseTree.modulePaths);
+  const rules = groupRulesWithViolations(ruleSetUsed, violations, cruiseTree.descendantFiles);
   const filteredRules = rules.filter(entry => matchesNameFilter(entry.name, deferredNameFilter));
 
   return (

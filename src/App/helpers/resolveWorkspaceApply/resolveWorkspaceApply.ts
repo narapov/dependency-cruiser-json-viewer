@@ -27,7 +27,7 @@ export interface ResolvedWorkspaceApply {
 export function resolveWorkspaceApply({ cruiseResult, settings }: ResolveWorkspaceApplyInput): ResolvedWorkspaceApply {
   const filtered = filterCruiseResult(cruiseResult, settings.ignorePatterns);
   const cruiseTree = buildCruiseTreeSnapshot(filtered.modules);
-  const sources = cruiseTree.modulePaths;
+  const sources = cruiseTree.descendantFiles;
   const initial = getInitialDependencyCruiserState(sources);
   const view = replaceWorkspaceSettings({
     sources,

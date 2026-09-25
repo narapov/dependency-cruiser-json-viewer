@@ -86,7 +86,8 @@ function App() {
         : null,
     [filteredData, data?.summary.ruleSetUsed, data?.summary.violations],
   );
-  const sources = useMemo(() => cruiseTree?.modulePaths ?? [], [cruiseTree]);
+  console.log('cruiseTree', cruiseTree);
+  const sources = useMemo(() => cruiseTree?.descendantFiles ?? [], [cruiseTree]);
   const rulesWithViolations = useMemo(
     () =>
       groupRulesWithViolations(data?.summary.ruleSetUsed, data?.summary.violations, sources).filter(

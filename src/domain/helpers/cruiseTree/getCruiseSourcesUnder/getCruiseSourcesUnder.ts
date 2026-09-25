@@ -10,5 +10,5 @@ export function getCruiseSourcesUnder(snapshot: CruiseTreeSnapshot, path: string
   if (!node.isFolder) {
     return node.path === path ? [path] : [];
   }
-  return node.descendantModules;
+  return node.descendantFiles;
 }
