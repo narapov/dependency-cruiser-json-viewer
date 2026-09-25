@@ -50,14 +50,14 @@ export function assignFolderBaseColors(snapshot: CruiseTreeSnapshot): ReadonlyMa
       usedHues.push(hue);
 
       const childFolders = (snapshot.nodes.get(path)?.childPaths ?? []).filter(
-        childPath => snapshot.nodes.get(childPath)?.isFolder === true,
+        childPath => !!snapshot.nodes.get(childPath)?.isFolder,
       );
       assignForFolders(childFolders, hue);
     });
   };
 
   assignForFolders(
-    snapshot.rootPaths.filter(path => snapshot.nodes.get(path)?.isFolder === true),
+    snapshot.rootPaths.filter(path => !!snapshot.nodes.get(path)?.isFolder),
     null,
   );
 

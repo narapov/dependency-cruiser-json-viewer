@@ -1,9 +1,8 @@
 import type { CruiseTreeSnapshot } from '../../../types';
-import { getCruisePathNode } from '../getCruisePathNode';
 
 /** Module sources under a folder path (or `[path]` for a file); empty when unknown. */
 export function getCruiseSourcesUnder(snapshot: CruiseTreeSnapshot, path: string): string[] {
-  const node = getCruisePathNode(snapshot, path);
+  const node = snapshot.nodes.get(path);
   if (node == null) {
     return [];
   }

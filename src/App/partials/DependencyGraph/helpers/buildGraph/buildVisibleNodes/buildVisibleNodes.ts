@@ -10,7 +10,7 @@ function buildChildrenIndex(snapshot: CruiseTreeSnapshot): Map<string, FolderChi
         const folders: string[] = [];
         const files: string[] = [];
         node.childPaths.forEach(path => {
-          if (snapshot.nodes.get(path)?.isFolder === true) {
+          if (snapshot.nodes.get(path)?.isFolder) {
             folders.push(path);
             return;
           }

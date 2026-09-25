@@ -10,7 +10,6 @@ import {
   getCruiseSourcesUnder,
   getParentPath,
   getSubtreeFolderKeys,
-  isCruiseFolderPath,
   isPathInSources,
   isPathVisibleInSelection,
   removeSubtreeFolderKeys,
@@ -95,7 +94,7 @@ function resolveActiveFolderPath(activePath: string | null, cruiseTree: CruiseTr
   if (activePath == null) {
     return null;
   }
-  if (isCruiseFolderPath(cruiseTree, activePath)) {
+  if (cruiseTree.nodes.get(activePath)?.isFolder) {
     return activePath;
   }
   return getParentPath(activePath);
