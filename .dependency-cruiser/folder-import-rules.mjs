@@ -16,7 +16,7 @@
 //       │       └── SubSubFeature/   # unbounded partials/ depth
 //       └── SubFeature2/       # separate branch — cross-import forbidden
 //
-// Allowed subfolders (subdir): hooks|partials|hocs|contexts|types|constants|helpers|api
+// Allowed subfolders (subdir): hooks|partials|hocs|contexts|types|constants|helpers|api|stores
 //
 // ./ imports (same-dir-no-deep, non-index-no-local-index):
 //   ✓ ./{sibling}              ✓ ./{sibling}/index.ts
@@ -44,7 +44,7 @@
 // =============================================================================
 
 // Allowed subfolders for ./{subdir}/{child} and (../)+{subdir}/{child}.
-const SUBDIRS_RE = 'hooks|partials|hocs|contexts|types|constants|helpers|api';
+const SUBDIRS_RE = 'hooks|partials|hocs|contexts|types|constants|helpers|api|stores';
 
 // npm and node built-ins are not checked by folder rules.
 const EXTERNAL_DEP_TYPES = ['npm', 'core'];
