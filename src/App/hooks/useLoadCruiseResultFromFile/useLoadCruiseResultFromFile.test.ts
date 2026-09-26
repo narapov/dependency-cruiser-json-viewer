@@ -161,7 +161,7 @@ describe('useLoadCruiseResultFromFile', () => {
     expect(queryClient.getQueryData(['cruise-result'])).toEqual(cruiseResult);
   });
 
-  it('sets query data before onLoaded', async () => {
+  it('sets query data after onLoaded so the handler can reset the workspace first', async () => {
     const cruiseResult = { modules: [{ source: 'a.ts' }], summary: {} };
     parseViewerFileJson.mockReturnValue({ cruiseResult });
     const { queryClient, wrapper } = createWrapper();
@@ -175,7 +175,8 @@ describe('useLoadCruiseResultFromFile', () => {
       await result.current.handleFileSelect(new File(['{}'], 'cruise.json'));
     });
 
-    expect(seenDuringOnLoaded).toEqual([cruiseResult]);
+    expect(seenDuringOnLoaded).toEqual([undefined]);
+    expect(queryClient.getQueryData(['cruise-result'])).toEqual(cruiseResult);
   });
 
   it('warns when cruise loads but workspace settings were ignored', async () => {

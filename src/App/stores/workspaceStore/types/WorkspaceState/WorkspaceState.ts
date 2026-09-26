@@ -13,6 +13,7 @@ export interface WorkspaceState {
   activePath: string | null;
   dependenciesPanelPath: string | null;
   applicableRulesPanelPath: string | null;
+  userEdgeHighlights: ReadonlyMap<string, string>;
   graphSettings: {
     autoLayoutOnly: boolean;
     edgesType: GraphEdgesType;

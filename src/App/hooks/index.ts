@@ -4,8 +4,6 @@ export * from './useCruiseResult';
 export * from './useCruiseResultFileDrop';
 export * from './useCruiseResultWatch';
 export * from './useFileLoadNotice';
-export * from './useIgnorePatterns';
-export * from './useInitialDependencyCruiserState';
 export * from './useInitialWorkspaceSettingsFromCli';
 export * from './useLoadCruiseResultFromFile';
 export * from './useLoadWorkspaceSettingsFromFile';

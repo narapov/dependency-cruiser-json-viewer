@@ -2,6 +2,7 @@ import type { ICruiseResult, ISummary } from 'dependency-cruiser';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
+  makeDependencyKey,
   VIEWER_WORKSPACE_EXTENSION_KEY,
   VIEWER_WORKSPACE_SCHEMA_VERSION,
   type ViewerWorkspaceSettings,
@@ -88,18 +89,21 @@ describe('useWorkspaceStore.reset', () => {
     expect(state.activePath).toBeNull();
     expect(state.dependenciesPanelPath).toBeNull();
     expect(state.applicableRulesPanelPath).toBeNull();
+    expect(state.userEdgeHighlights.size).toBe(0);
     expect(state.graphSettings).toEqual({ autoLayoutOnly: true, edgesType: 'bezier' });
     expect(state.nodePositions).toBeNull();
     expect(state.folderBaseColors).toHaveProperty('src');
   });
 
   it('hard-resets from embedded workspace settings when present', () => {
+    const depKey = makeDependencyKey('src/a.ts', 'src/b.ts');
     const settings = makeSettings({
       ignorePatterns: ['**/*.test.ts'],
       selectedFiles: ['src/a.ts'],
       expandedKeys: ['src'],
       dependenciesPath: 'src/a.ts',
       applicableRulesPath: null,
+      userEdgeHighlights: { [depKey]: '#ff0000' },
     });
     const state = useWorkspaceStore.getState().reset(withEmbeddedSettings(settings), 'hard');
 
@@ -110,12 +114,14 @@ describe('useWorkspaceStore.reset', () => {
     expect(state.dependenciesPanelPath).toBe('src/a.ts');
     expect(state.applicableRulesPanelPath).toBeNull();
     expect(state.activePath).toBeNull();
+    expect(state.userEdgeHighlights.get(depKey)).toBe('#ff0000');
     expect(state.graphSettings).toEqual({ autoLayoutOnly: false, edgesType: 'straight' });
     expect(state.nodePositions).toEqual({ '': { 'src/a.ts': { x: 1, y: 2 } } });
     expect(state.folderBaseColors.src).toEqual({ hue: 10, lightnessIndex: 0 });
   });
 
   it('soft-reset keeps valid UI fields and drops orphans against the new tree', () => {
+    const keptKey = makeDependencyKey('src/a.ts', 'src/b.ts');
     useWorkspaceStore.getState().reset(cruiseResult, 'hard');
     useWorkspaceStore.getState().setIgnorePatterns([]);
     useWorkspaceStore.getState().setSelectedFilePaths({
@@ -129,6 +135,12 @@ describe('useWorkspaceStore.reset', () => {
     useWorkspaceStore.getState().setActivePath('src/a.ts');
     useWorkspaceStore.getState().setDependenciesPanelPath('src/missing.ts');
     useWorkspaceStore.getState().setApplicableRulesPanelPath('src/b.ts');
+    useWorkspaceStore.getState().setUserEdgeHighlights(
+      new Map([
+        [keptKey, '#ff0000'],
+        [makeDependencyKey('src/a.ts', 'src/missing.ts'), '#00ff00'],
+      ]),
+    );
     useWorkspaceStore.getState().setGraphSettings({ autoLayoutOnly: false, edgesType: 'simpleOrthogonal' });
     useWorkspaceStore.getState().setNodePositions({
       '': {
@@ -149,6 +161,7 @@ describe('useWorkspaceStore.reset', () => {
     expect(state.activePath).toBe('src/a.ts');
     expect(state.dependenciesPanelPath).toBeNull();
     expect(state.applicableRulesPanelPath).toBeNull();
+    expect(state.userEdgeHighlights.size).toBe(0);
     expect(state.graphSettings.edgesType).toBe('simpleOrthogonal');
     expect(state.nodePositions).toEqual({ '': { 'src/a.ts': { x: 10, y: 20 } } });
     expect(state.cruiseTree.descendantFiles).toEqual(['src/a.ts', 'src/c.test.ts']);
@@ -159,6 +172,7 @@ describe('useWorkspaceStore.syncWorkspaceSettings', () => {
   it('applies settings against the current cruise result', () => {
     useWorkspaceStore.getState().reset(cruiseResult, 'hard');
 
+    const depKey = makeDependencyKey('src/a.ts', 'src/b.ts');
     const state = useWorkspaceStore.getState().syncWorkspaceSettings(
       makeSettings({
         ignorePatterns: ['**/*.test.ts'],
@@ -166,6 +180,7 @@ describe('useWorkspaceStore.syncWorkspaceSettings', () => {
         expandedKeys: ['src'],
         dependenciesPath: null,
         applicableRulesPath: 'src/b.ts',
+        userEdgeHighlights: { [depKey]: '#abcdef' },
         autoLayoutOnly: true,
         edgesType: 'bezier',
         nodePositions: {},
@@ -177,6 +192,7 @@ describe('useWorkspaceStore.syncWorkspaceSettings', () => {
     expect(state.selectedFilePaths).toEqual({ 'src/b.ts': true });
     expect(state.applicableRulesPanelPath).toBe('src/b.ts');
     expect(state.activePath).toBeNull();
+    expect(state.userEdgeHighlights.get(depKey)).toBe('#abcdef');
     expect(state.nodePositions).toBeNull();
   });
 
@@ -207,5 +223,29 @@ describe('useWorkspaceStore.setIgnorePatterns', () => {
     expect(state.activePath).toBeNull();
     expect(state.dependenciesPanelPath).toBeNull();
     expect(state.applicableRulesPanelPath).toBe('src/a.ts');
+  });
+});
+
+describe('useWorkspaceStore.replaceExpandedFolderPaths', () => {
+  it('writes expanded folders and moves activePath out of collapsed subtrees', () => {
+    useWorkspaceStore.getState().reset(cruiseResult, 'hard');
+    useWorkspaceStore.getState().setExpandedFolderPaths({ src: true });
+    useWorkspaceStore.getState().setActivePath('src/a.ts');
+
+    useWorkspaceStore.getState().replaceExpandedFolderPaths([]);
+
+    expect(useWorkspaceStore.getState().expandedFolderPaths).toEqual({});
+    expect(useWorkspaceStore.getState().activePath).toBe('src');
+  });
+
+  it('does not change activePath when nothing collapses', () => {
+    useWorkspaceStore.getState().reset(cruiseResult, 'hard');
+    useWorkspaceStore.getState().setExpandedFolderPaths({ src: true });
+    useWorkspaceStore.getState().setActivePath('src/a.ts');
+
+    useWorkspaceStore.getState().replaceExpandedFolderPaths(['src', 'src/extra']);
+
+    expect(useWorkspaceStore.getState().expandedFolderPaths).toEqual({ src: true, 'src/extra': true });
+    expect(useWorkspaceStore.getState().activePath).toBe('src/a.ts');
   });
 });

@@ -14,6 +14,7 @@ export function mapMergedViewToWorkspaceFields(
   | 'dependenciesPanelPath'
   | 'applicableRulesPanelPath'
   | 'folderBaseColors'
+  | 'userEdgeHighlights'
   | 'graphSettings'
   | 'nodePositions'
   | 'activePath'
@@ -24,6 +25,7 @@ export function mapMergedViewToWorkspaceFields(
     dependenciesPanelPath: view.dependenciesPath,
     applicableRulesPanelPath: view.applicableRulesPath,
     folderBaseColors: view.folderColors,
+    userEdgeHighlights: view.userEdgeHighlights,
     graphSettings: {
       autoLayoutOnly: view.autoLayoutOnly,
       edgesType: view.edgesType,

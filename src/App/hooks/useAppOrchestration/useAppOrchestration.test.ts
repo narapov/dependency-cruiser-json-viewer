@@ -1,16 +1,16 @@
 // @vitest-environment jsdom
-import type { IModule } from 'dependency-cruiser';
+import type { ICruiseResult, IModule, ISummary } from 'dependency-cruiser';
 import { createRef } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { act, renderHook } from '@testing-library/react';
 
-import { buildCruiseTreeSnapshot } from '@/domain';
 import { LANGUAGE_STORAGE_KEY } from '@/i18n';
 import { APP_STORAGE_PREFIX, copyToClipboard, downloadTextFile, THEME_STORAGE_KEY } from '@/Shared';
 
 import type { DependencyGraphHandle } from '../../partials/DependencyGraph';
 import type { FileTreeHandle } from '../../partials/FileTree';
+import { initialWorkspaceState, pathsToPresenceRecord, useWorkspaceStore } from '../../stores/workspaceStore';
 import { useAppOrchestration } from './useAppOrchestration';
 
 vi.mock('@/Shared', async importOriginal => {
@@ -28,16 +28,28 @@ function modulesOf(sources: readonly string[]): IModule[] {
   return sources.map(source => ({ source, dependencies: [], dependents: [], valid: true }) as IModule);
 }
 
-function cruiseTreeOf(sources: readonly string[]) {
-  return buildCruiseTreeSnapshot(modulesOf(sources));
-}
-
 function modulesWithDependency(from: string, to: string, sources: readonly string[]): IModule[] {
   return modulesOf(sources).map(module =>
     module.source === from
       ? ({ ...module, dependencies: [{ resolved: to, dependencyTypes: ['local'] }] } as IModule)
       : module,
   );
+}
+
+function cruiseResultOf(modules: IModule[], violations: ICruiseResult['summary']['violations'] = []): ICruiseResult {
+  return {
+    modules,
+    summary: {
+      totalCruised: modules.length,
+      violations,
+      error: 0,
+      warn: 0,
+      info: 0,
+      ignore: 0,
+      optionsUsed: { args: '' },
+      environment: {} as ISummary['environment'],
+    },
+  } as ICruiseResult;
 }
 
 function createRefs() {
@@ -55,59 +67,64 @@ function createRefs() {
     setLayoutState: vi.fn(),
     openEdgesTypePicker: vi.fn(),
   };
-  // refs are mutable in tests
   (fileTreeRef as { current: FileTreeHandle }).current = fileTree as unknown as FileTreeHandle;
   (graphRef as { current: DependencyGraphHandle }).current = graph as unknown as DependencyGraphHandle;
   return { fileTreeRef, graphRef, fileTree, graph };
 }
 
+function seedWorkspace(
+  overrides: {
+    modules?: IModule[];
+    selectedKeys?: string[];
+    expandedKeys?: string[];
+    violations?: ICruiseResult['summary']['violations'];
+  } = {},
+) {
+  const modules = overrides.modules ?? modulesOf(SOURCES);
+  useWorkspaceStore.getState().reset(cruiseResultOf(modules, overrides.violations), 'hard');
+  if (overrides.selectedKeys != null) {
+    useWorkspaceStore.getState().setSelectedFilePaths(pathsToPresenceRecord(overrides.selectedKeys));
+  }
+  if (overrides.expandedKeys != null) {
+    useWorkspaceStore.getState().setExpandedFolderPaths(pathsToPresenceRecord(overrides.expandedKeys));
+  }
+}
+
 function renderOrchestration(
   overrides: Partial<{
-    sources: string[];
+    modules: IModule[];
     selectedKeys: string[];
     expandedKeys: string[];
+    violations: ICruiseResult['summary']['violations'];
   }> = {},
 ) {
   const refs = createRefs();
-  const sources = overrides.sources ?? SOURCES;
-  const initialDependencyCruiserState = {
+  seedWorkspace({
+    modules: overrides.modules,
     selectedKeys: overrides.selectedKeys ?? SOURCES,
     expandedKeys: overrides.expandedKeys ?? ['src', 'src/b'],
-  };
-  const hook = renderHook(
-    ({ cruiseTree, initialDependencyCruiserState: initial }) =>
-      useAppOrchestration({
-        cruiseTree,
-        unfilteredCruiseResult: {
-          modules: modulesOf(sources),
-          summary: {},
-        } as never,
-        ignorePatterns: [],
-        fileTreeRef: refs.fileTreeRef,
-        graphRef: refs.graphRef,
-        initialDependencyCruiserState: initial,
-        cruiseLoadId: 0,
-      }),
-    {
-      initialProps: {
-        cruiseTree: cruiseTreeOf(sources),
-        initialDependencyCruiserState,
-      },
-    },
+    violations: overrides.violations,
+  });
+  const hook = renderHook(() =>
+    useAppOrchestration({
+      fileTreeRef: refs.fileTreeRef,
+      graphRef: refs.graphRef,
+    }),
   );
-  return { ...hook, ...refs, initialDependencyCruiserState };
+  return { ...hook, ...refs };
 }
 
 describe('useAppOrchestration', () => {
   beforeEach(() => {
     localStorage.clear();
+    useWorkspaceStore.setState({ ...initialWorkspaceState, userEdgeHighlights: new Map() });
   });
 
   afterEach(() => {
     vi.clearAllMocks();
   });
 
-  it('initializes from dependency cruiser state', () => {
+  it('initializes from workspace store', () => {
     const { result } = renderOrchestration({
       selectedKeys: ['src/a.ts'],
       expandedKeys: ['src'],
@@ -120,26 +137,18 @@ describe('useAppOrchestration', () => {
     expect(result.current.applicableRulesPanelOpen).toBe(false);
   });
 
-  it('resets selection when sources change', () => {
-    const { result, rerender } = renderOrchestration({
+  it('follows soft reset when cruise result sources change', () => {
+    const { result } = renderOrchestration({
       selectedKeys: ['src/a.ts'],
       expandedKeys: ['src'],
     });
 
     act(() => {
-      result.current.setSelectedPaths(['src/a.ts']);
+      useWorkspaceStore.getState().reset(cruiseResultOf(modulesOf(['src/b/c.ts'])), 'soft');
     });
 
-    rerender({
-      cruiseTree: cruiseTreeOf(['src/b/c.ts']),
-      initialDependencyCruiserState: {
-        selectedKeys: ['src/b/c.ts'],
-        expandedKeys: ['src', 'src/b'],
-      },
-    });
-
-    expect(result.current.selectedPaths).toEqual(['src/b/c.ts']);
-    expect(result.current.expandedKeys).toEqual(['src', 'src/b']);
+    expect(result.current.selectedPaths).toEqual([]);
+    expect(result.current.expandedKeys).toEqual(['src']);
   });
 
   it('activatePath expands ancestors and sets activePath', () => {
@@ -238,19 +247,15 @@ describe('useAppOrchestration', () => {
   });
 
   it('resolves activePath to null when path leaves sources', () => {
-    const { result, rerender } = renderOrchestration();
+    const { result } = renderOrchestration();
 
     act(() => {
       result.current.activatePath('src/a.ts');
     });
     expect(result.current.activePath).toBe('src/a.ts');
 
-    rerender({
-      cruiseTree: cruiseTreeOf(['src/b/c.ts']),
-      initialDependencyCruiserState: {
-        selectedKeys: ['src/b/c.ts'],
-        expandedKeys: ['src', 'src/b'],
-      },
+    act(() => {
+      useWorkspaceStore.getState().reset(cruiseResultOf(modulesOf(['src/b/c.ts'])), 'soft');
     });
 
     expect(result.current.activePath).toBeNull();
@@ -287,12 +292,6 @@ describe('useAppOrchestration', () => {
   });
 
   it('showCircularDependenciesOnly selects circular modules and expands ancestors', () => {
-    const sources = ['src/a.ts', 'src/b/c.ts', 'src/b/d.ts', 'src/e/f/g.ts'];
-    const refs = createRefs();
-    const initialDependencyCruiserState = {
-      selectedKeys: sources,
-      expandedKeys: [] as string[],
-    };
     const modules = [
       {
         source: 'src/a.ts',
@@ -331,20 +330,11 @@ describe('useAppOrchestration', () => {
         valid: true,
       },
     ] as unknown as IModule[];
-    const { result } = renderHook(() =>
-      useAppOrchestration({
-        cruiseTree: buildCruiseTreeSnapshot(modules),
-        unfilteredCruiseResult: {
-          modules,
-          summary: {},
-        } as never,
-        ignorePatterns: [],
-        fileTreeRef: refs.fileTreeRef,
-        graphRef: refs.graphRef,
-        initialDependencyCruiserState,
-        cruiseLoadId: 0,
-      }),
-    );
+    const { result } = renderOrchestration({
+      modules,
+      selectedKeys: SOURCES,
+      expandedKeys: [],
+    });
 
     act(() => {
       result.current.showCircularDependenciesOnly();
@@ -371,41 +361,24 @@ describe('useAppOrchestration', () => {
   });
 
   it('showRuleViolationsOnly selects modules from matching violations and expands ancestors', () => {
-    const sources = ['src/a.ts', 'src/b/c.ts', 'src/b/d.ts', 'src/e/f/g.ts'];
-    const refs = createRefs();
-    const initialDependencyCruiserState = {
-      selectedKeys: sources,
-      expandedKeys: [] as string[],
-    };
-    const { result } = renderHook(() =>
-      useAppOrchestration({
-        cruiseTree: cruiseTreeOf(sources),
-        unfilteredCruiseResult: {
-          modules: modulesOf(sources),
-          summary: {
-            violations: [
-              {
-                type: 'dependency',
-                rule: { name: 'no-circular', severity: 'error' },
-                from: 'src/b/c.ts',
-                to: 'src/b/d.ts',
-              },
-              {
-                type: 'dependency',
-                rule: { name: 'other-rule', severity: 'warn' },
-                from: 'src/a.ts',
-                to: 'src/e/f/g.ts',
-              },
-            ],
-          },
-        } as never,
-        ignorePatterns: [],
-        fileTreeRef: refs.fileTreeRef,
-        graphRef: refs.graphRef,
-        initialDependencyCruiserState,
-        cruiseLoadId: 0,
-      }),
-    );
+    const { result } = renderOrchestration({
+      selectedKeys: SOURCES,
+      expandedKeys: [],
+      violations: [
+        {
+          type: 'dependency',
+          rule: { name: 'no-circular', severity: 'error' },
+          from: 'src/b/c.ts',
+          to: 'src/b/d.ts',
+        },
+        {
+          type: 'dependency',
+          rule: { name: 'other-rule', severity: 'warn' },
+          from: 'src/a.ts',
+          to: 'src/e/f/g.ts',
+        },
+      ],
+    });
 
     act(() => {
       result.current.showRuleViolationsOnly(['no-circular']);
@@ -492,26 +465,11 @@ describe('useAppOrchestration', () => {
 
   it('showDirectDependencies adds related modules to the selection', () => {
     const sources = ['src/a.ts', 'src/b/c.ts', 'src/b/d.ts'];
-    const refs = createRefs();
-    const initialDependencyCruiserState = {
+    const { result } = renderOrchestration({
+      modules: modulesWithDependency('src/a.ts', 'src/b/c.ts', sources),
       selectedKeys: ['src/a.ts'],
-      expandedKeys: [] as string[],
-    };
-    const modules = modulesWithDependency('src/a.ts', 'src/b/c.ts', sources);
-    const { result } = renderHook(() =>
-      useAppOrchestration({
-        cruiseTree: buildCruiseTreeSnapshot(modules),
-        unfilteredCruiseResult: {
-          modules,
-          summary: {},
-        } as never,
-        ignorePatterns: [],
-        fileTreeRef: refs.fileTreeRef,
-        graphRef: refs.graphRef,
-        initialDependencyCruiserState,
-        cruiseLoadId: 0,
-      }),
-    );
+      expandedKeys: [],
+    });
 
     act(() => {
       result.current.showDirectDependencies('src/a.ts');
@@ -524,26 +482,11 @@ describe('useAppOrchestration', () => {
 
   it('showDirectDependencies expands ancestors of already-selected related modules', () => {
     const sources = ['src/a.ts', 'src/b/c.ts', 'src/b/d.ts'];
-    const refs = createRefs();
-    const initialDependencyCruiserState = {
+    const { result } = renderOrchestration({
+      modules: modulesWithDependency('src/a.ts', 'src/b/c.ts', sources),
       selectedKeys: ['src/a.ts', 'src/b/c.ts'],
-      expandedKeys: [] as string[],
-    };
-    const modules = modulesWithDependency('src/a.ts', 'src/b/c.ts', sources);
-    const { result } = renderHook(() =>
-      useAppOrchestration({
-        cruiseTree: buildCruiseTreeSnapshot(modules),
-        unfilteredCruiseResult: {
-          modules,
-          summary: {},
-        } as never,
-        ignorePatterns: [],
-        fileTreeRef: refs.fileTreeRef,
-        graphRef: refs.graphRef,
-        initialDependencyCruiserState,
-        cruiseLoadId: 0,
-      }),
-    );
+      expandedKeys: [],
+    });
 
     act(() => {
       result.current.showDirectDependencies('src/a.ts');
@@ -554,26 +497,11 @@ describe('useAppOrchestration', () => {
 
   it('showDirectDependents adds incoming modules to the selection', () => {
     const sources = ['src/a.ts', 'src/b/c.ts', 'src/b/d.ts'];
-    const refs = createRefs();
-    const initialDependencyCruiserState = {
+    const { result } = renderOrchestration({
+      modules: modulesWithDependency('src/b/c.ts', 'src/a.ts', sources),
       selectedKeys: ['src/a.ts'],
-      expandedKeys: [] as string[],
-    };
-    const modules = modulesWithDependency('src/b/c.ts', 'src/a.ts', sources);
-    const { result } = renderHook(() =>
-      useAppOrchestration({
-        cruiseTree: buildCruiseTreeSnapshot(modules),
-        unfilteredCruiseResult: {
-          modules,
-          summary: {},
-        } as never,
-        ignorePatterns: [],
-        fileTreeRef: refs.fileTreeRef,
-        graphRef: refs.graphRef,
-        initialDependencyCruiserState,
-        cruiseLoadId: 0,
-      }),
-    );
+      expandedKeys: [],
+    });
 
     act(() => {
       result.current.showDirectDependents('src/a.ts');
@@ -797,170 +725,18 @@ describe('useAppOrchestration', () => {
     expect(payload['dependency-cruiser-json-viewer'].settings.selectedFiles).toEqual(['src/a.ts', 'src/b/c.ts']);
   });
 
-  it('applies workspace view immediately regardless of the sources prop', () => {
-    const refs = createRefs();
-    const restoredExpanded = ['src', 'src/b', 'src/e', 'src/e/f'];
-    const view = {
-      selectedFiles: ['src/a.ts', 'src/b/c.ts', 'src/b/d.ts', 'src/e/f/g.ts'],
-      expandedKeys: restoredExpanded,
-      dependenciesPath: null,
-      applicableRulesPath: null,
-      userEdgeHighlights: new Map<string, string>(),
-      folderColors: {
-        src: { hue: 10, lightnessIndex: 0 },
-        'src/b': { hue: 20, lightnessIndex: 1 },
-        'src/e': { hue: 30, lightnessIndex: 0 },
-        'src/e/f': { hue: 40, lightnessIndex: 1 },
-      },
-      autoLayoutOnly: true,
-      edgesType: 'bezier' as const,
-      nodePositions: {},
-    };
-    const emptyInitial = { selectedKeys: [] as string[], expandedKeys: [] as string[] };
-    const readyInitial = { selectedKeys: SOURCES, expandedKeys: ['src'] };
-
-    const { result, rerender } = renderHook(
-      ({ cruiseTree, initialDependencyCruiserState, cruiseLoadId }) =>
-        useAppOrchestration({
-          cruiseTree,
-          unfilteredCruiseResult: undefined,
-          ignorePatterns: [],
-          fileTreeRef: refs.fileTreeRef,
-          graphRef: refs.graphRef,
-          initialDependencyCruiserState,
-          cruiseLoadId,
-        }),
-      {
-        initialProps: {
-          cruiseTree: cruiseTreeOf([]),
-          initialDependencyCruiserState: emptyInitial,
-          cruiseLoadId: 0,
-        },
-      },
-    );
-
-    expect(result.current.expandedKeys).toEqual([]);
+  it('applies layout via setLayoutState when store layout fields change', () => {
+    const { graph } = renderOrchestration();
 
     act(() => {
-      result.current.applyWorkspaceView({
-        view,
-        sourcesKey: SOURCES.join('\0'),
-        cruiseLoadId: 1,
-        lastInitialSelectedKeys: readyInitial.selectedKeys,
-        lastInitialExpandedKeys: readyInitial.expandedKeys,
-      });
-      // Same batch as App: props catch up with the eagerly resolved sourcesKey.
-      rerender({
-        cruiseTree: cruiseTreeOf(SOURCES),
-        initialDependencyCruiserState: readyInitial,
-        cruiseLoadId: 1,
-      });
+      useWorkspaceStore.getState().setGraphSettings({ autoLayoutOnly: false, edgesType: 'bezier' });
+      useWorkspaceStore.getState().setNodePositions({ '': { 'src/a.ts': { x: 5, y: 6 } } });
     });
 
-    expect(result.current.expandedKeys).toEqual(restoredExpanded);
-    expect(result.current.selectedPaths).toEqual(
-      expect.arrayContaining([...view.selectedFiles, 'src', 'src/b', 'src/e', 'src/e/f']),
-    );
-    expect(result.current.selectedPaths).toHaveLength(view.selectedFiles.length + 4);
-  });
-
-  it('applies workspace view with empty sources without waiting', () => {
-    const refs = createRefs();
-    const emptyInitial = { selectedKeys: [] as string[], expandedKeys: [] as string[] };
-    const unfilteredCruiseResult = {
-      modules: [{ source: 'src/a.ts', dependencies: [], dependents: [], valid: true }],
-      summary: {},
-    } as never;
-
-    const { result, rerender } = renderHook(
-      ({ cruiseLoadId }) =>
-        useAppOrchestration({
-          cruiseTree: cruiseTreeOf([]),
-          unfilteredCruiseResult,
-          ignorePatterns: ['**/*'],
-          fileTreeRef: refs.fileTreeRef,
-          graphRef: refs.graphRef,
-          initialDependencyCruiserState: emptyInitial,
-          cruiseLoadId,
-        }),
-      { initialProps: { cruiseLoadId: 0 } },
-    );
-
-    act(() => {
-      result.current.applyWorkspaceView({
-        view: {
-          selectedFiles: [],
-          expandedKeys: [],
-          dependenciesPath: null,
-          applicableRulesPath: null,
-          userEdgeHighlights: new Map(),
-          folderColors: {},
-          autoLayoutOnly: true,
-          edgesType: 'bezier' as const,
-          nodePositions: {},
-        },
-        sourcesKey: '',
-        cruiseLoadId: 1,
-        lastInitialSelectedKeys: [],
-        lastInitialExpandedKeys: [],
-      });
-      rerender({ cruiseLoadId: 1 });
-    });
-
-    expect(result.current.selectedPaths).toEqual([]);
-    expect(result.current.expandedKeys).toEqual([]);
-  });
-
-  it('restores layout via setLayoutState when applying workspace view', () => {
-    const refs = createRefs();
-    const nodePositions = { '': { 'src/a.ts': { x: 5, y: 6 } } };
-    const initialDependencyCruiserState = { selectedKeys: SOURCES, expandedKeys: ['src'] };
-    const view = {
-      selectedFiles: ['src/a.ts', 'src/b/c.ts', 'src/b/d.ts', 'src/e/f/g.ts'],
-      expandedKeys: ['src'],
-      dependenciesPath: null,
-      applicableRulesPath: null,
-      userEdgeHighlights: new Map<string, string>(),
-      folderColors: {
-        src: { hue: 10, lightnessIndex: 0 },
-        'src/b': { hue: 20, lightnessIndex: 1 },
-        'src/e': { hue: 30, lightnessIndex: 0 },
-        'src/e/f': { hue: 40, lightnessIndex: 1 },
-      },
-      autoLayoutOnly: false,
-      edgesType: 'bezier' as const,
-      nodePositions,
-    };
-
-    const { result } = renderHook(() =>
-      useAppOrchestration({
-        cruiseTree: cruiseTreeOf(SOURCES),
-        unfilteredCruiseResult: {
-          modules: modulesOf(SOURCES),
-          summary: {},
-        } as never,
-        ignorePatterns: [],
-        fileTreeRef: refs.fileTreeRef,
-        graphRef: refs.graphRef,
-        initialDependencyCruiserState,
-        cruiseLoadId: 1,
-      }),
-    );
-
-    act(() => {
-      result.current.applyWorkspaceView({
-        view,
-        sourcesKey: SOURCES.join('\0'),
-        cruiseLoadId: 1,
-        lastInitialSelectedKeys: initialDependencyCruiserState.selectedKeys,
-        lastInitialExpandedKeys: initialDependencyCruiserState.expandedKeys,
-      });
-    });
-
-    expect(refs.graph.setLayoutState).toHaveBeenCalledWith({
+    expect(graph.setLayoutState).toHaveBeenCalledWith({
       autoLayoutOnly: false,
       edgesType: 'bezier',
-      nodePositions,
+      nodePositions: { '': { 'src/a.ts': { x: 5, y: 6 } } },
     });
   });
 });

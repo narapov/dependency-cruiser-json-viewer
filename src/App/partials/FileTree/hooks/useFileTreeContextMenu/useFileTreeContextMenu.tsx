@@ -1,46 +1,47 @@
-import { useCallback, useState, type MouseEvent } from 'react';
+import { useCallback, useState, type MouseEvent, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 
+import { getSubtreeFolderKeys, isPathVisibleInSelectionRecord, toggleExpandedKey } from '@/domain';
 import { copyToClipboard } from '@/Shared';
 
-export interface FileTreeContextMenuOptions {
-  path: string;
-  isFolder?: boolean;
-  expanded?: boolean;
-  onToggleExpand?: (path: string) => void;
-  onExpandRecursive?: (path: string) => void;
-  onShowInGraph?: (path: string) => void;
-  onShowDependenciesPanel?: (path: string) => void;
-  onShowApplicableRulesPanel?: (path: string) => void;
+import { presenceRecordToPaths, useWorkspaceStore } from '../../../../stores/workspaceStore';
+
+export interface UseFileTreeContextMenuOptions {
+  onShowInGraph: (path: string) => void;
   onViewModuleJson: (path: string) => void;
 }
 
-export function useFileTreeContextMenu(config: FileTreeContextMenuOptions) {
-  const {
-    path,
-    isFolder = false,
-    expanded,
-    onToggleExpand,
-    onExpandRecursive,
-    onShowInGraph,
-    onShowDependenciesPanel,
-    onShowApplicableRulesPanel,
-    onViewModuleJson,
-  } = config;
+interface MenuState {
+  path: string;
+  anchorPosition: { top: number; left: number };
+}
+
+export function useFileTreeContextMenu(config: UseFileTreeContextMenuOptions) {
+  const { onShowInGraph, onViewModuleJson } = config;
 
   const { t } = useTranslation();
-  const [anchorPosition, setAnchorPosition] = useState<{ top: number; left: number } | null>(null);
+  const [menuState, setMenuState] = useState<MenuState | null>(null);
 
-  const onContextMenu = useCallback((event: MouseEvent) => {
+  const cruiseTree = useWorkspaceStore(state => state.cruiseTree);
+  const selectedFilePaths = useWorkspaceStore(state => state.selectedFilePaths);
+  const expandedFolderPaths = useWorkspaceStore(state => state.expandedFolderPaths);
+  const replaceExpandedFolderPaths = useWorkspaceStore(state => state.replaceExpandedFolderPaths);
+  const setDependenciesPanelPath = useWorkspaceStore(state => state.setDependenciesPanelPath);
+  const setApplicableRulesPanelPath = useWorkspaceStore(state => state.setApplicableRulesPanelPath);
+
+  const openContextMenu = useCallback((event: MouseEvent, path: string) => {
     event.preventDefault();
-    setAnchorPosition({ top: event.clientY, left: event.clientX });
+    setMenuState({
+      path,
+      anchorPosition: { top: event.clientY, left: event.clientX },
+    });
   }, []);
 
   const handleClose = useCallback(() => {
-    setAnchorPosition(null);
+    setMenuState(null);
   }, []);
 
   const handleAction = useCallback(
@@ -52,36 +53,60 @@ export function useFileTreeContextMenu(config: FileTreeContextMenuOptions) {
     [handleClose],
   );
 
-  const contextMenu = (
+  const path = menuState?.path;
+  const node = path != null ? cruiseTree.nodes.get(path) : undefined;
+  const isFolder = node?.isFolder === true;
+  const expandedKeys = presenceRecordToPaths(expandedFolderPaths);
+  const expanded = path != null && expandedFolderPaths[path] === true;
+  const navigable =
+    path != null && isPathVisibleInSelectionRecord(path, selectedFilePaths, node?.descendantFiles ?? []);
+
+  const toggleExpand = (folderPath: string) => {
+    replaceExpandedFolderPaths(toggleExpandedKey(expandedKeys, folderPath));
+  };
+
+  const expandRecursive = (folderPath: string) => {
+    replaceExpandedFolderPaths([
+      ...new Set([...expandedKeys, ...getSubtreeFolderKeys(folderPath, cruiseTree.descendantFiles)]),
+    ]);
+  };
+
+  const contextMenu: ReactNode = (
     <Menu
-      open={anchorPosition !== null}
+      open={menuState !== null}
       onClose={handleClose}
       anchorReference="anchorPosition"
-      anchorPosition={anchorPosition ?? undefined}
+      anchorPosition={menuState?.anchorPosition}
     >
-      <MenuItem onClick={handleAction(() => void copyToClipboard(path))}>{t('actions.copyPath')}</MenuItem>
-      {onShowInGraph && (
-        <MenuItem onClick={handleAction(() => onShowInGraph(path))}>{t('actions.showInGraph')}</MenuItem>
+      {path != null && (
+        <>
+          <MenuItem onClick={handleAction(() => void copyToClipboard(path))}>{t('actions.copyPath')}</MenuItem>
+          {navigable && (
+            <MenuItem onClick={handleAction(() => onShowInGraph(path))}>{t('actions.showInGraph')}</MenuItem>
+          )}
+          {isFolder && (
+            <MenuItem onClick={handleAction(() => toggleExpand(path))}>
+              {expanded ? t('actions.collapse') : t('actions.expand')}
+            </MenuItem>
+          )}
+          {isFolder && (
+            <MenuItem onClick={handleAction(() => expandRecursive(path))}>{t('actions.expandRecursive')}</MenuItem>
+          )}
+          {navigable && (
+            <MenuItem onClick={handleAction(() => setDependenciesPanelPath(path))}>
+              {t('actions.viewDependencies')}
+            </MenuItem>
+          )}
+          {navigable && (
+            <MenuItem onClick={handleAction(() => setApplicableRulesPanelPath(path))}>
+              {t('actions.viewApplicableRules')}
+            </MenuItem>
+          )}
+          <MenuItem onClick={handleAction(() => onViewModuleJson(path))}>{t('moduleJson.view')}</MenuItem>
+        </>
       )}
-      {isFolder && onToggleExpand && (
-        <MenuItem onClick={handleAction(() => onToggleExpand(path))}>
-          {expanded ? t('actions.collapse') : t('actions.expand')}
-        </MenuItem>
-      )}
-      {isFolder && onExpandRecursive && (
-        <MenuItem onClick={handleAction(() => onExpandRecursive(path))}>{t('actions.expandRecursive')}</MenuItem>
-      )}
-      {onShowDependenciesPanel && (
-        <MenuItem onClick={handleAction(() => onShowDependenciesPanel(path))}>{t('actions.viewDependencies')}</MenuItem>
-      )}
-      {onShowApplicableRulesPanel && (
-        <MenuItem onClick={handleAction(() => onShowApplicableRulesPanel(path))}>
-          {t('actions.viewApplicableRules')}
-        </MenuItem>
-      )}
-      <MenuItem onClick={handleAction(() => onViewModuleJson(path))}>{t('moduleJson.view')}</MenuItem>
     </Menu>
   );
 
-  return { onContextMenu, contextMenu };
+  return { openContextMenu, contextMenu };
 }

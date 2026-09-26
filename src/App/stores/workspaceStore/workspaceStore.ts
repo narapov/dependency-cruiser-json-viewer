@@ -3,8 +3,10 @@ import { create } from 'zustand';
 import { combine } from 'zustand/middleware';
 
 import {
+  applyHighlightKeys,
   getInitialDependencyCruiserState,
   replaceWorkspaceSettings,
+  resolveActivePathAfterCollapse,
   stripViewerWorkspaceExtension,
   type CruiseTreeSnapshot,
   type ViewerWorkspaceSettings,
@@ -16,6 +18,7 @@ import {
   extractEmbeddedWorkspaceSettings,
   mapMergedViewToWorkspaceFields,
   pathsToPresenceRecord,
+  presenceRecordToPaths,
   reconcileWorkspaceAgainstTree,
 } from './helpers';
 import type { WorkspaceResetMode, WorkspaceState } from './types';
@@ -45,6 +48,7 @@ export const initialWorkspaceState: WorkspaceState = {
   activePath: null,
   dependenciesPanelPath: null,
   applicableRulesPanelPath: null,
+  userEdgeHighlights: new Map(),
   graphSettings: DEFAULT_GRAPH_SETTINGS,
   nodePositions: null,
 };
@@ -82,6 +86,7 @@ function hardResetWithoutSettings(cruiseResult: ICruiseResult): WorkspaceState {
     activePath: null,
     dependenciesPanelPath: null,
     applicableRulesPanelPath: null,
+    userEdgeHighlights: new Map(),
     graphSettings: DEFAULT_GRAPH_SETTINGS,
     nodePositions: null,
   };
@@ -109,6 +114,7 @@ function pickWorkspaceState(state: WorkspaceState): WorkspaceState {
     activePath: state.activePath,
     dependenciesPanelPath: state.dependenciesPanelPath,
     applicableRulesPanelPath: state.applicableRulesPanelPath,
+    userEdgeHighlights: state.userEdgeHighlights,
     graphSettings: state.graphSettings,
     nodePositions: state.nodePositions,
   };
@@ -170,6 +176,20 @@ export const useWorkspaceStore = create(
       set({ expandedFolderPaths });
     },
 
+    /** Replace expanded folders; when folders collapse, move activePath out of collapsed subtrees. */
+    replaceExpandedFolderPaths(paths: readonly string[]): void {
+      const previous = presenceRecordToPaths(get().expandedFolderPaths);
+      const next = [...paths];
+      const collapsed = previous.filter(key => !next.includes(key));
+      const patch: Pick<WorkspaceState, 'expandedFolderPaths'> & Partial<Pick<WorkspaceState, 'activePath'>> = {
+        expandedFolderPaths: pathsToPresenceRecord(next),
+      };
+      if (collapsed.length > 0) {
+        patch.activePath = resolveActivePathAfterCollapse(get().activePath, collapsed);
+      }
+      set(patch);
+    },
+
     setActivePath(activePath: string | null): void {
       set({ activePath });
     },
@@ -180,6 +200,20 @@ export const useWorkspaceStore = create(
 
     setApplicableRulesPanelPath(applicableRulesPanelPath: string | null): void {
       set({ applicableRulesPanelPath });
+    },
+
+    setUserEdgeHighlights(userEdgeHighlights: WorkspaceState['userEdgeHighlights']): void {
+      set({ userEdgeHighlights });
+    },
+
+    setUserDependencyHighlight(dependencyKeys: readonly string[], color: string | null): void {
+      set({
+        userEdgeHighlights: applyHighlightKeys(get().userEdgeHighlights, dependencyKeys, color),
+      });
+    },
+
+    clearAllHighlights(): void {
+      set({ userEdgeHighlights: new Map() });
     },
 
     setGraphSettings(graphSettings: WorkspaceState['graphSettings']): void {

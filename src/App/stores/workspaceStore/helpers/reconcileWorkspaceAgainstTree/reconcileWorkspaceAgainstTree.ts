@@ -23,6 +23,7 @@ export function reconcileWorkspaceAgainstTree({
 }: ReconcileWorkspaceAgainstTreeInput): WorkspaceState {
   const sources = cruiseTree.descendantFiles;
   const isValidPath = (path: string) => isPathInSources(path, sources);
+  const sourceSet = new Set(sources);
 
   const defaultFolderColors = defaultFolderColorsRecord(cruiseTree);
   const folderBaseColors: Record<string, FolderBaseColor> = { ...defaultFolderColors };
@@ -52,6 +53,17 @@ export function reconcileWorkspaceAgainstTree({
       previous.applicableRulesPanelPath != null && isValidPath(previous.applicableRulesPanelPath)
         ? previous.applicableRulesPanelPath
         : null,
+    userEdgeHighlights: new Map(
+      [...previous.userEdgeHighlights.entries()].filter(([key]) => {
+        const separator = key.indexOf('->');
+        if (separator < 0) {
+          return false;
+        }
+        const from = key.slice(0, separator);
+        const to = key.slice(separator + 2);
+        return sourceSet.has(from) && sourceSet.has(to);
+      }),
+    ),
     graphSettings: {
       autoLayoutOnly,
       edgesType: previous.graphSettings.edgesType,

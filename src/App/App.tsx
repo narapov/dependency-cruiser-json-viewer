@@ -9,26 +9,22 @@ import Snackbar from '@mui/material/Snackbar';
 import Stack from '@mui/material/Stack';
 
 import {
-  buildCruiseTreeSnapshot,
   countIgnoredModules,
   CruiseResultParseError,
-  filterCruiseResult,
   groupRulesWithViolations,
   makeDependencyKey,
+  serializeViewerWorkspace,
   type ViewerWorkspaceSettings,
 } from '@/domain';
 import { getWindowEnvs } from '@/Shared';
 
 import { CruiseTreeProvider } from './contexts';
-import { resolveWorkspaceApply } from './helpers';
 import {
   useAppCommands,
   useAppOrchestration,
   useCruiseResult,
   useCruiseResultFileDrop,
   useCruiseResultWatch,
-  useIgnorePatterns,
-  useInitialDependencyCruiserState,
   useInitialWorkspaceSettingsFromCli,
   useLoadCruiseResultFromFile,
   useLoadWorkspaceSettingsFromFile,
@@ -53,14 +49,19 @@ import { LanguagePickerDialog } from './partials/LanguagePickerDialog';
 import { QuickPick, type QuickPickHandle } from './partials/QuickPick';
 import { RuleViolationsPickerDialog } from './partials/RuleViolationsPickerDialog';
 import { ThemePickerDialog } from './partials/ThemePickerDialog';
+import { useWorkspaceStore } from './stores/workspaceStore';
 
 import styles from './App.module.css';
 
 function App() {
   const { t } = useTranslation();
   const { data, isPending, isError, error } = useCruiseResult();
-  const { patterns, setPatterns } = useIgnorePatterns();
-  const [cruiseLoadId, setCruiseLoadId] = useState(0);
+  const cruiseResult = useWorkspaceStore(state => state.cruiseResult);
+  const ignorePatterns = useWorkspaceStore(state => state.ignorePatterns);
+  const cruiseTree = useWorkspaceStore(state => state.cruiseTree);
+  const setIgnorePatterns = useWorkspaceStore(state => state.setIgnorePatterns);
+  const resetWorkspace = useWorkspaceStore(state => state.reset);
+  const syncWorkspaceSettings = useWorkspaceStore(state => state.syncWorkspaceSettings);
   const [cruiseResultUpdatedOpen, setCruiseResultUpdatedOpen] = useState(false);
   const cruiseWatchEnabled = getWindowEnvs()?.watch === true;
 
@@ -75,26 +76,32 @@ function App() {
   const [ruleViolationsPickerOpen, setRuleViolationsPickerOpen] = useState(false);
   const [highlightEdgeOpen, setHighlightEdgeOpen] = useState(false);
 
-  const filteredData = useMemo(() => (data ? filterCruiseResult(data, patterns) : undefined), [data, patterns]);
+  useEffect(() => {
+    if (data == null) {
+      return;
+    }
+    if (useWorkspaceStore.getState().cruiseResult != null) {
+      return;
+    }
+    resetWorkspace(data, 'hard');
+  }, [data, resetWorkspace]);
 
-  const ignoredModuleCount = useMemo(() => (data ? countIgnoredModules(data, patterns) : 0), [data, patterns]);
+  const isHydrating = data != null && cruiseResult == null;
 
-  const cruiseTree = useMemo(
-    () =>
-      filteredData
-        ? buildCruiseTreeSnapshot(filteredData.modules, data?.summary.ruleSetUsed, data?.summary.violations)
-        : null,
-    [filteredData, data?.summary.ruleSetUsed, data?.summary.violations],
+  const ignoredModuleCount = useMemo(
+    () => (cruiseResult != null ? countIgnoredModules(cruiseResult, ignorePatterns) : 0),
+    [cruiseResult, ignorePatterns],
   );
-  const sources = useMemo(() => cruiseTree?.descendantFiles ?? [], [cruiseTree]);
+
+  const sources = cruiseTree.descendantFiles;
   const rulesWithViolations = useMemo(
     () =>
-      cruiseTree
+      cruiseResult != null
         ? groupRulesWithViolations(cruiseTree.ruleSetUsed, cruiseTree.violations, sources).filter(
             entry => entry.violations.length > 0,
           )
         : [],
-    [cruiseTree, sources],
+    [cruiseResult, cruiseTree.ruleSetUsed, cruiseTree.violations, sources],
   );
   const ruleViolationsPickerOptions = useMemo(
     () =>
@@ -105,7 +112,6 @@ function App() {
       })),
     [rulesWithViolations],
   );
-  const initialDependencyCruiserState = useInitialDependencyCruiserState(sources);
   const { sidebarOpen, setSidebarOpen, toggleSidebarOpen } = useSidebarOpen();
   const { sidebarView, setSidebarView } = useSidebarView();
   useSidebarShortcut({
@@ -141,22 +147,11 @@ function App() {
   );
 
   const orch = useAppOrchestration({
-    cruiseTree,
-    unfilteredCruiseResult: data,
-    ignorePatterns: patterns,
     fileTreeRef,
     graphRef,
-    initialDependencyCruiserState,
-    cruiseLoadId,
   });
 
-  useCruiseResultWatch({
-    cruiseLoadId,
-    setCruiseLoadId,
-    setPatterns,
-    getCurrentWorkspaceSettings: orch.getCurrentWorkspaceSettings,
-    applyWorkspaceView: orch.applyWorkspaceView,
-  });
+  useCruiseResultWatch();
 
   const isInitialCruiseResult = useRef(true);
   useEffect(() => {
@@ -171,48 +166,21 @@ function App() {
   }, [data, cruiseWatchEnabled]);
 
   const handleCruiseLoaded = useCallback(
-    ({ cruiseResult, settings }: LoadedCruiseResultFile) => {
-      const nextCruiseLoadId = cruiseLoadId + 1;
-      setCruiseLoadId(nextCruiseLoadId);
-      if (settings) {
-        setPatterns(settings.ignorePatterns);
-        const { sourcesKey, view, lastInitialSelectedKeys, lastInitialExpandedKeys } = resolveWorkspaceApply({
-          cruiseResult,
-          settings,
-        });
-        orch.applyWorkspaceView({
-          view,
-          sourcesKey,
-          cruiseLoadId: nextCruiseLoadId,
-          lastInitialSelectedKeys,
-          lastInitialExpandedKeys,
-        });
-      } else {
-        setPatterns([]);
-      }
+    ({ cruiseResult: loadedCruiseResult, settings }: LoadedCruiseResultFile) => {
+      const toReset = settings != null ? serializeViewerWorkspace(loadedCruiseResult, settings) : loadedCruiseResult;
+      resetWorkspace(toReset, 'hard');
     },
-    [cruiseLoadId, setPatterns, orch],
+    [resetWorkspace],
   );
 
   const handleWorkspaceSettingsLoaded = useCallback(
     (settings: ViewerWorkspaceSettings) => {
-      if (data == null) {
+      if (useWorkspaceStore.getState().cruiseResult == null) {
         return;
       }
-      setPatterns(settings.ignorePatterns);
-      const { sourcesKey, view, lastInitialSelectedKeys, lastInitialExpandedKeys } = resolveWorkspaceApply({
-        cruiseResult: data,
-        settings,
-      });
-      orch.applyWorkspaceView({
-        view,
-        sourcesKey,
-        cruiseLoadId,
-        lastInitialSelectedKeys,
-        lastInitialExpandedKeys,
-      });
+      syncWorkspaceSettings(settings);
     },
-    [data, cruiseLoadId, setPatterns, orch],
+    [syncWorkspaceSettings],
   );
 
   const {
@@ -236,7 +204,7 @@ function App() {
 
   const { fileLoadError: initialSettingsFileLoadError, clearFileLoadError: clearInitialSettingsFileLoadError } =
     useInitialWorkspaceSettingsFromCli({
-      cruiseReady: data != null,
+      cruiseReady: cruiseResult != null,
       onLoaded: handleWorkspaceSettingsLoaded,
     });
 
@@ -284,7 +252,7 @@ function App() {
 
   const { showInFileTree, setSelectedPaths, selectedPaths, showInGraph, activatePath } = orch;
 
-  const { openModuleJson, moduleJsonDialog } = useModuleJsonDialog(data?.modules ?? []);
+  const { openModuleJson, moduleJsonDialog } = useModuleJsonDialog(cruiseResult?.modules ?? []);
 
   const handleShowInFileTree = useCallback(
     (path: string) => {
@@ -352,11 +320,11 @@ function App() {
     toggleSidebar: toggleSidebarOpen,
     fileLoadInProgress: isFileLoading,
     cruiseWatchEnabled,
-    hasCruiseResult: data != null,
+    hasCruiseResult: cruiseResult != null,
     hasRuleViolations: rulesWithViolations.length > 0,
   });
 
-  if (isPending) {
+  if (isPending || isHydrating) {
     return (
       <div className={styles.centered}>
         <CircularProgress size={32} />
@@ -403,11 +371,11 @@ function App() {
     );
   }
 
-  if (cruiseTree == null) {
+  if (cruiseResult == null) {
     return null;
   }
 
-  const totalModulesCount = data.modules.length;
+  const totalModulesCount = cruiseResult.modules.length;
   const filteredModulesCount = sources.length;
 
   return (
@@ -429,16 +397,8 @@ function App() {
           <AppSidebar
             view={sidebarView}
             fileTreeRef={fileTreeRef}
-            selectedKeys={orch.selectedPaths}
-            onSelect={orch.setSelectedPaths}
-            expandedKeys={orch.expandedKeys}
-            onExpand={orch.updateExpandedKeys}
-            onExpandRecursive={orch.expandRecursive}
             onShowInGraph={orch.showInGraph}
-            onShowDependenciesPanel={orch.handleShowDependenciesPanel}
-            onShowApplicableRulesPanel={orch.handleShowApplicableRulesPanel}
             onViewModuleJson={openModuleJson}
-            activePath={orch.activePath}
             ruleSetUsed={cruiseTree.ruleSetUsed}
             violations={cruiseTree.violations}
             onSelectViolationPaths={handleShowDependencyConnection}
@@ -533,9 +493,9 @@ function App() {
             <LanguagePickerDialog open={languagePickerOpen} onClose={() => setLanguagePickerOpen(false)} />
             <IgnorePatternsDialog
               open={ignorePatternsOpen}
-              patterns={patterns}
+              patterns={ignorePatterns}
               onClose={() => setIgnorePatternsOpen(false)}
-              onSave={setPatterns}
+              onSave={setIgnorePatterns}
             />
             <RuleViolationsPickerDialog
               open={ruleViolationsPickerOpen}
@@ -553,7 +513,7 @@ function App() {
             <JsonViewDialog
               open={cruiseResultJsonOpen}
               title={t('cruiseResultJson.title')}
-              data={data ?? null}
+              data={cruiseResult}
               onClose={() => setCruiseResultJsonOpen(false)}
               shouldExpandNode={level => level < 4}
               fullScreen

@@ -12,16 +12,8 @@ import { RulesPanel } from '../RulesPanel';
 interface AppSidebarProps {
   view: SidebarView;
   fileTreeRef?: Ref<FileTreeHandle>;
-  selectedKeys: string[];
-  onSelect: (keys: string[]) => void;
-  expandedKeys: string[];
-  onExpand: (keys: string[]) => void;
-  onExpandRecursive: (path: string) => void;
   onShowInGraph: (path: string) => void;
-  onShowDependenciesPanel: (path: string) => void;
-  onShowApplicableRulesPanel: (path: string) => void;
   onViewModuleJson: (path: string) => void;
-  activePath: string | null;
   ruleSetUsed: IFlattenedRuleSet | undefined;
   violations: readonly IViolation[] | undefined;
   onSelectViolationPaths: (paths: string[]) => void;
@@ -56,16 +48,8 @@ export function AppSidebar(props: AppSidebarProps) {
   const {
     view,
     fileTreeRef,
-    selectedKeys,
-    onSelect,
-    expandedKeys,
-    onExpand,
-    onExpandRecursive,
     onShowInGraph,
-    onShowDependenciesPanel,
-    onShowApplicableRulesPanel,
     onViewModuleJson,
-    activePath,
     ruleSetUsed,
     violations,
     onSelectViolationPaths,
@@ -80,19 +64,7 @@ export function AppSidebar(props: AppSidebarProps) {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
       <ViewPanel active={view === 'files'}>
-        <FileTree
-          ref={fileTreeRef}
-          selectedKeys={selectedKeys}
-          onSelect={onSelect}
-          expandedKeys={expandedKeys}
-          onExpand={onExpand}
-          onExpandRecursive={onExpandRecursive}
-          onShowInGraph={onShowInGraph}
-          onShowDependenciesPanel={onShowDependenciesPanel}
-          onShowApplicableRulesPanel={onShowApplicableRulesPanel}
-          onViewModuleJson={onViewModuleJson}
-          activePath={activePath}
-        />
+        <FileTree ref={fileTreeRef} onShowInGraph={onShowInGraph} onViewModuleJson={onViewModuleJson} />
       </ViewPanel>
       <ViewPanel active={view === 'rules'}>
         <RulesPanel
