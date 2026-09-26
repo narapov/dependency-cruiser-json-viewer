@@ -1,4 +1,4 @@
-import type { IModule } from 'dependency-cruiser';
+import type { IFlattenedRuleSet, IModule, IViolation } from 'dependency-cruiser';
 
 import type { RuleWithViolations } from '../helpers/cruiseRules';
 import type { DistinctCycle } from '../helpers/dependencyUtils';
@@ -41,4 +41,6 @@ export interface CruiseTreeSnapshot {
   /** All file sources in the cruise result. */
   descendantFiles: string[];
   cycles: DistinctCycle[];
+  ruleSetUsed?: IFlattenedRuleSet;
+  violations: readonly IViolation[];
 }

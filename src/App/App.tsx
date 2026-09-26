@@ -86,14 +86,15 @@ function App() {
         : null,
     [filteredData, data?.summary.ruleSetUsed, data?.summary.violations],
   );
-  console.log('cruiseTree', cruiseTree);
   const sources = useMemo(() => cruiseTree?.descendantFiles ?? [], [cruiseTree]);
   const rulesWithViolations = useMemo(
     () =>
-      groupRulesWithViolations(data?.summary.ruleSetUsed, data?.summary.violations, sources).filter(
-        entry => entry.violations.length > 0,
-      ),
-    [data?.summary.ruleSetUsed, data?.summary.violations, sources],
+      cruiseTree
+        ? groupRulesWithViolations(cruiseTree.ruleSetUsed, cruiseTree.violations, sources).filter(
+            entry => entry.violations.length > 0,
+          )
+        : [],
+    [cruiseTree, sources],
   );
   const ruleViolationsPickerOptions = useMemo(
     () =>
@@ -438,8 +439,8 @@ function App() {
             onShowApplicableRulesPanel={orch.handleShowApplicableRulesPanel}
             onViewModuleJson={openModuleJson}
             activePath={orch.activePath}
-            ruleSetUsed={data.summary.ruleSetUsed}
-            violations={data.summary.violations}
+            ruleSetUsed={cruiseTree.ruleSetUsed}
+            violations={cruiseTree.violations}
             onSelectViolationPaths={handleShowDependencyConnection}
             onShowRuleViolations={ruleName => orch.showRuleViolationsOnly([ruleName])}
             onShowCycle={orch.showPathsOnly}

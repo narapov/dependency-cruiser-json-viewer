@@ -26,7 +26,11 @@ export interface ResolvedWorkspaceApply {
 /** Compute a fully-resolved workspace view from raw cruise data and loaded settings. */
 export function resolveWorkspaceApply({ cruiseResult, settings }: ResolveWorkspaceApplyInput): ResolvedWorkspaceApply {
   const filtered = filterCruiseResult(cruiseResult, settings.ignorePatterns);
-  const cruiseTree = buildCruiseTreeSnapshot(filtered.modules);
+  const cruiseTree = buildCruiseTreeSnapshot(
+    filtered.modules,
+    cruiseResult.summary.ruleSetUsed,
+    cruiseResult.summary.violations,
+  );
   const sources = cruiseTree.descendantFiles;
   const initial = getInitialDependencyCruiserState(sources);
   const view = replaceWorkspaceSettings({

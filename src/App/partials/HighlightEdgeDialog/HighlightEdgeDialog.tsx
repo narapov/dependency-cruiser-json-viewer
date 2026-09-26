@@ -46,7 +46,11 @@ function HighlightEdgeDialogContent(props: HighlightEdgeDialogContentProps) {
 
   const modules = getCruiseModules(cruiseTree);
   const targetSources = sourcePath != null ? collectRelatedModuleSources(sourcePath, modules, 'dependencies') : [];
-  const targetCruiseTree = buildCruiseTreeSnapshot(getCruiseModules(cruiseTree, targetSources));
+  const targetCruiseTree = buildCruiseTreeSnapshot(
+    getCruiseModules(cruiseTree, targetSources),
+    cruiseTree.ruleSetUsed,
+    cruiseTree.violations,
+  );
 
   const dependencyKeys =
     sourcePath != null && targetPath != null

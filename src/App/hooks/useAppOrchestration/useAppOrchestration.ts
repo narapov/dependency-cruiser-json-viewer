@@ -35,6 +35,7 @@ const EMPTY_CRUISE_TREE: CruiseTreeSnapshot = {
   rootPaths: [],
   descendantFiles: [],
   cycles: [],
+  violations: [],
 };
 
 interface UseAppOrchestrationOptions {

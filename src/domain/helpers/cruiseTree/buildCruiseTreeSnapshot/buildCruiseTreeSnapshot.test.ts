@@ -119,6 +119,8 @@ describe('buildCruiseTreeSnapshot', () => {
     const folderRules = snapshot.nodes.get('src/domain')?.applicableRules;
     expect(folderRules?.map(entry => entry.name)).toEqual(['no-circular', 'domain-only-domain']);
     expect(folderRules?.find(entry => entry.name === 'domain-only-domain')?.violations).toHaveLength(1);
+    expect(snapshot.ruleSetUsed).toBe(ruleSet);
+    expect(snapshot.violations).toBe(violations);
   });
 
   it('returns an empty snapshot for no modules', () => {
@@ -127,5 +129,7 @@ describe('buildCruiseTreeSnapshot', () => {
     expect(snapshot.rootPaths).toEqual([]);
     expect(snapshot.descendantFiles).toEqual([]);
     expect(snapshot.cycles).toEqual([]);
+    expect(snapshot.ruleSetUsed).toBeUndefined();
+    expect(snapshot.violations).toEqual([]);
   });
 });

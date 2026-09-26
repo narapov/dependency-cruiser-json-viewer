@@ -110,7 +110,7 @@ function compareByBaseName(a: string, b: string): number {
  */
 export function buildCruiseTreeSnapshot(
   modules: readonly IModule[],
-  ruleSet?: IFlattenedRuleSet,
+  ruleSetUsed?: IFlattenedRuleSet,
   violations?: readonly IViolation[],
 ): CruiseTreeSnapshot {
   const modulePaths = modules.map(module => module.source);
@@ -214,7 +214,7 @@ export function buildCruiseTreeSnapshot(
   });
 
   const circularModuleSet = new Set(collectCircularModulePaths(modules));
-  const namedRules = collectNamedRules(ruleSet);
+  const namedRules = collectNamedRules(ruleSetUsed);
   const allViolations = violations ?? [];
 
   const nodes = new Map<string, CruisePathNode>();
@@ -255,5 +255,7 @@ export function buildCruiseTreeSnapshot(
     rootPaths: sortedRoots,
     descendantFiles: modulePaths,
     cycles: collectDistinctCycles(modules),
+    ruleSetUsed,
+    violations: allViolations,
   };
 }
