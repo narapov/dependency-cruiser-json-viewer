@@ -1,6 +1,6 @@
 import type { IModule } from 'dependency-cruiser';
 
-import type { CruiseTreeSnapshot, ModuleRelations } from '../../../types';
+import type { CruiseSnapshot, ModuleRelations } from '../../../types';
 import type { DependencyRelationFlags } from '../../dependencyUtils';
 import { getRepresentative, isUnderFolder } from '../../pathUtils';
 import { buildRelationPathTree } from '../buildRelationPathTree';
@@ -137,7 +137,7 @@ function collectRelationCandidates(modules: IModule[], ctx: FolderContext): Rela
 }
 
 /** Modules needed to resolve leave/enter edges for a folder (descendants + inbound sources). */
-function modulesForFolderRelations(folderPath: string, snapshot: CruiseTreeSnapshot): IModule[] {
+function modulesForFolderRelations(folderPath: string, snapshot: CruiseSnapshot): IModule[] {
   const node = snapshot.nodes.get(folderPath);
   if (node == null) {
     return [];
@@ -155,7 +155,7 @@ function modulesForFolderRelations(folderPath: string, snapshot: CruiseTreeSnaps
 /** Incoming and outgoing relations for a folder node as a nested path tree. */
 export function getFolderRelations(
   folderPath: string,
-  snapshot: CruiseTreeSnapshot,
+  snapshot: CruiseSnapshot,
   selectedPaths: string[],
   expandedFolders: Set<string>,
 ): ModuleRelations {

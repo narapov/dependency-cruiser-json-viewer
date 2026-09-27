@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { act, renderHook, screen } from '@testing-library/react';
 
-import { buildCruiseTreeSnapshot } from '@/domain';
+import { buildCruiseSnapshot } from '@/domain';
 import { renderWithTheme } from '@/testsUtils';
 
 import { initialWorkspaceState, pathsToPresenceRecord, useWorkspaceStore } from '../../../../stores/workspaceStore';
@@ -19,7 +19,7 @@ vi.mock('@/Shared', async importOriginal => {
   };
 });
 
-const CRUISE_TREE = buildCruiseTreeSnapshot([
+const CRUISE_TREE = buildCruiseSnapshot([
   { source: 'src/a.ts', dependencies: [], dependents: [], valid: true },
   { source: 'src/b/c.ts', dependencies: [], dependents: [], valid: true },
 ]);
@@ -27,7 +27,7 @@ const CRUISE_TREE = buildCruiseTreeSnapshot([
 beforeEach(() => {
   useWorkspaceStore.setState({
     ...initialWorkspaceState,
-    cruiseTree: CRUISE_TREE,
+    cruiseSnapshot: CRUISE_TREE,
     selectedFilePaths: pathsToPresenceRecord(['src/a.ts', 'src/b/c.ts']),
     expandedFolderPaths: pathsToPresenceRecord(['src', 'src/b']),
   });

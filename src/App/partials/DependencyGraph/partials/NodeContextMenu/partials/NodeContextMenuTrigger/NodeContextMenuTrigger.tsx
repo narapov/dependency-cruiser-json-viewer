@@ -6,13 +6,19 @@ import IconButton from '@mui/material/IconButton';
 
 import { useNodeContextMenuControls } from '../../contexts';
 
-export function NodeContextMenuTrigger() {
+interface NodeContextMenuTriggerProps {
+  path: string;
+}
+
+export function NodeContextMenuTrigger(props: NodeContextMenuTriggerProps) {
+  const { path } = props;
+
   const { t } = useTranslation();
   const { openAtElement } = useNodeContextMenuControls();
 
   const onClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
-    openAtElement(event.currentTarget);
+    openAtElement(event.currentTarget, path);
   };
 
   return (

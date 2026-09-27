@@ -384,8 +384,9 @@ describe('useAppOrchestration', () => {
       result.current.showRuleViolationsOnly(['no-circular']);
     });
 
-    expect(result.current.selectedPaths).toEqual(expect.arrayContaining(['src/b/c.ts', 'src/b/d.ts', 'src/b']));
+    expect(result.current.selectedPaths).toEqual(expect.arrayContaining(['src/b/c.ts', 'src/b/d.ts']));
     expect(result.current.selectedPaths).not.toContain('src/a.ts');
+    expect(result.current.selectedPaths).not.toContain('src/b');
     expect(result.current.expandedKeys).toEqual(expect.arrayContaining(['src', 'src/b']));
   });
 
@@ -413,8 +414,9 @@ describe('useAppOrchestration', () => {
       result.current.showPathsOnly(['src/b/c.ts', 'src/b/d.ts']);
     });
 
-    expect(result.current.selectedPaths).toEqual(expect.arrayContaining(['src/b/c.ts', 'src/b/d.ts', 'src/b']));
+    expect(result.current.selectedPaths).toEqual(expect.arrayContaining(['src/b/c.ts', 'src/b/d.ts']));
     expect(result.current.selectedPaths).not.toContain('src/a.ts');
+    expect(result.current.selectedPaths).not.toContain('src/b');
     expect(result.current.expandedKeys).toEqual(expect.arrayContaining(['src', 'src/b']));
   });
 
@@ -442,8 +444,9 @@ describe('useAppOrchestration', () => {
       result.current.hideOthers('src/b');
     });
 
-    expect(result.current.selectedPaths).toEqual(expect.arrayContaining(['src/b/c.ts', 'src/b/d.ts', 'src/b']));
+    expect(result.current.selectedPaths).toEqual(expect.arrayContaining(['src/b/c.ts', 'src/b/d.ts']));
     expect(result.current.selectedPaths).not.toContain('src/a.ts');
+    expect(result.current.selectedPaths).not.toContain('src/b');
     expect(result.current.expandedKeys).toEqual(['src']);
   });
 
@@ -710,7 +713,7 @@ describe('useAppOrchestration', () => {
 
   it('saveWorkspace writes selectedFiles as module sources only', () => {
     const { result } = renderOrchestration({
-      selectedKeys: ['src', 'src/a.ts', 'src/b', 'src/b/c.ts'],
+      selectedKeys: ['src/a.ts', 'src/b/c.ts'],
     });
 
     act(() => {
@@ -723,20 +726,5 @@ describe('useAppOrchestration', () => {
       'dependency-cruiser-json-viewer': { settings: { selectedFiles: string[] } };
     };
     expect(payload['dependency-cruiser-json-viewer'].settings.selectedFiles).toEqual(['src/a.ts', 'src/b/c.ts']);
-  });
-
-  it('applies layout via setLayoutState when store layout fields change', () => {
-    const { graph } = renderOrchestration();
-
-    act(() => {
-      useWorkspaceStore.getState().setGraphSettings({ autoLayoutOnly: false, edgesType: 'bezier' });
-      useWorkspaceStore.getState().setNodePositions({ '': { 'src/a.ts': { x: 5, y: 6 } } });
-    });
-
-    expect(graph.setLayoutState).toHaveBeenCalledWith({
-      autoLayoutOnly: false,
-      edgesType: 'bezier',
-      nodePositions: { '': { 'src/a.ts': { x: 5, y: 6 } } },
-    });
   });
 });

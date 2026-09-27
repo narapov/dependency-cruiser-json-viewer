@@ -25,7 +25,7 @@ export function useFileTreeContextMenu(config: UseFileTreeContextMenuOptions) {
   const { t } = useTranslation();
   const [menuState, setMenuState] = useState<MenuState | null>(null);
 
-  const cruiseTree = useWorkspaceStore(state => state.cruiseTree);
+  const cruiseSnapshot = useWorkspaceStore(state => state.cruiseSnapshot);
   const selectedFilePaths = useWorkspaceStore(state => state.selectedFilePaths);
   const expandedFolderPaths = useWorkspaceStore(state => state.expandedFolderPaths);
   const replaceExpandedFolderPaths = useWorkspaceStore(state => state.replaceExpandedFolderPaths);
@@ -54,7 +54,7 @@ export function useFileTreeContextMenu(config: UseFileTreeContextMenuOptions) {
   );
 
   const path = menuState?.path;
-  const node = path != null ? cruiseTree.nodes.get(path) : undefined;
+  const node = path != null ? cruiseSnapshot.nodes.get(path) : undefined;
   const isFolder = node?.isFolder === true;
   const expandedKeys = presenceRecordToPaths(expandedFolderPaths);
   const expanded = path != null && expandedFolderPaths[path] === true;
@@ -67,7 +67,7 @@ export function useFileTreeContextMenu(config: UseFileTreeContextMenuOptions) {
 
   const expandRecursive = (folderPath: string) => {
     replaceExpandedFolderPaths([
-      ...new Set([...expandedKeys, ...getSubtreeFolderKeys(folderPath, cruiseTree.descendantFiles)]),
+      ...new Set([...expandedKeys, ...getSubtreeFolderKeys(folderPath, cruiseSnapshot.descendantFiles)]),
     ]);
   };
 

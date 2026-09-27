@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { act, fireEvent, screen } from '@testing-library/react';
 
-import { buildCruiseTreeSnapshot } from '@/domain';
+import { buildCruiseSnapshot } from '@/domain';
 import { renderWithTheme } from '@/testsUtils';
 
 import { initialWorkspaceState, pathsToPresenceRecord, useWorkspaceStore } from '../../stores/workspaceStore';
@@ -13,14 +13,14 @@ import type { FileTreeHandle } from './types';
 
 const SOURCES = ['src/a.ts', 'src/b/c.ts'];
 
-const CRUISE_TREE = buildCruiseTreeSnapshot(
+const CRUISE_TREE = buildCruiseSnapshot(
   SOURCES.map(source => ({ source, dependencies: [], dependents: [], valid: true })),
 );
 
 function seedWorkspace(overrides?: { selectedKeys?: string[]; expandedKeys?: string[]; activePath?: string | null }) {
   useWorkspaceStore.setState({
     ...initialWorkspaceState,
-    cruiseTree: CRUISE_TREE,
+    cruiseSnapshot: CRUISE_TREE,
     selectedFilePaths: pathsToPresenceRecord(overrides?.selectedKeys ?? SOURCES),
     expandedFolderPaths: pathsToPresenceRecord(overrides?.expandedKeys ?? ['src', 'src/b']),
     activePath: overrides?.activePath ?? null,

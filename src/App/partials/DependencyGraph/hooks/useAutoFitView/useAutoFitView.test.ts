@@ -19,7 +19,7 @@ describe('useAutoFitView', () => {
   it('fits view on initial layout when nodes exist', () => {
     renderHook(() =>
       useAutoFitView({
-        selectedPaths: ['a.ts'],
+        selectedFilePaths: Object.fromEntries(['a.ts'].map(p => [p, true])),
         layoutNodesLength: 2,
         hasUserLayout: false,
         autoLayoutOnly: false,
@@ -32,7 +32,7 @@ describe('useAutoFitView', () => {
   it('does not fit when there are no layout nodes', () => {
     renderHook(() =>
       useAutoFitView({
-        selectedPaths: ['a.ts'],
+        selectedFilePaths: Object.fromEntries(['a.ts'].map(p => [p, true])),
         layoutNodesLength: 0,
         hasUserLayout: false,
         autoLayoutOnly: false,
@@ -45,7 +45,7 @@ describe('useAutoFitView', () => {
   it('does not fit when user has customized layout', () => {
     renderHook(() =>
       useAutoFitView({
-        selectedPaths: ['a.ts'],
+        selectedFilePaths: Object.fromEntries(['a.ts'].map(p => [p, true])),
         layoutNodesLength: 2,
         hasUserLayout: true,
         autoLayoutOnly: false,
@@ -58,7 +58,7 @@ describe('useAutoFitView', () => {
   it('does not fit in autoLayoutOnly mode', () => {
     renderHook(() =>
       useAutoFitView({
-        selectedPaths: ['a.ts'],
+        selectedFilePaths: Object.fromEntries(['a.ts'].map(p => [p, true])),
         layoutNodesLength: 2,
         hasUserLayout: false,
         autoLayoutOnly: true,
@@ -70,22 +70,22 @@ describe('useAutoFitView', () => {
 
   it('fits again when selection changes', () => {
     const { rerender } = renderHook(
-      ({ selectedPaths }) =>
+      ({ selectedFilePaths }) =>
         useAutoFitView({
-          selectedPaths,
+          selectedFilePaths,
           layoutNodesLength: 2,
           hasUserLayout: false,
           autoLayoutOnly: false,
         }),
-      { initialProps: { selectedPaths: ['a.ts'] } },
+      { initialProps: { selectedFilePaths: Object.fromEntries(['a.ts'].map(p => [p, true])) } },
     );
 
     expect(fitView).toHaveBeenCalledTimes(1);
 
-    rerender({ selectedPaths: ['a.ts', 'b.ts'] });
+    rerender({ selectedFilePaths: Object.fromEntries(['a.ts', 'b.ts'].map(p => [p, true])) });
     expect(fitView).toHaveBeenCalledTimes(2);
 
-    rerender({ selectedPaths: ['a.ts', 'b.ts'] });
+    rerender({ selectedFilePaths: Object.fromEntries(['a.ts', 'b.ts'].map(p => [p, true])) });
     expect(fitView).toHaveBeenCalledTimes(2);
   });
 });

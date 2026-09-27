@@ -1,11 +1,14 @@
 import type { Edge, Node } from '@xyflow/react';
 
-import type { CruiseTreeSnapshot } from '@/domain';
+import type { CruiseSnapshot } from '@/domain';
+
+/** Sparse presence record (`true` when the path is present). */
+export type PresenceRecord = Record<string, boolean | undefined>;
 
 export interface BuildGraphInput {
-  cruiseTree: CruiseTreeSnapshot;
-  selectedPaths: string[];
-  expandedFolders: Set<string>;
+  cruiseSnapshot: CruiseSnapshot;
+  selectedFilePaths: PresenceRecord;
+  expandedFolderPaths: PresenceRecord;
   folderColors: ReadonlyMap<string, string>;
 }
 

@@ -116,7 +116,7 @@ describe('useCruiseResultWatch', () => {
     await waitFor(() => {
       expect(fetchCruiseResult).toHaveBeenCalledWith(undefined, { cacheBust: true });
       expect(setQueryData).toHaveBeenCalledWith(['cruise-result'], cruiseResult);
-      expect(useWorkspaceStore.getState().cruiseTree.descendantFiles).toEqual(['src/a.ts']);
+      expect(useWorkspaceStore.getState().cruiseSnapshot.descendantFiles).toEqual(['src/a.ts']);
       expect(useWorkspaceStore.getState().activePath).toBe('src/a.ts');
     });
   });

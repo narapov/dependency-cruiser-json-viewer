@@ -1,0 +1,1 @@
+export { buildModulesDependencies } from './buildModulesDependencies';

@@ -4,7 +4,7 @@ import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
 
-import { useCruiseTreeRequired } from '../../contexts';
+import { useCruiseSnapshotRequired } from '../../contexts';
 import { ApplicableRulesList } from './partials/ApplicableRulesList';
 import { ApplicableRulesPanelHeader } from './partials/ApplicableRulesPanelHeader';
 
@@ -19,8 +19,8 @@ export function ApplicableRulesPanel(props: ApplicableRulesPanelProps) {
   const { path, onClose, onShowInGraph, onSelectViolationPaths } = props;
 
   const { t } = useTranslation();
-  const cruiseTree = useCruiseTreeRequired();
-  const rules = cruiseTree.nodes.get(path)?.applicableRules ?? [];
+  const cruiseSnapshot = useCruiseSnapshotRequired();
+  const rules = cruiseSnapshot.nodes.get(path)?.applicableRules ?? [];
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>

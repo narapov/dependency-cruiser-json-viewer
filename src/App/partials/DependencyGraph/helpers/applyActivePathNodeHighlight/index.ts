@@ -1,1 +1,0 @@
-export { applyActivePathNodeHighlight } from './applyActivePathNodeHighlight';

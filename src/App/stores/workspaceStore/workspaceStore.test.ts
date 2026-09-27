@@ -83,7 +83,7 @@ describe('useWorkspaceStore.reset', () => {
 
     expect(state.cruiseResult).not.toHaveProperty(VIEWER_WORKSPACE_EXTENSION_KEY);
     expect(state.ignorePatterns).toEqual([]);
-    expect(state.cruiseTree.descendantFiles).toEqual(['src/a.ts', 'src/b.ts', 'src/c.test.ts']);
+    expect(state.cruiseSnapshot.descendantFiles).toEqual(['src/a.ts', 'src/b.ts', 'src/c.test.ts']);
     expect(state.selectedFilePaths['src/a.ts']).toBe(true);
     expect(state.expandedFolderPaths.src).toBe(true);
     expect(state.activePath).toBeNull();
@@ -108,7 +108,7 @@ describe('useWorkspaceStore.reset', () => {
     const state = useWorkspaceStore.getState().reset(withEmbeddedSettings(settings), 'hard');
 
     expect(state.ignorePatterns).toEqual(['**/*.test.ts']);
-    expect(state.cruiseTree.descendantFiles).toEqual(['src/a.ts', 'src/b.ts']);
+    expect(state.cruiseSnapshot.descendantFiles).toEqual(['src/a.ts', 'src/b.ts']);
     expect(state.selectedFilePaths).toEqual({ 'src/a.ts': true });
     expect(state.expandedFolderPaths).toEqual({ src: true });
     expect(state.dependenciesPanelPath).toBe('src/a.ts');
@@ -164,7 +164,7 @@ describe('useWorkspaceStore.reset', () => {
     expect(state.userEdgeHighlights.size).toBe(0);
     expect(state.graphSettings.edgesType).toBe('simpleOrthogonal');
     expect(state.nodePositions).toEqual({ '': { 'src/a.ts': { x: 10, y: 20 } } });
-    expect(state.cruiseTree.descendantFiles).toEqual(['src/a.ts', 'src/c.test.ts']);
+    expect(state.cruiseSnapshot.descendantFiles).toEqual(['src/a.ts', 'src/c.test.ts']);
   });
 });
 
@@ -188,7 +188,7 @@ describe('useWorkspaceStore.syncWorkspaceSettings', () => {
     );
 
     expect(state.ignorePatterns).toEqual(['**/*.test.ts']);
-    expect(state.cruiseTree.descendantFiles).toEqual(['src/a.ts', 'src/b.ts']);
+    expect(state.cruiseSnapshot.descendantFiles).toEqual(['src/a.ts', 'src/b.ts']);
     expect(state.selectedFilePaths).toEqual({ 'src/b.ts': true });
     expect(state.applicableRulesPanelPath).toBe('src/b.ts');
     expect(state.activePath).toBeNull();
@@ -204,7 +204,7 @@ describe('useWorkspaceStore.syncWorkspaceSettings', () => {
 });
 
 describe('useWorkspaceStore.setIgnorePatterns', () => {
-  it('rebuilds the cruise tree and clears invalid panel paths', () => {
+  it('rebuilds the cruise snapshot and clears invalid panel paths', () => {
     useWorkspaceStore.getState().reset(cruiseResult, 'hard');
     useWorkspaceStore.getState().setSelectedFilePaths({
       'src/a.ts': true,
@@ -218,11 +218,28 @@ describe('useWorkspaceStore.setIgnorePatterns', () => {
     const state = useWorkspaceStore.getState();
 
     expect(state.ignorePatterns).toEqual(['**/*.test.ts']);
-    expect(state.cruiseTree.descendantFiles).toEqual(['src/a.ts', 'src/b.ts']);
+    expect(state.cruiseSnapshot.descendantFiles).toEqual(['src/a.ts', 'src/b.ts']);
     expect(state.selectedFilePaths).toEqual({ 'src/a.ts': true });
     expect(state.activePath).toBeNull();
     expect(state.dependenciesPanelPath).toBeNull();
     expect(state.applicableRulesPanelPath).toBe('src/a.ts');
+  });
+});
+
+describe('useWorkspaceStore.setSelectedFilePaths', () => {
+  it('stores only descendant files when folder paths are passed', () => {
+    useWorkspaceStore.getState().reset(cruiseResult, 'hard');
+
+    useWorkspaceStore.getState().setSelectedFilePaths({
+      src: true,
+      'src/a.ts': true,
+    });
+
+    expect(useWorkspaceStore.getState().selectedFilePaths).toEqual({
+      'src/a.ts': true,
+      'src/b.ts': true,
+      'src/c.test.ts': true,
+    });
   });
 });
 

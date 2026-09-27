@@ -28,8 +28,8 @@ function useHighlightedEdgesHarness(overrides: Partial<Parameters<typeof useHigh
 
   return useHighlightedEdges({
     modules,
-    selectedPaths: ['a.ts', 'b.ts'],
-    expandedFolders: new Set(),
+    selectedFilePaths: Object.fromEntries(['a.ts', 'b.ts'].map(p => [p, true])),
+    expandedFolderPaths: Object.fromEntries([].map(p => [p, true])),
     baseEdges,
     visibleNodeIds: new Set(['a.ts', 'b.ts']),
     activePath: null,
@@ -130,12 +130,12 @@ describe('useHighlightedEdges', () => {
 
   it('filters stale user highlights when selection shrinks', () => {
     const { result, rerender } = renderHook(
-      ({ selectedPaths }) =>
+      ({ selectedFilePaths }) =>
         useHighlightedEdgesHarness({
-          selectedPaths,
-          visibleNodeIds: new Set(selectedPaths),
+          selectedFilePaths,
+          visibleNodeIds: new Set(Object.keys(selectedFilePaths).filter(key => selectedFilePaths[key])),
         }),
-      { initialProps: { selectedPaths: ['a.ts', 'b.ts'] } },
+      { initialProps: { selectedFilePaths: Object.fromEntries(['a.ts', 'b.ts'].map(p => [p, true])) } },
     );
 
     act(() => {
@@ -143,7 +143,7 @@ describe('useHighlightedEdges', () => {
     });
     expect(result.current.getEdgeHighlight('a.ts->b.ts')).toBe('#ff0000');
 
-    rerender({ selectedPaths: ['a.ts'] });
+    rerender({ selectedFilePaths: Object.fromEntries(['a.ts'].map(p => [p, true])) });
     expect(result.current.getEdgeHighlight('a.ts->b.ts')).toBeUndefined();
   });
 });

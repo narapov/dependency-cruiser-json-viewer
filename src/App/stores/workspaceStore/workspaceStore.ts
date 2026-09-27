@@ -8,26 +8,29 @@ import {
   replaceWorkspaceSettings,
   resolveActivePathAfterCollapse,
   stripViewerWorkspaceExtension,
-  type CruiseTreeSnapshot,
+  toSelectedFilePaths,
+  type CruiseSnapshot,
   type ViewerWorkspaceSettings,
 } from '@/domain';
 
 import { defaultFolderColorsRecord } from '../../helpers';
 import {
-  buildFilteredCruiseTree,
+  buildFilteredCruiseSnapshot,
   extractEmbeddedWorkspaceSettings,
   mapMergedViewToWorkspaceFields,
   pathsToPresenceRecord,
   presenceRecordToPaths,
-  reconcileWorkspaceAgainstTree,
+  reconcileWorkspaceAgainstSnapshot,
 } from './helpers';
 import type { WorkspaceResetMode, WorkspaceState } from './types';
 
 /** Placeholder snapshot before any cruise result is loaded. */
-export const EMPTY_CRUISE_TREE: CruiseTreeSnapshot = {
+export const EMPTY_CRUISE_SNAPSHOT: CruiseSnapshot = {
   nodes: new Map(),
   rootPaths: [],
+  tree: [],
   descendantFiles: [],
+  modulesDependencies: new Map(),
   cycles: [],
   violations: [],
 };
@@ -42,7 +45,7 @@ export const initialWorkspaceState: WorkspaceState = {
   cruiseResult: null,
   ignorePatterns: [],
   selectedFilePaths: {},
-  cruiseTree: EMPTY_CRUISE_TREE,
+  cruiseSnapshot: EMPTY_CRUISE_SNAPSHOT,
   folderBaseColors: {},
   expandedFolderPaths: {},
   activePath: null,
@@ -55,33 +58,33 @@ export const initialWorkspaceState: WorkspaceState = {
 
 function applySettingsToCruiseResult(cruiseResult: ICruiseResult, settings: ViewerWorkspaceSettings): WorkspaceState {
   const stripped = stripViewerWorkspaceExtension(cruiseResult);
-  const { filtered, cruiseTree } = buildFilteredCruiseTree(stripped, settings.ignorePatterns);
+  const { filteredCruiseResult, cruiseSnapshot } = buildFilteredCruiseSnapshot(stripped, settings.ignorePatterns);
   const view = replaceWorkspaceSettings({
-    sources: cruiseTree.descendantFiles,
-    modules: filtered.modules,
+    sources: cruiseSnapshot.descendantFiles,
+    modules: filteredCruiseResult.modules,
     settings,
-    defaultFolderColors: defaultFolderColorsRecord(cruiseTree),
+    defaultFolderColors: defaultFolderColorsRecord(cruiseSnapshot),
   });
 
   return {
     cruiseResult: stripped,
     ignorePatterns: settings.ignorePatterns,
-    cruiseTree,
+    cruiseSnapshot,
     ...mapMergedViewToWorkspaceFields(view),
   };
 }
 
 function hardResetWithoutSettings(cruiseResult: ICruiseResult): WorkspaceState {
   const stripped = stripViewerWorkspaceExtension(cruiseResult);
-  const { cruiseTree } = buildFilteredCruiseTree(stripped, []);
-  const initial = getInitialDependencyCruiserState(cruiseTree.descendantFiles);
+  const { cruiseSnapshot } = buildFilteredCruiseSnapshot(stripped, []);
+  const initial = getInitialDependencyCruiserState(cruiseSnapshot);
 
   return {
     cruiseResult: stripped,
     ignorePatterns: [],
     selectedFilePaths: pathsToPresenceRecord(initial.selectedKeys),
-    cruiseTree,
-    folderBaseColors: defaultFolderColorsRecord(cruiseTree),
+    cruiseSnapshot,
+    folderBaseColors: defaultFolderColorsRecord(cruiseSnapshot),
     expandedFolderPaths: pathsToPresenceRecord(initial.expandedKeys),
     activePath: null,
     dependenciesPanelPath: null,
@@ -94,10 +97,10 @@ function hardResetWithoutSettings(cruiseResult: ICruiseResult): WorkspaceState {
 
 function softReset(cruiseResult: ICruiseResult, previous: WorkspaceState): WorkspaceState {
   const stripped = stripViewerWorkspaceExtension(cruiseResult);
-  const { cruiseTree } = buildFilteredCruiseTree(stripped, previous.ignorePatterns);
-  return reconcileWorkspaceAgainstTree({
+  const { cruiseSnapshot } = buildFilteredCruiseSnapshot(stripped, previous.ignorePatterns);
+  return reconcileWorkspaceAgainstSnapshot({
     cruiseResult: stripped,
-    cruiseTree,
+    cruiseSnapshot,
     ignorePatterns: previous.ignorePatterns,
     previous,
   });
@@ -108,7 +111,7 @@ function pickWorkspaceState(state: WorkspaceState): WorkspaceState {
     cruiseResult: state.cruiseResult,
     ignorePatterns: state.ignorePatterns,
     selectedFilePaths: state.selectedFilePaths,
-    cruiseTree: state.cruiseTree,
+    cruiseSnapshot: state.cruiseSnapshot,
     folderBaseColors: state.folderBaseColors,
     expandedFolderPaths: state.expandedFolderPaths,
     activePath: state.activePath,
@@ -157,11 +160,11 @@ export const useWorkspaceStore = create(
         return;
       }
 
-      const { cruiseTree } = buildFilteredCruiseTree(previous.cruiseResult, ignorePatterns);
+      const { cruiseSnapshot } = buildFilteredCruiseSnapshot(previous.cruiseResult, ignorePatterns);
       set(
-        reconcileWorkspaceAgainstTree({
+        reconcileWorkspaceAgainstSnapshot({
           cruiseResult: previous.cruiseResult,
-          cruiseTree,
+          cruiseSnapshot,
           ignorePatterns,
           previous,
         }),
@@ -169,7 +172,12 @@ export const useWorkspaceStore = create(
     },
 
     setSelectedFilePaths(selectedFilePaths: WorkspaceState['selectedFilePaths']): void {
-      set({ selectedFilePaths });
+      const { cruiseSnapshot } = get();
+      set({
+        selectedFilePaths: pathsToPresenceRecord(
+          toSelectedFilePaths(presenceRecordToPaths(selectedFilePaths), cruiseSnapshot),
+        ),
+      });
     },
 
     setExpandedFolderPaths(expandedFolderPaths: WorkspaceState['expandedFolderPaths']): void {

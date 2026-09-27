@@ -1,7 +1,7 @@
 import type { IModule } from 'dependency-cruiser';
 import { describe, expect, it } from 'vitest';
 
-import { buildCruiseTreeSnapshot } from '@/domain';
+import { buildCruiseSnapshot } from '@/domain';
 
 import { buildGraph } from '../buildGraph';
 import {
@@ -16,6 +16,10 @@ function moduleAt(source: string, dependencies: IModule['dependencies'] = []): I
   return { source, dependencies, dependents: [], valid: true } as IModule;
 }
 
+function present(...paths: string[]): Record<string, boolean | undefined> {
+  return Object.fromEntries(paths.map(path => [path, true]));
+}
+
 const graphArgs = {
   folderColors: new Map(),
 };
@@ -27,44 +31,44 @@ describe('getEdgeDependencyKeys', () => {
     moduleAt('src/bar/c.ts'),
   ];
 
-  const selectedPaths = ['src/foo', 'src/foo/a.ts', 'src/foo/b.ts', 'src/bar/c.ts'];
+  const selectedFilePaths = present('src/foo/a.ts', 'src/foo/b.ts', 'src/bar/c.ts');
 
   it('returns stable file-level keys regardless of expanded folders', async () => {
-    const collapsedFolders = new Set(['src', 'src/bar']);
-    const expandedFolders = new Set(['src', 'src/foo', 'src/bar']);
+    const collapsedFolderPaths = present('src', 'src/bar');
+    const expandedFolderPaths = present('src', 'src/foo', 'src/bar');
     const collapsedGraph = await buildGraph({
-      cruiseTree: buildCruiseTreeSnapshot(modules),
-      selectedPaths,
-      expandedFolders: collapsedFolders,
+      cruiseSnapshot: buildCruiseSnapshot(modules),
+      selectedFilePaths,
+      expandedFolderPaths: collapsedFolderPaths,
       ...graphArgs,
     });
     const expandedGraph = await buildGraph({
-      cruiseTree: buildCruiseTreeSnapshot(modules),
-      selectedPaths,
-      expandedFolders,
+      cruiseSnapshot: buildCruiseSnapshot(modules),
+      selectedFilePaths,
+      expandedFolderPaths,
       ...graphArgs,
     });
 
     const collapsedKeys = getEdgeDependencyKeys(
       modules,
-      selectedPaths,
-      collapsedFolders,
+      selectedFilePaths,
+      collapsedFolderPaths,
       collapsedGraph.visibleNodeIds,
       'src/foo',
       'src/bar/c.ts',
     );
     const expandedKeysA = getEdgeDependencyKeys(
       modules,
-      selectedPaths,
-      expandedFolders,
+      selectedFilePaths,
+      expandedFolderPaths,
       expandedGraph.visibleNodeIds,
       'src/foo/a.ts',
       'src/bar/c.ts',
     );
     const expandedKeysB = getEdgeDependencyKeys(
       modules,
-      selectedPaths,
-      expandedFolders,
+      selectedFilePaths,
+      expandedFolderPaths,
       expandedGraph.visibleNodeIds,
       'src/foo/b.ts',
       'src/bar/c.ts',
@@ -79,11 +83,11 @@ describe('getEdgeDependencyKeys', () => {
   });
 
   it('aggregates multiple file-level pairs into one visual edge', async () => {
-    const expandedFolders = new Set(['src', 'src/bar']);
+    const expandedFolderPaths = present('src', 'src/bar');
     const { edges, visibleNodeIds } = await buildGraph({
-      cruiseTree: buildCruiseTreeSnapshot(modules),
-      selectedPaths,
-      expandedFolders,
+      cruiseSnapshot: buildCruiseSnapshot(modules),
+      selectedFilePaths,
+      expandedFolderPaths,
       ...graphArgs,
     });
 
@@ -92,8 +96,8 @@ describe('getEdgeDependencyKeys', () => {
 
     const keys = getEdgeDependencyKeys(
       modules,
-      selectedPaths,
-      expandedFolders,
+      selectedFilePaths,
+      expandedFolderPaths,
       visibleNodeIds,
       edge!.source,
       edge!.target,
@@ -105,15 +109,15 @@ describe('getEdgeDependencyKeys', () => {
   });
 
   it('builds a map from visual edge ids to dependency keys', async () => {
-    const expandedFolders = new Set(['src', 'src/foo', 'src/bar']);
+    const expandedFolderPaths = present('src', 'src/foo', 'src/bar');
     const { edges, visibleNodeIds } = await buildGraph({
-      cruiseTree: buildCruiseTreeSnapshot(modules),
-      selectedPaths,
-      expandedFolders,
+      cruiseSnapshot: buildCruiseSnapshot(modules),
+      selectedFilePaths,
+      expandedFolderPaths,
       ...graphArgs,
     });
 
-    const map = buildEdgeDependencyKeyMap(modules, selectedPaths, expandedFolders, visibleNodeIds, edges);
+    const map = buildEdgeDependencyKeyMap(modules, selectedFilePaths, expandedFolderPaths, visibleNodeIds, edges);
     const edgeA = edges.find(item => item.source === 'src/foo/a.ts');
     const edgeB = edges.find(item => item.source === 'src/foo/b.ts');
 
@@ -161,7 +165,7 @@ describe('collectValidDependencyKeys', () => {
       moduleAt('src/outside.ts'),
     ];
 
-    const keys = collectValidDependencyKeys(modules, ['src/foo/a.ts', 'src/foo/b.ts', 'src/bar/c.ts']);
+    const keys = collectValidDependencyKeys(modules, present('src/foo/a.ts', 'src/foo/b.ts', 'src/bar/c.ts'));
 
     expect(keys).toEqual(new Set([makeDependencyKey('src/foo/a.ts', 'src/bar/c.ts')]));
   });

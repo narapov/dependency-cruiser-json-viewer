@@ -1,7 +1,8 @@
-import { createContext, useContext } from 'react';
+import { createContext, useContext, type MouseEvent } from 'react';
 
 export interface NodeContextMenuControls {
-  openAtElement: (el: HTMLElement) => void;
+  openContextMenu: (event: MouseEvent, path: string) => void;
+  openAtElement: (el: HTMLElement, path: string) => void;
 }
 
 const NodeContextMenuControlsContext = createContext<NodeContextMenuControls | null>(null);
@@ -15,7 +16,7 @@ export function NodeContextMenuControlsProvider(props: { value: NodeContextMenuC
 export function useNodeContextMenuControls(): NodeContextMenuControls {
   const context = useContext(NodeContextMenuControlsContext);
   if (!context) {
-    throw new Error('useNodeContextMenuControls must be used within NodeContextMenu');
+    throw new Error('useNodeContextMenuControls must be used within NodeContextMenuControlsProvider');
   }
   return context;
 }

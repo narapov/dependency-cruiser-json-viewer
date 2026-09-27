@@ -8,9 +8,8 @@ import type { NodeProps } from '@xyflow/react';
 
 import { renderWithTheme } from '@/testsUtils';
 
-import { GraphActionsProvider } from '../../contexts';
-import { createMockGraphActions } from '../../contexts/GraphActionsContext/__fixtures__/mockGraphActions';
 import type { FileNodeData } from '../../types';
+import { NodeContextMenuControlsProvider } from '../NodeContextMenu';
 import { FileNode } from './FileNode';
 
 vi.mock('@xyflow/react', () => ({
@@ -22,20 +21,18 @@ function fileNodeProps(data: FileNodeData): NodeProps {
   return { id: data.path, data } as unknown as NodeProps;
 }
 
-function renderFileNode(data: FileNodeData, actions = createMockGraphActions()) {
+function renderFileNode(data: FileNodeData, openContextMenu = vi.fn(), openAtElement = vi.fn()) {
   renderWithTheme(
-    <GraphActionsProvider value={actions}>
+    <NodeContextMenuControlsProvider value={{ openContextMenu, openAtElement }}>
       <FileNode {...fileNodeProps(data)} />
-    </GraphActionsProvider>,
+    </NodeContextMenuControlsProvider>,
   );
-  return actions;
+  return { openContextMenu, openAtElement };
 }
 
 describe('FileNode', () => {
   it('renders label and opens context menu', () => {
-    const { result: i18n } = renderHook(() => useTranslation());
-
-    renderFileNode({
+    const { openContextMenu } = renderFileNode({
       label: 'a.ts',
       path: 'src/a.ts',
     });
@@ -43,7 +40,18 @@ describe('FileNode', () => {
     expect(screen.getByText('a.ts')).toBeInTheDocument();
 
     fireEvent.contextMenu(screen.getByText('a.ts'));
-    expect(screen.getByText(i18n.current.t('actions.copyPath'))).toBeInTheDocument();
+    expect(openContextMenu).toHaveBeenCalledWith(expect.any(Object), 'src/a.ts');
+  });
+
+  it('opens menu from the trigger button', () => {
+    const { result: i18n } = renderHook(() => useTranslation());
+    const { openAtElement } = renderFileNode({
+      label: 'a.ts',
+      path: 'src/a.ts',
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: i18n.current.t('actions.openNodeMenu') }));
+    expect(openAtElement).toHaveBeenCalledWith(expect.any(HTMLElement), 'src/a.ts');
   });
 
   it('applies circular styling', () => {

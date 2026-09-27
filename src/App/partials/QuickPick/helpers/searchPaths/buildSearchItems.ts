@@ -1,9 +1,9 @@
-import type { CruiseTreeSnapshot } from '@/domain';
+import type { CruiseSnapshot } from '@/domain';
 
 import type { QuickPickFileItem } from '../../types';
 
-/** Builds sorted file and folder quick-pick items from a cruise tree snapshot. */
-export function buildSearchItems(snapshot: CruiseTreeSnapshot): QuickPickFileItem[] {
+/** Builds sorted file and folder quick-pick items from a cruise snapshot. */
+export function buildSearchItems(snapshot: CruiseSnapshot): QuickPickFileItem[] {
   const walk = (paths: readonly string[]): QuickPickFileItem[] =>
     paths.flatMap(path => {
       const node = snapshot.nodes.get(path);

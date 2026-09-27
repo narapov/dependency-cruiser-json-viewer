@@ -1,5 +1,5 @@
-import type { CruiseEdge, CruiseTreeSnapshot, ModuleRelations } from '../../../types';
-import { finalizeDependencyRelationFlags, type DependencyRelationFlags } from '../../dependencyUtils';
+import type { CruiseEdge, CruiseSnapshot, ModuleRelations } from '../../../types';
+import { deriveRelationFlagsFromAggregated, type DependencyRelationFlags } from '../../dependencyUtils';
 import { buildRelationPathTree } from '../buildRelationPathTree';
 import { flagsMapToSortedRelations } from '../mergeRelationGroups';
 
@@ -10,39 +10,29 @@ const EMPTY_RELATIONS: ModuleRelations = {
   hiddenDependents: [],
 };
 
-/** Convert a snapshot edge into mutable relation flags. */
-function cruiseEdgeToFlags(edge: CruiseEdge): DependencyRelationFlags {
-  return {
-    typeOnly: edge.typeOnly,
-    valueCircular: edge.circular,
-    typeOnlyCircular: edge.typeOnlyCircular,
-  };
-}
-
 /** Merge a precomputed cruise edge into a path → flags map. */
 function mergeCruiseEdge(map: Map<string, DependencyRelationFlags>, edge: CruiseEdge): void {
+  const next = deriveRelationFlagsFromAggregated(edge.aggregated);
   const existing = map.get(edge.path);
   if (!existing) {
-    map.set(edge.path, cruiseEdgeToFlags(edge));
+    map.set(edge.path, next);
     return;
   }
 
-  existing.typeOnly = existing.typeOnly && edge.typeOnly;
-  if (edge.circular) {
+  existing.typeOnly = existing.typeOnly && next.typeOnly;
+  if (next.valueCircular) {
     existing.valueCircular = true;
   }
-  if (edge.typeOnlyCircular) {
+  if (next.typeOnlyCircular) {
     existing.typeOnlyCircular = true;
   }
-  finalizeDependencyRelationFlags(existing);
+  if (existing.valueCircular) {
+    existing.typeOnlyCircular = false;
+  }
 }
 
 /** Incoming and outgoing relations for a single module path among selected and hidden paths. */
-export function getModuleRelations(
-  path: string,
-  snapshot: CruiseTreeSnapshot,
-  selectedPaths: string[],
-): ModuleRelations {
+export function getModuleRelations(path: string, snapshot: CruiseSnapshot, selectedPaths: string[]): ModuleRelations {
   const node = snapshot.nodes.get(path);
   if (node == null || node.isFolder) {
     return EMPTY_RELATIONS;

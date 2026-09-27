@@ -1,6 +1,6 @@
 import { useDeferredValue, useMemo, useState } from 'react';
 
-import { useCruiseTreeRequired } from '../../../../contexts';
+import { useCruiseSnapshotRequired } from '../../../../contexts';
 import { buildSearchItems, searchPaths, type QuickPickFileItem } from '../../../QuickPick';
 
 interface UsePathSearchStateConfig {
@@ -12,19 +12,19 @@ interface UsePathSearchStateConfig {
 export function usePathSearchState(config: UsePathSearchStateConfig = {}) {
   const { allowedPaths } = config;
 
-  const cruiseTree = useCruiseTreeRequired();
+  const cruiseSnapshot = useCruiseSnapshotRequired();
   const [query, setQuery] = useState('');
   const deferredQuery = useDeferredValue(query);
 
   const allItems = useMemo(() => {
-    const items = buildSearchItems(cruiseTree);
+    const items = buildSearchItems(cruiseSnapshot);
     if (allowedPaths == null) {
       return items;
     }
 
     const allowed = new Set(allowedPaths);
     return items.filter(item => allowed.has(item.key));
-  }, [cruiseTree, allowedPaths]);
+  }, [cruiseSnapshot, allowedPaths]);
 
   const results: QuickPickFileItem[] = searchPaths(allItems, deferredQuery);
 

@@ -6,11 +6,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { fireEvent, renderHook, screen } from '@testing-library/react';
 
-import { buildCruiseTreeSnapshot } from '@/domain';
+import { buildCruiseSnapshot } from '@/domain';
 import { USER_EDGE_HIGHLIGHT_COLORS } from '@/Shared';
 import { renderWithTheme } from '@/testsUtils';
 
-import { CruiseTreeProvider } from '../../contexts';
+import { CruiseSnapshotProvider } from '../../contexts';
 import { HighlightEdgeDialog } from './HighlightEdgeDialog';
 
 function moduleAt(source: string, dependencies: IModule['dependencies'] = []): IModule {
@@ -19,9 +19,9 @@ function moduleAt(source: string, dependencies: IModule['dependencies'] = []): I
 
 function renderDialog(modules: IModule[], onConfirm = vi.fn(), onClose = vi.fn()) {
   return renderWithTheme(
-    <CruiseTreeProvider value={buildCruiseTreeSnapshot(modules)}>
+    <CruiseSnapshotProvider value={buildCruiseSnapshot(modules)}>
       <HighlightEdgeDialog open userEdgeHighlights={new Map()} onConfirm={onConfirm} onClose={onClose} />
-    </CruiseTreeProvider>,
+    </CruiseSnapshotProvider>,
   );
 }
 

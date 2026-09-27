@@ -4,15 +4,15 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { act, renderHook } from '@testing-library/react';
 
-import { buildCruiseTreeSnapshot } from '@/domain';
+import { buildCruiseSnapshot } from '@/domain';
 
-import { CruiseTreeProvider } from '../../../../contexts';
+import { CruiseSnapshotProvider } from '../../../../contexts';
 import type { QuickPickCommand } from '../../types';
 import { useQuickPickState } from './useQuickPickState';
 
 const SOURCES = ['src/a.ts', 'src/b/c.ts', 'src/utils/helpers.ts'];
 
-const CRUISE_TREE = buildCruiseTreeSnapshot(
+const CRUISE_TREE = buildCruiseSnapshot(
   SOURCES.map(source => ({ source, dependencies: [], dependents: [], valid: true })),
 );
 
@@ -23,7 +23,7 @@ const COMMANDS: QuickPickCommand[] = [
 ];
 
 function wrapper(props: { children: ReactNode }) {
-  return <CruiseTreeProvider value={CRUISE_TREE}>{props.children}</CruiseTreeProvider>;
+  return <CruiseSnapshotProvider value={CRUISE_TREE}>{props.children}</CruiseSnapshotProvider>;
 }
 
 describe('useQuickPickState', () => {

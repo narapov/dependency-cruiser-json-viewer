@@ -1,16 +1,16 @@
 // @vitest-environment jsdom
 
 import { useTranslation } from 'react-i18next';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { fireEvent, renderHook, screen } from '@testing-library/react';
 import type { NodeProps } from '@xyflow/react';
 
 import { renderWithTheme } from '@/testsUtils';
 
-import { GraphActionsProvider } from '../../contexts';
-import { createMockGraphActions } from '../../contexts/GraphActionsContext/__fixtures__/mockGraphActions';
+import { initialWorkspaceState, useWorkspaceStore } from '../../../../stores/workspaceStore';
 import type { FolderGroupNodeData } from '../../types';
+import { NodeContextMenuControlsProvider } from '../NodeContextMenu';
 import { FolderGroupNode } from './FolderGroupNode';
 
 vi.mock('@xyflow/react', () => ({
@@ -22,41 +22,40 @@ function groupNodeProps(data: FolderGroupNodeData): NodeProps {
   return { id: data.path, data } as unknown as NodeProps;
 }
 
-function renderFolderGroupNode(data: FolderGroupNodeData, actions = createMockGraphActions()) {
+function renderFolderGroupNode(data: FolderGroupNodeData, openContextMenu = vi.fn(), openAtElement = vi.fn()) {
   renderWithTheme(
-    <GraphActionsProvider value={actions}>
+    <NodeContextMenuControlsProvider value={{ openContextMenu, openAtElement }}>
       <FolderGroupNode {...groupNodeProps(data)} />
-    </GraphActionsProvider>,
+    </NodeContextMenuControlsProvider>,
   );
-  return actions;
+  return { openContextMenu, openAtElement };
 }
 
 describe('FolderGroupNode', () => {
+  beforeEach(() => {
+    useWorkspaceStore.setState({
+      ...initialWorkspaceState,
+      expandedFolderPaths: { src: true },
+    });
+  });
+
   it('renders group header and toggles expand', () => {
     const { result: i18n } = renderHook(() => useTranslation());
-    const onToggleFolder = vi.fn();
-    const actions = renderFolderGroupNode(
-      {
-        label: 'src',
-        path: 'src',
-        expanded: true,
-        highlighted: true,
-        backgroundColor: '#f5f5f5',
-      },
-      createMockGraphActions({ onToggleFolder }),
-    );
+    renderFolderGroupNode({
+      label: 'src',
+      path: 'src',
+      expanded: true,
+      backgroundColor: '#f5f5f5',
+    });
 
     expect(screen.getByText('src')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: i18n.current.t('actions.collapseFolder') }));
-    expect(actions.onToggleFolder).toHaveBeenCalledWith('src');
-    expect(onToggleFolder).toHaveBeenCalledWith('src');
+    expect(useWorkspaceStore.getState().expandedFolderPaths.src).toBeUndefined();
   });
 
-  it('opens context menu with folder actions', () => {
-    const { result: i18n } = renderHook(() => useTranslation());
-
-    renderFolderGroupNode({
+  it('opens context menu for folder path', () => {
+    const { openContextMenu } = renderFolderGroupNode({
       label: 'lib',
       path: 'lib',
       expanded: false,
@@ -64,30 +63,6 @@ describe('FolderGroupNode', () => {
     });
 
     fireEvent.contextMenu(screen.getByText('lib'));
-    expect(screen.getByText(i18n.current.t('actions.expand'))).toBeInTheDocument();
-  });
-
-  it('opens context menu with auto layout actions when provided', () => {
-    const { result: i18n } = renderHook(() => useTranslation());
-    const onAutoLayoutGroup = vi.fn();
-    const onAutoLayoutGroupRecursive = vi.fn();
-
-    renderFolderGroupNode(
-      {
-        label: 'lib',
-        path: 'lib',
-        expanded: false,
-        backgroundColor: '#fff',
-      },
-      createMockGraphActions({ onAutoLayoutGroup, onAutoLayoutGroupRecursive }),
-    );
-
-    fireEvent.contextMenu(screen.getByText('lib'));
-    fireEvent.click(screen.getByText(i18n.current.t('actions.autoLayout')));
-    fireEvent.contextMenu(screen.getByText('lib'));
-    fireEvent.click(screen.getByText(i18n.current.t('actions.autoLayoutRecursive')));
-
-    expect(onAutoLayoutGroup).toHaveBeenCalledWith('lib');
-    expect(onAutoLayoutGroupRecursive).toHaveBeenCalledWith('lib');
+    expect(openContextMenu).toHaveBeenCalledWith(expect.any(Object), 'lib');
   });
 });

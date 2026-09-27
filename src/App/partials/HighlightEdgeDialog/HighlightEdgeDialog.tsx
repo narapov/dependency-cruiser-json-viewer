@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 
 import {
-  buildCruiseTreeSnapshot,
+  buildCruiseSnapshot,
   collectRelatedModuleSources,
   getCruiseModules,
   getDependencyKeysBetweenPaths,
@@ -9,7 +9,7 @@ import {
 } from '@/domain';
 import { AppDialog, AppDialogContent, AppDialogTitle } from '@/Shared';
 
-import { CruiseTreeProvider, useCruiseTreeRequired } from '../../contexts';
+import { CruiseSnapshotProvider, useCruiseSnapshotRequired } from '../../contexts';
 import { PathSearchBody } from '../PathSearchDialog';
 import { useHighlightEdgeDialogState } from './hooks';
 import { HighlightEdgeColorStep } from './partials';
@@ -40,16 +40,16 @@ interface HighlightEdgeDialogContentProps {
 function HighlightEdgeDialogContent(props: HighlightEdgeDialogContentProps) {
   const { userEdgeHighlights, onConfirm, onClose } = props;
 
-  const cruiseTree = useCruiseTreeRequired();
+  const cruiseSnapshot = useCruiseSnapshotRequired();
   const { t } = useTranslation();
   const { step, sourcePath, targetPath, selectSource, selectTarget } = useHighlightEdgeDialogState();
 
-  const modules = getCruiseModules(cruiseTree);
+  const modules = getCruiseModules(cruiseSnapshot);
   const targetSources = sourcePath != null ? collectRelatedModuleSources(sourcePath, modules, 'dependencies') : [];
-  const targetCruiseTree = buildCruiseTreeSnapshot(
-    getCruiseModules(cruiseTree, targetSources),
-    cruiseTree.ruleSetUsed,
-    cruiseTree.violations,
+  const targetCruiseSnapshot = buildCruiseSnapshot(
+    getCruiseModules(cruiseSnapshot, targetSources),
+    cruiseSnapshot.ruleSetUsed,
+    cruiseSnapshot.violations,
   );
 
   const dependencyKeys =
@@ -74,9 +74,9 @@ function HighlightEdgeDialogContent(props: HighlightEdgeDialogContentProps) {
       <AppDialogContent sx={{ p: 0 }}>
         {step === 'source' && <PathSearchBody onSelect={selectSource} />}
         {step === 'target' && (
-          <CruiseTreeProvider value={targetCruiseTree}>
+          <CruiseSnapshotProvider value={targetCruiseSnapshot}>
             <PathSearchBody onSelect={selectTarget} />
-          </CruiseTreeProvider>
+          </CruiseSnapshotProvider>
         )}
         {step === 'color' && (
           <HighlightEdgeColorStep currentHighlight={currentHighlight} onSelect={handleColorSelect} />

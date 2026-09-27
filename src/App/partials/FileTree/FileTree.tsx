@@ -4,7 +4,7 @@ import Box from '@mui/material/Box';
 import { useRichTreeViewApiRef } from '@mui/x-tree-view/hooks';
 import { RichTreeView } from '@mui/x-tree-view/RichTreeView';
 
-import { isPathVisibleInSelectionRecord } from '@/domain';
+import { expandSelectionWithSelectedAncestors, isPathVisibleInSelectionRecord, toSelectedFilePaths } from '@/domain';
 
 import { pathsToPresenceRecord, presenceRecordToPaths, useWorkspaceStore } from '../../stores/workspaceStore';
 import { FileTreeActionsProvider } from './contexts';
@@ -26,20 +26,20 @@ interface FileTreeProps {
 export function FileTree(props: FileTreeProps) {
   const { ref, onShowInGraph, onViewModuleJson } = props;
 
-  const cruiseTree = useWorkspaceStore(state => state.cruiseTree);
+  const cruiseSnapshot = useWorkspaceStore(state => state.cruiseSnapshot);
   const selectedFilePaths = useWorkspaceStore(state => state.selectedFilePaths);
   const expandedFolderPaths = useWorkspaceStore(state => state.expandedFolderPaths);
   const activePath = useWorkspaceStore(state => state.activePath);
   const setSelectedFilePaths = useWorkspaceStore(state => state.setSelectedFilePaths);
   const replaceExpandedFolderPaths = useWorkspaceStore(state => state.replaceExpandedFolderPaths);
 
-  const selectedKeys = presenceRecordToPaths(selectedFilePaths);
+  const selectedKeys = expandSelectionWithSelectedAncestors(presenceRecordToPaths(selectedFilePaths), cruiseSnapshot);
   const expandedKeys = presenceRecordToPaths(expandedFolderPaths);
 
   const apiRef = useRichTreeViewApiRef();
   const clickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const treeData = buildFileTree(cruiseTree);
+  const treeData = buildFileTree(cruiseSnapshot);
 
   const { openContextMenu, contextMenu } = useFileTreeContextMenu({
     onShowInGraph,
@@ -47,7 +47,7 @@ export function FileTree(props: FileTreeProps) {
   });
 
   const canShowNodeInGraph = (key: string) =>
-    isPathVisibleInSelectionRecord(key, selectedFilePaths, cruiseTree.nodes.get(key)?.descendantFiles ?? []);
+    isPathVisibleInSelectionRecord(key, selectedFilePaths, cruiseSnapshot.nodes.get(key)?.descendantFiles ?? []);
 
   useImperativeHandle(ref, () => ({
     focusPath(path: string) {
@@ -61,7 +61,7 @@ export function FileTree(props: FileTreeProps) {
   const handleSelectedItemsChange = (_event: unknown, itemIds?: string[]) => {
     const keys = Array.isArray(_event) ? _event : itemIds;
     if (keys) {
-      setSelectedFilePaths(pathsToPresenceRecord(keys));
+      setSelectedFilePaths(pathsToPresenceRecord(toSelectedFilePaths(keys, cruiseSnapshot)));
     }
   };
 

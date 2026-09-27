@@ -1,9 +1,8 @@
-import { useEffect, useRef, type RefObject } from 'react';
+import { type RefObject } from 'react';
 
 import {
   collectRelatedModuleSources,
   collectViolationModulePaths,
-  expandSelectionWithSelectedAncestors,
   getAncestorKeys,
   getCruiseModules,
   getCruiseSourcesUnder,
@@ -59,7 +58,7 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
 
   const cruiseResult = useWorkspaceStore(state => state.cruiseResult);
   const ignorePatterns = useWorkspaceStore(state => state.ignorePatterns);
-  const cruiseTree = useWorkspaceStore(state => state.cruiseTree);
+  const cruiseSnapshot = useWorkspaceStore(state => state.cruiseSnapshot);
   const selectedFilePaths = useWorkspaceStore(state => state.selectedFilePaths);
   const expandedFolderPaths = useWorkspaceStore(state => state.expandedFolderPaths);
   const activePath = useWorkspaceStore(state => state.activePath);
@@ -80,7 +79,7 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
   const setUserDependencyHighlight = useWorkspaceStore(state => state.setUserDependencyHighlight);
   const clearAllHighlightsAction = useWorkspaceStore(state => state.clearAllHighlights);
 
-  const sources = cruiseTree.descendantFiles;
+  const sources = cruiseSnapshot.descendantFiles;
   const selectedPaths = presenceRecordToPaths(selectedFilePaths);
   const expandedKeys = presenceRecordToPaths(expandedFolderPaths);
 
@@ -91,27 +90,6 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
     applicableRulesPanelPath != null && isPathInSources(applicableRulesPanelPath, sources)
       ? applicableRulesPanelPath
       : null;
-
-  const layoutApplyKey = `${graphSettings.autoLayoutOnly}\0${graphSettings.edgesType}\0${JSON.stringify(nodePositions)}`;
-  const lastAppliedLayoutKeyRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (cruiseResult == null) {
-      return;
-    }
-    if (graphRef.current == null) {
-      return;
-    }
-    if (lastAppliedLayoutKeyRef.current === layoutApplyKey) {
-      return;
-    }
-    lastAppliedLayoutKeyRef.current = layoutApplyKey;
-    graphRef.current.setLayoutState({
-      autoLayoutOnly: graphSettings.autoLayoutOnly,
-      edgesType: graphSettings.edgesType,
-      nodePositions: toGraphNodePositions(nodePositions),
-    });
-  }, [cruiseResult, graphRef, graphSettings.autoLayoutOnly, graphSettings.edgesType, layoutApplyKey, nodePositions]);
 
   const dependenciesPanelOpen = resolvedDependenciesPath != null;
   const applicableRulesPanelOpen = resolvedApplicableRulesPath != null;
@@ -219,7 +197,7 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
   const expandActive = () => {
     const folderPath = resolveActiveFolderPath(
       resolvedActivePath,
-      path => cruiseTree.nodes.get(path)?.isFolder === true,
+      path => cruiseSnapshot.nodes.get(path)?.isFolder === true,
     );
     if (folderPath == null) {
       return;
@@ -230,7 +208,7 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
   const expandActiveRecursive = () => {
     const folderPath = resolveActiveFolderPath(
       resolvedActivePath,
-      path => cruiseTree.nodes.get(path)?.isFolder === true,
+      path => cruiseSnapshot.nodes.get(path)?.isFolder === true,
     );
     if (folderPath == null) {
       return;
@@ -241,7 +219,7 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
   const collapseActive = () => {
     const folderPath = resolveActiveFolderPath(
       resolvedActivePath,
-      path => cruiseTree.nodes.get(path)?.isFolder === true,
+      path => cruiseSnapshot.nodes.get(path)?.isFolder === true,
     );
     if (folderPath == null) {
       return;
@@ -252,7 +230,7 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
   const collapseActiveRecursive = () => {
     const folderPath = resolveActiveFolderPath(
       resolvedActivePath,
-      path => cruiseTree.nodes.get(path)?.isFolder === true,
+      path => cruiseSnapshot.nodes.get(path)?.isFolder === true,
     );
     if (folderPath == null) {
       return;
@@ -312,7 +290,7 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
   };
 
   const expandAllRecursive = () => {
-    const folderKeys = [...cruiseTree.nodes.values()].filter(node => node.isFolder).map(node => node.path);
+    const folderKeys = [...cruiseSnapshot.nodes.values()].filter(node => node.isFolder).map(node => node.path);
     updateExpandedKeys(folderKeys);
   };
 
@@ -325,7 +303,7 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
   };
 
   const selectAll = () => {
-    setSelectedPaths([...cruiseTree.nodes.keys()]);
+    setSelectedPaths([...cruiseSnapshot.nodes.keys()]);
   };
 
   const unselectAll = () => {
@@ -335,25 +313,25 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
   const showPathsOnly = (paths: string[]) => {
     const sourceSet = new Set(sources);
     const filtered = paths.filter(path => sourceSet.has(path));
-    setSelectedPaths(expandSelectionWithSelectedAncestors(filtered, sources));
+    setSelectedPaths(filtered);
     if (filtered.length > 0) {
       updateExpandedKeys([...new Set(filtered.flatMap(getAncestorKeys))]);
     }
   };
 
-  const sourcesForPath = (path: string): string[] => getCruiseSourcesUnder(cruiseTree, path);
+  const sourcesForPath = (path: string): string[] => getCruiseSourcesUnder(cruiseSnapshot, path);
 
   const hideOthers = (path: string) => {
     const kept = new Set(sourcesForPath(path)).intersection(new Set(selectedPaths));
-    setSelectedPaths(expandSelectionWithSelectedAncestors([...kept], sources));
+    setSelectedPaths([...kept]);
   };
 
   const showRelatedModules = (path: string, direction: RelatedModuleDirection) => {
-    const related = collectRelatedModuleSources(path, getCruiseModules(cruiseTree), direction);
+    const related = collectRelatedModuleSources(path, getCruiseModules(cruiseSnapshot), direction);
     const sourceSet = new Set(sources);
     const currentModuleSources = selectedPaths.filter(selected => sourceSet.has(selected));
     const nextSources = [...new Set([...currentModuleSources, ...sourcesForPath(path), ...related])];
-    setSelectedPaths(expandSelectionWithSelectedAncestors(nextSources, sources));
+    setSelectedPaths(nextSources);
     if (related.length > 0) {
       updateExpandedKeys([...new Set([...expandedKeys, ...related.flatMap(getAncestorKeys)])]);
     }
@@ -370,13 +348,13 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
   const showCircularDependenciesOnly = () => {
     showPathsOnly(
       sources.filter(path => {
-        const node = cruiseTree.nodes.get(path);
+        const node = cruiseSnapshot.nodes.get(path);
         if (node == null) {
           return false;
         }
         return (
-          node.dependencies.some(edge => edge.circular || edge.typeOnlyCircular) ||
-          node.dependents.some(edge => edge.circular || edge.typeOnlyCircular)
+          node.dependencies.some(edge => edge.aggregated.some(dep => dep.circular)) ||
+          node.dependents.some(edge => edge.aggregated.some(dep => dep.circular))
         );
       }),
     );

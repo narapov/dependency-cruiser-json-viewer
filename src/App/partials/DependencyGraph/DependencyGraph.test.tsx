@@ -1,14 +1,14 @@
 // @vitest-environment jsdom
 import { createRef, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { fireEvent, renderHook, screen } from '@testing-library/react';
 
-import { buildCruiseTreeSnapshot } from '@/domain';
+import { buildCruiseSnapshot } from '@/domain';
 import { renderWithTheme } from '@/testsUtils';
 
-import { CruiseTreeProvider } from '../../contexts';
+import { initialWorkspaceState, useWorkspaceStore } from '../../stores/workspaceStore';
 import { DependencyGraph } from './DependencyGraph';
 import type { DependencyGraphHandle } from './types';
 
@@ -25,7 +25,6 @@ const buildGraphState = {
   isBuildingGraph: false,
   buildFailed: false,
   clearBuildFailed,
-  expandedFolders: new Set<string>(),
 };
 
 vi.mock('@/Shared', async importOriginal => {
@@ -74,7 +73,6 @@ vi.mock('./hooks', async importOriginal => {
       getLayoutSnapshot: () => ({ nodePositions: {} }),
       setLayoutSnapshot: vi.fn(),
     }),
-    useHighlightedNodes: () => ({ highlightedNodes: [] }),
     useHighlightedEdges: () => ({
       highlightedEdges: [],
       getEdgeHighlight: vi.fn(),
@@ -88,40 +86,38 @@ vi.mock('./hooks', async importOriginal => {
   };
 });
 
-const EMPTY_TREE = buildCruiseTreeSnapshot([]);
+const EMPTY_TREE = buildCruiseSnapshot([]);
 
 const baseProps = {
-  selectedPaths: ['src/a.ts'],
-  expandedKeys: ['src'],
-  folderBaseColors: {},
-  onToggleFolder: vi.fn(),
-  onExpandRecursive: vi.fn(),
   onShowInFileTree: vi.fn(),
-  onShowDependenciesPanel: vi.fn(),
-  onShowApplicableRulesPanel: vi.fn(),
   onViewModuleJson: vi.fn(),
-  onHideOthers: vi.fn(),
-  onShowDirectDependencies: vi.fn(),
-  onShowDirectDependents: vi.fn(),
-  userEdgeHighlights: new Map<string, string>(),
-  onUserEdgeHighlightsChange: vi.fn(),
-  onClearAllHighlights: vi.fn(),
 };
 
+function seedSelectedWorkspace() {
+  useWorkspaceStore.setState({
+    ...initialWorkspaceState,
+    cruiseSnapshot: EMPTY_TREE,
+    selectedFilePaths: { 'src/a.ts': true },
+    expandedFolderPaths: { src: true },
+  });
+}
+
 describe('DependencyGraph', () => {
+  beforeEach(() => {
+    seedSelectedWorkspace();
+  });
+
   afterEach(() => {
     buildGraphState.buildFailed = false;
+    useWorkspaceStore.setState(initialWorkspaceState);
     vi.clearAllMocks();
   });
 
   it('shows empty selection when no paths are selected', () => {
     const { result: i18n } = renderHook(() => useTranslation());
+    useWorkspaceStore.setState({ selectedFilePaths: {} });
 
-    renderWithTheme(
-      <CruiseTreeProvider value={EMPTY_TREE}>
-        <DependencyGraph {...baseProps} selectedPaths={[]} />
-      </CruiseTreeProvider>,
-    );
+    renderWithTheme(<DependencyGraph {...baseProps} />);
 
     expect(screen.getByText(i18n.current.t('graph.emptySelection'))).toBeInTheDocument();
     expect(screen.queryByTestId('react-flow')).not.toBeInTheDocument();
@@ -129,42 +125,29 @@ describe('DependencyGraph', () => {
 
   it('toggles auto layout only switch', () => {
     const { result: i18n } = renderHook(() => useTranslation());
-    const { container } = renderWithTheme(
-      <CruiseTreeProvider value={EMPTY_TREE}>
-        <DependencyGraph {...baseProps} />
-      </CruiseTreeProvider>,
-    );
+    const { container } = renderWithTheme(<DependencyGraph {...baseProps} />);
     const root = container.firstChild as HTMLElement;
 
     expect(root.className).toMatch(/layoutLocked/);
 
     fireEvent.click(screen.getByLabelText(i18n.current.t('graph.autoLayoutOnly')));
 
+    expect(useWorkspaceStore.getState().graphSettings.autoLayoutOnly).toBe(false);
     expect(root.className).not.toMatch(/layoutLocked/);
   });
 
-  it('notifies active path change on node click', () => {
-    const onActivePathChange = vi.fn();
-
-    renderWithTheme(
-      <CruiseTreeProvider value={EMPTY_TREE}>
-        <DependencyGraph {...baseProps} onActivePathChange={onActivePathChange} />
-      </CruiseTreeProvider>,
-    );
+  it('sets active path on node click', () => {
+    renderWithTheme(<DependencyGraph {...baseProps} />);
 
     fireEvent.click(screen.getByText('click-node'));
 
-    expect(onActivePathChange).toHaveBeenCalledWith('src/a.ts');
+    expect(useWorkspaceStore.getState().activePath).toBe('src/a.ts');
   });
 
   it('focusNode fits view when node exists', () => {
     const ref = createRef<DependencyGraphHandle>();
 
-    renderWithTheme(
-      <CruiseTreeProvider value={EMPTY_TREE}>
-        <DependencyGraph ref={ref} {...baseProps} />
-      </CruiseTreeProvider>,
-    );
+    renderWithTheme(<DependencyGraph ref={ref} {...baseProps} />);
 
     ref.current?.focusNode('src/a.ts');
     expect(fitView).toHaveBeenCalledWith({ nodes: [{ id: 'src/a.ts' }], padding: 0.5, duration: 300 });
@@ -177,11 +160,7 @@ describe('DependencyGraph', () => {
   it('exportDot downloads serialized graph.dot', () => {
     const ref = createRef<DependencyGraphHandle>();
 
-    renderWithTheme(
-      <CruiseTreeProvider value={EMPTY_TREE}>
-        <DependencyGraph ref={ref} {...baseProps} />
-      </CruiseTreeProvider>,
-    );
+    renderWithTheme(<DependencyGraph ref={ref} {...baseProps} />);
 
     ref.current?.exportDot();
 
@@ -195,11 +174,7 @@ describe('DependencyGraph', () => {
   it('openDotOnline opens Graphviz Online with serialized DOT', () => {
     const ref = createRef<DependencyGraphHandle>();
 
-    renderWithTheme(
-      <CruiseTreeProvider value={EMPTY_TREE}>
-        <DependencyGraph ref={ref} {...baseProps} />
-      </CruiseTreeProvider>,
-    );
+    renderWithTheme(<DependencyGraph ref={ref} {...baseProps} />);
 
     ref.current?.openDotOnline();
 
@@ -210,11 +185,7 @@ describe('DependencyGraph', () => {
     const { result: i18n } = renderHook(() => useTranslation());
     buildGraphState.buildFailed = true;
 
-    renderWithTheme(
-      <CruiseTreeProvider value={EMPTY_TREE}>
-        <DependencyGraph {...baseProps} />
-      </CruiseTreeProvider>,
-    );
+    renderWithTheme(<DependencyGraph {...baseProps} />);
 
     expect(screen.getByText(i18n.current.t('graph.buildError'))).toBeInTheDocument();
 

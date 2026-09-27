@@ -1,13 +1,13 @@
 import type { ICruiseResult } from 'dependency-cruiser';
 
-import type { CruiseTreeSnapshot, FolderBaseColor, GraphEdgesType } from '@/domain';
+import type { CruiseSnapshot, FolderBaseColor, GraphEdgesType } from '@/domain';
 
 /** Runtime workspace UI state held by `useWorkspaceStore`. */
 export interface WorkspaceState {
   cruiseResult: ICruiseResult | null;
   ignorePatterns: string[];
   selectedFilePaths: Record<string, boolean | undefined>;
-  cruiseTree: CruiseTreeSnapshot;
+  cruiseSnapshot: CruiseSnapshot;
   folderBaseColors: Record<string, FolderBaseColor>;
   expandedFolderPaths: Record<string, boolean | undefined>;
   activePath: string | null;

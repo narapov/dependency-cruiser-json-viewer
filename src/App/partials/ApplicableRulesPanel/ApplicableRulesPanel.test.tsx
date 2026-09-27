@@ -6,10 +6,10 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { renderHook, screen } from '@testing-library/react';
 
-import { buildCruiseTreeSnapshot } from '@/domain';
+import { buildCruiseSnapshot } from '@/domain';
 import { renderWithTheme } from '@/testsUtils';
 
-import { CruiseTreeProvider } from '../../contexts';
+import { CruiseSnapshotProvider } from '../../contexts';
 import { ApplicableRulesPanel } from './ApplicableRulesPanel';
 
 const ruleSet: IFlattenedRuleSet = {
@@ -45,14 +45,14 @@ describe('ApplicableRulesPanel', () => {
     const { result: i18n } = renderHook(() => useTranslation());
 
     renderWithTheme(
-      <CruiseTreeProvider value={buildCruiseTreeSnapshot(modules, ruleSet, violations)}>
+      <CruiseSnapshotProvider value={buildCruiseSnapshot(modules, ruleSet, violations)}>
         <ApplicableRulesPanel
           path="src/domain/a.ts"
           onClose={vi.fn()}
           onShowInGraph={vi.fn()}
           onSelectViolationPaths={vi.fn()}
         />
-      </CruiseTreeProvider>,
+      </CruiseSnapshotProvider>,
     );
 
     expect(screen.getByText(i18n.current.t('applicableRulesPanel.title'))).toBeInTheDocument();
@@ -65,7 +65,7 @@ describe('ApplicableRulesPanel', () => {
   it('shows empty state when no rules apply', () => {
     const { result: i18n } = renderHook(() => useTranslation());
 
-    const snapshot = buildCruiseTreeSnapshot(
+    const snapshot = buildCruiseSnapshot(
       [{ source: 'src/other/a.ts', dependencies: [], dependents: [], valid: true }] as IModule[],
       {
         forbidden: [
@@ -80,14 +80,14 @@ describe('ApplicableRulesPanel', () => {
     );
 
     renderWithTheme(
-      <CruiseTreeProvider value={snapshot}>
+      <CruiseSnapshotProvider value={snapshot}>
         <ApplicableRulesPanel
           path="src/other/a.ts"
           onClose={vi.fn()}
           onShowInGraph={vi.fn()}
           onSelectViolationPaths={vi.fn()}
         />
-      </CruiseTreeProvider>,
+      </CruiseSnapshotProvider>,
     );
 
     expect(screen.getByText(i18n.current.t('applicableRulesPanel.empty'))).toBeInTheDocument();

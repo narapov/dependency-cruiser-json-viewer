@@ -7,6 +7,8 @@ import Typography from '@mui/material/Typography';
 import type { GraphEdgesType } from '@/domain';
 import { AppDialog, AppDialogContent, AppDialogTitle } from '@/Shared';
 
+import { useWorkspaceStore } from '../../../../stores/workspaceStore';
+
 const EDGES_TYPE_OPTIONS: { value: GraphEdgesType; labelKey: string }[] = [
   { value: 'bezier', labelKey: 'graph.edgesTypeBezier' },
   { value: 'straight', labelKey: 'graph.edgesTypeStraight' },
@@ -15,8 +17,6 @@ const EDGES_TYPE_OPTIONS: { value: GraphEdgesType; labelKey: string }[] = [
 
 interface EdgesTypePickerDialogProps {
   open: boolean;
-  edgesType: GraphEdgesType;
-  onEdgesTypeChange: (edgesType: GraphEdgesType) => void;
   onClose: () => void;
 }
 
@@ -26,9 +26,12 @@ function getEdgesTypeIndex(edgesType: GraphEdgesType): number {
 }
 
 export function EdgesTypePickerDialog(props: EdgesTypePickerDialogProps) {
-  const { open, edgesType, onEdgesTypeChange, onClose } = props;
+  const { open, onClose } = props;
 
   const { t } = useTranslation();
+  const edgesType = useWorkspaceStore(state => state.graphSettings.edgesType);
+  const autoLayoutOnly = useWorkspaceStore(state => state.graphSettings.autoLayoutOnly);
+  const setGraphSettings = useWorkspaceStore(state => state.setGraphSettings);
   const [highlightedIndex, setHighlightedIndex] = useState(() => getEdgesTypeIndex(edgesType));
   const listRef = useRef<HTMLUListElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -52,7 +55,7 @@ export function EdgesTypePickerDialog(props: EdgesTypePickerDialogProps) {
   }, [highlightedIndex, open]);
 
   const handleSelect = (value: GraphEdgesType) => {
-    onEdgesTypeChange(value);
+    setGraphSettings({ autoLayoutOnly, edgesType: value });
     onClose();
   };
 

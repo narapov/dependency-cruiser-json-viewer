@@ -7,7 +7,7 @@ import Typography from '@mui/material/Typography';
 
 import { getCruiseModules, getNodeRelations } from '@/domain';
 
-import { useCruiseTreeRequired } from '../../contexts';
+import { useCruiseSnapshotRequired } from '../../contexts';
 import { DependencyPanelHeader } from './partials/DependencyPanelHeader';
 import { RelationList } from './partials/RelationList';
 
@@ -35,13 +35,13 @@ export function DependencyPanel(props: DependencyPanelProps) {
   } = props;
 
   const { t } = useTranslation();
-  const cruiseTree = useCruiseTreeRequired();
+  const cruiseSnapshot = useCruiseSnapshotRequired();
   const expandedFolders = useMemo(() => new Set(expandedKeys), [expandedKeys]);
-  const modules = useMemo(() => getCruiseModules(cruiseTree), [cruiseTree]);
+  const modules = useMemo(() => getCruiseModules(cruiseSnapshot), [cruiseSnapshot]);
 
   const relations = useMemo(
-    () => getNodeRelations(path, cruiseTree, selectedPaths, expandedFolders),
-    [path, cruiseTree, selectedPaths, expandedFolders],
+    () => getNodeRelations(path, cruiseSnapshot, selectedPaths, expandedFolders),
+    [path, cruiseSnapshot, selectedPaths, expandedFolders],
   );
 
   return (

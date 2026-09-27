@@ -2,32 +2,42 @@ import { useEffect, useRef } from 'react';
 
 import { useReactFlow } from '@xyflow/react';
 
+import type { PresenceRecord } from '../../types';
+
 interface UseAutoFitViewInput {
-  selectedPaths: string[];
+  selectedFilePaths: PresenceRecord;
   layoutNodesLength: number;
   hasUserLayout: boolean;
   autoLayoutOnly: boolean;
 }
 
+function selectedFilePathsKey(record: PresenceRecord): string {
+  return Object.entries(record)
+    .filter(([, present]) => present)
+    .map(([path]) => path)
+    .sort()
+    .join('\0');
+}
+
 export function useAutoFitView(config: UseAutoFitViewInput): void {
-  const { selectedPaths, layoutNodesLength, hasUserLayout, autoLayoutOnly } = config;
+  const { selectedFilePaths, layoutNodesLength, hasUserLayout, autoLayoutOnly } = config;
 
   const { fitView } = useReactFlow();
-  const selectedPathsKey = selectedPaths.join('\0');
-  const prevSelectedPathsKeyRef = useRef<string | null>(null);
+  const selectionKey = selectedFilePathsKey(selectedFilePaths);
+  const prevSelectionKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (layoutNodesLength === 0 || hasUserLayout || autoLayoutOnly) {
       return;
     }
 
-    const isInitialLayout = prevSelectedPathsKeyRef.current === null;
-    const selectionChanged = prevSelectedPathsKeyRef.current !== selectedPathsKey;
+    const isInitialLayout = prevSelectionKeyRef.current === null;
+    const selectionChanged = prevSelectionKeyRef.current !== selectionKey;
 
     if (isInitialLayout || selectionChanged) {
       void fitView({ padding: 0.2, duration: 300 });
     }
 
-    prevSelectedPathsKeyRef.current = selectedPathsKey;
-  }, [selectedPathsKey, hasUserLayout, autoLayoutOnly, layoutNodesLength, fitView]);
+    prevSelectionKeyRef.current = selectionKey;
+  }, [selectionKey, hasUserLayout, autoLayoutOnly, layoutNodesLength, fitView]);
 }

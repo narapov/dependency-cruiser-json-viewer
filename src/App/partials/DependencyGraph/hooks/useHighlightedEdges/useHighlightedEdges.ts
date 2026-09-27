@@ -12,11 +12,12 @@ import {
   buildEdgeDependencyKeyMap,
   collectValidDependencyKeys,
 } from '../../helpers';
+import type { PresenceRecord } from '../../types';
 
 interface UseHighlightedEdgesInput {
   modules: IModule[];
-  selectedPaths: string[];
-  expandedFolders: Set<string>;
+  selectedFilePaths: PresenceRecord;
+  expandedFolderPaths: PresenceRecord;
   baseEdges: Edge[];
   visibleNodeIds: ReadonlySet<string>;
   activePath?: string | null;
@@ -36,8 +37,8 @@ interface UseHighlightedEdgesResult {
 export function useHighlightedEdges(config: UseHighlightedEdgesInput): UseHighlightedEdgesResult {
   const {
     modules,
-    selectedPaths,
-    expandedFolders,
+    selectedFilePaths,
+    expandedFolderPaths,
     baseEdges,
     visibleNodeIds,
     activePath,
@@ -51,13 +52,13 @@ export function useHighlightedEdges(config: UseHighlightedEdgesInput): UseHighli
     selectedEdgeId != null && baseEdges.some(edge => edge.id === selectedEdgeId) ? selectedEdgeId : null;
 
   const edgeDependencyKeyMap = useMemo(
-    () => buildEdgeDependencyKeyMap(modules, selectedPaths, expandedFolders, visibleNodeIds, baseEdges),
-    [modules, selectedPaths, expandedFolders, visibleNodeIds, baseEdges],
+    () => buildEdgeDependencyKeyMap(modules, selectedFilePaths, expandedFolderPaths, visibleNodeIds, baseEdges),
+    [modules, selectedFilePaths, expandedFolderPaths, visibleNodeIds, baseEdges],
   );
 
   const validDependencyKeys = useMemo(
-    () => collectValidDependencyKeys(modules, selectedPaths),
-    [modules, selectedPaths],
+    () => collectValidDependencyKeys(modules, selectedFilePaths),
+    [modules, selectedFilePaths],
   );
 
   const effectiveUserEdgeHighlights = useMemo(

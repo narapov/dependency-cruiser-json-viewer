@@ -6,11 +6,11 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { fireEvent, renderHook, screen } from '@testing-library/react';
 
-import { buildCruiseTreeSnapshot } from '@/domain';
+import { buildCruiseSnapshot } from '@/domain';
 import { copyToClipboard } from '@/Shared';
 import { renderWithTheme } from '@/testsUtils';
 
-import { CruiseTreeProvider } from '../../contexts';
+import { CruiseSnapshotProvider } from '../../contexts';
 import { CircularPanel } from './CircularPanel';
 
 vi.mock('@/Shared', async importOriginal => {
@@ -52,9 +52,9 @@ function renderPanel(modules: IModule[], handlers: { onShowCycle?: () => void; o
   const { onShowCycle = vi.fn(), onShowInGraph = vi.fn() } = handlers;
 
   return renderWithTheme(
-    <CruiseTreeProvider value={buildCruiseTreeSnapshot(modules)}>
+    <CruiseSnapshotProvider value={buildCruiseSnapshot(modules)}>
       <CircularPanel onShowCycle={onShowCycle} onShowInGraph={onShowInGraph} />
-    </CruiseTreeProvider>,
+    </CruiseSnapshotProvider>,
   );
 }
 
@@ -114,7 +114,7 @@ describe('CircularPanel', () => {
     expect(onShowInGraph).toHaveBeenCalledWith('src/b.ts');
   });
 
-  it('hides cycles whose paths are all outside the cruise tree modules', () => {
+  it('hides cycles whose paths are all outside the cruise snapshot modules', () => {
     const { result: i18n } = renderHook(() => useTranslation());
     const moduleWithFilteredCycle = moduleAt('src/other.ts', [
       {

@@ -1,25 +1,17 @@
-import type { CruiseTreeSnapshot } from '@/domain';
+import type { CruiseSnapshot, HierarchicalNode } from '@/domain';
 
 import type { TreeNodeData } from '../../types';
 
-/** Builds a nested file tree for the RichTreeView from a cruise tree snapshot. */
-export function buildFileTree(snapshot: CruiseTreeSnapshot): TreeNodeData[] {
-  const walk = (paths: readonly string[]): TreeNodeData[] =>
-    paths.map(path => {
-      const node = snapshot.nodes.get(path);
-      if (node == null || !node.isFolder) {
-        return {
-          key: path,
-          title: node?.name ?? path,
-        };
-      }
+/** Maps the precomputed cruise hierarchy to RichTreeView node data. */
+export function buildFileTree(snapshot: CruiseSnapshot): TreeNodeData[] {
+  const mapNode = (node: HierarchicalNode): TreeNodeData => {
+    const title = snapshot.nodes.get(node.path)?.name ?? node.path;
+    return {
+      key: node.path,
+      title,
+      children: node.children?.map(mapNode),
+    };
+  };
 
-      return {
-        key: path,
-        title: node.name,
-        children: walk(node.childPaths),
-      };
-    });
-
-  return walk(snapshot.rootPaths);
+  return snapshot.tree.map(mapNode);
 }

@@ -1,7 +1,7 @@
 import type { IModule } from 'dependency-cruiser';
 import { describe, expect, it } from 'vitest';
 
-import { buildCruiseTreeSnapshot } from '@/domain';
+import { buildCruiseSnapshot } from '@/domain';
 
 import { buildVisibleNodes, folderHasCircularDescendant } from './buildVisibleNodes';
 
@@ -9,12 +9,16 @@ function moduleAt(source: string, dependencies: IModule['dependencies'] = []): I
   return { source, dependencies, dependents: [], valid: true } as IModule;
 }
 
+function present(...paths: string[]): Record<string, boolean | undefined> {
+  return Object.fromEntries(paths.map(path => [path, true]));
+}
+
 describe('buildVisibleNodes', () => {
   const sources = ['src/foo/a.ts', 'src/foo/b.ts', 'src/bar/c.ts', 'lib/y.ts'];
-  const cruiseTree = buildCruiseTreeSnapshot(sources.map(source => moduleAt(source)));
+  const cruiseSnapshot = buildCruiseSnapshot(sources.map(source => moduleAt(source)));
 
   it('includes half-checked ancestor folders when only a nested file is selected', () => {
-    const { visibleNodes } = buildVisibleNodes(cruiseTree, ['src/foo/a.ts'], new Set(['src']));
+    const { visibleNodes } = buildVisibleNodes(cruiseSnapshot, present('src/foo/a.ts'), present('src'));
 
     expect(visibleNodes.get('src')).toBe('folder');
     expect(visibleNodes.get('src/foo')).toBe('folder');
@@ -22,14 +26,14 @@ describe('buildVisibleNodes', () => {
   });
 
   it('shows selected files inside expanded half-checked folders', () => {
-    const { visibleNodes } = buildVisibleNodes(cruiseTree, ['src/foo/a.ts'], new Set(['src', 'src/foo']));
+    const { visibleNodes } = buildVisibleNodes(cruiseSnapshot, present('src/foo/a.ts'), present('src', 'src/foo'));
 
     expect(visibleNodes.get('src/foo/a.ts')).toBe('file');
     expect(visibleNodes.has('src/foo/b.ts')).toBe(false);
   });
 
   it('sets parentByNode only when parent is visible and expanded', () => {
-    const { parentByNode } = buildVisibleNodes(cruiseTree, ['src/foo/a.ts'], new Set(['src', 'src/foo']));
+    const { parentByNode } = buildVisibleNodes(cruiseSnapshot, present('src/foo/a.ts'), present('src', 'src/foo'));
 
     expect(parentByNode.get('src')).toBeNull();
     expect(parentByNode.get('src/foo')).toBe('src');
@@ -37,7 +41,7 @@ describe('buildVisibleNodes', () => {
   });
 
   it('keeps collapsed children as root-level parents when ancestor is not expanded', () => {
-    const { parentByNode } = buildVisibleNodes(cruiseTree, ['src/foo/a.ts'], new Set(['src']));
+    const { parentByNode } = buildVisibleNodes(cruiseSnapshot, present('src/foo/a.ts'), present('src'));
 
     expect(parentByNode.get('src/foo')).toBe('src');
     expect(parentByNode.has('src/foo/a.ts')).toBe(false);
@@ -45,9 +49,9 @@ describe('buildVisibleNodes', () => {
 
   it('uses separate container roots for unrelated branches', () => {
     const { parentByNode, visibleNodes } = buildVisibleNodes(
-      cruiseTree,
-      ['src/foo/a.ts', 'lib/y.ts'],
-      new Set(['src', 'lib']),
+      cruiseSnapshot,
+      present('src/foo/a.ts', 'lib/y.ts'),
+      present('src', 'lib'),
     );
 
     expect(visibleNodes.get('src')).toBe('folder');
@@ -76,9 +80,9 @@ describe('buildVisibleNodes', () => {
     ];
 
     const { circularModules } = buildVisibleNodes(
-      buildCruiseTreeSnapshot(modulesWithCircular),
-      ['src/foo/a.ts', 'src/foo/b.ts', 'src/bar/c.ts', 'src/bar/d.ts'],
-      new Set(['src', 'src/foo', 'src/bar']),
+      buildCruiseSnapshot(modulesWithCircular),
+      present('src/foo/a.ts', 'src/foo/b.ts', 'src/bar/c.ts', 'src/bar/d.ts'),
+      present('src', 'src/foo', 'src/bar'),
     );
 
     expect(circularModules.has('src/foo/a.ts')).toBe(true);
@@ -97,9 +101,9 @@ describe('buildVisibleNodes', () => {
     ];
 
     const { unresolvedModules } = buildVisibleNodes(
-      buildCruiseTreeSnapshot(modulesWithUnresolved),
-      ['src/foo/a.ts', 'missing-module'],
-      new Set(['src', 'src/foo']),
+      buildCruiseSnapshot(modulesWithUnresolved),
+      present('src/foo/a.ts', 'missing-module'),
+      present('src', 'src/foo'),
     );
 
     expect(unresolvedModules.has('missing-module')).toBe(true);

@@ -1,14 +1,14 @@
 import { useDeferredValue, useMemo, useState } from 'react';
 
-import { useCruiseTreeRequired } from '../../../../contexts';
+import { useCruiseSnapshotRequired } from '../../../../contexts';
 import { buildSearchItems, searchCommands, searchPaths } from '../../helpers';
 import type { QuickPickCommand } from '../../types';
 
 export function useQuickPickState(commands: QuickPickCommand[], recentCommandIds: string[] = []) {
-  const cruiseTree = useCruiseTreeRequired();
+  const cruiseSnapshot = useCruiseSnapshotRequired();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const allItems = useMemo(() => buildSearchItems(cruiseTree), [cruiseTree]);
+  const allItems = useMemo(() => buildSearchItems(cruiseSnapshot), [cruiseSnapshot]);
 
   const isCommandMode = query.startsWith('>');
   const normalizedQuery = isCommandMode ? query.slice(1).trim() : query;

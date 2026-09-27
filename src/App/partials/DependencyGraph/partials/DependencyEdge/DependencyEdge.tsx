@@ -1,6 +1,6 @@
 import { BaseEdge, type EdgeProps } from '@xyflow/react';
 
-import { useEdgesType } from '../../contexts';
+import { useWorkspaceStore } from '../../../../stores/workspaceStore';
 import type { DependencyEdgeData } from '../../types';
 import { getDependencyEdgePath } from './helpers/getDependencyEdgePath';
 
@@ -20,7 +20,7 @@ export function DependencyEdge(props: EdgeProps) {
     targetPosition,
   } = props;
 
-  const edgesType = useEdgesType();
+  const edgesType = useWorkspaceStore(state => state.graphSettings.edgesType);
 
   const [path] = getDependencyEdgePath({
     sourceX,

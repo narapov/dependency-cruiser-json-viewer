@@ -1,23 +1,30 @@
 import clsx from 'clsx';
+import { memo, type MouseEvent } from 'react';
 
 import Box from '@mui/material/Box';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 
 import { MaterialFileSystemIcon } from '@/Shared';
 
-import { useGraphActions } from '../../contexts';
+import { useWorkspaceStore } from '../../../../stores/workspaceStore';
+import { useGraphWorkspaceActions } from '../../hooks';
 import type { FolderGroupNodeData } from '../../types';
 import { FolderExpandToggle } from '../FolderExpandToggle';
-import { NodeContextMenu, NodeContextMenuTrigger } from '../NodeContextMenu';
+import { NodeContextMenuTrigger, useNodeContextMenuControls } from '../NodeContextMenu';
 
 import styles from './FolderGroupNode.module.css';
 
-export function FolderGroupNode(props: NodeProps) {
+export const FolderGroupNode = memo(function FolderGroupNode(props: NodeProps) {
   const { data } = props;
 
-  const { label, path, expanded, highlighted, backgroundColor } = data as FolderGroupNodeData;
+  const { label, path, expanded, backgroundColor } = data as FolderGroupNodeData;
+  const isActive = useWorkspaceStore(state => state.activePath === path);
+  const { toggleFolder } = useGraphWorkspaceActions();
+  const { openContextMenu } = useNodeContextMenuControls();
 
-  const { onToggleFolder, onAutoLayoutGroup, onAutoLayoutGroupRecursive } = useGraphActions();
+  const onContextMenu = (event: MouseEvent) => {
+    openContextMenu(event, path);
+  };
 
   return (
     <Box
@@ -31,59 +38,52 @@ export function FolderGroupNode(props: NodeProps) {
         position: 'relative',
         pointerEvents: 'none',
         bgcolor: backgroundColor,
-        ...(highlighted && {
+        ...(isActive && {
           borderColor: 'primary.main',
           boxShadow: theme => `0 0 0 1px ${theme.palette.primary.main}`,
         }),
       }}
     >
       <Handle type="target" position={Position.Left} className={styles.groupHandle} />
-      <NodeContextMenu
-        path={path}
-        isFolder
-        expanded={expanded}
-        onAutoLayout={onAutoLayoutGroup}
-        onAutoLayoutRecursive={onAutoLayoutGroupRecursive}
+      <Box
+        className={clsx('folder-group-header', styles.groupHeader)}
+        onContextMenu={onContextMenu}
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 0.75,
+          width: '100%',
+          height: 36,
+          px: '10px',
+          borderBottom: 1,
+          borderColor: 'divider',
+          bgcolor: 'background.default',
+          borderRadius: '6px 6px 0 0',
+          fontSize: 12,
+          boxSizing: 'border-box',
+          pointerEvents: 'auto',
+          cursor: 'pointer',
+        }}
       >
-        <Box
-          className={clsx('folder-group-header', styles.groupHeader)}
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 0.75,
-            width: '100%',
-            height: 36,
-            px: '10px',
-            borderBottom: 1,
-            borderColor: 'divider',
-            bgcolor: 'background.default',
-            borderRadius: '6px 6px 0 0',
-            fontSize: 12,
-            boxSizing: 'border-box',
-            pointerEvents: 'auto',
-            cursor: 'pointer',
+        <FolderExpandToggle
+          expanded={expanded}
+          onClick={e => {
+            e.stopPropagation();
+            toggleFolder(path);
           }}
-        >
-          <FolderExpandToggle
-            expanded={expanded}
-            onClick={e => {
-              e.stopPropagation();
-              onToggleFolder(path);
-            }}
-          />
-          <Box component="span" sx={{ fontSize: 12, flexShrink: 0, display: 'inline-flex' }}>
-            <MaterialFileSystemIcon name={label} isFolder isOpen={expanded} />
-          </Box>
-          <Box
-            component="span"
-            sx={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-          >
-            {label}
-          </Box>
-          <NodeContextMenuTrigger />
+        />
+        <Box component="span" sx={{ fontSize: 12, flexShrink: 0, display: 'inline-flex' }}>
+          <MaterialFileSystemIcon name={label} isFolder isOpen={expanded} />
         </Box>
-      </NodeContextMenu>
+        <Box
+          component="span"
+          sx={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+        >
+          {label}
+        </Box>
+        <NodeContextMenuTrigger path={path} />
+      </Box>
       <Handle type="source" position={Position.Right} className={styles.groupHandle} />
     </Box>
   );
-}
+});

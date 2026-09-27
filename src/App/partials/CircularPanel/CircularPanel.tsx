@@ -1,6 +1,6 @@
 import Box from '@mui/material/Box';
 
-import { useCruiseTreeRequired } from '../../contexts';
+import { useCruiseSnapshotRequired } from '../../contexts';
 import { CircularList } from './partials/CircularList';
 
 interface CircularPanelProps {
@@ -11,9 +11,9 @@ interface CircularPanelProps {
 export function CircularPanel(props: CircularPanelProps) {
   const { onShowCycle, onShowInGraph } = props;
 
-  const cruiseTree = useCruiseTreeRequired();
-  const sourceSet = new Set(cruiseTree.descendantFiles);
-  const cycles = cruiseTree.cycles
+  const cruiseSnapshot = useCruiseSnapshotRequired();
+  const sourceSet = new Set(cruiseSnapshot.descendantFiles);
+  const cycles = cruiseSnapshot.cycles
     .map(cycle => ({
       paths: cycle.paths.filter(path => sourceSet.has(path)),
     }))

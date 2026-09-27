@@ -6,26 +6,26 @@ import { describe, expect, it } from 'vitest';
 
 import { act, renderHook } from '@testing-library/react';
 
-import { buildCruiseTreeSnapshot } from '@/domain';
+import { buildCruiseSnapshot } from '@/domain';
 
-import { CruiseTreeProvider } from '../../../../contexts';
+import { CruiseSnapshotProvider } from '../../../../contexts';
 import { usePathSearchState } from './usePathSearchState';
 
-function cruiseTreeOf(sources: readonly string[]) {
-  return buildCruiseTreeSnapshot(
+function cruiseSnapshotOf(sources: readonly string[]) {
+  return buildCruiseSnapshot(
     sources.map(source => ({ source, dependencies: [], dependents: [], valid: true }) as IModule),
   );
 }
 
-function wrapperFor(snapshot: ReturnType<typeof cruiseTreeOf>) {
+function wrapperFor(snapshot: ReturnType<typeof cruiseSnapshotOf>) {
   return function Wrapper(props: { children: ReactNode }) {
-    return <CruiseTreeProvider value={snapshot}>{props.children}</CruiseTreeProvider>;
+    return <CruiseSnapshotProvider value={snapshot}>{props.children}</CruiseSnapshotProvider>;
   };
 }
 
 describe('usePathSearchState', () => {
   it('returns fuzzy matches for the query', () => {
-    const snapshot = cruiseTreeOf(['src/foo/a.ts', 'src/bar/b.ts']);
+    const snapshot = cruiseSnapshotOf(['src/foo/a.ts', 'src/bar/b.ts']);
     const { result } = renderHook(() => usePathSearchState(), { wrapper: wrapperFor(snapshot) });
 
     act(() => {
@@ -36,7 +36,7 @@ describe('usePathSearchState', () => {
   });
 
   it('restricts results to allowedPaths when set', () => {
-    const snapshot = cruiseTreeOf(['src/foo/a.ts', 'src/bar/b.ts']);
+    const snapshot = cruiseSnapshotOf(['src/foo/a.ts', 'src/bar/b.ts']);
     const { result } = renderHook(() => usePathSearchState({ allowedPaths: ['src/foo/a.ts'] }), {
       wrapper: wrapperFor(snapshot),
     });

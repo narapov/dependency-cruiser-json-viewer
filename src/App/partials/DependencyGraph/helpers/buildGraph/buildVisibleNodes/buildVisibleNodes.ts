@@ -1,8 +1,14 @@
-import { getParentPath, type CruiseTreeSnapshot } from '@/domain';
+import { deriveRelationFlagsFromAggregated, getParentPath, type CruiseSnapshot } from '@/domain';
 
-import type { FolderChildren } from '../../../types';
+import type { FolderChildren, PresenceRecord } from '../../../types';
 
-function buildChildrenIndex(snapshot: CruiseTreeSnapshot): Map<string, FolderChildren> {
+function presencePaths(record: PresenceRecord): string[] {
+  return Object.entries(record)
+    .filter(([, present]) => present)
+    .map(([path]) => path);
+}
+
+function buildChildrenIndex(snapshot: CruiseSnapshot): Map<string, FolderChildren> {
   return new Map(
     [...snapshot.nodes.values()]
       .filter(node => node.isFolder)
@@ -25,6 +31,10 @@ function isFilePath(path: string, moduleSources: Set<string>): boolean {
   return moduleSources.has(path);
 }
 
+function isExpanded(path: string, expandedFolderPaths: PresenceRecord): boolean {
+  return expandedFolderPaths[path] === true;
+}
+
 function hasSelectedDescendants(
   folderPath: string,
   selectedSet: Set<string>,
@@ -45,16 +55,16 @@ function hasSelectedDescendants(
   );
 }
 
-function collectCircularModules(snapshot: CruiseTreeSnapshot): Set<string> {
+function collectCircularModules(snapshot: CruiseSnapshot): Set<string> {
   return new Set(
     snapshot.descendantFiles.filter(path => {
       const node = snapshot.nodes.get(path);
-      return node?.dependencies.some(edge => edge.circular) === true;
+      return node?.dependencies.some(edge => deriveRelationFlagsFromAggregated(edge.aggregated).valueCircular) === true;
     }),
   );
 }
 
-function collectUnresolvedModules(snapshot: CruiseTreeSnapshot): Set<string> {
+function collectUnresolvedModules(snapshot: CruiseSnapshot): Set<string> {
   return new Set(snapshot.descendantFiles.filter(path => snapshot.nodes.get(path)?.module?.couldNotResolve === true));
 }
 
@@ -105,7 +115,7 @@ function getRootSelectedPaths(
 function collectVisibleNodes(
   paths: string[],
   selectedSet: Set<string>,
-  expandedFolders: Set<string>,
+  expandedFolderPaths: PresenceRecord,
   moduleSources: Set<string>,
   childrenIndex: Map<string, FolderChildren>,
 ): Map<string, 'folder' | 'file'> {
@@ -121,7 +131,7 @@ function collectVisibleNodes(
 
       visibleNodes.set(path, 'folder');
 
-      if (!expandedFolders.has(path)) {
+      if (!isExpanded(path, expandedFolderPaths)) {
         return visibleNodes;
       }
 
@@ -133,7 +143,7 @@ function collectVisibleNodes(
       const nested = collectVisibleNodes(
         children.folders.filter(subfolder => hasSelectedDescendants(subfolder, selectedSet, childrenIndex)),
         selectedSet,
-        expandedFolders,
+        expandedFolderPaths,
         moduleSources,
         childrenIndex,
       );
@@ -154,13 +164,15 @@ function collectVisibleNodes(
 
 function buildParentByNode(
   visibleNodes: Map<string, 'folder' | 'file'>,
-  expandedFolders: Set<string>,
+  expandedFolderPaths: PresenceRecord,
 ): Map<string, string | null> {
   return new Map(
     [...visibleNodes.keys()].map(path => {
       const directParent = getParentPath(path);
       const parent =
-        directParent && visibleNodes.has(directParent) && expandedFolders.has(directParent) ? directParent : null;
+        directParent && visibleNodes.has(directParent) && isExpanded(directParent, expandedFolderPaths)
+          ? directParent
+          : null;
       return [path, parent] as const;
     }),
   );
@@ -169,6 +181,7 @@ function buildParentByNode(
 /** Indexes and maps describing which nodes are visible for the current selection. */
 export interface BuildVisibleNodesResult {
   selectedSet: Set<string>;
+  expandedFolders: Set<string>;
   childrenIndex: Map<string, FolderChildren>;
   circularModules: Set<string>;
   unresolvedModules: Set<string>;
@@ -179,24 +192,27 @@ export interface BuildVisibleNodesResult {
 
 /** Collects visible file/folder nodes, circular modules, and parent links. */
 export function buildVisibleNodes(
-  snapshot: CruiseTreeSnapshot,
-  selectedPaths: string[],
-  expandedFolders: Set<string>,
+  snapshot: CruiseSnapshot,
+  selectedFilePaths: PresenceRecord,
+  expandedFolderPaths: PresenceRecord,
 ): BuildVisibleNodesResult {
+  const selectedPaths = presencePaths(selectedFilePaths);
   const selectedSet = new Set(selectedPaths);
+  const expandedFolders = new Set(presencePaths(expandedFolderPaths));
   const moduleSources = new Set(snapshot.descendantFiles);
   const childrenIndex = buildChildrenIndex(snapshot);
   const circularModules = collectCircularModules(snapshot);
   const unresolvedModules = collectUnresolvedModules(snapshot);
 
   const roots = getRootSelectedPaths(selectedPaths, selectedSet, childrenIndex);
-  const visibleNodes = collectVisibleNodes(roots, selectedSet, expandedFolders, moduleSources, childrenIndex);
+  const visibleNodes = collectVisibleNodes(roots, selectedSet, expandedFolderPaths, moduleSources, childrenIndex);
 
   const visibleNodeIds = new Set(visibleNodes.keys());
-  const parentByNode = buildParentByNode(visibleNodes, expandedFolders);
+  const parentByNode = buildParentByNode(visibleNodes, expandedFolderPaths);
 
   return {
     selectedSet,
+    expandedFolders,
     childrenIndex,
     circularModules,
     unresolvedModules,

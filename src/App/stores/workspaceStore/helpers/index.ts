@@ -1,4 +1,4 @@
-export * from './buildFilteredCruiseTree';
+export * from './buildFilteredCruiseSnapshot';
 export * from './extractEmbeddedWorkspaceSettings';
 export * from './mapMergedViewToWorkspaceFields';
 export * from './normalizeNodePositions';
@@ -6,4 +6,4 @@ export * from './pathsToPresenceRecord';
 export * from './presenceRecordToPaths';
 export * from './pruneNodePositions';
 export * from './prunePresenceRecord';
-export * from './reconcileWorkspaceAgainstTree';
+export * from './reconcileWorkspaceAgainstSnapshot';

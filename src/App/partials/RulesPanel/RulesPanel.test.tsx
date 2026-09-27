@@ -6,10 +6,10 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { fireEvent, renderHook, screen, within } from '@testing-library/react';
 
-import { buildCruiseTreeSnapshot } from '@/domain';
+import { buildCruiseSnapshot } from '@/domain';
 import { renderWithTheme } from '@/testsUtils';
 
-import { CruiseTreeProvider } from '../../contexts';
+import { CruiseSnapshotProvider } from '../../contexts';
 import { RulesPanel } from './RulesPanel';
 
 const ruleSet: IFlattenedRuleSet = {
@@ -40,16 +40,16 @@ const violations: IViolation[] = [
 
 const DEFAULT_SOURCES = ['src/domain/a.ts', 'src/App/App.tsx'];
 
-const CRUISE_TREE = buildCruiseTreeSnapshot(
+const CRUISE_TREE = buildCruiseSnapshot(
   DEFAULT_SOURCES.map(source => ({ source, dependencies: [], dependents: [], valid: true })),
 );
 
-const SINGLE_SOURCE_TREE = buildCruiseTreeSnapshot([
+const SINGLE_SOURCE_TREE = buildCruiseSnapshot([
   { source: 'src/domain/a.ts', dependencies: [], dependents: [], valid: true },
 ]);
 
 function renderRulesPanel(ui: Parameters<typeof renderWithTheme>[0], tree = CRUISE_TREE) {
-  return renderWithTheme(<CruiseTreeProvider value={tree}>{ui}</CruiseTreeProvider>);
+  return renderWithTheme(<CruiseSnapshotProvider value={tree}>{ui}</CruiseSnapshotProvider>);
 }
 
 describe('RulesPanel', () => {

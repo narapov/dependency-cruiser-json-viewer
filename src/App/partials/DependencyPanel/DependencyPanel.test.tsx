@@ -5,10 +5,10 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { fireEvent, renderHook, screen } from '@testing-library/react';
 
-import { buildCruiseTreeSnapshot } from '@/domain';
+import { buildCruiseSnapshot } from '@/domain';
 import { renderWithTheme } from '@/testsUtils';
 
-import { CruiseTreeProvider } from '../../contexts';
+import { CruiseSnapshotProvider } from '../../contexts';
 import { DependencyPanel } from './DependencyPanel';
 
 vi.mock('@/Shared', async importOriginal => {
@@ -48,7 +48,7 @@ describe('DependencyPanel', () => {
     const onViewModuleJson = vi.fn();
 
     renderWithTheme(
-      <CruiseTreeProvider value={buildCruiseTreeSnapshot(modules)}>
+      <CruiseSnapshotProvider value={buildCruiseSnapshot(modules)}>
         <DependencyPanel
           path="src/foo/a.ts"
           selectedPaths={selectedPaths}
@@ -58,7 +58,7 @@ describe('DependencyPanel', () => {
           onViewModuleJson={onViewModuleJson}
           {...highlightProps}
         />
-      </CruiseTreeProvider>,
+      </CruiseSnapshotProvider>,
     );
 
     expect(screen.getByText('src/foo/a.ts')).toBeInTheDocument();
@@ -82,7 +82,7 @@ describe('DependencyPanel', () => {
     const { result: i18n } = renderHook(() => useTranslation());
 
     renderWithTheme(
-      <CruiseTreeProvider value={buildCruiseTreeSnapshot([moduleAt('src/bar/c.ts')])}>
+      <CruiseSnapshotProvider value={buildCruiseSnapshot([moduleAt('src/bar/c.ts')])}>
         <DependencyPanel
           path="src/bar/c.ts"
           selectedPaths={['src/bar/c.ts']}
@@ -92,7 +92,7 @@ describe('DependencyPanel', () => {
           onViewModuleJson={vi.fn()}
           {...highlightProps}
         />
-      </CruiseTreeProvider>,
+      </CruiseSnapshotProvider>,
     );
 
     expect(screen.getAllByText(i18n.current.t('dependencyPanel.noDependencies'))).toHaveLength(2);
@@ -102,7 +102,7 @@ describe('DependencyPanel', () => {
     const { result: i18n } = renderHook(() => useTranslation());
 
     renderWithTheme(
-      <CruiseTreeProvider value={buildCruiseTreeSnapshot(modules)}>
+      <CruiseSnapshotProvider value={buildCruiseSnapshot(modules)}>
         <DependencyPanel
           path="src/foo/a.ts"
           selectedPaths={selectedPaths}
@@ -112,7 +112,7 @@ describe('DependencyPanel', () => {
           onViewModuleJson={vi.fn()}
           {...highlightProps}
         />
-      </CruiseTreeProvider>,
+      </CruiseSnapshotProvider>,
     );
 
     expect(screen.getByText(i18n.current.t('dependencyPanel.hidden', { count: 1 }))).toBeInTheDocument();

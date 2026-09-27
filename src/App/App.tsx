@@ -18,7 +18,7 @@ import {
 } from '@/domain';
 import { getWindowEnvs } from '@/Shared';
 
-import { CruiseTreeProvider } from './contexts';
+import { CruiseSnapshotProvider } from './contexts';
 import {
   useAppCommands,
   useAppOrchestration,
@@ -58,7 +58,7 @@ function App() {
   const { data, isPending, isError, error } = useCruiseResult();
   const cruiseResult = useWorkspaceStore(state => state.cruiseResult);
   const ignorePatterns = useWorkspaceStore(state => state.ignorePatterns);
-  const cruiseTree = useWorkspaceStore(state => state.cruiseTree);
+  const cruiseSnapshot = useWorkspaceStore(state => state.cruiseSnapshot);
   const setIgnorePatterns = useWorkspaceStore(state => state.setIgnorePatterns);
   const resetWorkspace = useWorkspaceStore(state => state.reset);
   const syncWorkspaceSettings = useWorkspaceStore(state => state.syncWorkspaceSettings);
@@ -93,15 +93,15 @@ function App() {
     [cruiseResult, ignorePatterns],
   );
 
-  const sources = cruiseTree.descendantFiles;
+  const sources = cruiseSnapshot.descendantFiles;
   const rulesWithViolations = useMemo(
     () =>
       cruiseResult != null
-        ? groupRulesWithViolations(cruiseTree.ruleSetUsed, cruiseTree.violations, sources).filter(
+        ? groupRulesWithViolations(cruiseSnapshot.ruleSetUsed, cruiseSnapshot.violations, sources).filter(
             entry => entry.violations.length > 0,
           )
         : [],
-    [cruiseResult, cruiseTree.ruleSetUsed, cruiseTree.violations, sources],
+    [cruiseResult, cruiseSnapshot.ruleSetUsed, cruiseSnapshot.violations, sources],
   );
   const ruleViolationsPickerOptions = useMemo(
     () =>
@@ -379,7 +379,7 @@ function App() {
   const filteredModulesCount = sources.length;
 
   return (
-    <CruiseTreeProvider value={cruiseTree}>
+    <CruiseSnapshotProvider value={cruiseSnapshot}>
       <AppLayout
         header={
           <AppHeader
@@ -399,8 +399,8 @@ function App() {
             fileTreeRef={fileTreeRef}
             onShowInGraph={orch.showInGraph}
             onViewModuleJson={openModuleJson}
-            ruleSetUsed={cruiseTree.ruleSetUsed}
-            violations={cruiseTree.violations}
+            ruleSetUsed={cruiseSnapshot.ruleSetUsed}
+            violations={cruiseSnapshot.violations}
             onSelectViolationPaths={handleShowDependencyConnection}
             onShowRuleViolations={ruleName => orch.showRuleViolationsOnly([ruleName])}
             onShowCycle={orch.showPathsOnly}
@@ -411,26 +411,7 @@ function App() {
           />
         }
         main={
-          <DependencyGraph
-            ref={graphRef}
-            selectedPaths={orch.selectedPaths}
-            expandedKeys={orch.expandedKeys}
-            folderBaseColors={orch.folderBaseColors}
-            onToggleFolder={orch.toggleFolder}
-            onExpandRecursive={orch.expandRecursive}
-            onShowInFileTree={handleShowInFileTree}
-            onShowDependenciesPanel={orch.handleShowDependenciesPanel}
-            onShowApplicableRulesPanel={orch.handleShowApplicableRulesPanel}
-            onViewModuleJson={openModuleJson}
-            onHideOthers={orch.hideOthers}
-            onShowDirectDependencies={orch.showDirectDependencies}
-            onShowDirectDependents={orch.showDirectDependents}
-            onActivePathChange={orch.activatePath}
-            activePath={orch.activePath}
-            userEdgeHighlights={orch.userEdgeHighlights}
-            onUserEdgeHighlightsChange={orch.setUserEdgeHighlights}
-            onClearAllHighlights={orch.clearAllHighlights}
-          />
+          <DependencyGraph ref={graphRef} onShowInFileTree={handleShowInFileTree} onViewModuleJson={openModuleJson} />
         }
         dependenciesPanel={
           orch.dependenciesPath != null ? (
@@ -536,7 +517,7 @@ function App() {
         sidebarView={sidebarView}
         onSelectSidebarView={handleSelectSidebarView}
       />
-    </CruiseTreeProvider>
+    </CruiseSnapshotProvider>
   );
 }
 

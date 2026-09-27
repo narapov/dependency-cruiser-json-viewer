@@ -12,19 +12,27 @@ import type { NodeSize } from './types';
 
 /** Builds visible nodes, edges, and ELK layout for the dependency graph. */
 export async function buildGraph({
-  cruiseTree,
-  selectedPaths,
-  expandedFolders,
+  cruiseSnapshot,
+  selectedFilePaths,
+  expandedFolderPaths,
   folderColors,
 }: BuildGraphInput): Promise<BuildGraphResult> {
   const profiler = createBuildGraphProfiler(NEED_PROFILE);
   profiler.start('total');
 
-  const modules = getCruiseModules(cruiseTree);
+  const modules = getCruiseModules(cruiseSnapshot);
 
   profiler.start('visibleNodes');
-  const { selectedSet, childrenIndex, circularModules, unresolvedModules, visibleNodes, visibleNodeIds, parentByNode } =
-    buildVisibleNodes(cruiseTree, selectedPaths, expandedFolders);
+  const {
+    selectedSet,
+    expandedFolders,
+    childrenIndex,
+    circularModules,
+    unresolvedModules,
+    visibleNodes,
+    visibleNodeIds,
+    parentByNode,
+  } = buildVisibleNodes(cruiseSnapshot, selectedFilePaths, expandedFolderPaths);
   profiler.end('visibleNodes');
 
   profiler.start('edges');
@@ -66,7 +74,7 @@ export async function buildGraph({
 
   profiler.end('total');
   profiler.log({
-    selected: selectedPaths.length,
+    selected: selectedSet.size,
     nodes: nodes.length,
     edges: edges.length,
   });

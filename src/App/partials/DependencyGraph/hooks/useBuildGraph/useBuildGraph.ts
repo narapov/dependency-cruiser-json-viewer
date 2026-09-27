@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import type { CruiseTreeSnapshot } from '@/domain';
+import type { CruiseSnapshot } from '@/domain';
 
 import { buildGraph } from '../../helpers';
-import type { BuildGraphResult } from '../../types';
+import type { BuildGraphResult, PresenceRecord } from '../../types';
 
 function createEmptyGraphResult(): BuildGraphResult {
   return {
@@ -14,10 +14,14 @@ function createEmptyGraphResult(): BuildGraphResult {
   };
 }
 
+function hasAnyPresent(record: PresenceRecord): boolean {
+  return Object.values(record).some(present => present === true);
+}
+
 interface UseBuildGraphInput {
-  cruiseTree: CruiseTreeSnapshot;
-  selectedPaths: string[];
-  expandedKeys: string[];
+  cruiseSnapshot: CruiseSnapshot;
+  selectedFilePaths: PresenceRecord;
+  expandedFolderPaths: PresenceRecord;
   folderColors: ReadonlyMap<string, string>;
 }
 
@@ -26,22 +30,19 @@ interface UseBuildGraphResult {
   isBuildingGraph: boolean;
   buildFailed: boolean;
   clearBuildFailed: () => void;
-  expandedFolders: Set<string>;
 }
 
 export function useBuildGraph(config: UseBuildGraphInput): UseBuildGraphResult {
-  const { cruiseTree, selectedPaths, expandedKeys, folderColors } = config;
-
-  const expandedFolders = useMemo(() => new Set(expandedKeys), [expandedKeys]);
+  const { cruiseSnapshot, selectedFilePaths, expandedFolderPaths, folderColors } = config;
 
   const [graphResult, setGraphResult] = useState<BuildGraphResult>(createEmptyGraphResult);
-  const [isBuildingGraph, setIsBuildingGraph] = useState(() => selectedPaths.length > 0);
+  const [isBuildingGraph, setIsBuildingGraph] = useState(() => hasAnyPresent(selectedFilePaths));
   const [buildFailed, setBuildFailed] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
 
-    if (selectedPaths.length === 0) {
+    if (!hasAnyPresent(selectedFilePaths)) {
       //synchronous update is fine here
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setGraphResult(createEmptyGraphResult());
@@ -54,9 +55,9 @@ export function useBuildGraph(config: UseBuildGraphInput): UseBuildGraphResult {
     setIsBuildingGraph(true);
 
     void buildGraph({
-      cruiseTree,
-      selectedPaths,
-      expandedFolders,
+      cruiseSnapshot,
+      selectedFilePaths,
+      expandedFolderPaths,
       folderColors,
     })
       .then(result => {
@@ -82,11 +83,11 @@ export function useBuildGraph(config: UseBuildGraphInput): UseBuildGraphResult {
     return () => {
       cancelled = true;
     };
-  }, [cruiseTree, selectedPaths, expandedFolders, folderColors]);
+  }, [cruiseSnapshot, selectedFilePaths, expandedFolderPaths, folderColors]);
 
   const clearBuildFailed = () => {
     setBuildFailed(false);
   };
 
-  return { graphResult, isBuildingGraph, buildFailed, clearBuildFailed, expandedFolders };
+  return { graphResult, isBuildingGraph, buildFailed, clearBuildFailed };
 }

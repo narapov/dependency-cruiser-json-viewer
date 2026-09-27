@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildCruiseTreeSnapshot } from '@/domain';
+import { buildCruiseSnapshot } from '@/domain';
 
 import type { QuickPickFileItem } from '../../types';
 import { buildSearchItems } from './buildSearchItems';
 import { getPathSearchTier, PathSearchTier, searchPaths } from './searchPaths';
 
 function snapshotFromSources(sources: string[]) {
-  return buildCruiseTreeSnapshot(sources.map(source => ({ source, dependencies: [], dependents: [], valid: true })));
+  return buildCruiseSnapshot(sources.map(source => ({ source, dependencies: [], dependents: [], valid: true })));
 }
 
 const sources = ['src/components/App.tsx', 'src/components/Button.tsx', 'src/index.ts', 'package.json'];

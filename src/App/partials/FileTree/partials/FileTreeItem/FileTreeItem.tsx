@@ -1,4 +1,4 @@
-import { memo, type KeyboardEvent, type MouseEvent } from 'react';
+import { memo, type KeyboardEvent, type MouseEvent, type Ref } from 'react';
 
 import { useTheme } from '@mui/material/styles';
 import { useTreeItemModel } from '@mui/x-tree-view/hooks';
@@ -13,7 +13,7 @@ import { useFileTreeActions } from '../../contexts';
 import { isTreeLeaf } from '../../helpers';
 import type { TreeNodeData } from '../../types';
 
-export const FileTreeItem = memo(function FileTreeItem(props: TreeItemProps) {
+export const FileTreeItem = memo(function FileTreeItem(props: TreeItemProps & { ref?: Ref<HTMLLIElement> }) {
   const { itemId, children, ref, ...other } = props;
 
   const theme = useTheme();
@@ -26,7 +26,7 @@ export const FileTreeItem = memo(function FileTreeItem(props: TreeItemProps) {
     isPathVisibleInSelectionRecord(
       itemId,
       state.selectedFilePaths,
-      state.cruiseTree.nodes.get(itemId)?.descendantFiles ?? [],
+      state.cruiseSnapshot.nodes.get(itemId)?.descendantFiles ?? [],
     ),
   );
   const replaceExpandedFolderPaths = useWorkspaceStore(state => state.replaceExpandedFolderPaths);

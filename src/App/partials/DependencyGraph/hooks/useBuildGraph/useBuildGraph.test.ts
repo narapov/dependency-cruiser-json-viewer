@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { act, renderHook, waitFor } from '@testing-library/react';
 
-import { buildCruiseTreeSnapshot } from '@/domain';
+import { buildCruiseSnapshot } from '@/domain';
 
 import type { BuildGraphResult } from '../../types';
 import { useBuildGraph } from './useBuildGraph';
@@ -20,14 +20,14 @@ vi.mock('../../helpers', async importOriginal => {
 
 const FOLDER_COLORS = new Map<string, string>();
 
-const cruiseTree = buildCruiseTreeSnapshot([
+const cruiseSnapshot = buildCruiseSnapshot([
   { source: 'a.ts', dependencies: [] },
   { source: 'b.ts', dependencies: [] },
 ] as never[]);
 
-const EMPTY_EXPANDED: string[] = [];
-const SELECTED_A = ['a.ts'];
-const EXPANDED_SRC = ['src', 'src/a'];
+const EMPTY_SELECTION = {};
+const SELECTED_A = { 'a.ts': true };
+const EMPTY_EXPANDED = {};
 
 const graphResult: BuildGraphResult = {
   nodes: [{ id: 'a.ts', position: { x: 0, y: 0 }, data: {} }],
@@ -37,7 +37,7 @@ const graphResult: BuildGraphResult = {
 };
 
 const hookInputBase = {
-  cruiseTree,
+  cruiseSnapshot,
   folderColors: FOLDER_COLORS,
 };
 
@@ -51,8 +51,8 @@ describe('useBuildGraph', () => {
     const { result } = renderHook(() =>
       useBuildGraph({
         ...hookInputBase,
-        selectedPaths: EMPTY_EXPANDED,
-        expandedKeys: EMPTY_EXPANDED,
+        selectedFilePaths: EMPTY_SELECTION,
+        expandedFolderPaths: EMPTY_EXPANDED,
       }),
     );
 
@@ -70,8 +70,8 @@ describe('useBuildGraph', () => {
     const { result } = renderHook(() =>
       useBuildGraph({
         ...hookInputBase,
-        selectedPaths: SELECTED_A,
-        expandedKeys: EMPTY_EXPANDED,
+        selectedFilePaths: SELECTED_A,
+        expandedFolderPaths: EMPTY_EXPANDED,
       }),
     );
 
@@ -91,8 +91,8 @@ describe('useBuildGraph', () => {
     const { result } = renderHook(() =>
       useBuildGraph({
         ...hookInputBase,
-        selectedPaths: SELECTED_A,
-        expandedKeys: EMPTY_EXPANDED,
+        selectedFilePaths: SELECTED_A,
+        expandedFolderPaths: EMPTY_EXPANDED,
       }),
     );
 
@@ -109,8 +109,8 @@ describe('useBuildGraph', () => {
     const { result } = renderHook(() =>
       useBuildGraph({
         ...hookInputBase,
-        selectedPaths: SELECTED_A,
-        expandedKeys: EMPTY_EXPANDED,
+        selectedFilePaths: SELECTED_A,
+        expandedFolderPaths: EMPTY_EXPANDED,
       }),
     );
 
@@ -137,8 +137,8 @@ describe('useBuildGraph', () => {
     const { unmount } = renderHook(() =>
       useBuildGraph({
         ...hookInputBase,
-        selectedPaths: SELECTED_A,
-        expandedKeys: EMPTY_EXPANDED,
+        selectedFilePaths: SELECTED_A,
+        expandedFolderPaths: EMPTY_EXPANDED,
       }),
     );
 
@@ -150,18 +150,5 @@ describe('useBuildGraph', () => {
     });
 
     expect(buildGraph).toHaveBeenCalled();
-  });
-
-  it('exposes expandedFolders as a Set', () => {
-    buildGraph.mockResolvedValue(graphResult);
-    const { result } = renderHook(() =>
-      useBuildGraph({
-        ...hookInputBase,
-        selectedPaths: EMPTY_EXPANDED,
-        expandedKeys: EXPANDED_SRC,
-      }),
-    );
-
-    expect(result.current.expandedFolders).toEqual(new Set(['src', 'src/a']));
   });
 });

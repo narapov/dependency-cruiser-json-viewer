@@ -1,4 +1,4 @@
-import type { CruiseTreeSnapshot, FolderBaseColor } from '@/domain';
+import type { CruiseSnapshot, FolderBaseColor } from '@/domain';
 
 /** Theme mode used when picking pastel folder background hues. */
 export type FolderColorMode = 'light' | 'dark';
@@ -38,7 +38,7 @@ function pickHue(parentHue: number | null, siblingIndex: number, usedHues: numbe
 }
 
 /** Assigns theme-independent base colors (hue + lightnessIndex) to each folder path. */
-export function assignFolderBaseColors(snapshot: CruiseTreeSnapshot): ReadonlyMap<string, FolderBaseColor> {
+export function assignFolderBaseColors(snapshot: CruiseSnapshot): ReadonlyMap<string, FolderBaseColor> {
   const colors = new Map<string, FolderBaseColor>();
 
   const assignForFolders = (folderPaths: readonly string[], parentHue: number | null) => {
@@ -83,9 +83,9 @@ export function mapFolderBaseColorsToThemed(
   return new Map(entries.map(([path, base]) => [path, toThemedFolderColor(base, mode)]));
 }
 
-/** Assigns distinct pastel HSL colors to each folder path in the cruise tree. */
+/** Assigns distinct pastel HSL colors to each folder path in the cruise snapshot. */
 export function assignFolderColors(
-  snapshot: CruiseTreeSnapshot,
+  snapshot: CruiseSnapshot,
   mode: FolderColorMode = 'light',
 ): ReadonlyMap<string, string> {
   return mapFolderBaseColorsToThemed(assignFolderBaseColors(snapshot), mode);

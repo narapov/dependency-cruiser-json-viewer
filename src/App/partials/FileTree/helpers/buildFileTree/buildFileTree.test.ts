@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildCruiseTreeSnapshot } from '@/domain';
+import { buildCruiseSnapshot } from '@/domain';
 
 import { buildFileTree } from './buildFileTree';
 
 function snapshotFromSources(sources: string[]) {
-  return buildCruiseTreeSnapshot(sources.map(source => ({ source, dependencies: [], dependents: [], valid: true })));
+  return buildCruiseSnapshot(sources.map(source => ({ source, dependencies: [], dependents: [], valid: true })));
 }
 
 describe('buildFileTree', () => {

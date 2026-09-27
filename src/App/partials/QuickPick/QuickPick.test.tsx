@@ -5,16 +5,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { act, fireEvent, renderHook, screen, waitFor, within } from '@testing-library/react';
 
-import { buildCruiseTreeSnapshot } from '@/domain';
+import { buildCruiseSnapshot } from '@/domain';
 import { renderWithTheme } from '@/testsUtils';
 
-import { CruiseTreeProvider } from '../../contexts';
+import { CruiseSnapshotProvider } from '../../contexts';
 import { RECENT_COMMANDS_STORAGE_KEY } from './helpers/recentCommandIds';
 import { QuickPick, type QuickPickCommand, type QuickPickHandle } from './QuickPick';
 
 const SOURCES = ['src/a.ts', 'src/b/c.ts', 'src/utils/helpers.ts'];
 
-const CRUISE_TREE = buildCruiseTreeSnapshot(
+const CRUISE_TREE = buildCruiseSnapshot(
   SOURCES.map(source => ({ source, dependencies: [], dependents: [], valid: true })),
 );
 
@@ -23,7 +23,7 @@ function getKeyboardRoot(input: HTMLElement) {
 }
 
 function renderQuickPick(ui: Parameters<typeof renderWithTheme>[0]) {
-  return renderWithTheme(<CruiseTreeProvider value={CRUISE_TREE}>{ui}</CruiseTreeProvider>);
+  return renderWithTheme(<CruiseSnapshotProvider value={CRUISE_TREE}>{ui}</CruiseSnapshotProvider>);
 }
 
 describe('QuickPick', () => {

@@ -11,12 +11,7 @@ import Tooltip from '@mui/material/Tooltip';
 
 import type { GraphEdgesType } from '@/domain';
 
-interface GraphLayoutToggleProps {
-  checked: boolean;
-  onChange: (checked: boolean) => void;
-  edgesType: GraphEdgesType;
-  onEdgesTypeChange: (edgesType: GraphEdgesType) => void;
-}
+import { useWorkspaceStore } from '../../../../stores/workspaceStore';
 
 const EDGES_TYPE_OPTIONS: { value: GraphEdgesType; labelKey: string }[] = [
   { value: 'bezier', labelKey: 'graph.edgesTypeBezier' },
@@ -24,10 +19,12 @@ const EDGES_TYPE_OPTIONS: { value: GraphEdgesType; labelKey: string }[] = [
   { value: 'simpleOrthogonal', labelKey: 'graph.edgesTypeSimpleOrthogonal' },
 ];
 
-export function GraphLayoutToggle(props: GraphLayoutToggleProps) {
-  const { checked, onChange, edgesType, onEdgesTypeChange } = props;
-
+export function GraphLayoutToggle() {
   const { t } = useTranslation();
+  const autoLayoutOnly = useWorkspaceStore(state => state.graphSettings.autoLayoutOnly);
+  const edgesType = useWorkspaceStore(state => state.graphSettings.edgesType);
+  const setGraphSettings = useWorkspaceStore(state => state.setGraphSettings);
+
   const label = t('graph.autoLayoutOnly');
   const hint = t('graph.autoLayoutOnlyHint');
   const edgesTypeLabel = t('graph.edgesType');
@@ -51,8 +48,8 @@ export function GraphLayoutToggle(props: GraphLayoutToggleProps) {
           control={
             <Switch
               size="small"
-              checked={checked}
-              onChange={(_, value) => onChange(value)}
+              checked={autoLayoutOnly}
+              onChange={(_, value) => setGraphSettings({ autoLayoutOnly: value, edgesType })}
               slotProps={{ input: { 'aria-label': label } }}
             />
           }
@@ -74,7 +71,7 @@ export function GraphLayoutToggle(props: GraphLayoutToggleProps) {
           labelId="graph-edges-type-label"
           label={edgesTypeLabel}
           value={edgesType}
-          onChange={event => onEdgesTypeChange(event.target.value as GraphEdgesType)}
+          onChange={event => setGraphSettings({ autoLayoutOnly, edgesType: event.target.value as GraphEdgesType })}
           sx={{ fontSize: 12 }}
         >
           {EDGES_TYPE_OPTIONS.map(option => (

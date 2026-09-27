@@ -1,7 +1,7 @@
 import type { IModule } from 'dependency-cruiser';
 import { describe, expect, it } from 'vitest';
 
-import { buildCruiseTreeSnapshot } from '../../cruiseTree';
+import { buildCruiseSnapshot } from '../../cruiseSnapshot';
 import { getModuleRelations } from './getModuleRelations';
 
 function moduleAt(source: string, dependencies: IModule['dependencies'] = []): IModule {
@@ -29,7 +29,7 @@ describe('getModuleRelations', () => {
   const selectedPaths = ['src/foo/a.ts', 'src/foo/b.ts', 'src/bar/c.ts'];
 
   it('returns outgoing dependencies as a nested path tree', () => {
-    const { dependencies } = getModuleRelations('src/foo/a.ts', buildCruiseTreeSnapshot(modules), selectedPaths);
+    const { dependencies } = getModuleRelations('src/foo/a.ts', buildCruiseSnapshot(modules), selectedPaths);
 
     expect(dependencies).toEqual([
       {
@@ -55,7 +55,7 @@ describe('getModuleRelations', () => {
   });
 
   it('returns incoming dependents as a nested path tree', () => {
-    const { dependents } = getModuleRelations('src/foo/a.ts', buildCruiseTreeSnapshot(modules), selectedPaths);
+    const { dependents } = getModuleRelations('src/foo/a.ts', buildCruiseSnapshot(modules), selectedPaths);
 
     expect(dependents).toEqual([
       {
@@ -75,7 +75,7 @@ describe('getModuleRelations', () => {
   });
 
   it('puts unselected relations into hidden path trees', () => {
-    const { dependents, hiddenDependents } = getModuleRelations('src/foo/a.ts', buildCruiseTreeSnapshot(modules), [
+    const { dependents, hiddenDependents } = getModuleRelations('src/foo/a.ts', buildCruiseSnapshot(modules), [
       'src/foo/a.ts',
       'src/foo/b.ts',
     ]);
@@ -106,7 +106,7 @@ describe('getModuleRelations', () => {
   });
 
   it('returns empty lists for unknown module', () => {
-    const relations = getModuleRelations('missing.ts', buildCruiseTreeSnapshot(modules), selectedPaths);
+    const relations = getModuleRelations('missing.ts', buildCruiseSnapshot(modules), selectedPaths);
 
     expect(relations).toEqual({
       dependencies: [],
@@ -124,7 +124,7 @@ describe('getModuleRelations', () => {
 
     const { dependencies } = getModuleRelations(
       'src/foo/a.ts',
-      buildCruiseTreeSnapshot([moduleAt('src/foo/a.ts', [typeOnlyDep]), moduleAt('src/bar/c.ts')]),
+      buildCruiseSnapshot([moduleAt('src/foo/a.ts', [typeOnlyDep]), moduleAt('src/bar/c.ts')]),
       selectedPaths,
     );
 
@@ -156,7 +156,7 @@ describe('getModuleRelations', () => {
 
     const { dependencies } = getModuleRelations(
       'src/foo/a.ts',
-      buildCruiseTreeSnapshot([moduleAt('src/foo/a.ts', [typeOnlyCircularDep]), moduleAt('src/foo/b.ts')]),
+      buildCruiseSnapshot([moduleAt('src/foo/a.ts', [typeOnlyCircularDep]), moduleAt('src/foo/b.ts')]),
       selectedPaths,
     );
 
@@ -198,7 +198,7 @@ describe('getModuleRelations', () => {
 
     const { dependencies } = getModuleRelations(
       'src/foo/a.ts',
-      buildCruiseTreeSnapshot([moduleAt('src/foo/a.ts', [typeOnlyDep, valueDep]), moduleAt('src/foo/b.ts')]),
+      buildCruiseSnapshot([moduleAt('src/foo/a.ts', [typeOnlyDep, valueDep]), moduleAt('src/foo/b.ts')]),
       selectedPaths,
     );
 
@@ -224,7 +224,7 @@ describe('getModuleRelations', () => {
   it('nests dependencies under shared folders regardless of graph expansion', () => {
     const { dependencies } = getModuleRelations(
       'src/bar/c.ts',
-      buildCruiseTreeSnapshot([
+      buildCruiseSnapshot([
         moduleAt('src/bar/c.ts', [
           { resolved: 'src/foo/a.ts' } as IModule['dependencies'][0],
           { resolved: 'src/foo/b.ts' } as IModule['dependencies'][0],
