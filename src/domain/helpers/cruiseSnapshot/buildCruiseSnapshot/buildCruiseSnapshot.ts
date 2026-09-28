@@ -1,15 +1,10 @@
 import type { IFlattenedRuleSet, IModule, IViolation } from 'dependency-cruiser';
 
-import type {
-  AggregatedDependency,
-  CruiseEdge,
-  CruisePathNode,
-  CruiseSnapshot,
-  HierarchicalNode,
-} from '../../../types';
-import { isRuleApplicableToPath, type RuleWithViolations } from '../../cruiseRules';
-import { collectCircularModulePaths, collectDistinctCycles } from '../../dependencyUtils';
-import { getAncestorKeys, getBaseName, getParentPath, isUnderFolder } from '../../pathUtils';
+import type { CruisePathNode, CruiseSnapshot, ModuleDependency } from '../../../types';
+import { flattenViolations, isRuleApplicableToPath, type RuleWithViolations } from '../../cruiseRules';
+import { makeDependencyKey } from '../../dependencyKey';
+import { collectDistinctCycles } from '../../dependencyUtils';
+import { getAncestorKeys, getBaseName, getParentPath } from '../../pathUtils';
 import { buildModulesDependencies } from '../buildModulesDependencies';
 
 interface NamedRuleEntry {
@@ -35,36 +30,19 @@ function collectNamedRules(ruleSet: IFlattenedRuleSet | undefined): NamedRuleEnt
   });
 }
 
-/** Append a shared AggregatedDependency onto an endpoint → aggregated map (folder rollup). */
-function pushAggregatedEntry(
-  map: Map<string, AggregatedDependency[]>,
-  endpoint: string,
-  entry: AggregatedDependency,
-): void {
-  const existing = map.get(endpoint);
-  if (existing) {
-    existing.push(entry);
-    return;
-  }
-  map.set(endpoint, [entry]);
-}
-
-/** Point an endpoint at a shared modulesDependencies bucket (file-level edges). */
-function shareEndpointBucket(
-  map: Map<string, AggregatedDependency[]>,
-  endpoint: string,
-  bucket: AggregatedDependency[],
-): void {
-  if (!map.has(endpoint)) {
-    map.set(endpoint, bucket);
-  }
-}
-
-/** Convert aggregated maps to sorted CruiseEdge lists. */
-function aggregatedMapsToEdges(map: Map<string, AggregatedDependency[]>): CruiseEdge[] {
-  return [...map.entries()]
-    .map(([path, aggregated]) => ({ path, aggregated }))
-    .sort((a, b) => a.path.localeCompare(b.path));
+/** Index violations by `makeDependencyKey(from, to)`. */
+function indexViolationsByDependencyKey(violations: readonly IViolation[]): Map<string, IViolation[]> {
+  const map = new Map<string, IViolation[]>();
+  violations.forEach(violation => {
+    const key = makeDependencyKey(violation.from, violation.to);
+    const existing = map.get(key);
+    if (existing) {
+      existing.push(violation);
+      return;
+    }
+    map.set(key, [violation]);
+  });
+  return map;
 }
 
 /** Rules applicable to any of the target module paths, with matching violations. */
@@ -101,9 +79,157 @@ function buildApplicableRules(
     }));
 }
 
-/** Compare path basenames for sibling ordering. */
-function compareByBaseName(a: string, b: string): number {
-  return getBaseName(a).localeCompare(getBaseName(b));
+function fillDescendantFiles(tree: Map<string, CruisePathNode>): void {
+  const stack = [...tree.values()];
+  const nodes: CruisePathNode[] = [];
+
+  while (stack.length > 0) {
+    const node = stack.pop()!;
+
+    if (node.isFolder) {
+      nodes.push(node);
+      stack.push(...node.children.values());
+    }
+  }
+
+  nodes.reverse().forEach(node => {
+    node.children.forEach(child => {
+      if (child.isFolder) {
+        child.descendantFiles.forEach(filePath => node.descendantFiles.add(filePath));
+        return;
+      }
+      node.descendantFiles.add(child.path);
+    });
+  });
+}
+
+function createTree(
+  modules: readonly IModule[],
+  modulesDependenciesBySource: ReadonlyMap<string, ModuleDependency[]>,
+  modulesDependenciesByTarget: ReadonlyMap<string, ModuleDependency[]>,
+  namedRules: readonly NamedRuleEntry[],
+  violations: readonly IViolation[],
+): Map<string, CruisePathNode> {
+  const tree = new Map<string, CruisePathNode>();
+
+  modules.forEach(module => {
+    const { source } = module;
+    const parent = getParentPath(source);
+    const ancestors = getAncestorKeys(source).reverse();
+
+    let current = tree;
+
+    for (let index = 0; index < ancestors.length; index++) {
+      const ancestor = ancestors[index]!;
+
+      if (current.has(ancestor)) {
+        current = current.get(ancestor)!.children;
+      } else {
+        const allDependencies = modulesDependenciesBySource.get(ancestor) ?? [];
+        const internalDependencies = Map.groupBy(
+          allDependencies.filter(d => d.targetAncestors.includes(ancestor)),
+          d => d.id,
+        );
+        const externalDependencies = Map.groupBy(
+          allDependencies.filter(d => !d.targetAncestors.includes(ancestor)),
+          d => d.id,
+        );
+
+        const allDependents = modulesDependenciesByTarget.get(ancestor) ?? [];
+        const internalDependents = Map.groupBy(
+          allDependents.filter(d => d.sourceAncestors.includes(ancestor)),
+          d => d.id,
+        );
+        const externalDependents = Map.groupBy(
+          allDependents.filter(d => !d.sourceAncestors.includes(ancestor)),
+          d => d.id,
+        );
+
+        current.set(ancestor, {
+          path: ancestor,
+          parent: ancestors[index - 1] ?? null,
+          ancestors: ancestors.slice(0, index).reverse(),
+          isFolder: true,
+          children: new Map(),
+          descendantFiles: new Set(),
+          internalDependencies,
+          externalDependencies,
+          externalDependents,
+          internalDependents,
+          applicableRules: [],
+        });
+        current = current.get(ancestor)!.children;
+      }
+    }
+
+    current.set(source, {
+      path: source,
+      parent,
+      ancestors: getAncestorKeys(source),
+      isFolder: false,
+      children: new Map(),
+      descendantFiles: new Set(),
+      originModule: module,
+      internalDependencies: new Map(),
+      externalDependencies: Map.groupBy(modulesDependenciesBySource.get(source) ?? [], item => item.id),
+      internalDependents: new Map(),
+      externalDependents: Map.groupBy(modulesDependenciesByTarget.get(source) ?? [], item => item.id),
+      applicableRules: buildApplicableRules([source], namedRules, violations),
+    });
+  });
+
+  fillDescendantFiles(tree);
+  sortChildren(tree);
+
+  const stack = [...tree.values()];
+  while (stack.length > 0) {
+    const node = stack.pop()!;
+    if (node.isFolder) {
+      node.applicableRules = buildApplicableRules([...node.descendantFiles], namedRules, violations);
+      stack.push(...node.children.values());
+    }
+  }
+
+  return tree;
+}
+
+/** Sort each node's children: folders first, then basename. Also reorder top-level roots. */
+function sortChildren(tree: Map<string, CruisePathNode>): void {
+  const sortNodes = (nodes: CruisePathNode[]): CruisePathNode[] =>
+    [...nodes].sort((a, b) => {
+      if (a.isFolder !== b.isFolder) {
+        return a.isFolder ? -1 : 1;
+      }
+      return getBaseName(a.path).localeCompare(getBaseName(b.path));
+    });
+
+  const stack = [...tree.values()];
+  while (stack.length > 0) {
+    const node = stack.pop()!;
+    if (node.children.size > 0) {
+      const sorted = sortNodes([...node.children.values()]);
+      node.children.clear();
+      sorted.forEach(child => node.children.set(child.path, child));
+      stack.push(...sorted);
+    }
+  }
+
+  const sortedRoots = sortNodes([...tree.values()]);
+  tree.clear();
+  sortedRoots.forEach(root => tree.set(root.path, root));
+}
+
+function createFlatTree(tree: ReadonlyMap<string, CruisePathNode>): Map<string, CruisePathNode> {
+  const stack = [...tree.values()];
+  const flatTree = new Map<string, CruisePathNode>();
+
+  while (stack.length > 0) {
+    const node = stack.pop()!;
+    flatTree.set(node.path, node);
+    stack.push(...node.children.values());
+  }
+
+  return flatTree;
 }
 
 /**
@@ -113,159 +239,25 @@ function compareByBaseName(a: string, b: string): number {
 export function buildCruiseSnapshot(
   modules: readonly IModule[],
   ruleSetUsed?: IFlattenedRuleSet,
-  violations?: readonly IViolation[],
+  violations?: readonly IViolation[] | ReadonlyMap<string, readonly IViolation[]>,
 ): CruiseSnapshot {
-  const modulePaths = modules.map(module => module.source);
-  const moduleBySource = new Map(modules.map(module => [module.source, module]));
-  const modulePathSet = new Set(modulePaths);
-
-  const allPaths = new Set<string>();
-  modulePaths.forEach(source => {
-    allPaths.add(source);
-    getAncestorKeys(source).forEach(ancestor => allPaths.add(ancestor));
-  });
-
-  const childFoldersByParent = new Map<string, string[]>();
-  const childFilesByParent = new Map<string, string[]>();
-  const rootPaths: string[] = [];
-
-  allPaths.forEach(path => {
-    const parent = getParentPath(path);
-    const isFolder = !modulePathSet.has(path);
-    if (parent == null || !allPaths.has(parent)) {
-      rootPaths.push(path);
-      return;
-    }
-    if (isFolder) {
-      const siblings = childFoldersByParent.get(parent) ?? [];
-      siblings.push(path);
-      childFoldersByParent.set(parent, siblings);
-      return;
-    }
-    const siblings = childFilesByParent.get(parent) ?? [];
-    siblings.push(path);
-    childFilesByParent.set(parent, siblings);
-  });
-
-  rootPaths.sort(compareByBaseName);
-  childFoldersByParent.forEach(siblings => siblings.sort(compareByBaseName));
-  childFilesByParent.forEach(siblings => siblings.sort(compareByBaseName));
-
-  const descendantFilesByPath = new Map<string, string[]>();
-  allPaths.forEach(path => {
-    if (modulePathSet.has(path)) {
-      descendantFilesByPath.set(path, []);
-      return;
-    }
-    descendantFilesByPath.set(
-      path,
-      modulePaths.filter(source => isUnderFolder(source, path) && source !== path),
-    );
-  });
-
-  const modulesDependencies = buildModulesDependencies(modules);
-  const dependencyAggregated = new Map<string, Map<string, AggregatedDependency[]>>();
-  const dependentAggregated = new Map<string, Map<string, AggregatedDependency[]>>();
-
-  const ensureEndpointMap = (owner: Map<string, Map<string, AggregatedDependency[]>>, path: string) => {
-    const existing = owner.get(path);
-    if (existing) {
-      return existing;
-    }
-    const created = new Map<string, AggregatedDependency[]>();
-    owner.set(path, created);
-    return created;
-  };
-
-  modulesDependencies.forEach(bucket => {
-    const source = bucket[0]?.source;
-    const targetPath = bucket[0]?.target;
-    if (source == null || targetPath == null) {
-      return;
-    }
-
-    const isInternalTarget = modulePathSet.has(targetPath) || allPaths.has(targetPath);
-
-    // File-level deps (internal + external): share modulesDependencies bucket
-    shareEndpointBucket(ensureEndpointMap(dependencyAggregated, source), targetPath, bucket);
-
-    if (isInternalTarget) {
-      shareEndpointBucket(ensureEndpointMap(dependentAggregated, targetPath), source, bucket);
-    }
-
-    bucket.forEach(entry => {
-      getAncestorKeys(source).forEach(folder => {
-        if (!isUnderFolder(targetPath, folder)) {
-          pushAggregatedEntry(ensureEndpointMap(dependencyAggregated, folder), targetPath, entry);
-        }
-      });
-
-      if (isInternalTarget) {
-        getAncestorKeys(targetPath).forEach(folder => {
-          if (!isUnderFolder(source, folder)) {
-            pushAggregatedEntry(ensureEndpointMap(dependentAggregated, folder), source, entry);
-          }
-        });
-      }
-    });
-  });
-
-  const circularModuleSet = new Set(collectCircularModulePaths(modules));
+  const { modulesDependenciesByDependencyKey, modulesDependenciesBySource, modulesDependenciesByTarget } =
+    buildModulesDependencies(modules);
   const namedRules = collectNamedRules(ruleSetUsed);
-  const allViolations = violations ?? [];
-
-  const nodes = new Map<string, CruisePathNode>();
-  allPaths.forEach(path => {
-    const isFolder = !modulePathSet.has(path);
-    const ancestors = getAncestorKeys(path);
-    const descendantFiles = descendantFilesByPath.get(path) ?? [];
-    const circularPaths = isFolder ? descendantFiles.filter(modulePath => circularModuleSet.has(modulePath)) : [];
-
-    nodes.set(path, {
-      path,
-      name: getBaseName(path),
-      ancestors,
-      isFolder,
-      parentPath: getParentPath(path),
-      childPaths: [...(childFoldersByParent.get(path) ?? []), ...(childFilesByParent.get(path) ?? [])],
-      descendantFiles,
-      module: moduleBySource.get(path),
-      dependencies: aggregatedMapsToEdges(dependencyAggregated.get(path) ?? new Map()),
-      dependents: aggregatedMapsToEdges(dependentAggregated.get(path) ?? new Map()),
-      circularPaths,
-      applicableRules: buildApplicableRules(isFolder ? descendantFiles : [path], namedRules, allViolations),
-    });
-  });
-
-  const sortedRoots = [...rootPaths].sort((a, b) => {
-    const aFolder = !modulePathSet.has(a);
-    const bFolder = !modulePathSet.has(b);
-    if (aFolder !== bFolder) {
-      return aFolder ? -1 : 1;
-    }
-    return compareByBaseName(a, b);
-  });
-
-  const buildHierarchy = (paths: readonly string[]): HierarchicalNode[] =>
-    paths.map(path => {
-      const node = nodes.get(path);
-      if (node == null || !node.isFolder) {
-        return { path };
-      }
-      return {
-        path,
-        children: buildHierarchy(node.childPaths),
-      };
-    });
+  const allViolations = flattenViolations(violations);
+  const tree = createTree(modules, modulesDependenciesBySource, modulesDependenciesByTarget, namedRules, allViolations);
+  const nodes = createFlatTree(tree);
 
   return {
     nodes,
-    rootPaths: sortedRoots,
-    tree: buildHierarchy(sortedRoots),
-    descendantFiles: modulePaths,
-    modulesDependencies,
+    tree,
+    dependencies: {
+      byDependencyKey: modulesDependenciesByDependencyKey as Map<string, ModuleDependency[]>,
+      bySource: modulesDependenciesBySource as Map<string, ModuleDependency[]>,
+      byTarget: modulesDependenciesByTarget as Map<string, ModuleDependency[]>,
+    },
     cycles: collectDistinctCycles(modules),
     ruleSetUsed,
-    violations: allViolations,
+    violations: indexViolationsByDependencyKey(allViolations),
   };
 }

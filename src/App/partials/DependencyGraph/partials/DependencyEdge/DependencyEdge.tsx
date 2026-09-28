@@ -1,16 +1,24 @@
-import { BaseEdge, type EdgeProps } from '@xyflow/react';
+import { memo } from 'react';
+
+import { BaseEdge, MarkerType, type EdgeProps } from '@xyflow/react';
+
+import { getEdgeHighlightColor } from '@/domain';
+import { INCOMING_EDGE_COLOR, OUTGOING_EDGE_COLOR, SELECTED_EDGE_COLOR } from '@/Shared';
 
 import { useWorkspaceStore } from '../../../../stores/workspaceStore';
+import { isPathOnDependencyEdge } from '../../helpers/dependencyEdgeMembership';
+import { getDependencyEdgeVisualStyle, isProtectedDependencyEdge } from '../../helpers/getDependencyEdgeVisualStyle';
+import { useSelectedDependencyEdgeStore } from '../../stores/selectedDependencyEdgeStore';
 import type { DependencyEdgeData } from '../../types';
 import { getDependencyEdgePath } from './helpers/getDependencyEdgePath';
 
-export function DependencyEdge(props: EdgeProps) {
+export const DependencyEdge = memo(function DependencyEdge(props: EdgeProps) {
   const {
     id,
+    source,
+    target,
     data,
-    style,
-    markerStart,
-    markerEnd,
+    markerEnd: edgeMarkerEnd,
     interactionWidth = 3,
     sourceX,
     sourceY,
@@ -20,7 +28,17 @@ export function DependencyEdge(props: EdgeProps) {
     targetPosition,
   } = props;
 
+  const edgeData = data as DependencyEdgeData | undefined;
   const edgesType = useWorkspaceStore(state => state.graphSettings.edgesType);
+  const activePathSide = useWorkspaceStore(state => {
+    const { activePath } = state;
+    if (activePath == null) {
+      return null;
+    }
+    return isPathOnDependencyEdge(activePath, source, target, edgeData?.aggregated);
+  });
+  const userEdgeHighlights = useWorkspaceStore(state => state.userEdgeHighlights);
+  const isSelected = useSelectedDependencyEdgeStore(state => state.selectedEdgeId === id);
 
   const [path] = getDependencyEdgePath({
     sourceX,
@@ -32,21 +50,53 @@ export function DependencyEdge(props: EdgeProps) {
     edgesType,
   });
 
-  const title = (data as DependencyEdgeData | undefined)?.title;
+  const base = getDependencyEdgeVisualStyle(source, target, edgeData);
+  const protectedEdge = isProtectedDependencyEdge(edgeData);
+
+  let stroke = base.stroke;
+  let strokeWidth = base.strokeWidth;
+
+  const userHighlight = getEdgeHighlightColor(edgeData?.aggregated?.map(dep => dep.id) ?? [], userEdgeHighlights);
+  if (userHighlight != null) {
+    stroke = userHighlight;
+    strokeWidth = 2;
+  } else if (activePathSide != null && !protectedEdge) {
+    if (activePathSide === 'target') {
+      stroke = INCOMING_EDGE_COLOR;
+      strokeWidth = 2;
+    } else if (activePathSide === 'source') {
+      stroke = OUTGOING_EDGE_COLOR;
+      strokeWidth = 2;
+    }
+  }
+
+  if (isSelected) {
+    stroke = SELECTED_EDGE_COLOR;
+    strokeWidth = 3;
+  }
+
+  const style = {
+    stroke,
+    strokeWidth,
+    ...(base.strokeDasharray != null ? { strokeDasharray: base.strokeDasharray } : {}),
+  };
+
+  // EdgeWrapper passes a url(#…) string from the store edge.markerEnd; keep color in sync when an object is provided.
+  const markerEnd =
+    typeof edgeMarkerEnd === 'string'
+      ? edgeMarkerEnd
+      : {
+          ...(typeof edgeMarkerEnd === 'object' && edgeMarkerEnd != null ? edgeMarkerEnd : {}),
+          type: MarkerType.ArrowClosed,
+          color: stroke,
+        };
 
   return (
     <>
-      <BaseEdge
-        id={id}
-        path={path}
-        style={style}
-        markerStart={markerStart}
-        markerEnd={markerEnd}
-        interactionWidth={interactionWidth}
-      />
+      <BaseEdge id={id} path={path} style={style} markerEnd={markerEnd} interactionWidth={interactionWidth} />
       <path d={path} fill="none" stroke="transparent" strokeWidth={interactionWidth}>
-        {!!title && <title>{title}</title>}
+        {!!base.title && <title>{base.title}</title>}
       </path>
     </>
   );
-}
+});

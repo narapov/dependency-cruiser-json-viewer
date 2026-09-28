@@ -1,14 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { MarkerType, type Edge, type Node } from '@xyflow/react';
-
-import {
-  CIRCULAR_EDGE_COLOR,
-  DEFAULT_EDGE_COLOR,
-  ERROR_EDGE_COLOR,
-  TYPE_ONLY_CIRCULAR_EDGE_COLOR,
-  WARNING_EDGE_COLOR,
-} from '@/Shared';
+import type { Edge, Node } from '@xyflow/react';
 
 import {
   escapeDotString,
@@ -71,9 +63,7 @@ function edgeAt(source: string, target: string, overrides: Partial<Edge> = {}): 
     source,
     target,
     type: 'dependency',
-    data: { title: `${source} → ${target}`, typeOnly: false, circular: false },
-    style: { stroke: DEFAULT_EDGE_COLOR, strokeWidth: 1 },
-    markerEnd: { type: MarkerType.ArrowClosed, color: DEFAULT_EDGE_COLOR },
+    data: { typeOnly: false, valueCircular: false },
     ...overrides,
   };
 }
@@ -128,7 +118,6 @@ describe('serializeGraphToDot', () => {
       nodes,
       edges: [],
       userEdgeHighlights: new Map(),
-      edgeDependencyKeyMap: new Map(),
     });
 
     expect(dot).toContain('// Must use the nop2 engine — it respects precomputed node positions (pos).');
@@ -164,7 +153,6 @@ describe('serializeGraphToDot', () => {
       nodes,
       edges: [],
       userEdgeHighlights: new Map(),
-      edgeDependencyKeyMap: new Map(),
     });
 
     expect(dot).toContain('"src/App" [label="App"');
@@ -175,22 +163,24 @@ describe('serializeGraphToDot', () => {
 
   it('applies user highlight color and ignores base circular stroke when highlighted', () => {
     const nodes = [fileNode('a.ts', { position: { x: 0, y: 0 } }), fileNode('b.ts', { position: { x: 200, y: 0 } })];
+    const depKey = 'a.ts->b.ts';
     const edges = [
       edgeAt('a.ts', 'b.ts', {
-        style: { stroke: CIRCULAR_EDGE_COLOR, strokeWidth: 2 },
-        data: { title: 'a → b', typeOnly: false, circular: true },
+        data: {
+          typeOnly: false,
+          valueCircular: true,
+          aggregated: [{ id: depKey, source: 'a.ts', target: 'b.ts' }],
+        },
       }),
     ];
-    const depKey = 'a.ts->b.ts';
 
     const dot = serializeGraphToDot({
       nodes,
       edges,
       userEdgeHighlights: new Map([[depKey, '#e6194b']]),
-      edgeDependencyKeyMap: new Map([['a.ts->b.ts', [depKey]]]),
     });
 
-    expect(dot).toContain('"a.ts" -> "b.ts" [color="#e6194b", penwidth=3, tooltip="a → b"]');
+    expect(dot).toContain('"a.ts" -> "b.ts" [color="#e6194b", penwidth=3, tooltip="a.ts → b.ts (circular)"]');
     expect(dot).not.toContain('#ff4d4f');
   });
 
@@ -202,12 +192,10 @@ describe('serializeGraphToDot', () => {
     ];
     const edges = [
       edgeAt('a.ts', 'b.ts', {
-        style: { stroke: CIRCULAR_EDGE_COLOR, strokeWidth: 2 },
-        data: { title: 'a → b', circular: true, typeOnly: false },
+        data: { valueCircular: true, typeOnly: false },
       }),
       edgeAt('b.ts', 'c.ts', {
-        style: { stroke: TYPE_ONLY_CIRCULAR_EDGE_COLOR, strokeWidth: 2, strokeDasharray: '6 4' },
-        data: { title: 'b → c', circular: true, typeOnly: true },
+        data: { typeOnlyCircular: true, typeOnly: true },
       }),
     ];
 
@@ -215,11 +203,12 @@ describe('serializeGraphToDot', () => {
       nodes,
       edges,
       userEdgeHighlights: new Map(),
-      edgeDependencyKeyMap: new Map(),
     });
 
-    expect(dot).toContain('"a.ts" -> "b.ts" [color="#ff4d4f", penwidth=2, tooltip="a → b"]');
-    expect(dot).toContain('"b.ts" -> "c.ts" [color="#ffa39e", penwidth=2, style=dashed, tooltip="b → c"]');
+    expect(dot).toContain('"a.ts" -> "b.ts" [color="#ff4d4f", penwidth=2, tooltip="a.ts → b.ts (circular)"]');
+    expect(dot).toContain(
+      '"b.ts" -> "c.ts" [color="#ffa39e", penwidth=2, style=dashed, tooltip="b.ts → c.ts (type-only) (circular)"]',
+    );
   });
 
   it('uses resolved error / warn hex for unhighlighted edges', () => {
@@ -230,12 +219,10 @@ describe('serializeGraphToDot', () => {
     ];
     const edges = [
       edgeAt('a.ts', 'b.ts', {
-        style: { stroke: ERROR_EDGE_COLOR, strokeWidth: 2 },
-        data: { title: 'a → b', severity: 'error' },
+        data: { severity: 'error' },
       }),
       edgeAt('b.ts', 'c.ts', {
-        style: { stroke: WARNING_EDGE_COLOR, strokeWidth: 2 },
-        data: { title: 'b → c', severity: 'warn' },
+        data: { severity: 'warn' },
       }),
     ];
 
@@ -243,31 +230,31 @@ describe('serializeGraphToDot', () => {
       nodes,
       edges,
       userEdgeHighlights: new Map(),
-      edgeDependencyKeyMap: new Map(),
     });
 
-    expect(dot).toContain('"a.ts" -> "b.ts" [color="#ff4d4f", penwidth=2, tooltip="a → b"]');
-    expect(dot).toContain('"b.ts" -> "c.ts" [color="#faad14", penwidth=2, tooltip="b → c"]');
+    expect(dot).toContain('"a.ts" -> "b.ts" [color="#ff4d4f", penwidth=2, tooltip="a.ts → b.ts"]');
+    expect(dot).toContain('"b.ts" -> "c.ts" [color="#faad14", penwidth=2, tooltip="b.ts → c.ts"]');
   });
 
   it('applies user highlight color and ignores base error stroke when highlighted', () => {
     const nodes = [fileNode('a.ts'), fileNode('b.ts', { position: { x: 200, y: 0 } })];
+    const depKey = 'a.ts->b.ts';
     const edges = [
       edgeAt('a.ts', 'b.ts', {
-        style: { stroke: ERROR_EDGE_COLOR, strokeWidth: 2 },
-        data: { title: 'a → b', severity: 'error' },
+        data: {
+          severity: 'error',
+          aggregated: [{ id: depKey, source: 'a.ts', target: 'b.ts' }],
+        },
       }),
     ];
-    const depKey = 'a.ts->b.ts';
 
     const dot = serializeGraphToDot({
       nodes,
       edges,
       userEdgeHighlights: new Map([[depKey, '#e6194b']]),
-      edgeDependencyKeyMap: new Map([['a.ts->b.ts', [depKey]]]),
     });
 
-    expect(dot).toContain('"a.ts" -> "b.ts" [color="#e6194b", penwidth=3, tooltip="a → b"]');
+    expect(dot).toContain('"a.ts" -> "b.ts" [color="#e6194b", penwidth=3, tooltip="a.ts → b.ts"]');
   });
 
   it('exports unresolved file nodes with red fill and error border', () => {
@@ -281,7 +268,6 @@ describe('serializeGraphToDot', () => {
       nodes,
       edges: [],
       userEdgeHighlights: new Map(),
-      edgeDependencyKeyMap: new Map(),
     });
 
     expect(dot).toContain('fillcolor="#ff0000"');
@@ -297,7 +283,6 @@ describe('serializeGraphToDot', () => {
       ],
       edges: [],
       userEdgeHighlights: new Map(),
-      edgeDependencyKeyMap: new Map(),
     });
 
     expect(circularOnly).toContain('fillcolor="#fff1f0"');
@@ -311,7 +296,6 @@ describe('serializeGraphToDot', () => {
       ],
       edges: [],
       userEdgeHighlights: new Map(),
-      edgeDependencyKeyMap: new Map(),
     });
 
     expect(both).toContain('fillcolor="#ff0000"');
@@ -326,7 +310,6 @@ describe('serializeGraphToDot', () => {
       nodes,
       edges,
       userEdgeHighlights: new Map(),
-      edgeDependencyKeyMap: new Map(),
     });
 
     expect(dot).toContain('color="#b1b1b7"');
@@ -340,8 +323,7 @@ describe('serializeGraphToDot', () => {
     const title = 'a.ts → b"c.ts (circular) (unresolved)';
     const edges = [
       edgeAt('a.ts', 'b"c.ts', {
-        style: { stroke: ERROR_EDGE_COLOR, strokeWidth: 2 },
-        data: { title, circular: true, couldNotResolve: true },
+        data: { valueCircular: true, couldNotResolve: true },
       }),
     ];
 
@@ -349,7 +331,6 @@ describe('serializeGraphToDot', () => {
       nodes,
       edges,
       userEdgeHighlights: new Map(),
-      edgeDependencyKeyMap: new Map(),
     });
 
     expect(dot).toContain(`tooltip=${quoteDot(title)}`);
@@ -369,7 +350,6 @@ describe('serializeGraphToDot', () => {
       nodes,
       edges: [],
       userEdgeHighlights: new Map(),
-      edgeDependencyKeyMap: new Map(),
     });
 
     expect(dot).toContain('"src/\\"weird\\".ts"');
@@ -383,7 +363,6 @@ describe('serializeGraphToDot', () => {
       nodes,
       edges: [],
       userEdgeHighlights: new Map(),
-      edgeDependencyKeyMap: new Map(),
     });
 
     // Center at (50, 25) in RF → flipY(25, 50) = 25

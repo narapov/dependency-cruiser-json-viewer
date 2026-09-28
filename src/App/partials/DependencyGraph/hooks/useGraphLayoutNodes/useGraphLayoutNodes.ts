@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useNodesState, type Node, type NodeChange, type OnNodeDrag } from '@xyflow/react';
 
+import { useLogChangedProps } from '@/Shared';
+
 import {
   applyAutoLayoutGroupLevel,
   applyAutoLayoutSubtree,
@@ -68,6 +70,8 @@ export function useGraphLayoutNodes(config: UseGraphLayoutNodesInput): UseGraphL
   const { graphResult, autoLayoutOnly = false } = config;
 
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+  console.log('useGraphLayoutNodes nodes', nodes);
+  useLogChangedProps('useGraphLayoutNodes', { nodes, setNodes, onNodesChange });
   const positionCacheRef = useRef<PositionCache>(new Map());
   const prevFingerprintsRef = useRef<GroupFingerprints | null>(null);
   const prevSizesRef = useRef<Map<string, NodeSize>>(new Map());

@@ -1,6 +1,6 @@
 import type { ICruiseResult } from 'dependency-cruiser';
 
-import { isPathInSources, type CruiseSnapshot, type FolderBaseColor } from '@/domain';
+import { getCruiseSources, isPathInSources, type CruiseSnapshot, type FolderBaseColor } from '@/domain';
 
 import { defaultFolderColorsRecord } from '../../../../helpers';
 import type { WorkspaceState } from '../../types';
@@ -21,7 +21,7 @@ export function reconcileWorkspaceAgainstSnapshot({
   ignorePatterns,
   previous,
 }: ReconcileWorkspaceAgainstSnapshotInput): WorkspaceState {
-  const sources = cruiseSnapshot.descendantFiles;
+  const sources = getCruiseSources(cruiseSnapshot);
   const isValidPath = (path: string) => isPathInSources(path, sources);
   const sourceSet = new Set(sources);
 

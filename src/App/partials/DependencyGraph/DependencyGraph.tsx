@@ -1,8 +1,8 @@
 import clsx from 'clsx';
 import {
+  memo,
   useEffect,
   useImperativeHandle,
-  useMemo,
   useRef,
   useState,
   type MouseEvent as ReactMouseEvent,
@@ -18,11 +18,10 @@ import { Background, Controls, MiniMap, Panel, ReactFlow, ReactFlowProvider, typ
 
 import '@xyflow/react/dist/style.css';
 
-import { getCruiseModules, type AggregatedDependency, type CruiseSnapshot, type HierarchicalNode } from '@/domain';
-import { downloadTextFile, openGraphvizOnline, useResolvedColorMode } from '@/Shared';
+import { downloadTextFile, openGraphvizOnline, useLogChangedProps, useResolvedColorMode } from '@/Shared';
 
 import { normalizeNodePositions, useWorkspaceStore } from '../../stores/workspaceStore';
-import { buildEdgeDependencyKeyMap, getMinimapNodeColor, serializeGraphToDot } from './helpers';
+import { getMinimapNodeColor, serializeGraphToDot } from './helpers';
 import {
   useAutoFitView,
   useBuildGraph,
@@ -84,93 +83,6 @@ interface DependencyGraphInnerProps {
   onOpenEdgesTypePicker: () => void;
 }
 
-function getVisibleTreeNodes(
-  cruiseSnapshot: CruiseSnapshot,
-  selectedFilePaths: Record<string, boolean | undefined>,
-  expandedFolderPaths: Record<string, boolean | undefined>,
-  treeNode: HierarchicalNode,
-): HierarchicalNode | null {
-  const node = cruiseSnapshot.nodes.get(treeNode.path);
-  if (!node) {
-    return null;
-  }
-  const isVisible = node.isFolder
-    ? node.descendantFiles.some(filePath => selectedFilePaths[filePath])
-    : selectedFilePaths[treeNode.path];
-  if (!isVisible) {
-    return null;
-  }
-
-  if (node.isFolder) {
-    if (expandedFolderPaths[treeNode.path]) {
-      return {
-        path: treeNode.path,
-        children: treeNode.children
-          ?.map(child => getVisibleTreeNodes(cruiseSnapshot, selectedFilePaths, expandedFolderPaths, child))
-          .filter((child): child is NonNullable<typeof child> => !!child),
-      };
-    }
-    return { path: treeNode.path };
-  }
-
-  return { path: treeNode.path };
-}
-
-function getVisibleTree(
-  cruiseSnapshot: CruiseSnapshot,
-  selectedFilePaths: Record<string, boolean | undefined>,
-  expandedFolderPaths: Record<string, boolean | undefined>,
-) {
-  return cruiseSnapshot.tree
-    .map(node => getVisibleTreeNodes(cruiseSnapshot, selectedFilePaths, expandedFolderPaths, node))
-    .filter((node): node is NonNullable<typeof node> => !!node);
-}
-
-function getVisibleTreeLeafNodePaths(visibleTree: HierarchicalNode[]): string[] {
-  return visibleTree.flatMap(node => (node.children ? getVisibleTreeLeafNodePaths(node.children) : [node.path]));
-}
-
-function getEdgesForVisibleTree(
-  cruiseSnapshot: CruiseSnapshot,
-  visibleTree: HierarchicalNode[],
-): { source: string; target: string; aggregated: AggregatedDependency[] }[] {
-  const leafNodePaths = getVisibleTreeLeafNodePaths(visibleTree);
-
-  return leafNodePaths.flatMap(leafNodePath => {
-    const leafNode = cruiseSnapshot.nodes.get(leafNodePath);
-    if (!leafNode) {
-      return [];
-    }
-    const otherLeafNodePaths = leafNodePaths.filter(otherPath => otherPath !== leafNodePath);
-
-    return otherLeafNodePaths
-      .map(otherLeafPath => {
-        const otherLeafNode = cruiseSnapshot.nodes.get(otherLeafPath);
-        if (!otherLeafNode) {
-          return null;
-        }
-
-        if (!otherLeafNode.isFolder) {
-          const dependency = leafNode.dependencies.find(dependency => dependency.path === otherLeafPath);
-          if (!dependency) {
-            return null;
-          }
-          return { source: leafNodePath, target: otherLeafPath, aggregated: dependency.aggregated };
-        }
-
-        const dependencies = leafNode.dependencies.filter(dependency =>
-          otherLeafNode.descendantFiles.includes(dependency.path),
-        );
-
-        if (!dependencies.length) {
-          return null;
-        }
-        return { source: leafNodePath, target: otherLeafPath, aggregated: dependencies.flatMap(d => d.aggregated) };
-      })
-      .filter((edge): edge is NonNullable<typeof edge> => !!edge);
-  });
-}
-
 function DependencyGraphInner(props: DependencyGraphInnerProps) {
   const { imperativeRef, onShowInFileTree, onViewModuleJson, onOpenEdgesTypePicker } = props;
 
@@ -178,7 +90,6 @@ function DependencyGraphInner(props: DependencyGraphInnerProps) {
   const selectedFilePaths = useWorkspaceStore(state => state.selectedFilePaths);
   const expandedFolderPaths = useWorkspaceStore(state => state.expandedFolderPaths);
   const folderBaseColors = useWorkspaceStore(state => state.folderBaseColors);
-  const activePath = useWorkspaceStore(state => state.activePath);
   const userEdgeHighlights = useWorkspaceStore(state => state.userEdgeHighlights);
   const setUserEdgeHighlights = useWorkspaceStore(state => state.setUserEdgeHighlights);
   const clearAllHighlights = useWorkspaceStore(state => state.clearAllHighlights);
@@ -194,8 +105,6 @@ function DependencyGraphInner(props: DependencyGraphInnerProps) {
   const { mode } = useColorScheme();
   const colorMode = useResolvedColorMode();
   const folderColors = useThemedFolderColors(folderBaseColors, colorMode);
-  // Stable identity keeps the edge/highlight memos from recomputing on every render.
-  const modules = useMemo(() => getCruiseModules(cruiseSnapshot), [cruiseSnapshot]);
 
   const { autoLayoutOnly, edgesType } = graphSettings;
 
@@ -232,16 +141,11 @@ function DependencyGraphInner(props: DependencyGraphInnerProps) {
     setLayoutSnapshot({ nodePositions: toGraphNodePositions(nodePositions) });
   }, [layoutApplyKey, nodePositions, setLayoutSnapshot]);
 
-  const { edges: baseEdges, visibleNodeIds } = graphResult;
+  const { edges: baseEdges } = graphResult;
 
   const { highlightedEdges, getEdgeHighlight, setUserEdgeHighlight, onEdgeClick, selectEdge, clearSelectedEdge } =
     useHighlightedEdges({
-      modules,
-      selectedFilePaths,
-      expandedFolderPaths,
       baseEdges,
-      visibleNodeIds,
-      activePath,
       userEdgeHighlights,
       onUserEdgeHighlightsChange: setUserEdgeHighlights,
     });
@@ -266,21 +170,12 @@ function DependencyGraphInner(props: DependencyGraphInnerProps) {
   });
 
   useImperativeHandle(imperativeRef, () => {
-    const buildDot = () => {
-      const edgeDependencyKeyMap = buildEdgeDependencyKeyMap(
-        modules,
-        selectedFilePaths,
-        expandedFolderPaths,
-        visibleNodeIds,
-        baseEdges,
-      );
-      return serializeGraphToDot({
+    const buildDot = () =>
+      serializeGraphToDot({
         nodes: layoutNodes,
         edges: baseEdges,
         userEdgeHighlights,
-        edgeDependencyKeyMap,
       });
-    };
 
     return {
       focusNode,
@@ -330,6 +225,64 @@ function DependencyGraphInner(props: DependencyGraphInnerProps) {
     ...(autoLayoutOnly ? {} : { onAutoLayoutGroup, onAutoLayoutGroupRecursive }),
   });
 
+  useLogChangedProps('DependencyGraphInner', {
+    imperativeRef,
+    onShowInFileTree,
+    onViewModuleJson,
+    onOpenEdgesTypePicker,
+    cruiseSnapshot,
+    selectedFilePaths,
+    expandedFolderPaths,
+    folderBaseColors,
+    userEdgeHighlights,
+    setUserEdgeHighlights,
+    clearAllHighlights,
+    graphSettings,
+    setGraphSettings,
+    nodePositions,
+    setNodePositions,
+    activatePath,
+    t,
+    theme,
+    mode,
+    colorMode,
+    folderColors,
+    autoLayoutOnly,
+    edgesType,
+    graphResult,
+    isBuildingGraph,
+    buildFailed,
+    clearBuildFailed,
+    layoutNodes,
+    onNodesChange,
+    onNodeDrag,
+    onNodeDragStop,
+    hasUserLayout,
+    getLayoutSnapshot,
+    setLayoutSnapshot,
+    onAutoLayoutGroup,
+    onAutoLayoutGroupRecursive,
+    layoutApplyKey,
+    lastAppliedLayoutKeyRef,
+    baseEdges,
+    highlightedEdges,
+    getEdgeHighlight,
+    setUserEdgeHighlight,
+    onEdgeClick,
+    selectEdge,
+    clearSelectedEdge,
+    focusNode,
+    onEdgeContextMenu,
+    edgeContextMenu,
+    onPaneClick,
+    onPaneContextMenu,
+    onNodeClick,
+    miniMapNodeColor,
+    openContextMenu,
+    openAtElement,
+    contextMenu,
+  });
+
   if (!hasAnyPresent(selectedFilePaths)) {
     return <GraphEmptySelection />;
   }
@@ -356,7 +309,7 @@ function DependencyGraphInner(props: DependencyGraphInnerProps) {
           minZoom={0.01}
           maxZoom={20}
           onlyRenderVisibleElements
-          proOptions={{ hideAttribution: true }}
+          //elementsSelectable={false}
         >
           <Background color={theme.palette.divider} />
           <Panel position="top-right">
@@ -402,23 +355,12 @@ interface DependencyGraphProps {
   onViewModuleJson: (path: string) => void;
 }
 
-export function DependencyGraph(props: DependencyGraphProps) {
+export const DependencyGraph = memo(function DependencyGraph(props: DependencyGraphProps) {
   const { ref, onShowInFileTree, onViewModuleJson } = props;
 
-  const cruiseSnapshot = useWorkspaceStore(state => state.cruiseSnapshot);
-  const selectedFilePaths = useWorkspaceStore(state => state.selectedFilePaths);
-  const expandedFolderPaths = useWorkspaceStore(state => state.expandedFolderPaths);
+  console.log('DependencyGraph rendered');
   const autoLayoutOnly = useWorkspaceStore(state => state.graphSettings.autoLayoutOnly);
   const [edgesTypePickerOpen, setEdgesTypePickerOpen] = useState(false);
-
-  const visibleTree = getVisibleTree(cruiseSnapshot, selectedFilePaths, expandedFolderPaths);
-  const edges = getEdgesForVisibleTree(cruiseSnapshot, visibleTree);
-
-  console.log({
-    cruiseSnapshot,
-    visibleTree,
-    edges,
-  });
 
   return (
     <div className={clsx(styles.container, autoLayoutOnly && styles.layoutLocked)}>
@@ -433,4 +375,4 @@ export function DependencyGraph(props: DependencyGraphProps) {
       <EdgesTypePickerDialog open={edgesTypePickerOpen} onClose={() => setEdgesTypePickerOpen(false)} />
     </div>
   );
-}
+});

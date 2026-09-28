@@ -10,7 +10,7 @@ function moduleAt(source: string, dependencies: IModule['dependencies'] = []): I
 
 describe('buildModulesDependencies', () => {
   it('maps resolved deps by makeDependencyKey and skips unresolved', () => {
-    const map = buildModulesDependencies([
+    const { modulesDependenciesByDependencyKey: map } = buildModulesDependencies([
       moduleAt('src/a.ts', [
         { resolved: 'src/b.ts', circular: false } as IModule['dependencies'][number],
         { resolved: '', circular: false } as IModule['dependencies'][number],
@@ -27,7 +27,7 @@ describe('buildModulesDependencies', () => {
   });
 
   it('keeps multiple records for the same source→target pair', () => {
-    const map = buildModulesDependencies([
+    const { modulesDependenciesByDependencyKey: map } = buildModulesDependencies([
       moduleAt('src/a.ts', [
         {
           resolved: 'pkg',

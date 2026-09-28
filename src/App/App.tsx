@@ -11,6 +11,7 @@ import Stack from '@mui/material/Stack';
 import {
   countIgnoredModules,
   CruiseResultParseError,
+  getCruiseSources,
   groupRulesWithViolations,
   makeDependencyKey,
   serializeViewerWorkspace,
@@ -93,7 +94,7 @@ function App() {
     [cruiseResult, ignorePatterns],
   );
 
-  const sources = cruiseSnapshot.descendantFiles;
+  const sources = getCruiseSources(cruiseSnapshot);
   const rulesWithViolations = useMemo(
     () =>
       cruiseResult != null

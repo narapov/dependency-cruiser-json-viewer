@@ -5,6 +5,7 @@ import {
   collectViolationModulePaths,
   getAncestorKeys,
   getCruiseModules,
+  getCruiseSources,
   getCruiseSourcesUnder,
   getParentPath,
   getSubtreeFolderKeys,
@@ -13,6 +14,7 @@ import {
   removeSubtreeFolderKeys,
   serializeViewerWorkspace,
   toggleExpandedKey,
+  type CruiseSnapshot,
   type RelatedModuleDirection,
   type ViewerWorkspaceSettings,
 } from '@/domain';
@@ -25,6 +27,15 @@ import { pathsToPresenceRecord, presenceRecordToPaths, useWorkspaceStore } from 
 interface UseAppOrchestrationOptions {
   fileTreeRef: RefObject<FileTreeHandle | null>;
   graphRef: RefObject<DependencyGraphHandle | null>;
+}
+
+function pathHasCircularDependency(snapshot: CruiseSnapshot, path: string): boolean {
+  const node = snapshot.nodes.get(path);
+  if (node == null) {
+    return false;
+  }
+  const maps = [node.externalDependencies, node.internalDependencies, node.externalDependents, node.internalDependents];
+  return maps.some(depMap => [...depMap.values()].some(aggregated => aggregated.some(dep => dep.circular)));
 }
 
 function toGraphNodePositions(
@@ -79,7 +90,7 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
   const setUserDependencyHighlight = useWorkspaceStore(state => state.setUserDependencyHighlight);
   const clearAllHighlightsAction = useWorkspaceStore(state => state.clearAllHighlights);
 
-  const sources = cruiseSnapshot.descendantFiles;
+  const sources = getCruiseSources(cruiseSnapshot);
   const selectedPaths = presenceRecordToPaths(selectedFilePaths);
   const expandedKeys = presenceRecordToPaths(expandedFolderPaths);
 
@@ -346,18 +357,7 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
   };
 
   const showCircularDependenciesOnly = () => {
-    showPathsOnly(
-      sources.filter(path => {
-        const node = cruiseSnapshot.nodes.get(path);
-        if (node == null) {
-          return false;
-        }
-        return (
-          node.dependencies.some(edge => edge.aggregated.some(dep => dep.circular)) ||
-          node.dependents.some(edge => edge.aggregated.some(dep => dep.circular))
-        );
-      }),
-    );
+    showPathsOnly(sources.filter(path => pathHasCircularDependency(cruiseSnapshot, path)));
   };
 
   const showRuleViolationsOnly = (ruleNames: readonly string[]) => {

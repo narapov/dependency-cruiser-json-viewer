@@ -1,5 +1,7 @@
 import type { IViolation } from 'dependency-cruiser';
 
+import { flattenViolations } from '../flattenViolations';
+
 /**
  * Collect unique module paths involved in violations, optionally limited to rule names and visible sources.
  *
@@ -7,7 +9,7 @@ import type { IViolation } from 'dependency-cruiser';
  * collectViolationModulePaths(violations, ['no-circular'], sources)
  */
 export function collectViolationModulePaths(
-  violations: readonly IViolation[] | undefined,
+  violations: readonly IViolation[] | ReadonlyMap<string, readonly IViolation[]> | undefined,
   ruleNames?: readonly string[],
   sources?: readonly string[],
 ): string[] {
@@ -16,7 +18,7 @@ export function collectViolationModulePaths(
 
   return [
     ...new Set(
-      (violations ?? []).flatMap(violation => {
+      flattenViolations(violations).flatMap(violation => {
         if (sourceSet != null && !sourceSet.has(violation.from)) {
           return [];
         }

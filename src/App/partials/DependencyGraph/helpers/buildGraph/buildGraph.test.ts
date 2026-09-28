@@ -2,7 +2,6 @@ import type { IModule } from 'dependency-cruiser';
 import { describe, expect, it } from 'vitest';
 
 import { buildCruiseSnapshot } from '@/domain';
-import { CIRCULAR_EDGE_COLOR, TYPE_ONLY_CIRCULAR_EDGE_COLOR } from '@/Shared';
 
 import { LEAF_NODE_HEIGHT, LEAF_NODE_MIN_WIDTH } from '../getLeafNodeSize';
 import { buildGraph } from './buildGraph';
@@ -124,7 +123,7 @@ describe('buildGraph circular dependencies', () => {
     expect(groupNode?.data.circular).toBeUndefined();
   });
 
-  it('colors circular edges red', async () => {
+  it('marks circular edges in data flags', async () => {
     const { edges } = await buildGraph({
       cruiseSnapshot: buildCruiseSnapshot(modules),
       selectedFilePaths: Object.fromEntries(['src/foo/a.ts', 'src/foo/b.ts'].map(p => [p, true])),
@@ -133,7 +132,8 @@ describe('buildGraph circular dependencies', () => {
     });
 
     const circularEdge = edges.find(edge => edge.source === 'src/foo/a.ts');
-    expect(circularEdge?.style?.stroke).toBe(CIRCULAR_EDGE_COLOR);
+    expect(circularEdge?.data?.valueCircular).toBe(true);
+    expect(circularEdge?.style).toBeUndefined();
   });
 });
 
@@ -181,7 +181,7 @@ describe('buildGraph type-only dependencies', () => {
       dependencyTypes: ['local', 'import'],
     }) as IModule['dependencies'][0];
 
-  it('renders type-only edges as dashed', async () => {
+  it('marks type-only edges in data', async () => {
     const modules = [moduleAt('src/foo/a.ts', [typeOnlyDep('src/foo/b.ts')]), moduleAt('src/foo/b.ts')];
 
     const { edges } = await buildGraph({
@@ -192,11 +192,11 @@ describe('buildGraph type-only dependencies', () => {
     });
 
     const edge = edges.find(item => item.source === 'src/foo/a.ts');
-    expect(edge?.style?.strokeDasharray).toBe('6 4');
     expect(edge?.data?.typeOnly).toBe(true);
+    expect(edge?.style).toBeUndefined();
   });
 
-  it('renders mixed type-only and value imports as solid', async () => {
+  it('marks mixed type-only and value imports as not type-only', async () => {
     const modules = [
       moduleAt('src/foo/a.ts', [typeOnlyDep('src/foo/b.ts'), valueDep('src/foo/b.ts')]),
       moduleAt('src/foo/b.ts'),
@@ -210,11 +210,10 @@ describe('buildGraph type-only dependencies', () => {
     });
 
     const edge = edges.find(item => item.source === 'src/foo/a.ts');
-    expect(edge?.style?.strokeDasharray).toBeUndefined();
     expect(edge?.data?.typeOnly).toBe(false);
   });
 
-  it('does not mark nodes red for type-only circular dependencies', async () => {
+  it('does not mark nodes circular for type-only circular dependencies', async () => {
     const modules = [
       moduleAt('src/foo/a.ts', [typeOnlyDep('src/foo/b.ts', true)]),
       moduleAt('src/foo/b.ts', [typeOnlyDep('src/foo/a.ts', true)]),
@@ -231,11 +230,11 @@ describe('buildGraph type-only dependencies', () => {
     expect(fileNode?.data.circular).toBeFalsy();
 
     const edge = edges.find(item => item.source === 'src/foo/a.ts');
-    expect(edge?.style?.stroke).toBe(TYPE_ONLY_CIRCULAR_EDGE_COLOR);
-    expect(edge?.style?.strokeDasharray).toBe('6 4');
+    expect(edge?.data?.typeOnlyCircular).toBe(true);
+    expect(edge?.data?.typeOnly).toBe(true);
   });
 
-  it('uses bright red for value circular and dashed light red for type-only circular', async () => {
+  it('marks value circular on nodes and edges', async () => {
     const modules = [moduleAt('src/foo/a.ts', [valueDep('src/foo/b.ts', true)]), moduleAt('src/foo/b.ts')];
 
     const { nodes, edges } = await buildGraph({
@@ -246,8 +245,8 @@ describe('buildGraph type-only dependencies', () => {
     });
 
     expect(nodes.find(node => node.id === 'src/foo/a.ts')?.data.circular).toBe(true);
-    expect(edges.find(item => item.source === 'src/foo/a.ts')?.style?.stroke).toBe(CIRCULAR_EDGE_COLOR);
-    expect(edges.find(item => item.source === 'src/foo/a.ts')?.style?.strokeDasharray).toBeUndefined();
+    expect(edges.find(item => item.source === 'src/foo/a.ts')?.data?.valueCircular).toBe(true);
+    expect(edges.find(item => item.source === 'src/foo/a.ts')?.data?.typeOnly).toBe(false);
   });
 });
 

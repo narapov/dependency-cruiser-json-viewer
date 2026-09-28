@@ -4,6 +4,7 @@ import { combine } from 'zustand/middleware';
 
 import {
   applyHighlightKeys,
+  getCruiseSources,
   getInitialDependencyCruiserState,
   replaceWorkspaceSettings,
   resolveActivePathAfterCollapse,
@@ -27,12 +28,14 @@ import type { WorkspaceResetMode, WorkspaceState } from './types';
 /** Placeholder snapshot before any cruise result is loaded. */
 export const EMPTY_CRUISE_SNAPSHOT: CruiseSnapshot = {
   nodes: new Map(),
-  rootPaths: [],
-  tree: [],
-  descendantFiles: [],
-  modulesDependencies: new Map(),
+  tree: new Map(),
+  dependencies: {
+    byDependencyKey: new Map(),
+    bySource: new Map(),
+    byTarget: new Map(),
+  },
   cycles: [],
-  violations: [],
+  violations: new Map(),
 };
 
 const DEFAULT_GRAPH_SETTINGS: WorkspaceState['graphSettings'] = {
@@ -60,7 +63,7 @@ function applySettingsToCruiseResult(cruiseResult: ICruiseResult, settings: View
   const stripped = stripViewerWorkspaceExtension(cruiseResult);
   const { filteredCruiseResult, cruiseSnapshot } = buildFilteredCruiseSnapshot(stripped, settings.ignorePatterns);
   const view = replaceWorkspaceSettings({
-    sources: cruiseSnapshot.descendantFiles,
+    sources: getCruiseSources(cruiseSnapshot),
     modules: filteredCruiseResult.modules,
     settings,
     defaultFolderColors: defaultFolderColorsRecord(cruiseSnapshot),

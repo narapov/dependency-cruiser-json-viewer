@@ -1,5 +1,7 @@
 import type { IAnyRuleType, IFlattenedRuleSet, IViolation, SeverityType } from 'dependency-cruiser';
 
+import { flattenViolations } from '../flattenViolations';
+
 export interface RuleWithViolations {
   name: string;
   severity: SeverityType;
@@ -41,11 +43,13 @@ function collectNamedRules(ruleSet: IFlattenedRuleSet | undefined): NamedRuleEnt
  */
 export function groupRulesWithViolations(
   ruleSet: IFlattenedRuleSet | undefined,
-  violations: readonly IViolation[] | undefined,
+  violations: readonly IViolation[] | ReadonlyMap<string, readonly IViolation[]> | undefined,
   sources?: readonly string[],
 ): RuleWithViolations[] {
   const sourceSet = sources == null ? null : new Set(sources);
-  const visibleViolations = (violations ?? []).filter(violation => sourceSet == null || sourceSet.has(violation.from));
+  const visibleViolations = flattenViolations(violations).filter(
+    violation => sourceSet == null || sourceSet.has(violation.from),
+  );
 
   const violationsByName = new Map<string, IViolation[]>();
   visibleViolations.forEach(violation => {

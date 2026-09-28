@@ -2,6 +2,7 @@ import type { ICruiseResult, ISummary } from 'dependency-cruiser';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
+  getCruiseSources,
   makeDependencyKey,
   VIEWER_WORKSPACE_EXTENSION_KEY,
   VIEWER_WORKSPACE_SCHEMA_VERSION,
@@ -83,7 +84,9 @@ describe('useWorkspaceStore.reset', () => {
 
     expect(state.cruiseResult).not.toHaveProperty(VIEWER_WORKSPACE_EXTENSION_KEY);
     expect(state.ignorePatterns).toEqual([]);
-    expect(state.cruiseSnapshot.descendantFiles).toEqual(['src/a.ts', 'src/b.ts', 'src/c.test.ts']);
+    expect(getCruiseSources(state.cruiseSnapshot).sort()).toEqual(
+      ['src/a.ts', 'src/b.ts', 'src/c.test.ts'].slice().sort(),
+    );
     expect(state.selectedFilePaths['src/a.ts']).toBe(true);
     expect(state.expandedFolderPaths.src).toBe(true);
     expect(state.activePath).toBeNull();
@@ -108,7 +111,7 @@ describe('useWorkspaceStore.reset', () => {
     const state = useWorkspaceStore.getState().reset(withEmbeddedSettings(settings), 'hard');
 
     expect(state.ignorePatterns).toEqual(['**/*.test.ts']);
-    expect(state.cruiseSnapshot.descendantFiles).toEqual(['src/a.ts', 'src/b.ts']);
+    expect(getCruiseSources(state.cruiseSnapshot).sort()).toEqual(['src/a.ts', 'src/b.ts'].slice().sort());
     expect(state.selectedFilePaths).toEqual({ 'src/a.ts': true });
     expect(state.expandedFolderPaths).toEqual({ src: true });
     expect(state.dependenciesPanelPath).toBe('src/a.ts');
@@ -164,7 +167,7 @@ describe('useWorkspaceStore.reset', () => {
     expect(state.userEdgeHighlights.size).toBe(0);
     expect(state.graphSettings.edgesType).toBe('simpleOrthogonal');
     expect(state.nodePositions).toEqual({ '': { 'src/a.ts': { x: 10, y: 20 } } });
-    expect(state.cruiseSnapshot.descendantFiles).toEqual(['src/a.ts', 'src/c.test.ts']);
+    expect(getCruiseSources(state.cruiseSnapshot).sort()).toEqual(['src/a.ts', 'src/c.test.ts'].slice().sort());
   });
 });
 
@@ -188,7 +191,7 @@ describe('useWorkspaceStore.syncWorkspaceSettings', () => {
     );
 
     expect(state.ignorePatterns).toEqual(['**/*.test.ts']);
-    expect(state.cruiseSnapshot.descendantFiles).toEqual(['src/a.ts', 'src/b.ts']);
+    expect(getCruiseSources(state.cruiseSnapshot).sort()).toEqual(['src/a.ts', 'src/b.ts'].slice().sort());
     expect(state.selectedFilePaths).toEqual({ 'src/b.ts': true });
     expect(state.applicableRulesPanelPath).toBe('src/b.ts');
     expect(state.activePath).toBeNull();
@@ -218,7 +221,7 @@ describe('useWorkspaceStore.setIgnorePatterns', () => {
     const state = useWorkspaceStore.getState();
 
     expect(state.ignorePatterns).toEqual(['**/*.test.ts']);
-    expect(state.cruiseSnapshot.descendantFiles).toEqual(['src/a.ts', 'src/b.ts']);
+    expect(getCruiseSources(state.cruiseSnapshot).sort()).toEqual(['src/a.ts', 'src/b.ts'].slice().sort());
     expect(state.selectedFilePaths).toEqual({ 'src/a.ts': true });
     expect(state.activePath).toBeNull();
     expect(state.dependenciesPanelPath).toBeNull();

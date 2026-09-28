@@ -1,4 +1,4 @@
-import type { CruiseSnapshot, FolderBaseColor } from '@/domain';
+import { getBaseName, type CruiseSnapshot, type FolderBaseColor } from '@/domain';
 
 /** Theme mode used when picking pastel folder background hues. */
 export type FolderColorMode = 'light' | 'dark';
@@ -49,15 +49,19 @@ export function assignFolderBaseColors(snapshot: CruiseSnapshot): ReadonlyMap<st
       colors.set(path, { hue, lightnessIndex: i });
       usedHues.push(hue);
 
-      const childFolders = (snapshot.nodes.get(path)?.childPaths ?? []).filter(
-        childPath => !!snapshot.nodes.get(childPath)?.isFolder,
-      );
+      const childFolders = [...(snapshot.nodes.get(path)?.children.values() ?? [])]
+        .filter(child => child.isFolder)
+        .map(child => child.path)
+        .sort((a, b) => getBaseName(a).localeCompare(getBaseName(b)));
       assignForFolders(childFolders, hue);
     });
   };
 
   assignForFolders(
-    snapshot.rootPaths.filter(path => !!snapshot.nodes.get(path)?.isFolder),
+    [...snapshot.tree.values()]
+      .filter(node => node.isFolder)
+      .map(node => node.path)
+      .sort((a, b) => getBaseName(a).localeCompare(getBaseName(b))),
     null,
   );
 

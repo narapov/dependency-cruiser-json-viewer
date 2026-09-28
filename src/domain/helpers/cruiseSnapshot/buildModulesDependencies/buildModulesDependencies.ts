@@ -1,16 +1,36 @@
 import type { IModule } from 'dependency-cruiser';
 
-import type { AggregatedDependency } from '../../../types';
+import type { ModuleDependency } from '../../../types';
 import { makeDependencyKey } from '../../dependencyKey';
+import { getAncestorKeys } from '../../pathUtils';
 
 type ResolvedDep = IModule['dependencies'][number] & { resolved: string };
+
+function pushOrCreateToModuleDependencyMap(
+  modulesDependenciesMap: Map<string, ModuleDependency[]>,
+  key: string,
+  moduleDependency: ModuleDependency,
+) {
+  const existing = modulesDependenciesMap.get(key);
+  if (existing) {
+    existing.push(moduleDependency);
+    return;
+  }
+  modulesDependenciesMap.set(key, [moduleDependency]);
+}
 
 /**
  * Build a map of direct module dependencies keyed by `makeDependencyKey(source, target)`.
  * Includes external / unresolved-to-cruise targets when `resolved` is set.
  */
-export function buildModulesDependencies(modules: readonly IModule[]): Map<string, AggregatedDependency[]> {
-  const modulesDependencies = new Map<string, AggregatedDependency[]>();
+export function buildModulesDependencies(modules: readonly IModule[]): {
+  modulesDependenciesByDependencyKey: ReadonlyMap<string, ModuleDependency[]>;
+  modulesDependenciesBySource: ReadonlyMap<string, ModuleDependency[]>;
+  modulesDependenciesByTarget: ReadonlyMap<string, ModuleDependency[]>;
+} {
+  const modulesDependenciesByDependencyKey = new Map<string, ModuleDependency[]>();
+  const modulesDependenciesBySource = new Map<string, ModuleDependency[]>();
+  const modulesDependenciesByTarget = new Map<string, ModuleDependency[]>();
 
   modules.forEach(module => {
     if (!Array.isArray(module.dependencies)) {
@@ -21,21 +41,31 @@ export function buildModulesDependencies(modules: readonly IModule[]): Map<strin
       .filter((dep): dep is ResolvedDep => Boolean(dep.resolved))
       .forEach(dep => {
         const key = makeDependencyKey(module.source, dep.resolved);
-        const entry: AggregatedDependency = {
-          ...dep,
+        const sourceAncestors = getAncestorKeys(module.source);
+        const targetAncestors = getAncestorKeys(dep.resolved);
+
+        const moduleDependency: ModuleDependency = {
           id: key,
           source: module.source,
+          sourceAncestors,
           target: dep.resolved,
+          targetAncestors,
+          ...dep,
         };
 
-        const existing = modulesDependencies.get(key);
-        if (existing) {
-          existing.push(entry);
-          return;
-        }
-        modulesDependencies.set(key, [entry]);
+        pushOrCreateToModuleDependencyMap(modulesDependenciesByDependencyKey, key, moduleDependency);
+        [...sourceAncestors, module.source].forEach(s =>
+          pushOrCreateToModuleDependencyMap(modulesDependenciesBySource, s, moduleDependency),
+        );
+        [...targetAncestors, dep.resolved].forEach(t =>
+          pushOrCreateToModuleDependencyMap(modulesDependenciesByTarget, t, moduleDependency),
+        );
       });
   });
 
-  return modulesDependencies;
+  return {
+    modulesDependenciesByDependencyKey,
+    modulesDependenciesBySource,
+    modulesDependenciesByTarget,
+  };
 }

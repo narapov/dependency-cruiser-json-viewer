@@ -1,118 +1,76 @@
-import type { IModule } from 'dependency-cruiser';
-import { useCallback, useMemo, useState, type MouseEvent } from 'react';
+import { useCallback, useMemo, type MouseEvent } from 'react';
 
 import type { Edge } from '@xyflow/react';
 
 import { applyHighlightKeys, getEdgeHighlightColor } from '@/domain';
 
-import {
-  applyActivePathEdgeStyle,
-  applySelectedEdgeStyle,
-  applyUserEdgeHighlightStyle,
-  buildEdgeDependencyKeyMap,
-  collectValidDependencyKeys,
-} from '../../helpers';
-import type { PresenceRecord } from '../../types';
+import { getDependencyKeysFromEdgeData } from '../../helpers/dependencyEdgeMembership';
+import { useSelectedDependencyEdgeStore } from '../../stores/selectedDependencyEdgeStore';
+import type { DependencyEdgeData } from '../../types';
 
 interface UseHighlightedEdgesInput {
-  modules: IModule[];
-  selectedFilePaths: PresenceRecord;
-  expandedFolderPaths: PresenceRecord;
   baseEdges: Edge[];
-  visibleNodeIds: ReadonlySet<string>;
-  activePath?: string | null;
   userEdgeHighlights: ReadonlyMap<string, string>;
   onUserEdgeHighlightsChange: (next: ReadonlyMap<string, string>) => void;
 }
 
 interface UseHighlightedEdgesResult {
   highlightedEdges: Edge[];
-  getEdgeHighlight: (edgeId: string) => string | undefined;
-  setUserEdgeHighlight: (edgeId: string, color: string | null) => void;
+  getEdgeHighlight: (edge: Edge) => string | undefined;
+  setUserEdgeHighlight: (edge: Edge, color: string | null) => void;
   onEdgeClick: (_: MouseEvent, edge: Edge) => void;
   selectEdge: (edgeId: string) => void;
   clearSelectedEdge: () => void;
 }
 
+/** Valid dependency keys present on current visible edges. */
+function collectVisibleEdgeDependencyKeys(edges: readonly Edge[]): Set<string> {
+  return new Set(edges.flatMap(edge => getDependencyKeysFromEdgeData(edge.data as DependencyEdgeData | undefined)));
+}
+
 export function useHighlightedEdges(config: UseHighlightedEdgesInput): UseHighlightedEdgesResult {
-  const {
-    modules,
-    selectedFilePaths,
-    expandedFolderPaths,
-    baseEdges,
-    visibleNodeIds,
-    activePath,
-    userEdgeHighlights,
-    onUserEdgeHighlightsChange,
-  } = config;
+  const { baseEdges, userEdgeHighlights, onUserEdgeHighlightsChange } = config;
 
-  const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
-
-  const activeEdgeId =
-    selectedEdgeId != null && baseEdges.some(edge => edge.id === selectedEdgeId) ? selectedEdgeId : null;
-
-  const edgeDependencyKeyMap = useMemo(
-    () => buildEdgeDependencyKeyMap(modules, selectedFilePaths, expandedFolderPaths, visibleNodeIds, baseEdges),
-    [modules, selectedFilePaths, expandedFolderPaths, visibleNodeIds, baseEdges],
-  );
-
-  const validDependencyKeys = useMemo(
-    () => collectValidDependencyKeys(modules, selectedFilePaths),
-    [modules, selectedFilePaths],
-  );
+  const validDependencyKeys = useMemo(() => collectVisibleEdgeDependencyKeys(baseEdges), [baseEdges]);
 
   const effectiveUserEdgeHighlights = useMemo(
     () => new Map([...userEdgeHighlights.entries()].filter(([key]) => validDependencyKeys.has(key))),
     [userEdgeHighlights, validDependencyKeys],
   );
 
-  const highlightedEdges = useMemo(
-    () =>
-      applySelectedEdgeStyle(
-        applyUserEdgeHighlightStyle(
-          applyActivePathEdgeStyle(baseEdges, activePath ?? null),
-          effectiveUserEdgeHighlights,
-          edgeDependencyKeyMap,
-        ),
-        activeEdgeId,
-      ),
-    [baseEdges, activePath, activeEdgeId, effectiveUserEdgeHighlights, edgeDependencyKeyMap],
-  );
-
   const setUserEdgeHighlight = useCallback(
-    (edgeId: string, color: string | null) => {
-      const dependencyKeys = edgeDependencyKeyMap.get(edgeId) ?? [];
+    (edge: Edge, color: string | null) => {
+      const dependencyKeys = getDependencyKeysFromEdgeData(edge.data as DependencyEdgeData | undefined);
       if (dependencyKeys.length === 0) {
         return;
       }
-
       onUserEdgeHighlightsChange(applyHighlightKeys(userEdgeHighlights, dependencyKeys, color));
     },
-    [edgeDependencyKeyMap, onUserEdgeHighlightsChange, userEdgeHighlights],
+    [onUserEdgeHighlightsChange, userEdgeHighlights],
   );
 
   const getEdgeHighlight = useCallback(
-    (edgeId: string) => {
-      const dependencyKeys = edgeDependencyKeyMap.get(edgeId) ?? [];
+    (edge: Edge) => {
+      const dependencyKeys = getDependencyKeysFromEdgeData(edge.data as DependencyEdgeData | undefined);
       return getEdgeHighlightColor(dependencyKeys, effectiveUserEdgeHighlights);
     },
-    [edgeDependencyKeyMap, effectiveUserEdgeHighlights],
+    [effectiveUserEdgeHighlights],
   );
 
   const onEdgeClick = (_: MouseEvent, edge: Edge) => {
-    setSelectedEdgeId(edge.id);
+    useSelectedDependencyEdgeStore.getState().setSelectedEdgeId(edge.id);
   };
 
   const selectEdge = (edgeId: string) => {
-    setSelectedEdgeId(edgeId);
+    useSelectedDependencyEdgeStore.getState().setSelectedEdgeId(edgeId);
   };
 
   const clearSelectedEdge = () => {
-    setSelectedEdgeId(null);
+    useSelectedDependencyEdgeStore.getState().setSelectedEdgeId(null);
   };
 
   return {
-    highlightedEdges,
+    highlightedEdges: baseEdges,
     getEdgeHighlight,
     setUserEdgeHighlight,
     onEdgeClick,

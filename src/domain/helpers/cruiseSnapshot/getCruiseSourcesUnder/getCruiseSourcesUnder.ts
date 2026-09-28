@@ -9,5 +9,5 @@ export function getCruiseSourcesUnder(snapshot: CruiseSnapshot, path: string): s
   if (!node.isFolder) {
     return node.path === path ? [path] : [];
   }
-  return node.descendantFiles;
+  return [...node.descendantFiles];
 }

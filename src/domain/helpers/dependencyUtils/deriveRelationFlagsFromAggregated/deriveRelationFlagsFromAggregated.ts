@@ -1,4 +1,4 @@
-import type { AggregatedDependency } from '../../../types';
+import type { ModuleDependency } from '../../../types';
 import { isTypeOnlyDependency } from '../isTypeOnlyDependency';
 import {
   createDependencyRelationFlags,
@@ -8,9 +8,7 @@ import {
 } from '../mergeDependencyRelationFlags';
 
 /** Derive relation flags from the aggregated file-level dependencies on an edge. */
-export function deriveRelationFlagsFromAggregated(
-  aggregated: readonly AggregatedDependency[],
-): DependencyRelationFlags {
+export function deriveRelationFlagsFromAggregated(aggregated: readonly ModuleDependency[]): DependencyRelationFlags {
   if (aggregated.length === 0) {
     return createDependencyRelationFlags(false, false);
   }

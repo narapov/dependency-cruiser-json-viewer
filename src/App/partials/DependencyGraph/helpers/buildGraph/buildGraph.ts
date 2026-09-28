@@ -1,12 +1,12 @@
-import { getCruiseModules } from '@/domain';
+import { getCruiseModules, getEdgesForVisibleTree, getVisibleTree } from '@/domain';
 import { NEED_PROFILE } from '@/Shared';
 
 import type { BuildGraphInput, BuildGraphResult } from '../../types';
 import { sortNodesByDepth } from '../sortNodesByDepth';
-import { buildGraphEdges } from './buildGraphEdges';
+import { visibleTreeEdgesToReactFlowEdges } from './buildGraphEdges';
 import { buildGraphNodes } from './buildGraphNodes';
-import { buildVisibleNodes } from './buildVisibleNodes';
 import { createBuildGraphProfiler } from './createBuildGraphProfiler';
+import { deriveGraphVisibilityFromVisibleTree } from './deriveGraphVisibilityFromVisibleTree';
 import { layoutGroup } from './layoutGroup';
 import type { NodeSize } from './types';
 
@@ -23,20 +23,22 @@ export async function buildGraph({
   const modules = getCruiseModules(cruiseSnapshot);
 
   profiler.start('visibleNodes');
+  const visibleTree = getVisibleTree(cruiseSnapshot, selectedFilePaths, expandedFolderPaths);
   const {
-    selectedSet,
-    expandedFolders,
-    childrenIndex,
-    circularModules,
-    unresolvedModules,
     visibleNodes,
-    visibleNodeIds,
     parentByNode,
-  } = buildVisibleNodes(cruiseSnapshot, selectedFilePaths, expandedFolderPaths);
+    visibleNodeIds,
+    expandedFolders,
+    circularByPath,
+    unresolvedModules,
+    selectedSet,
+  } = deriveGraphVisibilityFromVisibleTree(cruiseSnapshot, visibleTree, selectedFilePaths);
   profiler.end('visibleNodes');
 
   profiler.start('edges');
-  const edges = buildGraphEdges(modules, selectedSet, expandedFolders, visibleNodeIds);
+  const edges = visibleTreeEdgesToReactFlowEdges(
+    getEdgesForVisibleTree(cruiseSnapshot, visibleTree, selectedFilePaths),
+  );
   profiler.end('edges');
 
   profiler.start('nodes');
@@ -44,9 +46,7 @@ export async function buildGraph({
     visibleNodes,
     parentByNode,
     expandedFolders,
-    selectedSet,
-    childrenIndex,
-    circularModules,
+    circularByPath,
     unresolvedModules,
     folderColors,
   });

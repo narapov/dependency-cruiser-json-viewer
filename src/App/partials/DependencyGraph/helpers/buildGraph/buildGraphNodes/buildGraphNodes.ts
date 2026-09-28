@@ -2,9 +2,8 @@ import type { Node } from '@xyflow/react';
 
 import { getBaseName } from '@/domain';
 
-import type { FileNodeData, FolderChildren, FolderGroupNodeData, FolderNodeData } from '../../../types';
+import type { FileNodeData, FolderGroupNodeData, FolderNodeData } from '../../../types';
 import { getLeafNodeSize } from '../../getLeafNodeSize';
-import { folderHasCircularDescendant } from '../buildVisibleNodes';
 import { toNodeDimensions } from '../nodeDimensions';
 
 /** Inputs needed to create React Flow nodes for visible files and folders. */
@@ -12,24 +11,15 @@ export interface BuildGraphNodesInput {
   visibleNodes: Map<string, 'folder' | 'file'>;
   parentByNode: Map<string, string | null>;
   expandedFolders: Set<string>;
-  selectedSet: Set<string>;
-  childrenIndex: Map<string, FolderChildren>;
-  circularModules: Set<string>;
+  circularByPath: ReadonlyMap<string, boolean>;
   unresolvedModules: Set<string>;
   folderColors: ReadonlyMap<string, string>;
 }
 
 function createVisibleNode(path: string, type: 'folder' | 'file', input: BuildGraphNodesInput): Node {
-  const {
-    parentByNode,
-    expandedFolders,
-    selectedSet,
-    childrenIndex,
-    circularModules,
-    unresolvedModules,
-    folderColors,
-  } = input;
+  const { parentByNode, expandedFolders, circularByPath, unresolvedModules, folderColors } = input;
   const parentId = parentByNode.get(path) ?? undefined;
+  const circular = circularByPath.get(path) === true;
 
   if (type === 'folder') {
     const expanded = expandedFolders.has(path);
@@ -57,7 +47,6 @@ function createVisibleNode(path: string, type: 'folder' | 'file', input: BuildGr
     }
 
     const label = getBaseName(path);
-    const circular = folderHasCircularDescendant(path, selectedSet, childrenIndex, circularModules);
     const leafSize = getLeafNodeSize(label, 'folder');
     const data: FolderNodeData = {
       label,
@@ -83,7 +72,7 @@ function createVisibleNode(path: string, type: 'folder' | 'file', input: BuildGr
   const data: FileNodeData = {
     label,
     path,
-    circular: circularModules.has(path),
+    circular,
     couldNotResolve: unresolvedModules.has(path),
   };
   return {

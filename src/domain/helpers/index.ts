@@ -9,3 +9,4 @@ export * from './cruiseResult';
 export * from './cruiseRules';
 export * from './cruiseSnapshot';
 export * from './viewerWorkspace';
+export * from './visibleTree';

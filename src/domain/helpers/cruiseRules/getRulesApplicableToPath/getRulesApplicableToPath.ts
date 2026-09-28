@@ -1,6 +1,7 @@
 import type { IAnyRuleType, IFlattenedRuleSet, IViolation, SeverityType } from 'dependency-cruiser';
 
 import { collectSourcesUnderFolder } from '../../pathUtils';
+import { flattenViolations } from '../flattenViolations';
 import type { RuleWithViolations } from '../groupRulesWithViolations';
 import { isRuleApplicableToPath } from '../isRuleApplicableToPath';
 
@@ -53,14 +54,14 @@ function resolveTargetPaths(path: string, moduleSources: readonly string[]): str
 export function getRulesApplicableToPath(
   path: string,
   ruleSet: IFlattenedRuleSet | undefined,
-  violations: readonly IViolation[] | undefined,
+  violations: readonly IViolation[] | ReadonlyMap<string, readonly IViolation[]> | undefined,
   moduleSources: readonly string[] = [],
 ): RuleWithViolations[] {
   const targetPaths = resolveTargetPaths(path, moduleSources);
   const targetSet = new Set(targetPaths);
 
   const violationsByName = new Map<string, IViolation[]>();
-  (violations ?? [])
+  flattenViolations(violations)
     .filter(violation => targetSet.has(violation.from))
     .forEach(violation => {
       const name = violation.rule.name;

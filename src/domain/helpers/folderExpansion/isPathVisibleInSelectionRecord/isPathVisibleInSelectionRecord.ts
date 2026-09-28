@@ -2,7 +2,10 @@
 export function isPathVisibleInSelectionRecord(
   path: string,
   selectedFilePaths: Record<string, boolean | undefined>,
-  descendantFiles: readonly string[],
+  descendantFiles: ReadonlySet<string> | readonly string[],
 ): boolean {
-  return !!selectedFilePaths[path] || descendantFiles.some(file => !!selectedFilePaths[file]);
+  if (selectedFilePaths[path]) {
+    return true;
+  }
+  return [...descendantFiles].some(file => !!selectedFilePaths[file]);
 }

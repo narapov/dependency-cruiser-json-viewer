@@ -26,7 +26,7 @@ export const FileTreeItem = memo(function FileTreeItem(props: TreeItemProps & { 
     isPathVisibleInSelectionRecord(
       itemId,
       state.selectedFilePaths,
-      state.cruiseSnapshot.nodes.get(itemId)?.descendantFiles ?? [],
+      state.cruiseSnapshot.nodes.get(itemId)?.descendantFiles ?? new Set(),
     ),
   );
   const replaceExpandedFolderPaths = useWorkspaceStore(state => state.replaceExpandedFolderPaths);

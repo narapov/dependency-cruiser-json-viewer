@@ -47,7 +47,7 @@ export function FileTree(props: FileTreeProps) {
   });
 
   const canShowNodeInGraph = (key: string) =>
-    isPathVisibleInSelectionRecord(key, selectedFilePaths, cruiseSnapshot.nodes.get(key)?.descendantFiles ?? []);
+    isPathVisibleInSelectionRecord(key, selectedFilePaths, cruiseSnapshot.nodes.get(key)?.descendantFiles ?? new Set());
 
   useImperativeHandle(ref, () => ({
     focusPath(path: string) {

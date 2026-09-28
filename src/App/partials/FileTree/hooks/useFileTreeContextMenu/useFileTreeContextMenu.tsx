@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 
-import { getSubtreeFolderKeys, isPathVisibleInSelectionRecord, toggleExpandedKey } from '@/domain';
+import { getCruiseSources, getSubtreeFolderKeys, isPathVisibleInSelectionRecord, toggleExpandedKey } from '@/domain';
 import { copyToClipboard } from '@/Shared';
 
 import { presenceRecordToPaths, useWorkspaceStore } from '../../../../stores/workspaceStore';
@@ -59,7 +59,7 @@ export function useFileTreeContextMenu(config: UseFileTreeContextMenuOptions) {
   const expandedKeys = presenceRecordToPaths(expandedFolderPaths);
   const expanded = path != null && expandedFolderPaths[path] === true;
   const navigable =
-    path != null && isPathVisibleInSelectionRecord(path, selectedFilePaths, node?.descendantFiles ?? []);
+    path != null && isPathVisibleInSelectionRecord(path, selectedFilePaths, node?.descendantFiles ?? new Set());
 
   const toggleExpand = (folderPath: string) => {
     replaceExpandedFolderPaths(toggleExpandedKey(expandedKeys, folderPath));
@@ -67,7 +67,7 @@ export function useFileTreeContextMenu(config: UseFileTreeContextMenuOptions) {
 
   const expandRecursive = (folderPath: string) => {
     replaceExpandedFolderPaths([
-      ...new Set([...expandedKeys, ...getSubtreeFolderKeys(folderPath, cruiseSnapshot.descendantFiles)]),
+      ...new Set([...expandedKeys, ...getSubtreeFolderKeys(folderPath, getCruiseSources(cruiseSnapshot))]),
     ]);
   };
 

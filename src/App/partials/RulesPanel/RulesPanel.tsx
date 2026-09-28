@@ -3,7 +3,7 @@ import { useDeferredValue, useState } from 'react';
 
 import Box from '@mui/material/Box';
 
-import { groupRulesWithViolations } from '@/domain';
+import { getCruiseSources, groupRulesWithViolations } from '@/domain';
 
 import { useCruiseSnapshotRequired } from '../../contexts';
 import { matchesNameFilter } from './helpers/matchesNameFilter';
@@ -12,7 +12,7 @@ import { RulesNameFilter } from './partials/RulesNameFilter';
 
 interface RulesPanelProps {
   ruleSetUsed: IFlattenedRuleSet | undefined;
-  violations: readonly IViolation[] | undefined;
+  violations: readonly IViolation[] | ReadonlyMap<string, readonly IViolation[]> | undefined;
   onSelectViolationPaths: (paths: string[]) => void;
   onShowRuleViolations: (ruleName: string) => void;
 }
@@ -23,7 +23,7 @@ export function RulesPanel(props: RulesPanelProps) {
   const cruiseSnapshot = useCruiseSnapshotRequired();
   const [nameFilter, setNameFilter] = useState('');
   const deferredNameFilter = useDeferredValue(nameFilter);
-  const rules = groupRulesWithViolations(ruleSetUsed, violations, cruiseSnapshot.descendantFiles);
+  const rules = groupRulesWithViolations(ruleSetUsed, violations, getCruiseSources(cruiseSnapshot));
   const filteredRules = rules.filter(entry => matchesNameFilter(entry.name, deferredNameFilter));
 
   return (

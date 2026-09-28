@@ -11,7 +11,7 @@ export function expandSelectionWithSelectedAncestors(
     .filter(node => node.isFolder)
     .forEach(node => {
       const { descendantFiles } = node;
-      if (descendantFiles.length > 0 && descendantFiles.every(file => selected.has(file))) {
+      if (descendantFiles.size > 0 && [...descendantFiles].every(file => selected.has(file))) {
         selected.add(node.path);
       }
     });

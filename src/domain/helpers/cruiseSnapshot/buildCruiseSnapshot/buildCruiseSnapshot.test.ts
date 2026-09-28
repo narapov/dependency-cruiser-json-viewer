@@ -2,6 +2,7 @@ import type { IFlattenedRuleSet, IModule, IViolation } from 'dependency-cruiser'
 import { describe, expect, it } from 'vitest';
 
 import { makeDependencyKey } from '../../dependencyKey';
+import { getCruiseSources } from '../getCruiseSources';
 import { buildCruiseSnapshot } from './buildCruiseSnapshot';
 
 function moduleAt(source: string, dependencies: IModule['dependencies'] = []): IModule {
@@ -15,117 +16,90 @@ describe('buildCruiseSnapshot', () => {
     const file = snapshot.nodes.get('src/a/b/c.ts');
     expect(file).toMatchObject({
       path: 'src/a/b/c.ts',
-      name: 'c.ts',
       isFolder: false,
       ancestors: ['src/a/b', 'src/a', 'src'],
-      parentPath: 'src/a/b',
-      descendantFiles: [],
+      parent: 'src/a/b',
     });
+    expect(file?.descendantFiles.size).toBe(0);
 
     const folder = snapshot.nodes.get('src/a');
     expect(folder).toMatchObject({
       isFolder: true,
-      name: 'a',
-      childPaths: ['src/a/b', 'src/a/d.ts'],
-      descendantFiles: ['src/a/b/c.ts', 'src/a/d.ts'],
+      parent: 'src',
     });
+    expect([...folder!.children.keys()].sort()).toEqual(['src/a/b', 'src/a/d.ts']);
+    expect([...folder!.descendantFiles].sort()).toEqual(['src/a/b/c.ts', 'src/a/d.ts']);
 
-    expect(snapshot.rootPaths).toEqual(['src']);
-    expect(snapshot.descendantFiles).toEqual(['src/a/b/c.ts', 'src/a/d.ts']);
-    expect(snapshot.tree).toEqual([
-      {
-        path: 'src',
-        children: [
-          {
-            path: 'src/a',
-            children: [
-              {
-                path: 'src/a/b',
-                children: [{ path: 'src/a/b/c.ts' }],
-              },
-              { path: 'src/a/d.ts' },
-            ],
-          },
-        ],
-      },
-    ]);
+    expect([...snapshot.tree.keys()]).toEqual(['src']);
+    expect(getCruiseSources(snapshot).sort()).toEqual(['src/a/b/c.ts', 'src/a/d.ts']);
+    expect(snapshot.tree.get('src')?.children.get('src/a')?.children.get('src/a/b')?.children.has('src/a/b/c.ts')).toBe(
+      true,
+    );
   });
 
-  it('indexes file dependencies and reverse dependents', () => {
-    const snapshot = buildCruiseSnapshot([
-      moduleAt('src/a.ts', [{ resolved: 'src/b.ts', circular: false } as IModule['dependencies'][number]]),
+  it('indexes file node external deps and dependents by dependency id', () => {
+    const modules = [
+      moduleAt('src/a.ts', [{ resolved: 'src/b.ts', dependencyTypes: ['local'] } as IModule['dependencies'][0]]),
       moduleAt('src/b.ts'),
-    ]);
-
+    ];
+    const snapshot = buildCruiseSnapshot(modules);
     const depKey = makeDependencyKey('src/a.ts', 'src/b.ts');
-    const sharedBucket = snapshot.modulesDependencies.get(depKey);
-    expect(sharedBucket).toEqual([
-      expect.objectContaining({ source: 'src/a.ts', target: 'src/b.ts', resolved: 'src/b.ts' }),
-    ]);
-    expect(snapshot.nodes.get('src/a.ts')?.dependencies[0]?.aggregated).toBe(sharedBucket);
-    expect(snapshot.nodes.get('src/b.ts')?.dependents[0]?.aggregated).toBe(sharedBucket);
 
-    expect(snapshot.nodes.get('src/a.ts')?.dependencies).toEqual([
-      expect.objectContaining({
-        path: 'src/b.ts',
-        aggregated: [expect.objectContaining({ source: 'src/a.ts', target: 'src/b.ts', resolved: 'src/b.ts' })],
-      }),
-    ]);
-    expect(snapshot.nodes.get('src/b.ts')?.dependents).toEqual([
-      expect.objectContaining({
-        path: 'src/a.ts',
-        aggregated: [expect.objectContaining({ source: 'src/a.ts', target: 'src/b.ts', resolved: 'src/b.ts' })],
-      }),
-    ]);
+    const aDeps = snapshot.nodes.get('src/a.ts')?.externalDependencies.get(depKey);
+    const bDependents = snapshot.nodes.get('src/b.ts')?.externalDependents.get(depKey);
+    expect(aDeps?.[0]?.id).toBe(depKey);
+    expect(bDependents?.[0]?.id).toBe(depKey);
+    expect(aDeps?.[0]).toEqual(bDependents?.[0]);
   });
 
-  it('aggregates folder leave and enter edges', () => {
-    const snapshot = buildCruiseSnapshot([
-      moduleAt('src/domain/a.ts', [{ resolved: 'src/App/b.ts', circular: false } as IModule['dependencies'][number]]),
+  it('rolls external folder dependencies and dependents', () => {
+    const modules = [
+      moduleAt('src/domain/a.ts', [
+        { resolved: 'src/App/b.ts', dependencyTypes: ['local'] } as IModule['dependencies'][0],
+      ]),
       moduleAt('src/App/b.ts'),
-    ]);
+    ];
+    const snapshot = buildCruiseSnapshot(modules);
 
-    const domainDeps = snapshot.nodes.get('src/domain')?.dependencies ?? [];
-    expect(domainDeps.some(edge => edge.path === 'src/App/b.ts')).toBe(true);
+    const domainExternal = [...(snapshot.nodes.get('src/domain')?.externalDependencies.values() ?? [])];
+    expect(domainExternal.some(bucket => bucket[0]?.target === 'src/App/b.ts')).toBe(true);
 
-    const appDependents = snapshot.nodes.get('src/App')?.dependents ?? [];
-    expect(appDependents.some(edge => edge.path === 'src/domain/a.ts')).toBe(true);
+    const appExternalDependents = [...(snapshot.nodes.get('src/App')?.externalDependents.values() ?? [])];
+    expect(appExternalDependents.some(bucket => bucket[0]?.source === 'src/domain/a.ts')).toBe(true);
   });
 
-  it('rolls circular paths up to folders and collects cycles', () => {
-    const dep = {
-      resolved: 'src/b.ts',
-      circular: true,
-      cycle: [{ name: 'src/a.ts' }, { name: 'src/b.ts' }],
-    } as IModule['dependencies'][number];
-
-    const snapshot = buildCruiseSnapshot([moduleAt('src/a.ts', [dep]), moduleAt('src/b.ts')]);
-
-    expect(snapshot.nodes.get('src/a.ts')?.circularPaths).toEqual([]);
-    expect(snapshot.nodes.get('src')?.circularPaths).toEqual(['src/a.ts', 'src/b.ts']);
-    expect(snapshot.cycles).toEqual([{ paths: ['src/a.ts', 'src/b.ts'] }]);
+  it('does not put circularPaths on file nodes; folder circularity is via descendant deps', () => {
+    const modules = [
+      moduleAt('src/a.ts', [
+        { resolved: 'src/b.ts', circular: true, dependencyTypes: ['local'] } as IModule['dependencies'][0],
+      ]),
+      moduleAt('src/b.ts', [
+        { resolved: 'src/a.ts', circular: true, dependencyTypes: ['local'] } as IModule['dependencies'][0],
+      ]),
+    ];
+    const snapshot = buildCruiseSnapshot(modules);
+    expect(snapshot.nodes.get('src/a.ts')?.isFolder).toBe(false);
+    expect(
+      [...(snapshot.nodes.get('src/a.ts')?.externalDependencies.values() ?? [])].some(bucket =>
+        bucket.some(dep => dep.circular),
+      ),
+    ).toBe(true);
   });
 
-  it('attaches applicable rules for files and unions them for folders', () => {
+  it('attaches applicableRules and indexes violations by dependency key', () => {
     const ruleSet: IFlattenedRuleSet = {
       forbidden: [
         {
           name: 'no-circular',
-          severity: 'error',
+          severity: 'warn',
           from: {},
           to: { circular: true },
         },
         {
           name: 'domain-only-domain',
           severity: 'error',
-          from: { path: '^src/domain/' },
-          to: { pathNot: '^src/domain/' },
-        },
-        {
-          name: 'app-only',
-          severity: 'error',
-          from: { path: '^src/App/' },
-          to: { pathNot: '^src/App/' },
+          from: { path: '^src/domain' },
+          to: { pathNot: '^src/domain' },
         },
       ],
     };
@@ -152,16 +126,16 @@ describe('buildCruiseSnapshot', () => {
     expect(folderRules?.map(entry => entry.name)).toEqual(['no-circular', 'domain-only-domain']);
     expect(folderRules?.find(entry => entry.name === 'domain-only-domain')?.violations).toHaveLength(1);
     expect(snapshot.ruleSetUsed).toBe(ruleSet);
-    expect(snapshot.violations).toBe(violations);
+    expect(snapshot.violations.get(makeDependencyKey('src/domain/a.ts', 'src/App/App.tsx'))).toEqual(violations);
   });
 
   it('returns an empty snapshot for no modules', () => {
     const snapshot = buildCruiseSnapshot([]);
     expect(snapshot.nodes.size).toBe(0);
-    expect(snapshot.rootPaths).toEqual([]);
-    expect(snapshot.descendantFiles).toEqual([]);
+    expect(snapshot.tree.size).toBe(0);
+    expect(getCruiseSources(snapshot)).toEqual([]);
     expect(snapshot.cycles).toEqual([]);
     expect(snapshot.ruleSetUsed).toBeUndefined();
-    expect(snapshot.violations).toEqual([]);
+    expect(snapshot.violations.size).toBe(0);
   });
 });

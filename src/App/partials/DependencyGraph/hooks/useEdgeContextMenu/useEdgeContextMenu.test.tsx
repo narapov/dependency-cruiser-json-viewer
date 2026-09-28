@@ -103,7 +103,7 @@ describe('useEdgeContextMenu', () => {
       .find(item => item.querySelector('[class*="MuiBox-root"]') && !item.textContent?.includes('Clear'));
     fireEvent.click(colorItem!);
 
-    expect(onSetUserEdgeHighlight).toHaveBeenCalledWith('a->b', expect.any(String));
+    expect(onSetUserEdgeHighlight).toHaveBeenCalledWith(edge, expect.any(String));
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 });

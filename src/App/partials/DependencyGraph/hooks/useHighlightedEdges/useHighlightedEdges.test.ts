@@ -1,38 +1,33 @@
 // @vitest-environment jsdom
-import type { IModule } from 'dependency-cruiser';
 import { useState } from 'react';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import { act, renderHook } from '@testing-library/react';
 import type { Edge } from '@xyflow/react';
 
-import { SELECTED_EDGE_COLOR } from '@/Shared';
+import { makeDependencyKey } from '@/domain';
 
+import { useSelectedDependencyEdgeStore } from '../../stores/selectedDependencyEdgeStore';
 import { useHighlightedEdges } from './useHighlightedEdges';
 
-const modules = [
-  {
-    source: 'a.ts',
-    dependencies: [{ resolved: 'b.ts', module: './b', moduleSystem: 'es6', dynamic: false }],
-  },
-  {
-    source: 'b.ts',
-    dependencies: [],
-  },
-] as IModule[];
+const depKey = makeDependencyKey('a.ts', 'b.ts');
 
-const baseEdges: Edge[] = [{ id: 'a.ts->b.ts', source: 'a.ts', target: 'b.ts' }];
+const baseEdges: Edge[] = [
+  {
+    id: 'a.ts->b.ts',
+    source: 'a.ts',
+    target: 'b.ts',
+    data: {
+      aggregated: [{ id: depKey, source: 'a.ts', target: 'b.ts' }],
+    },
+  },
+];
 
 function useHighlightedEdgesHarness(overrides: Partial<Parameters<typeof useHighlightedEdges>[0]> = {}) {
   const [userEdgeHighlights, setUserEdgeHighlights] = useState<ReadonlyMap<string, string>>(() => new Map());
 
   return useHighlightedEdges({
-    modules,
-    selectedFilePaths: Object.fromEntries(['a.ts', 'b.ts'].map(p => [p, true])),
-    expandedFolderPaths: Object.fromEntries([].map(p => [p, true])),
     baseEdges,
-    visibleNodeIds: new Set(['a.ts', 'b.ts']),
-    activePath: null,
     userEdgeHighlights,
     onUserEdgeHighlightsChange: setUserEdgeHighlights,
     ...overrides,
@@ -44,21 +39,24 @@ function renderHighlighted(overrides: Partial<Parameters<typeof useHighlightedEd
 }
 
 describe('useHighlightedEdges', () => {
+  beforeEach(() => {
+    useSelectedDependencyEdgeStore.getState().setSelectedEdgeId(null);
+  });
+
   it('selects an edge on click and clears selection', () => {
     const { result } = renderHighlighted();
 
     act(() => {
-      result.current.onEdgeClick({} as never, baseEdges[0]);
+      result.current.onEdgeClick({} as never, baseEdges[0]!);
     });
 
-    expect(result.current.highlightedEdges[0]?.zIndex).toBe(1000);
-    expect(result.current.highlightedEdges[0]?.style?.strokeWidth).toBe(3);
+    expect(useSelectedDependencyEdgeStore.getState().selectedEdgeId).toBe('a.ts->b.ts');
 
     act(() => {
       result.current.clearSelectedEdge();
     });
 
-    expect(result.current.highlightedEdges[0]?.zIndex).not.toBe(1000);
+    expect(useSelectedDependencyEdgeStore.getState().selectedEdgeId).toBeNull();
   });
 
   it('selects an edge by id via selectEdge', () => {
@@ -68,82 +66,30 @@ describe('useHighlightedEdges', () => {
       result.current.selectEdge('a.ts->b.ts');
     });
 
-    expect(result.current.highlightedEdges[0]?.zIndex).toBe(1000);
-    expect(result.current.highlightedEdges[0]?.style?.strokeWidth).toBe(3);
+    expect(useSelectedDependencyEdgeStore.getState().selectedEdgeId).toBe('a.ts->b.ts');
   });
 
-  it('drops selectedEdgeId when the edge leaves baseEdges', () => {
-    const { result, rerender } = renderHook(({ edges }) => useHighlightedEdgesHarness({ baseEdges: edges }), {
-      initialProps: { edges: baseEdges },
-    });
-
-    act(() => {
-      result.current.onEdgeClick({} as never, baseEdges[0]);
-    });
-    expect(result.current.highlightedEdges[0]?.zIndex).toBe(1000);
-
-    rerender({ edges: [] });
-    expect(result.current.highlightedEdges).toEqual([]);
-  });
-
-  it('sets and clears user edge highlights', () => {
+  it('sets and clears user edge highlights via aggregated keys', () => {
     const { result } = renderHighlighted();
 
     act(() => {
-      result.current.setUserEdgeHighlight('a.ts->b.ts', '#ff0000');
+      result.current.setUserEdgeHighlight(baseEdges[0]!, '#ff0000');
     });
 
-    expect(result.current.getEdgeHighlight('a.ts->b.ts')).toBe('#ff0000');
+    expect(result.current.getEdgeHighlight(baseEdges[0]!)).toBe('#ff0000');
 
     act(() => {
-      result.current.setUserEdgeHighlight('a.ts->b.ts', null);
+      result.current.setUserEdgeHighlight(baseEdges[0]!, null);
     });
 
-    expect(result.current.getEdgeHighlight('a.ts->b.ts')).toBeUndefined();
+    expect(result.current.getEdgeHighlight(baseEdges[0]!)).toBeUndefined();
   });
 
-  it('keeps selected edge color over user highlight', () => {
-    const { result } = renderHighlighted();
-
-    act(() => {
-      result.current.setUserEdgeHighlight('a.ts->b.ts', '#ff0000');
-    });
-    act(() => {
-      result.current.selectEdge('a.ts->b.ts');
+  it('returns undefined highlight for edges without aggregated keys', () => {
+    const { result } = renderHighlighted({
+      baseEdges: [{ id: 'missing', source: 'x', target: 'y' }],
     });
 
-    expect(result.current.getEdgeHighlight('a.ts->b.ts')).toBe('#ff0000');
-    expect(result.current.highlightedEdges[0]?.style?.stroke).toBe(SELECTED_EDGE_COLOR);
-    expect(result.current.highlightedEdges[0]?.style?.strokeWidth).toBe(3);
-    expect(result.current.highlightedEdges[0]?.zIndex).toBe(1000);
-  });
-
-  it('ignores highlight for unknown edge ids', () => {
-    const { result } = renderHighlighted();
-
-    act(() => {
-      result.current.setUserEdgeHighlight('missing', '#ff0000');
-    });
-
-    expect(result.current.getEdgeHighlight('missing')).toBeUndefined();
-  });
-
-  it('filters stale user highlights when selection shrinks', () => {
-    const { result, rerender } = renderHook(
-      ({ selectedFilePaths }) =>
-        useHighlightedEdgesHarness({
-          selectedFilePaths,
-          visibleNodeIds: new Set(Object.keys(selectedFilePaths).filter(key => selectedFilePaths[key])),
-        }),
-      { initialProps: { selectedFilePaths: Object.fromEntries(['a.ts', 'b.ts'].map(p => [p, true])) } },
-    );
-
-    act(() => {
-      result.current.setUserEdgeHighlight('a.ts->b.ts', '#ff0000');
-    });
-    expect(result.current.getEdgeHighlight('a.ts->b.ts')).toBe('#ff0000');
-
-    rerender({ selectedFilePaths: Object.fromEntries(['a.ts'].map(p => [p, true])) });
-    expect(result.current.getEdgeHighlight('a.ts->b.ts')).toBeUndefined();
+    expect(result.current.getEdgeHighlight({ id: 'missing', source: 'x', target: 'y' })).toBeUndefined();
   });
 });

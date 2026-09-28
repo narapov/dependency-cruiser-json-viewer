@@ -1,6 +1,7 @@
 import type { IModule } from 'dependency-cruiser';
 
 import type { CruiseSnapshot, ModuleRelations } from '../../../types';
+import { getCruiseSources } from '../../cruiseSnapshot';
 import type { DependencyRelationFlags } from '../../dependencyUtils';
 import { getRepresentative, isUnderFolder } from '../../pathUtils';
 import { buildRelationPathTree } from '../buildRelationPathTree';
@@ -144,10 +145,15 @@ function modulesForFolderRelations(folderPath: string, snapshot: CruiseSnapshot)
   }
 
   const needed = new Set(node.descendantFiles);
-  node.dependents.forEach(edge => needed.add(edge.path));
+  node.externalDependents.forEach(aggregated => {
+    const source = aggregated[0]?.source;
+    if (source != null) {
+      needed.add(source);
+    }
+  });
 
   return [...needed].flatMap(path => {
-    const module = snapshot.nodes.get(path)?.module;
+    const module = snapshot.nodes.get(path)?.originModule;
     return module != null ? [module] : [];
   });
 }
@@ -165,7 +171,7 @@ export function getFolderRelations(
   }
 
   const selectedSet = new Set(selectedPaths);
-  const moduleSources = new Set(snapshot.descendantFiles);
+  const moduleSources = new Set(getCruiseSources(snapshot));
   const maps: RelationMaps = {
     dependencies: new Map(),
     dependents: new Map(),

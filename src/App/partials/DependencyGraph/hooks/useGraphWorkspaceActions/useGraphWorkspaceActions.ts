@@ -2,6 +2,7 @@ import {
   collectRelatedModuleSources,
   getAncestorKeys,
   getCruiseModules,
+  getCruiseSources,
   getCruiseSourcesUnder,
   getSubtreeFolderKeys,
   toggleExpandedKey,
@@ -20,7 +21,7 @@ export function useGraphWorkspaceActions() {
   const setDependenciesPanelPath = useWorkspaceStore(state => state.setDependenciesPanelPath);
   const setApplicableRulesPanelPath = useWorkspaceStore(state => state.setApplicableRulesPanelPath);
 
-  const sources = cruiseSnapshot.descendantFiles;
+  const sources = getCruiseSources(cruiseSnapshot);
 
   const toggleFolder = (path: string) => {
     const previous = presenceRecordToPaths(useWorkspaceStore.getState().expandedFolderPaths);

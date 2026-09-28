@@ -2,16 +2,9 @@ import { hsl } from 'd3-color';
 
 import type { Edge, Node } from '@xyflow/react';
 
-import {
-  CIRCULAR_EDGE_COLOR,
-  DEFAULT_EDGE_COLOR,
-  ERROR_EDGE_COLOR,
-  TYPE_ONLY_CIRCULAR_EDGE_COLOR,
-  WARNING_EDGE_COLOR,
-} from '@/Shared';
-
 import type { DependencyEdgeData, FileNodeData, FolderGroupNodeData, FolderNodeData } from '../../types';
 import { parsePastelHsl } from '../assignFolderColors';
+import { getDependencyEdgeVisualStyle } from '../getDependencyEdgeVisualStyle';
 import { getNodeSize } from '../graphLayoutCache';
 
 const PX_PER_INCH = 72;
@@ -35,7 +28,6 @@ export interface SerializeGraphToDotInput {
   nodes: readonly Node[];
   edges: readonly Edge[];
   userEdgeHighlights: ReadonlyMap<string, string>;
-  edgeDependencyKeyMap: ReadonlyMap<string, readonly string[]>;
 }
 
 interface AbsoluteRect {
@@ -97,10 +89,8 @@ function resolveEdgePenWidth(edge: Edge, highlighted: boolean): number {
   if (highlighted) {
     return 3;
   }
-  if (typeof edge.style?.strokeWidth === 'number') {
-    return edge.style.strokeWidth;
-  }
-  return 1;
+  const visual = getDependencyEdgeVisualStyle(edge.source, edge.target, edge.data as DependencyEdgeData | undefined);
+  return visual.strokeWidth;
 }
 
 function getAbsoluteOrigin(node: Node, nodeById: ReadonlyMap<string, Node>): { x: number; y: number } {
@@ -131,34 +121,25 @@ function flipY(y: number, graphHeight: number): number {
   return graphHeight - y;
 }
 
-function resolveUserHighlightColor(
-  edgeId: string,
-  userEdgeHighlights: ReadonlyMap<string, string>,
-  edgeDependencyKeyMap: ReadonlyMap<string, readonly string[]>,
-): string | undefined {
-  const dependencyKeys = edgeDependencyKeyMap.get(edgeId) ?? [];
+function resolveUserHighlightColor(edge: Edge, userEdgeHighlights: ReadonlyMap<string, string>): string | undefined {
+  const data = edge.data as DependencyEdgeData | undefined;
+  const dependencyKeys = data?.aggregated?.map(dep => dep.id) ?? [];
   return dependencyKeys.map(key => userEdgeHighlights.get(key)).find((color): color is string => color != null);
 }
 
 function resolveBaseEdgeColor(edge: Edge): string {
-  const stroke = edge.style?.stroke;
-  if (stroke === ERROR_EDGE_COLOR) {
+  const data = edge.data as DependencyEdgeData | undefined;
+  if (data?.couldNotResolve === true || data?.severity === 'error') {
     return ERROR_EDGE_HEX;
   }
-  if (stroke === WARNING_EDGE_COLOR) {
-    return WARNING_EDGE_HEX;
-  }
-  if (stroke === CIRCULAR_EDGE_COLOR) {
+  if (data?.valueCircular === true || data?.circular === true) {
     return CIRCULAR_EDGE_HEX;
   }
-  if (stroke === TYPE_ONLY_CIRCULAR_EDGE_COLOR) {
+  if (data?.typeOnlyCircular === true) {
     return TYPE_ONLY_CIRCULAR_EDGE_HEX;
   }
-  if (stroke === DEFAULT_EDGE_COLOR || stroke == null) {
-    return DEFAULT_EDGE_HEX;
-  }
-  if (typeof stroke === 'string' && stroke.startsWith('#')) {
-    return stroke;
+  if (data?.severity === 'warn') {
+    return WARNING_EDGE_HEX;
   }
   return DEFAULT_EDGE_HEX;
 }
@@ -262,13 +243,8 @@ function emitCluster(
   return lines;
 }
 
-function emitEdge(
-  edge: Edge,
-  userEdgeHighlights: ReadonlyMap<string, string>,
-  edgeDependencyKeyMap: ReadonlyMap<string, readonly string[]>,
-  indent: string,
-): string {
-  const highlightColor = resolveUserHighlightColor(edge.id, userEdgeHighlights, edgeDependencyKeyMap);
+function emitEdge(edge: Edge, userEdgeHighlights: ReadonlyMap<string, string>, indent: string): string {
+  const highlightColor = resolveUserHighlightColor(edge, userEdgeHighlights);
   const color = highlightColor ?? resolveBaseEdgeColor(edge);
   const strokeWidth = resolveEdgePenWidth(edge, highlightColor != null);
   const attrs = [`color=${quoteDot(color)}`, `penwidth=${strokeWidth}`];
@@ -277,20 +253,16 @@ function emitEdge(
   if (data?.typeOnly === true) {
     attrs.push('style=dashed');
   }
-  if (typeof data?.title === 'string' && data.title.length > 0) {
-    attrs.push(`tooltip=${quoteDot(data.title)}`);
+  const title = getDependencyEdgeVisualStyle(edge.source, edge.target, data).title;
+  if (title.length > 0) {
+    attrs.push(`tooltip=${quoteDot(title)}`);
   }
 
   return `${indent}${quoteDot(edge.source)} -> ${quoteDot(edge.target)} [${attrs.join(', ')}];`;
 }
 
 /** Serializes the visible React Flow graph to Graphviz DOT with clusters, sizes, positions, and user edge highlights. */
-export function serializeGraphToDot({
-  nodes,
-  edges,
-  userEdgeHighlights,
-  edgeDependencyKeyMap,
-}: SerializeGraphToDotInput): string {
+export function serializeGraphToDot({ nodes, edges, userEdgeHighlights }: SerializeGraphToDotInput): string {
   const nodeById = new Map(nodes.map(node => [node.id, node]));
   const childrenByParent = new Map<string | null, Node[]>();
 
@@ -326,7 +298,7 @@ export function serializeGraphToDot({
   });
 
   edges.forEach(edge => {
-    lines.push(emitEdge(edge, userEdgeHighlights, edgeDependencyKeyMap, '  '));
+    lines.push(emitEdge(edge, userEdgeHighlights, '  '));
   });
 
   lines.push('}');

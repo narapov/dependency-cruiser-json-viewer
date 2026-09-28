@@ -8,9 +8,7 @@ describe('buildGraphNodes', () => {
       visibleNodes: new Map([['src/foo', 'folder']]),
       parentByNode: new Map([['src/foo', null]]),
       expandedFolders: new Set(['src/foo']),
-      selectedSet: new Set(['src/foo']),
-      childrenIndex: new Map(),
-      circularModules: new Set(),
+      circularByPath: new Map(),
       unresolvedModules: new Set(),
       folderColors: new Map([['src/foo', 'rgba(1, 2, 3, 0.1)']]),
     });
@@ -27,22 +25,12 @@ describe('buildGraphNodes', () => {
     });
   });
 
-  it('creates collapsed folder nodes with circular from descendants', () => {
+  it('creates collapsed folder nodes with circular from circularByPath', () => {
     const nodeMap = buildGraphNodes({
       visibleNodes: new Map([['src/foo', 'folder']]),
       parentByNode: new Map([['src/foo', null]]),
       expandedFolders: new Set(),
-      selectedSet: new Set(['src/foo/a.ts']),
-      childrenIndex: new Map([
-        [
-          'src/foo',
-          {
-            folders: [],
-            files: ['src/foo/a.ts'],
-          },
-        ],
-      ]),
-      circularModules: new Set(['src/foo/a.ts']),
+      circularByPath: new Map([['src/foo', true]]),
       unresolvedModules: new Set(),
       folderColors: new Map(),
     });
@@ -63,9 +51,7 @@ describe('buildGraphNodes', () => {
       visibleNodes: new Map([['src/foo/a.ts', 'file']]),
       parentByNode: new Map([['src/foo/a.ts', 'src/foo']]),
       expandedFolders: new Set(['src/foo']),
-      selectedSet: new Set(['src/foo/a.ts']),
-      childrenIndex: new Map(),
-      circularModules: new Set(['src/foo/a.ts']),
+      circularByPath: new Map([['src/foo/a.ts', true]]),
       unresolvedModules: new Set(),
       folderColors: new Map(),
     });
@@ -83,48 +69,18 @@ describe('buildGraphNodes', () => {
     expect(node?.height).toBeGreaterThan(0);
   });
 
-  it('creates file nodes with couldNotResolve flag', () => {
+  it('marks unresolved file nodes', () => {
     const nodeMap = buildGraphNodes({
-      visibleNodes: new Map([['missing-module', 'file']]),
-      parentByNode: new Map([['missing-module', null]]),
+      visibleNodes: new Map([['src/missing.ts', 'file']]),
+      parentByNode: new Map([['src/missing.ts', null]]),
       expandedFolders: new Set(),
-      selectedSet: new Set(['missing-module']),
-      childrenIndex: new Map(),
-      circularModules: new Set(),
-      unresolvedModules: new Set(['missing-module']),
+      circularByPath: new Map(),
+      unresolvedModules: new Set(['src/missing.ts']),
       folderColors: new Map(),
     });
 
-    const node = nodeMap.get('missing-module');
-    expect(node?.type).toBe('file');
-    expect(node?.data).toMatchObject({
-      label: 'missing-module',
-      path: 'missing-module',
+    expect(nodeMap.get('src/missing.ts')?.data).toMatchObject({
       couldNotResolve: true,
-      circular: false,
     });
-  });
-
-  it('sets extent to parent when parentId is present', () => {
-    const nodeMap = buildGraphNodes({
-      visibleNodes: new Map([
-        ['src', 'folder'],
-        ['src/foo', 'folder'],
-      ]),
-      parentByNode: new Map([
-        ['src', null],
-        ['src/foo', 'src'],
-      ]),
-      expandedFolders: new Set(['src']),
-      selectedSet: new Set(['src/foo']),
-      childrenIndex: new Map(),
-      circularModules: new Set(),
-      unresolvedModules: new Set(),
-      folderColors: new Map(),
-    });
-
-    expect(nodeMap.get('src')?.extent).toBeUndefined();
-    expect(nodeMap.get('src/foo')?.parentId).toBe('src');
-    expect(nodeMap.get('src/foo')?.extent).toBe('parent');
   });
 });

@@ -1,19 +1,34 @@
 // @vitest-environment jsdom
 
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { screen } from '@testing-library/react';
-import type { EdgeProps, Position } from '@xyflow/react';
+import { MarkerType, type EdgeProps, type Position } from '@xyflow/react';
 
 import { renderWithTheme } from '@/testsUtils';
 
+import { useSelectedDependencyEdgeStore } from '../../stores/selectedDependencyEdgeStore';
 import { DependencyEdge } from './DependencyEdge';
 
 vi.mock('@xyflow/react', async importOriginal => {
   const actual = await importOriginal<typeof import('@xyflow/react')>();
   return {
     ...actual,
-    BaseEdge: ({ id }: { id: string }) => <div data-testid={`base-edge-${id}`} />,
+    BaseEdge: ({
+      id,
+      style,
+      markerEnd,
+    }: {
+      id: string;
+      style?: { stroke?: string };
+      markerEnd?: EdgeProps['markerEnd'];
+    }) => (
+      <div
+        data-testid={`base-edge-${id}`}
+        data-stroke={style?.stroke}
+        data-marker-end={typeof markerEnd === 'string' ? markerEnd : markerEnd?.type}
+      />
+    ),
   };
 });
 
@@ -30,13 +45,17 @@ function edgeProps(overrides: Partial<EdgeProps> = {}): EdgeProps {
     targetPosition: 'left' as Position,
     markerStart: undefined,
     markerEnd: undefined,
-    data: { title: 'a → b' },
+    data: { valueCircular: true },
     ...overrides,
   } as EdgeProps;
 }
 
 describe('DependencyEdge', () => {
-  it('renders base edge and title when provided', () => {
+  beforeEach(() => {
+    useSelectedDependencyEdgeStore.getState().setSelectedEdgeId(null);
+  });
+
+  it('renders base edge and computed title from flags', () => {
     const { container } = renderWithTheme(
       <svg>
         <DependencyEdge {...edgeProps()} />
@@ -44,10 +63,32 @@ describe('DependencyEdge', () => {
     );
 
     expect(screen.getByTestId('base-edge-a->b')).toBeInTheDocument();
-    expect(container.querySelector('title')?.textContent).toBe('a → b');
+    expect(container.querySelector('title')?.textContent).toContain('a → b');
+    expect(container.querySelector('title')?.textContent).toContain('(circular)');
   });
 
-  it('omits title when data has none', () => {
+  it('passes ArrowClosed markerEnd to BaseEdge', () => {
+    renderWithTheme(
+      <svg>
+        <DependencyEdge {...edgeProps()} />
+      </svg>,
+    );
+
+    expect(screen.getByTestId('base-edge-a->b')).toHaveAttribute('data-marker-end', MarkerType.ArrowClosed);
+  });
+
+  it('forwards string markerEnd urls from EdgeWrapper', () => {
+    const markerUrl = "url('#react-flow__arrowclosed')";
+    renderWithTheme(
+      <svg>
+        <DependencyEdge {...edgeProps({ markerEnd: markerUrl })} />
+      </svg>,
+    );
+
+    expect(screen.getByTestId('base-edge-a->b')).toHaveAttribute('data-marker-end', markerUrl);
+  });
+
+  it('still renders when data is missing', () => {
     const { container } = renderWithTheme(
       <svg>
         <DependencyEdge {...edgeProps({ data: undefined })} />
@@ -55,6 +96,6 @@ describe('DependencyEdge', () => {
     );
 
     expect(screen.getByTestId('base-edge-a->b')).toBeInTheDocument();
-    expect(container.querySelector('title')).not.toBeInTheDocument();
+    expect(container.querySelector('title')?.textContent).toBe('a → b');
   });
 });

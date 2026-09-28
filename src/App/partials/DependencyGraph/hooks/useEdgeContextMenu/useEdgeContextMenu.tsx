@@ -11,8 +11,8 @@ import { EdgeContextMenuHeader } from '../../partials/EdgeContextMenuHeader';
 
 export interface UseEdgeContextMenuOptions {
   onFocusNode: (path: string) => void;
-  getEdgeHighlight: (edgeId: string) => string | undefined;
-  onSetUserEdgeHighlight: (edgeId: string, color: string | null) => void;
+  getEdgeHighlight: (edge: Edge) => string | undefined;
+  onSetUserEdgeHighlight: (edge: Edge, color: string | null) => void;
 }
 
 export function useEdgeContextMenu(config: UseEdgeContextMenuOptions) {
@@ -84,8 +84,8 @@ export function useEdgeContextMenu(config: UseEdgeContextMenuOptions) {
             {t('graph.edgeMenu.viewTarget')}
           </MenuItem>
           <EdgeHighlightSubmenu
-            currentHighlight={getEdgeHighlight(menuState.edge.id)}
-            onSetHighlight={color => onSetUserEdgeHighlight(menuState.edge.id, color)}
+            currentHighlight={getEdgeHighlight(menuState.edge)}
+            onSetHighlight={color => onSetUserEdgeHighlight(menuState.edge, color)}
             onClose={handleClose}
           />
         </>

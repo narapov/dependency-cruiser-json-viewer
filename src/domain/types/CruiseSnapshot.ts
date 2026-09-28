@@ -4,60 +4,52 @@ import type { RuleWithViolations } from '../helpers/cruiseRules';
 import type { DistinctCycle } from '../helpers/dependencyUtils';
 
 /** File-level dependency with explicit endpoints for snapshot edges. */
-export interface AggregatedDependency extends IDependency {
+export interface ModuleDependency extends IDependency {
   /** Canonical `makeDependencyKey(source, target)`. */
   id: string;
   source: string;
+  sourceAncestors: string[];
   target: string;
-}
-
-/** Precomputed dependency edge between paths in the cruise snapshot. */
-export interface CruiseEdge {
-  path: string;
-  aggregated: AggregatedDependency[];
+  targetAncestors: string[];
 }
 
 /** One file or folder path in the cruise snapshot. */
 export interface CruisePathNode {
   path: string;
-  name: string;
+  parent: string | null;
   /** Nearest parent → … → root; e.g. `src/a/b/c.ts` → `["src/a/b","src/a","src"]`. */
   ancestors: string[];
   isFolder: boolean;
-  parentPath: string | null;
-  /** Direct child paths: folders first, then files; empty for file nodes. */
-  childPaths: string[];
+  children: Map<string, CruisePathNode>;
   /** File sources under this folder; empty for file nodes. */
-  descendantFiles: string[];
-  module?: IModule;
-  /** File: direct deps; folder: edges that leave the subtree. */
-  dependencies: CruiseEdge[];
-  /** File: reverse deps; folder: edges that enter the subtree. */
-  dependents: CruiseEdge[];
-  /** Descendant files in any cycle; empty for file nodes. */
-  circularPaths: string[];
+  descendantFiles: Set<string>;
+  originModule?: IModule;
+  /** Edges that stay inside this folder's subtree (empty for files). */
+  internalDependencies: Map<string, ModuleDependency[]>;
+  /** Edges that leave this path's subtree (file: all deps). */
+  externalDependencies: Map<string, ModuleDependency[]>;
+  /** Reverse edges that stay inside this folder's subtree (empty for files). */
+  internalDependents: Map<string, ModuleDependency[]>;
+  /** Reverse edges that enter this path's subtree (file: all dependents). */
+  externalDependents: Map<string, ModuleDependency[]>;
   /** Rules whose path restrictions apply; folders union descendants. */
   applicableRules: RuleWithViolations[];
 }
 
-/** Nested path entry in the precomputed cruise hierarchy. */
-export interface HierarchicalNode {
-  path: string;
-  /** Present only for folders. */
-  children?: HierarchicalNode[];
-}
-
 /** Immutable path index built once from filtered cruise modules. */
 export interface CruiseSnapshot {
+  /** Flat path → node index (files + folders). */
   nodes: Map<string, CruisePathNode>;
-  rootPaths: string[];
-  /** Nested path hierarchy (folders + files); built once with the snapshot. */
-  tree: HierarchicalNode[];
-  /** All file sources in the cruise result. */
-  descendantFiles: string[];
-  /** Module deps keyed by `makeDependencyKey(source, target)`; shared into file node edges. */
-  modulesDependencies: Map<string, AggregatedDependency[]>;
+  /** Root path → node hierarchy. */
+  tree: Map<string, CruisePathNode>;
+  /** Module dependency indexes from `buildModulesDependencies`. */
+  dependencies: {
+    byDependencyKey: Map<string, ModuleDependency[]>;
+    bySource: Map<string, ModuleDependency[]>;
+    byTarget: Map<string, ModuleDependency[]>;
+  };
   cycles: DistinctCycle[];
   ruleSetUsed?: IFlattenedRuleSet;
-  violations: readonly IViolation[];
+  /** Violations keyed by `makeDependencyKey(from, to)`. */
+  violations: Map<string, IViolation[]>;
 }

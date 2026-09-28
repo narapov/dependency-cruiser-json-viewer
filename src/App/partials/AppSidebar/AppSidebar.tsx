@@ -15,7 +15,7 @@ interface AppSidebarProps {
   onShowInGraph: (path: string) => void;
   onViewModuleJson: (path: string) => void;
   ruleSetUsed: IFlattenedRuleSet | undefined;
-  violations: readonly IViolation[] | undefined;
+  violations: readonly IViolation[] | ReadonlyMap<string, readonly IViolation[]> | undefined;
   onSelectViolationPaths: (paths: string[]) => void;
   onShowRuleViolations: (ruleName: string) => void;
   onShowCycle: (paths: string[]) => void;

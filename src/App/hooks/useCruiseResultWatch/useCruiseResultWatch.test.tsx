@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 
+import { getCruiseSources } from '@/domain';
 import { CRUISE_RESULT_CHANGED_EVENT } from '@/Shared';
 
 import { fetchCruiseResult } from '../../api/cruiseResult';
@@ -116,7 +117,7 @@ describe('useCruiseResultWatch', () => {
     await waitFor(() => {
       expect(fetchCruiseResult).toHaveBeenCalledWith(undefined, { cacheBust: true });
       expect(setQueryData).toHaveBeenCalledWith(['cruise-result'], cruiseResult);
-      expect(useWorkspaceStore.getState().cruiseSnapshot.descendantFiles).toEqual(['src/a.ts']);
+      expect(getCruiseSources(useWorkspaceStore.getState().cruiseSnapshot).sort()).toEqual(['src/a.ts'].sort());
       expect(useWorkspaceStore.getState().activePath).toBe('src/a.ts');
     });
   });

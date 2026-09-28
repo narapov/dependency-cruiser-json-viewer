@@ -1,11 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import type { AggregatedDependency } from '../../../types';
+import type { ModuleDependency } from '../../../types';
 import { deriveRelationFlagsFromAggregated } from './deriveRelationFlagsFromAggregated';
 
-function dep(
-  overrides: Partial<AggregatedDependency> & Pick<AggregatedDependency, 'source' | 'target'>,
-): AggregatedDependency {
+function dep(overrides: Partial<ModuleDependency> & Pick<ModuleDependency, 'source' | 'target'>): ModuleDependency {
   return {
     circular: false,
     coreModule: false,
@@ -19,8 +17,11 @@ function dep(
     resolved: overrides.target,
     valid: true,
     id: `${overrides.source}->${overrides.target}`,
+    sourceAncestors: [],
+    targetAncestors: [],
+    protocol: 'file:',
     ...overrides,
-  };
+  } as ModuleDependency;
 }
 
 describe('deriveRelationFlagsFromAggregated', () => {
