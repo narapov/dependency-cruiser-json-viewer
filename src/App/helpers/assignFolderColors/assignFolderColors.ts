@@ -3,8 +3,6 @@ import { getBaseName, type CruiseSnapshot, type FolderBaseColor } from '@/domain
 /** Theme mode used when picking pastel folder background hues. */
 export type FolderColorMode = 'light' | 'dark';
 
-export type { FolderBaseColor };
-
 const FOLDER_COLOR_PALETTE = {
   light: {
     saturation: 48,
@@ -85,14 +83,6 @@ export function mapFolderBaseColorsToThemed(
       ? [...baseColors.entries()]
       : Object.entries(baseColors as Record<string, FolderBaseColor>);
   return new Map(entries.map(([path, base]) => [path, toThemedFolderColor(base, mode)]));
-}
-
-/** Assigns distinct pastel HSL colors to each folder path in the cruise snapshot. */
-export function assignFolderColors(
-  snapshot: CruiseSnapshot,
-  mode: FolderColorMode = 'light',
-): ReadonlyMap<string, string> {
-  return mapFolderBaseColorsToThemed(assignFolderBaseColors(snapshot), mode);
 }
 
 /** Parses an `hsl(h, s%, l%)` string into numeric components, or null if invalid. */

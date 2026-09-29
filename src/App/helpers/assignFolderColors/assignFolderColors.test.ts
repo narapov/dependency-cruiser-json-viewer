@@ -5,7 +5,7 @@ import { buildCruiseSnapshot } from '@/domain';
 
 import {
   assignFolderBaseColors,
-  assignFolderColors,
+  mapFolderBaseColorsToThemed,
   parsePastelHsl,
   toThemedFolderColor,
   type FolderColorMode,
@@ -15,6 +15,10 @@ function cruiseSnapshotOf(sources: readonly string[]) {
   return buildCruiseSnapshot(
     sources.map(source => ({ source, dependencies: [], dependents: [], valid: true }) as IModule),
   );
+}
+
+function themedFolderColors(sources: readonly string[], mode: FolderColorMode) {
+  return mapFolderBaseColorsToThemed(assignFolderBaseColors(cruiseSnapshotOf(sources)), mode);
 }
 
 const SAMPLE_SOURCES = [
@@ -100,27 +104,27 @@ describe('toThemedFolderColor', () => {
   });
 });
 
-describe('assignFolderColors', () => {
+describe('mapFolderBaseColorsToThemed', () => {
   it('returns the same color for the same path across calls', () => {
-    const first = assignFolderColors(cruiseSnapshotOf(SAMPLE_SOURCES), 'light');
-    const second = assignFolderColors(cruiseSnapshotOf([...SAMPLE_SOURCES].reverse()), 'light');
+    const first = themedFolderColors(SAMPLE_SOURCES, 'light');
+    const second = themedFolderColors([...SAMPLE_SOURCES].reverse(), 'light');
     for (const path of first.keys()) {
       expect(second.get(path)).toBe(first.get(path));
     }
   });
 
   it.each<FolderColorMode>(['light', 'dark'])('assigns different colors to sibling folders in %s mode', mode => {
-    const colors = assignFolderColors(cruiseSnapshotOf(SAMPLE_SOURCES), mode);
+    const colors = themedFolderColors(SAMPLE_SOURCES, mode);
     expectSiblingHueSeparation(colors, 'src/components');
   });
 
   it.each<FolderColorMode>(['light', 'dark'])('assigns child colors distinct from parent in %s mode', mode => {
-    const colors = assignFolderColors(cruiseSnapshotOf(SAMPLE_SOURCES), mode);
+    const colors = themedFolderColors(SAMPLE_SOURCES, mode);
     expectParentChildHueSeparation(colors);
   });
 
   it('uses light pastel tones in light mode', () => {
-    const colors = assignFolderColors(cruiseSnapshotOf(SAMPLE_SOURCES), 'light');
+    const colors = themedFolderColors(SAMPLE_SOURCES, 'light');
     for (const color of colors.values()) {
       const parsed = parsePastelHsl(color);
       expect(parsed).not.toBeNull();
@@ -131,7 +135,7 @@ describe('assignFolderColors', () => {
   });
 
   it('uses dark muted tones in dark mode', () => {
-    const colors = assignFolderColors(cruiseSnapshotOf(SAMPLE_SOURCES), 'dark');
+    const colors = themedFolderColors(SAMPLE_SOURCES, 'dark');
     for (const color of colors.values()) {
       const parsed = parsePastelHsl(color);
       expect(parsed).not.toBeNull();
@@ -143,8 +147,8 @@ describe('assignFolderColors', () => {
   });
 
   it('keeps the same hue per path across light and dark modes', () => {
-    const light = assignFolderColors(cruiseSnapshotOf(SAMPLE_SOURCES), 'light');
-    const dark = assignFolderColors(cruiseSnapshotOf(SAMPLE_SOURCES), 'dark');
+    const light = themedFolderColors(SAMPLE_SOURCES, 'light');
+    const dark = themedFolderColors(SAMPLE_SOURCES, 'dark');
     for (const path of light.keys()) {
       const lightParsed = parsePastelHsl(light.get(path)!);
       const darkParsed = parsePastelHsl(dark.get(path)!);
