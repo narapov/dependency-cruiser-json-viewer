@@ -4,7 +4,5 @@ export * from './getBaseName';
 export * from './getModuleJsonData';
 export * from './getParentPath';
 export * from './getRepresentative';
-export * from './getUnselectedRepresentative';
-export * from './getVisibleRepresentative';
 export * from './isNodeModulesPath';
 export * from './isUnderFolder';

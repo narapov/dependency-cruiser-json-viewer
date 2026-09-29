@@ -1,4 +1,3 @@
-export * from './collectCircularModulePaths';
 export * from './collectDistinctCycles';
 export * from './dependencyViolationFlags';
 export * from './deriveRelationFlagsFromAggregated';
