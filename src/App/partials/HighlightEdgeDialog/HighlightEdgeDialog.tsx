@@ -10,13 +10,13 @@ import {
 import { AppDialog, AppDialogContent, AppDialogTitle } from '@/Shared';
 
 import { CruiseSnapshotProvider, useCruiseSnapshotRequired } from '../../contexts';
+import { useWorkspaceStore } from '../../stores/workspaceStore';
 import { PathSearchBody } from '../PathSearchDialog';
 import { useHighlightEdgeDialogState } from './hooks';
 import { HighlightEdgeColorStep } from './partials';
 
 interface HighlightEdgeDialogProps {
   open: boolean;
-  userEdgeHighlights: ReadonlyMap<string, string>;
   onConfirm: (dependencyKeys: readonly string[], color: string | null) => void;
   onClose: () => void;
 }
@@ -32,15 +32,15 @@ function titleKeyForStep(step: 'source' | 'target' | 'color'): string {
 }
 
 interface HighlightEdgeDialogContentProps {
-  userEdgeHighlights: ReadonlyMap<string, string>;
   onConfirm: (dependencyKeys: readonly string[], color: string | null) => void;
   onClose: () => void;
 }
 
 function HighlightEdgeDialogContent(props: HighlightEdgeDialogContentProps) {
-  const { userEdgeHighlights, onConfirm, onClose } = props;
+  const { onConfirm, onClose } = props;
 
   const cruiseSnapshot = useCruiseSnapshotRequired();
+  const userEdgeHighlights = useWorkspaceStore(state => state.userEdgeHighlights);
   const { t } = useTranslation();
   const { step, sourcePath, targetPath, selectSource, selectTarget } = useHighlightEdgeDialogState();
 
@@ -88,13 +88,11 @@ function HighlightEdgeDialogContent(props: HighlightEdgeDialogContentProps) {
 
 /** Multi-step dialog to pick source, target, and color for an edge highlight. */
 export function HighlightEdgeDialog(props: HighlightEdgeDialogProps) {
-  const { open, userEdgeHighlights, onConfirm, onClose } = props;
+  const { open, onConfirm, onClose } = props;
 
   return (
     <AppDialog open={open} onClose={onClose} maxWidth="sm">
-      {open && (
-        <HighlightEdgeDialogContent userEdgeHighlights={userEdgeHighlights} onConfirm={onConfirm} onClose={onClose} />
-      )}
+      {open && <HighlightEdgeDialogContent onConfirm={onConfirm} onClose={onClose} />}
     </AppDialog>
   );
 }

@@ -1,9 +1,11 @@
-import type { WorkspaceState } from '../../types';
+import type { WorkspaceOwnState } from '../../types';
 
 type PositionMap = Record<string, Record<string, { x: number; y: number } | undefined>>;
 
 /** Collapse empty position maps to `null`. */
-export function normalizeNodePositions(nodePositions: PositionMap | null | undefined): WorkspaceState['nodePositions'] {
+export function normalizeNodePositions(
+  nodePositions: PositionMap | null | undefined,
+): WorkspaceOwnState['nodePositions'] {
   if (nodePositions == null) {
     return null;
   }

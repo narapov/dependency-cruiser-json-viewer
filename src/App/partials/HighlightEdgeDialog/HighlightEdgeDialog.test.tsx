@@ -20,7 +20,7 @@ function moduleAt(source: string, dependencies: IModule['dependencies'] = []): I
 function renderDialog(modules: IModule[], onConfirm = vi.fn(), onClose = vi.fn()) {
   return renderWithTheme(
     <CruiseSnapshotProvider value={buildCruiseSnapshot(modules)}>
-      <HighlightEdgeDialog open userEdgeHighlights={new Map()} onConfirm={onConfirm} onClose={onClose} />
+      <HighlightEdgeDialog open onConfirm={onConfirm} onClose={onClose} />
     </CruiseSnapshotProvider>,
   );
 }

@@ -4,23 +4,35 @@ import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
 
+import { getCruiseSources, isPathInSources } from '@/domain';
+
 import { useCruiseSnapshotRequired } from '../../contexts';
+import { useWorkspaceStore } from '../../stores/workspaceStore';
 import { ApplicableRulesList } from './partials/ApplicableRulesList';
 import { ApplicableRulesPanelHeader } from './partials/ApplicableRulesPanelHeader';
 
 interface ApplicableRulesPanelProps {
-  path: string;
   onClose: () => void;
   onShowInGraph: (path: string) => void;
   onSelectViolationPaths: (paths: string[]) => void;
 }
 
 export function ApplicableRulesPanel(props: ApplicableRulesPanelProps) {
-  const { path, onClose, onShowInGraph, onSelectViolationPaths } = props;
+  const { onClose, onShowInGraph, onSelectViolationPaths } = props;
 
   const { t } = useTranslation();
   const cruiseSnapshot = useCruiseSnapshotRequired();
-  const rules = cruiseSnapshot.nodes.get(path)?.applicableRules ?? [];
+  const path = useWorkspaceStore(state => {
+    const sources = getCruiseSources(state.cruiseSnapshot);
+    return state.applicableRulesPanelPath != null && isPathInSources(state.applicableRulesPanelPath, sources)
+      ? state.applicableRulesPanelPath
+      : null;
+  });
+  const rules = path != null ? (cruiseSnapshot.nodes.get(path)?.applicableRules ?? []) : [];
+
+  if (path == null) {
+    return null;
+  }
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>

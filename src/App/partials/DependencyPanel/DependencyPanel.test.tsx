@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import type { IModule } from 'dependency-cruiser';
 import { useTranslation } from 'react-i18next';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { fireEvent, renderHook, screen } from '@testing-library/react';
 
@@ -9,6 +9,7 @@ import { buildCruiseSnapshot } from '@/domain';
 import { renderWithTheme } from '@/testsUtils';
 
 import { CruiseSnapshotProvider } from '../../contexts';
+import { initialWorkspaceState, pathsToPresenceRecord, useWorkspaceStore } from '../../stores/workspaceStore';
 import { DependencyPanel } from './DependencyPanel';
 
 vi.mock('@/Shared', async importOriginal => {
@@ -35,29 +36,34 @@ const modules = [
 
 const selectedPaths = ['src/foo/a.ts', 'src/foo/b.ts', 'src/bar/c.ts'];
 
-const highlightProps = {
-  userEdgeHighlights: new Map<string, string>(),
-  onSetUserDependencyHighlight: vi.fn(),
-};
+function seedPanel(path: string, selected: string[], panelModules: IModule[] = modules) {
+  const cruiseSnapshot = buildCruiseSnapshot(panelModules);
+  useWorkspaceStore.setState({
+    ...initialWorkspaceState,
+    cruiseSnapshot,
+    dependenciesPanelPath: path,
+    selectedFilePaths: pathsToPresenceRecord(selected),
+    expandedFolderPaths: {},
+    userEdgeHighlights: new Map(),
+  });
+  return cruiseSnapshot;
+}
 
 describe('DependencyPanel', () => {
+  beforeEach(() => {
+    useWorkspaceStore.setState({ ...initialWorkspaceState });
+  });
+
   it('renders sections, nested relations, and wires header actions', () => {
     const { result: i18n } = renderHook(() => useTranslation());
     const onClose = vi.fn();
     const onShowInGraph = vi.fn();
     const onViewModuleJson = vi.fn();
+    const cruiseSnapshot = seedPanel('src/foo/a.ts', selectedPaths);
 
     renderWithTheme(
-      <CruiseSnapshotProvider value={buildCruiseSnapshot(modules)}>
-        <DependencyPanel
-          path="src/foo/a.ts"
-          selectedPaths={selectedPaths}
-          expandedKeys={[]}
-          onClose={onClose}
-          onShowInGraph={onShowInGraph}
-          onViewModuleJson={onViewModuleJson}
-          {...highlightProps}
-        />
+      <CruiseSnapshotProvider value={cruiseSnapshot}>
+        <DependencyPanel onClose={onClose} onShowInGraph={onShowInGraph} onViewModuleJson={onViewModuleJson} />
       </CruiseSnapshotProvider>,
     );
 
@@ -80,18 +86,11 @@ describe('DependencyPanel', () => {
 
   it('shows empty relation lists when there are no relations', () => {
     const { result: i18n } = renderHook(() => useTranslation());
+    const cruiseSnapshot = seedPanel('src/bar/c.ts', ['src/bar/c.ts'], [moduleAt('src/bar/c.ts')]);
 
     renderWithTheme(
-      <CruiseSnapshotProvider value={buildCruiseSnapshot([moduleAt('src/bar/c.ts')])}>
-        <DependencyPanel
-          path="src/bar/c.ts"
-          selectedPaths={['src/bar/c.ts']}
-          expandedKeys={[]}
-          onClose={vi.fn()}
-          onShowInGraph={vi.fn()}
-          onViewModuleJson={vi.fn()}
-          {...highlightProps}
-        />
+      <CruiseSnapshotProvider value={cruiseSnapshot}>
+        <DependencyPanel onClose={vi.fn()} onShowInGraph={vi.fn()} onViewModuleJson={vi.fn()} />
       </CruiseSnapshotProvider>,
     );
 
@@ -100,18 +99,11 @@ describe('DependencyPanel', () => {
 
   it('shows hidden dependents for unselected modules', () => {
     const { result: i18n } = renderHook(() => useTranslation());
+    const cruiseSnapshot = seedPanel('src/foo/a.ts', selectedPaths);
 
     renderWithTheme(
-      <CruiseSnapshotProvider value={buildCruiseSnapshot(modules)}>
-        <DependencyPanel
-          path="src/foo/a.ts"
-          selectedPaths={selectedPaths}
-          expandedKeys={[]}
-          onClose={vi.fn()}
-          onShowInGraph={vi.fn()}
-          onViewModuleJson={vi.fn()}
-          {...highlightProps}
-        />
+      <CruiseSnapshotProvider value={cruiseSnapshot}>
+        <DependencyPanel onClose={vi.fn()} onShowInGraph={vi.fn()} onViewModuleJson={vi.fn()} />
       </CruiseSnapshotProvider>,
     );
 

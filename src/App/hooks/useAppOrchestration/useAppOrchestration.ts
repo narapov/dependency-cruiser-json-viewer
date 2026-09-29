@@ -64,56 +64,30 @@ function resolveActiveFolderPath(activePath: string | null, isFolder: (path: str
   return getParentPath(activePath);
 }
 
+function getResolvedActivePath(): string | null {
+  const { activePath, cruiseSnapshot } = useWorkspaceStore.getState();
+  const sources = getCruiseSources(cruiseSnapshot);
+  return activePath != null && isPathInSources(activePath, sources) ? activePath : null;
+}
+
+/**
+ * Workspace action helpers for App. Reads live data via `getState()` so the hook
+ * itself does not subscribe App to hot workspace fields.
+ */
 export function useAppOrchestration(config: UseAppOrchestrationOptions) {
   const { fileTreeRef, graphRef } = config;
 
-  const cruiseResult = useWorkspaceStore(state => state.cruiseResult);
-  const ignorePatterns = useWorkspaceStore(state => state.ignorePatterns);
-  const cruiseSnapshot = useWorkspaceStore(state => state.cruiseSnapshot);
-  const selectedFilePaths = useWorkspaceStore(state => state.selectedFilePaths);
-  const expandedFolderPaths = useWorkspaceStore(state => state.expandedFolderPaths);
-  const activePath = useWorkspaceStore(state => state.activePath);
-  const dependenciesPanelPath = useWorkspaceStore(state => state.dependenciesPanelPath);
-  const applicableRulesPanelPath = useWorkspaceStore(state => state.applicableRulesPanelPath);
-  const userEdgeHighlights = useWorkspaceStore(state => state.userEdgeHighlights);
-  const folderBaseColors = useWorkspaceStore(state => state.folderBaseColors);
-  const graphSettings = useWorkspaceStore(state => state.graphSettings);
-  const nodePositions = useWorkspaceStore(state => state.nodePositions);
-
-  const setSelectedFilePaths = useWorkspaceStore(state => state.setSelectedFilePaths);
-  const setExpandedFolderPaths = useWorkspaceStore(state => state.setExpandedFolderPaths);
-  const replaceExpandedFolderPaths = useWorkspaceStore(state => state.replaceExpandedFolderPaths);
-  const setActivePath = useWorkspaceStore(state => state.setActivePath);
-  const setDependenciesPanelPath = useWorkspaceStore(state => state.setDependenciesPanelPath);
-  const setApplicableRulesPanelPath = useWorkspaceStore(state => state.setApplicableRulesPanelPath);
-  const setUserEdgeHighlights = useWorkspaceStore(state => state.setUserEdgeHighlights);
-  const setUserDependencyHighlight = useWorkspaceStore(state => state.setUserDependencyHighlight);
-  const clearAllHighlightsAction = useWorkspaceStore(state => state.clearAllHighlights);
-
-  const sources = getCruiseSources(cruiseSnapshot);
-  const selectedPaths = presenceRecordToPaths(selectedFilePaths);
-  const expandedKeys = presenceRecordToPaths(expandedFolderPaths);
-
-  const resolvedActivePath = activePath != null && isPathInSources(activePath, sources) ? activePath : null;
-  const resolvedDependenciesPath =
-    dependenciesPanelPath != null && isPathInSources(dependenciesPanelPath, sources) ? dependenciesPanelPath : null;
-  const resolvedApplicableRulesPath =
-    applicableRulesPanelPath != null && isPathInSources(applicableRulesPanelPath, sources)
-      ? applicableRulesPanelPath
-      : null;
-
-  const dependenciesPanelOpen = resolvedDependenciesPath != null;
-  const applicableRulesPanelOpen = resolvedApplicableRulesPath != null;
-
   const updateExpandedKeys = (updater: string[] | ((prev: string[]) => string[])) => {
-    const previous = presenceRecordToPaths(useWorkspaceStore.getState().expandedFolderPaths);
+    const { expandedFolderPaths, replaceExpandedFolderPaths } = useWorkspaceStore.getState();
+    const previous = presenceRecordToPaths(expandedFolderPaths);
     const next = typeof updater === 'function' ? updater(previous) : updater;
     replaceExpandedFolderPaths(next);
   };
 
   const activatePath = (path: string) => {
+    const { expandedFolderPaths, setExpandedFolderPaths, setActivePath } = useWorkspaceStore.getState();
     const ancestors = getAncestorKeys(path);
-    const previous = presenceRecordToPaths(useWorkspaceStore.getState().expandedFolderPaths);
+    const previous = presenceRecordToPaths(expandedFolderPaths);
     const next = [...new Set([...previous, ...ancestors])];
     if (next.length !== previous.length) {
       setExpandedFolderPaths(pathsToPresenceRecord(next));
@@ -136,26 +110,28 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
   };
 
   const expandRecursive = (path: string) => {
+    const sources = getCruiseSources(useWorkspaceStore.getState().cruiseSnapshot);
     updateExpandedKeys(keys => [...new Set([...keys, ...getSubtreeFolderKeys(path, sources)])]);
   };
 
   const handleShowDependenciesPanel = (path: string) => {
-    setDependenciesPanelPath(path);
+    useWorkspaceStore.getState().setDependenciesPanelPath(path);
   };
 
   const handleClosePanel = () => {
-    setDependenciesPanelPath(null);
+    useWorkspaceStore.getState().setDependenciesPanelPath(null);
   };
 
   const handleShowApplicableRulesPanel = (path: string) => {
-    setApplicableRulesPanelPath(path);
+    useWorkspaceStore.getState().setApplicableRulesPanelPath(path);
   };
 
   const handleCloseApplicableRulesPanel = () => {
-    setApplicableRulesPanelPath(null);
+    useWorkspaceStore.getState().setApplicableRulesPanelPath(null);
   };
 
   const focusPath = (path: string) => {
+    const selectedPaths = presenceRecordToPaths(useWorkspaceStore.getState().selectedFilePaths);
     if (isPathVisibleInSelection(path, selectedPaths)) {
       graphRef.current?.focusNode(path);
     }
@@ -168,6 +144,7 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
   };
 
   const focusActivePath = () => {
+    const resolvedActivePath = getResolvedActivePath();
     if (resolvedActivePath == null) {
       return;
     }
@@ -185,6 +162,7 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
   };
 
   const copyActive = () => {
+    const resolvedActivePath = getResolvedActivePath();
     if (resolvedActivePath == null) {
       return;
     }
@@ -192,6 +170,7 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
   };
 
   const viewActiveItemDependenciesPanel = () => {
+    const resolvedActivePath = getResolvedActivePath();
     if (resolvedActivePath == null) {
       return;
     }
@@ -199,6 +178,7 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
   };
 
   const viewActiveItemApplicableRulesPanel = () => {
+    const resolvedActivePath = getResolvedActivePath();
     if (resolvedActivePath == null) {
       return;
     }
@@ -206,8 +186,9 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
   };
 
   const expandActive = () => {
+    const { cruiseSnapshot } = useWorkspaceStore.getState();
     const folderPath = resolveActiveFolderPath(
-      resolvedActivePath,
+      getResolvedActivePath(),
       path => cruiseSnapshot.nodes.get(path)?.isFolder === true,
     );
     if (folderPath == null) {
@@ -217,8 +198,9 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
   };
 
   const expandActiveRecursive = () => {
+    const { cruiseSnapshot } = useWorkspaceStore.getState();
     const folderPath = resolveActiveFolderPath(
-      resolvedActivePath,
+      getResolvedActivePath(),
       path => cruiseSnapshot.nodes.get(path)?.isFolder === true,
     );
     if (folderPath == null) {
@@ -228,8 +210,9 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
   };
 
   const collapseActive = () => {
+    const { cruiseSnapshot } = useWorkspaceStore.getState();
     const folderPath = resolveActiveFolderPath(
-      resolvedActivePath,
+      getResolvedActivePath(),
       path => cruiseSnapshot.nodes.get(path)?.isFolder === true,
     );
     if (folderPath == null) {
@@ -239,8 +222,10 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
   };
 
   const collapseActiveRecursive = () => {
+    const { cruiseSnapshot } = useWorkspaceStore.getState();
+    const sources = getCruiseSources(cruiseSnapshot);
     const folderPath = resolveActiveFolderPath(
-      resolvedActivePath,
+      getResolvedActivePath(),
       path => cruiseSnapshot.nodes.get(path)?.isFolder === true,
     );
     if (folderPath == null) {
@@ -250,7 +235,7 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
   };
 
   const clearAllHighlights = () => {
-    clearAllHighlightsAction();
+    useWorkspaceStore.getState().clearAllHighlights();
   };
 
   const exportGraphDot = () => {
@@ -266,13 +251,26 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
   };
 
   const getCurrentWorkspaceSettings = (): ViewerWorkspaceSettings | null => {
+    const state = useWorkspaceStore.getState();
+    const { cruiseResult, ignorePatterns, cruiseSnapshot, folderBaseColors, userEdgeHighlights, graphSettings } = state;
     if (cruiseResult == null) {
       return null;
     }
+    const sources = getCruiseSources(cruiseSnapshot);
+    const selectedPaths = presenceRecordToPaths(state.selectedFilePaths);
+    const expandedKeys = presenceRecordToPaths(state.expandedFolderPaths);
+    const resolvedDependenciesPath =
+      state.dependenciesPanelPath != null && isPathInSources(state.dependenciesPanelPath, sources)
+        ? state.dependenciesPanelPath
+        : null;
+    const resolvedApplicableRulesPath =
+      state.applicableRulesPanelPath != null && isPathInSources(state.applicableRulesPanelPath, sources)
+        ? state.applicableRulesPanelPath
+        : null;
     const layout = graphRef.current?.getLayoutState() ?? {
       autoLayoutOnly: graphSettings.autoLayoutOnly,
       edgesType: graphSettings.edgesType,
-      nodePositions: toGraphNodePositions(nodePositions),
+      nodePositions: toGraphNodePositions(state.nodePositions),
     };
     return {
       ignorePatterns,
@@ -289,6 +287,7 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
   };
 
   const saveWorkspace = () => {
+    const { cruiseResult } = useWorkspaceStore.getState();
     if (cruiseResult == null) {
       return;
     }
@@ -301,7 +300,9 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
   };
 
   const expandAllRecursive = () => {
-    const folderKeys = [...cruiseSnapshot.nodes.values()].filter(node => node.isFolder).map(node => node.path);
+    const folderKeys = [...useWorkspaceStore.getState().cruiseSnapshot.nodes.values()]
+      .filter(node => node.isFolder)
+      .map(node => node.path);
     updateExpandedKeys(folderKeys);
   };
 
@@ -310,11 +311,11 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
   };
 
   const setSelectedPaths = (paths: string[]) => {
-    setSelectedFilePaths(pathsToPresenceRecord(paths));
+    useWorkspaceStore.getState().setSelectedFilePaths(pathsToPresenceRecord(paths));
   };
 
   const selectAll = () => {
-    setSelectedPaths([...cruiseSnapshot.nodes.keys()]);
+    setSelectedPaths([...useWorkspaceStore.getState().cruiseSnapshot.nodes.keys()]);
   };
 
   const unselectAll = () => {
@@ -322,6 +323,7 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
   };
 
   const showPathsOnly = (paths: string[]) => {
+    const sources = getCruiseSources(useWorkspaceStore.getState().cruiseSnapshot);
     const sourceSet = new Set(sources);
     const filtered = paths.filter(path => sourceSet.has(path));
     setSelectedPaths(filtered);
@@ -330,14 +332,20 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
     }
   };
 
-  const sourcesForPath = (path: string): string[] => getCruiseSourcesUnder(cruiseSnapshot, path);
+  const sourcesForPath = (path: string): string[] =>
+    getCruiseSourcesUnder(useWorkspaceStore.getState().cruiseSnapshot, path);
 
   const hideOthers = (path: string) => {
+    const selectedPaths = presenceRecordToPaths(useWorkspaceStore.getState().selectedFilePaths);
     const kept = new Set(sourcesForPath(path)).intersection(new Set(selectedPaths));
     setSelectedPaths([...kept]);
   };
 
   const showRelatedModules = (path: string, direction: RelatedModuleDirection) => {
+    const { cruiseSnapshot, selectedFilePaths, expandedFolderPaths } = useWorkspaceStore.getState();
+    const sources = getCruiseSources(cruiseSnapshot);
+    const selectedPaths = presenceRecordToPaths(selectedFilePaths);
+    const expandedKeys = presenceRecordToPaths(expandedFolderPaths);
     const related = collectRelatedModuleSources(path, getCruiseModules(cruiseSnapshot), direction);
     const sourceSet = new Set(sources);
     const currentModuleSources = selectedPaths.filter(selected => sourceSet.has(selected));
@@ -357,28 +365,66 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
   };
 
   const showCircularDependenciesOnly = () => {
+    const { cruiseSnapshot } = useWorkspaceStore.getState();
+    const sources = getCruiseSources(cruiseSnapshot);
     showPathsOnly(sources.filter(path => pathHasCircularDependency(cruiseSnapshot, path)));
   };
 
   const showRuleViolationsOnly = (ruleNames: readonly string[]) => {
+    const { cruiseResult, cruiseSnapshot } = useWorkspaceStore.getState();
     if (cruiseResult == null) {
       return;
     }
+    const sources = getCruiseSources(cruiseSnapshot);
     showPathsOnly(collectViolationModulePaths(cruiseResult.summary.violations, ruleNames, sources));
   };
 
+  const setUserDependencyHighlight = (dependencyKeys: readonly string[], color: string | null) => {
+    useWorkspaceStore.getState().setUserDependencyHighlight(dependencyKeys, color);
+  };
+
+  const setUserEdgeHighlights = (
+    userEdgeHighlights: ReturnType<typeof useWorkspaceStore.getState>['userEdgeHighlights'],
+  ) => {
+    useWorkspaceStore.getState().setUserEdgeHighlights(userEdgeHighlights);
+  };
+
   return {
-    dependenciesPanelOpen,
-    applicableRulesPanelOpen,
-    selectedPaths,
-    expandedKeys,
-    activePath: resolvedActivePath,
-    dependenciesPath: resolvedDependenciesPath,
-    applicableRulesPath: resolvedApplicableRulesPath,
-    userEdgeHighlights,
-    folderBaseColors,
-    setUserEdgeHighlights,
-    setUserDependencyHighlight,
+    get selectedPaths() {
+      return presenceRecordToPaths(useWorkspaceStore.getState().selectedFilePaths);
+    },
+    get expandedKeys() {
+      return presenceRecordToPaths(useWorkspaceStore.getState().expandedFolderPaths);
+    },
+    get activePath() {
+      return getResolvedActivePath();
+    },
+    get dependenciesPath() {
+      const { dependenciesPanelPath, cruiseSnapshot } = useWorkspaceStore.getState();
+      const sources = getCruiseSources(cruiseSnapshot);
+      return dependenciesPanelPath != null && isPathInSources(dependenciesPanelPath, sources)
+        ? dependenciesPanelPath
+        : null;
+    },
+    get applicableRulesPath() {
+      const { applicableRulesPanelPath, cruiseSnapshot } = useWorkspaceStore.getState();
+      const sources = getCruiseSources(cruiseSnapshot);
+      return applicableRulesPanelPath != null && isPathInSources(applicableRulesPanelPath, sources)
+        ? applicableRulesPanelPath
+        : null;
+    },
+    get dependenciesPanelOpen() {
+      return this.dependenciesPath != null;
+    },
+    get applicableRulesPanelOpen() {
+      return this.applicableRulesPath != null;
+    },
+    get userEdgeHighlights() {
+      return useWorkspaceStore.getState().userEdgeHighlights;
+    },
+    get folderBaseColors() {
+      return useWorkspaceStore.getState().folderBaseColors;
+    },
     setSelectedPaths,
     updateExpandedKeys,
     activatePath,
@@ -416,5 +462,7 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
     showDirectDependents,
     showCircularDependenciesOnly,
     showRuleViolationsOnly,
+    setUserDependencyHighlight,
+    setUserEdgeHighlights,
   };
 }

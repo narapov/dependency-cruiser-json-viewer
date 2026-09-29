@@ -1,4 +1,4 @@
-import { getCruiseModules, getEdgesForVisibleTree, getVisibleTree } from '@/domain';
+import { getCruiseModules, getEdgesForVisibleTree } from '@/domain';
 import { NEED_PROFILE } from '@/Shared';
 
 import type { BuildGraphInput, BuildGraphResult } from '../../types';
@@ -14,7 +14,7 @@ import type { NodeSize } from './types';
 export async function buildGraph({
   cruiseSnapshot,
   selectedFilePaths,
-  expandedFolderPaths,
+  visibleTree,
   folderColors,
 }: BuildGraphInput): Promise<BuildGraphResult> {
   const profiler = createBuildGraphProfiler(NEED_PROFILE);
@@ -23,7 +23,6 @@ export async function buildGraph({
   const modules = getCruiseModules(cruiseSnapshot);
 
   profiler.start('visibleNodes');
-  const visibleTree = getVisibleTree(cruiseSnapshot, selectedFilePaths, expandedFolderPaths);
   const {
     visibleNodes,
     parentByNode,

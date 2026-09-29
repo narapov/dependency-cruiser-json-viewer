@@ -1,13 +1,13 @@
 import { collectFolderPaths } from '@/domain';
 
-import type { WorkspaceState } from '../../types';
+import type { WorkspaceOwnState } from '../../types';
 import { normalizeNodePositions } from '../normalizeNodePositions';
 
 /** Drop position entries whose group or child is no longer in the filtered graph. */
 export function pruneNodePositions(
-  nodePositions: WorkspaceState['nodePositions'],
+  nodePositions: WorkspaceOwnState['nodePositions'],
   sources: readonly string[],
-): WorkspaceState['nodePositions'] {
+): WorkspaceOwnState['nodePositions'] {
   if (nodePositions == null) {
     return null;
   }

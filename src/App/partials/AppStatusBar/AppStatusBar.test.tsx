@@ -1,12 +1,15 @@
 // @vitest-environment jsdom
 
+import type { IModule } from 'dependency-cruiser';
 import { useTranslation } from 'react-i18next';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { fireEvent, renderHook, screen } from '@testing-library/react';
 
+import { buildCruiseSnapshot } from '@/domain';
 import { renderWithTheme } from '@/testsUtils';
 
+import { initialWorkspaceState, useWorkspaceStore } from '../../stores/workspaceStore';
 import { AppStatusBar } from './AppStatusBar';
 
 vi.mock('@/Shared', async importOriginal => {
@@ -18,6 +21,10 @@ vi.mock('@/Shared', async importOriginal => {
 });
 
 describe('AppStatusBar', () => {
+  beforeEach(() => {
+    useWorkspaceStore.setState({ ...initialWorkspaceState });
+  });
+
   afterEach(() => {
     vi.clearAllMocks();
   });
@@ -27,7 +34,6 @@ describe('AppStatusBar', () => {
 
     renderWithTheme(
       <AppStatusBar
-        activePath={null}
         onFocusActivePath={vi.fn()}
         onShowDependenciesPanel={vi.fn()}
         onShowApplicableRulesPanel={vi.fn()}
@@ -47,9 +53,16 @@ describe('AppStatusBar', () => {
     const onViewModuleJson = vi.fn();
     const { copyToClipboard } = await import('@/Shared');
 
+    useWorkspaceStore.setState({
+      ...initialWorkspaceState,
+      cruiseSnapshot: buildCruiseSnapshot([
+        { source: 'src/foo/a.ts', dependencies: [], dependents: [], valid: true } as IModule,
+      ]),
+      activePath: 'src/foo/a.ts',
+    });
+
     renderWithTheme(
       <AppStatusBar
-        activePath="src/foo/a.ts"
         onFocusActivePath={onFocusActivePath}
         onShowDependenciesPanel={onShowDependenciesPanel}
         onShowApplicableRulesPanel={onShowApplicableRulesPanel}

@@ -3,7 +3,7 @@ import type { ICruiseResult } from 'dependency-cruiser';
 import { getCruiseSources, isPathInSources, type CruiseSnapshot, type FolderBaseColor } from '@/domain';
 
 import { defaultFolderColorsRecord } from '../../../../helpers';
-import type { WorkspaceState } from '../../types';
+import type { WorkspaceOwnState } from '../../types';
 import { pruneNodePositions } from '../pruneNodePositions';
 import { prunePresenceRecord } from '../prunePresenceRecord';
 
@@ -11,7 +11,7 @@ export interface ReconcileWorkspaceAgainstSnapshotInput {
   cruiseResult: ICruiseResult;
   cruiseSnapshot: CruiseSnapshot;
   ignorePatterns: string[];
-  previous: WorkspaceState;
+  previous: WorkspaceOwnState;
 }
 
 /** Soft-reconcile UI fields against a newly built cruise snapshot. */
@@ -20,7 +20,7 @@ export function reconcileWorkspaceAgainstSnapshot({
   cruiseSnapshot,
   ignorePatterns,
   previous,
-}: ReconcileWorkspaceAgainstSnapshotInput): WorkspaceState {
+}: ReconcileWorkspaceAgainstSnapshotInput): WorkspaceOwnState {
   const sources = getCruiseSources(cruiseSnapshot);
   const isValidPath = (path: string) => isPathInSources(path, sources);
   const sourceSet = new Set(sources);

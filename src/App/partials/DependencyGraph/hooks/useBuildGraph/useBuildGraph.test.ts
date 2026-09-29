@@ -27,7 +27,7 @@ const cruiseSnapshot = buildCruiseSnapshot([
 
 const EMPTY_SELECTION = {};
 const SELECTED_A = { 'a.ts': true };
-const EMPTY_EXPANDED = {};
+const EMPTY_VISIBLE_TREE: never[] = [];
 
 const graphResult: BuildGraphResult = {
   nodes: [{ id: 'a.ts', position: { x: 0, y: 0 }, data: {} }],
@@ -39,6 +39,7 @@ const graphResult: BuildGraphResult = {
 const hookInputBase = {
   cruiseSnapshot,
   folderColors: FOLDER_COLORS,
+  visibleTree: EMPTY_VISIBLE_TREE,
 };
 
 describe('useBuildGraph', () => {
@@ -52,7 +53,6 @@ describe('useBuildGraph', () => {
       useBuildGraph({
         ...hookInputBase,
         selectedFilePaths: EMPTY_SELECTION,
-        expandedFolderPaths: EMPTY_EXPANDED,
       }),
     );
 
@@ -71,7 +71,6 @@ describe('useBuildGraph', () => {
       useBuildGraph({
         ...hookInputBase,
         selectedFilePaths: SELECTED_A,
-        expandedFolderPaths: EMPTY_EXPANDED,
       }),
     );
 
@@ -92,7 +91,6 @@ describe('useBuildGraph', () => {
       useBuildGraph({
         ...hookInputBase,
         selectedFilePaths: SELECTED_A,
-        expandedFolderPaths: EMPTY_EXPANDED,
       }),
     );
 
@@ -110,7 +108,6 @@ describe('useBuildGraph', () => {
       useBuildGraph({
         ...hookInputBase,
         selectedFilePaths: SELECTED_A,
-        expandedFolderPaths: EMPTY_EXPANDED,
       }),
     );
 
@@ -138,7 +135,6 @@ describe('useBuildGraph', () => {
       useBuildGraph({
         ...hookInputBase,
         selectedFilePaths: SELECTED_A,
-        expandedFolderPaths: EMPTY_EXPANDED,
       }),
     );
 

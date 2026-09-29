@@ -1,4 +1,3 @@
-import type { IFlattenedRuleSet, IViolation } from 'dependency-cruiser';
 import type { ReactNode, Ref } from 'react';
 
 import Box from '@mui/material/Box';
@@ -14,12 +13,9 @@ interface AppSidebarProps {
   fileTreeRef?: Ref<FileTreeHandle>;
   onShowInGraph: (path: string) => void;
   onViewModuleJson: (path: string) => void;
-  ruleSetUsed: IFlattenedRuleSet | undefined;
-  violations: readonly IViolation[] | ReadonlyMap<string, readonly IViolation[]> | undefined;
   onSelectViolationPaths: (paths: string[]) => void;
   onShowRuleViolations: (ruleName: string) => void;
   onShowCycle: (paths: string[]) => void;
-  highlights: ReadonlyMap<string, string>;
   onRemoveHighlightKeys: (keys: readonly string[]) => void;
   onShowHighlightConnection: (source: string, target: string) => void;
   onClearAllHighlights: () => void;
@@ -50,12 +46,9 @@ export function AppSidebar(props: AppSidebarProps) {
     fileTreeRef,
     onShowInGraph,
     onViewModuleJson,
-    ruleSetUsed,
-    violations,
     onSelectViolationPaths,
     onShowRuleViolations,
     onShowCycle,
-    highlights,
     onRemoveHighlightKeys,
     onShowHighlightConnection,
     onClearAllHighlights,
@@ -67,19 +60,13 @@ export function AppSidebar(props: AppSidebarProps) {
         <FileTree ref={fileTreeRef} onShowInGraph={onShowInGraph} onViewModuleJson={onViewModuleJson} />
       </ViewPanel>
       <ViewPanel active={view === 'rules'}>
-        <RulesPanel
-          ruleSetUsed={ruleSetUsed}
-          violations={violations}
-          onSelectViolationPaths={onSelectViolationPaths}
-          onShowRuleViolations={onShowRuleViolations}
-        />
+        <RulesPanel onSelectViolationPaths={onSelectViolationPaths} onShowRuleViolations={onShowRuleViolations} />
       </ViewPanel>
       <ViewPanel active={view === 'circular'}>
         <CircularPanel onShowCycle={onShowCycle} onShowInGraph={onShowInGraph} />
       </ViewPanel>
       <ViewPanel active={view === 'highlights'}>
         <HighlightsPanel
-          highlights={highlights}
           onRemoveDependencyKeys={onRemoveHighlightKeys}
           onShowConnection={onShowHighlightConnection}
           onClearAll={onClearAllHighlights}

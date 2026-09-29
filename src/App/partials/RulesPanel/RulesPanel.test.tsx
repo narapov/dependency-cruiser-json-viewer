@@ -42,11 +42,15 @@ const DEFAULT_SOURCES = ['src/domain/a.ts', 'src/App/App.tsx'];
 
 const CRUISE_TREE = buildCruiseSnapshot(
   DEFAULT_SOURCES.map(source => ({ source, dependencies: [], dependents: [], valid: true })),
+  ruleSet,
+  violations,
 );
 
-const SINGLE_SOURCE_TREE = buildCruiseSnapshot([
-  { source: 'src/domain/a.ts', dependencies: [], dependents: [], valid: true },
-]);
+const SINGLE_SOURCE_TREE = buildCruiseSnapshot(
+  [{ source: 'src/domain/a.ts', dependencies: [], dependents: [], valid: true }],
+  ruleSet,
+  violations,
+);
 
 function renderRulesPanel(ui: Parameters<typeof renderWithTheme>[0], tree = CRUISE_TREE) {
   return renderWithTheme(<CruiseSnapshotProvider value={tree}>{ui}</CruiseSnapshotProvider>);
@@ -56,14 +60,7 @@ describe('RulesPanel', () => {
   it('renders rule names under with/without violation sections', () => {
     const { result: i18n } = renderHook(() => useTranslation());
 
-    renderRulesPanel(
-      <RulesPanel
-        ruleSetUsed={ruleSet}
-        violations={violations}
-        onSelectViolationPaths={vi.fn()}
-        onShowRuleViolations={vi.fn()}
-      />,
-    );
+    renderRulesPanel(<RulesPanel onSelectViolationPaths={vi.fn()} onShowRuleViolations={vi.fn()} />);
 
     expect(screen.getByText(`${i18n.current.t('rules.withViolations')} (1)`)).toBeInTheDocument();
     expect(screen.getByText(`${i18n.current.t('rules.withoutViolations')} (1)`)).toBeInTheDocument();
@@ -76,14 +73,7 @@ describe('RulesPanel', () => {
   it('filters rules by name', () => {
     const { result: i18n } = renderHook(() => useTranslation());
 
-    renderRulesPanel(
-      <RulesPanel
-        ruleSetUsed={ruleSet}
-        violations={violations}
-        onSelectViolationPaths={vi.fn()}
-        onShowRuleViolations={vi.fn()}
-      />,
-    );
+    renderRulesPanel(<RulesPanel onSelectViolationPaths={vi.fn()} onShowRuleViolations={vi.fn()} />);
 
     fireEvent.change(screen.getByRole('textbox', { name: i18n.current.t('rules.filterPlaceholder') }), {
       target: { value: 'circular' },
@@ -99,14 +89,7 @@ describe('RulesPanel', () => {
   it('filters rules with fuzzy match', () => {
     const { result: i18n } = renderHook(() => useTranslation());
 
-    renderRulesPanel(
-      <RulesPanel
-        ruleSetUsed={ruleSet}
-        violations={violations}
-        onSelectViolationPaths={vi.fn()}
-        onShowRuleViolations={vi.fn()}
-      />,
-    );
+    renderRulesPanel(<RulesPanel onSelectViolationPaths={vi.fn()} onShowRuleViolations={vi.fn()} />);
 
     fireEvent.change(screen.getByRole('textbox', { name: i18n.current.t('rules.filterPlaceholder') }), {
       target: { value: 'ncirc' },
@@ -120,14 +103,7 @@ describe('RulesPanel', () => {
   it('shows no-matches message when filter excludes all rules', () => {
     const { result: i18n } = renderHook(() => useTranslation());
 
-    renderRulesPanel(
-      <RulesPanel
-        ruleSetUsed={ruleSet}
-        violations={violations}
-        onSelectViolationPaths={vi.fn()}
-        onShowRuleViolations={vi.fn()}
-      />,
-    );
+    renderRulesPanel(<RulesPanel onSelectViolationPaths={vi.fn()} onShowRuleViolations={vi.fn()} />);
 
     fireEvent.change(screen.getByRole('textbox', { name: i18n.current.t('rules.filterPlaceholder') }), {
       target: { value: 'zzz-missing' },
@@ -139,14 +115,7 @@ describe('RulesPanel', () => {
   it('clears the name filter from the clear button', () => {
     const { result: i18n } = renderHook(() => useTranslation());
 
-    renderRulesPanel(
-      <RulesPanel
-        ruleSetUsed={ruleSet}
-        violations={violations}
-        onSelectViolationPaths={vi.fn()}
-        onShowRuleViolations={vi.fn()}
-      />,
-    );
+    renderRulesPanel(<RulesPanel onSelectViolationPaths={vi.fn()} onShowRuleViolations={vi.fn()} />);
 
     fireEvent.change(screen.getByRole('textbox', { name: i18n.current.t('rules.filterPlaceholder') }), {
       target: { value: 'circular' },
@@ -161,14 +130,7 @@ describe('RulesPanel', () => {
   it('does not show an expand button for a rule with no violations', () => {
     const { result: i18n } = renderHook(() => useTranslation());
 
-    renderRulesPanel(
-      <RulesPanel
-        ruleSetUsed={ruleSet}
-        violations={violations}
-        onSelectViolationPaths={vi.fn()}
-        onShowRuleViolations={vi.fn()}
-      />,
-    );
+    renderRulesPanel(<RulesPanel onSelectViolationPaths={vi.fn()} onShowRuleViolations={vi.fn()} />);
 
     expect(screen.getByTitle('no-circular')).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: i18n.current.t('actions.expand') })).toHaveLength(1);
@@ -178,14 +140,7 @@ describe('RulesPanel', () => {
     const { result: i18n } = renderHook(() => useTranslation());
     const onSelectViolationPaths = vi.fn();
 
-    renderRulesPanel(
-      <RulesPanel
-        ruleSetUsed={ruleSet}
-        violations={violations}
-        onSelectViolationPaths={onSelectViolationPaths}
-        onShowRuleViolations={vi.fn()}
-      />,
-    );
+    renderRulesPanel(<RulesPanel onSelectViolationPaths={onSelectViolationPaths} onShowRuleViolations={vi.fn()} />);
 
     fireEvent.click(screen.getByRole('button', { name: i18n.current.t('actions.expand') }));
     fireEvent.click(screen.getByText('src/domain/a.ts → src/App/App.tsx'));
@@ -197,14 +152,7 @@ describe('RulesPanel', () => {
     const { result: i18n } = renderHook(() => useTranslation());
     const onShowRuleViolations = vi.fn();
 
-    renderRulesPanel(
-      <RulesPanel
-        ruleSetUsed={ruleSet}
-        violations={violations}
-        onSelectViolationPaths={vi.fn()}
-        onShowRuleViolations={onShowRuleViolations}
-      />,
-    );
+    renderRulesPanel(<RulesPanel onSelectViolationPaths={vi.fn()} onShowRuleViolations={onShowRuleViolations} />);
 
     fireEvent.click(screen.getByRole('button', { name: i18n.current.t('rules.showViolationsOnly') }));
 
@@ -215,12 +163,7 @@ describe('RulesPanel', () => {
     const { result: i18n } = renderHook(() => useTranslation());
 
     renderRulesPanel(
-      <RulesPanel
-        ruleSetUsed={ruleSet}
-        violations={violations}
-        onSelectViolationPaths={vi.fn()}
-        onShowRuleViolations={vi.fn()}
-      />,
+      <RulesPanel onSelectViolationPaths={vi.fn()} onShowRuleViolations={vi.fn()} />,
       SINGLE_SOURCE_TREE,
     );
 

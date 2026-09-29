@@ -1,11 +1,13 @@
 import type { ICruiseResult } from 'dependency-cruiser';
 import { create } from 'zustand';
+import { createComputed } from 'zustand-computed';
 import { combine } from 'zustand/middleware';
 
 import {
   applyHighlightKeys,
   getCruiseSources,
   getInitialDependencyCruiserState,
+  getVisibleTree,
   replaceWorkspaceSettings,
   resolveActivePathAfterCollapse,
   stripViewerWorkspaceExtension,
@@ -23,7 +25,7 @@ import {
   presenceRecordToPaths,
   reconcileWorkspaceAgainstSnapshot,
 } from './helpers';
-import type { WorkspaceResetMode, WorkspaceState } from './types';
+import type { WorkspaceComputedState, WorkspaceOwnState, WorkspaceState, WorkspaceStateActions } from './types';
 
 /** Placeholder snapshot before any cruise result is loaded. */
 export const EMPTY_CRUISE_SNAPSHOT: CruiseSnapshot = {
@@ -38,13 +40,13 @@ export const EMPTY_CRUISE_SNAPSHOT: CruiseSnapshot = {
   violations: new Map(),
 };
 
-const DEFAULT_GRAPH_SETTINGS: WorkspaceState['graphSettings'] = {
+const DEFAULT_GRAPH_SETTINGS: WorkspaceOwnState['graphSettings'] = {
   autoLayoutOnly: true,
   edgesType: 'bezier',
 };
 
-/** Initial workspace state (no cruise data). */
-export const initialWorkspaceState: WorkspaceState = {
+/** Initial own workspace fields (no cruise data). */
+export const initialWorkspaceState: WorkspaceOwnState = {
   cruiseResult: null,
   ignorePatterns: [],
   selectedFilePaths: {},
@@ -59,7 +61,10 @@ export const initialWorkspaceState: WorkspaceState = {
   nodePositions: null,
 };
 
-function applySettingsToCruiseResult(cruiseResult: ICruiseResult, settings: ViewerWorkspaceSettings): WorkspaceState {
+function applySettingsToCruiseResult(
+  cruiseResult: ICruiseResult,
+  settings: ViewerWorkspaceSettings,
+): WorkspaceOwnState {
   const stripped = stripViewerWorkspaceExtension(cruiseResult);
   const { filteredCruiseResult, cruiseSnapshot } = buildFilteredCruiseSnapshot(stripped, settings.ignorePatterns);
   const view = replaceWorkspaceSettings({
@@ -77,7 +82,7 @@ function applySettingsToCruiseResult(cruiseResult: ICruiseResult, settings: View
   };
 }
 
-function hardResetWithoutSettings(cruiseResult: ICruiseResult): WorkspaceState {
+function hardResetWithoutSettings(cruiseResult: ICruiseResult): WorkspaceOwnState {
   const stripped = stripViewerWorkspaceExtension(cruiseResult);
   const { cruiseSnapshot } = buildFilteredCruiseSnapshot(stripped, []);
   const initial = getInitialDependencyCruiserState(cruiseSnapshot);
@@ -98,7 +103,7 @@ function hardResetWithoutSettings(cruiseResult: ICruiseResult): WorkspaceState {
   };
 }
 
-function softReset(cruiseResult: ICruiseResult, previous: WorkspaceState): WorkspaceState {
+function softReset(cruiseResult: ICruiseResult, previous: WorkspaceOwnState): WorkspaceOwnState {
   const stripped = stripViewerWorkspaceExtension(cruiseResult);
   const { cruiseSnapshot } = buildFilteredCruiseSnapshot(stripped, previous.ignorePatterns);
   return reconcileWorkspaceAgainstSnapshot({
@@ -109,7 +114,7 @@ function softReset(cruiseResult: ICruiseResult, previous: WorkspaceState): Works
   });
 }
 
-function pickWorkspaceState(state: WorkspaceState): WorkspaceState {
+function pickOwnWorkspaceState(state: WorkspaceOwnState): WorkspaceOwnState {
   return {
     cruiseResult: state.cruiseResult,
     ignorePatterns: state.ignorePatterns,
@@ -126,113 +131,122 @@ function pickWorkspaceState(state: WorkspaceState): WorkspaceState {
   };
 }
 
-export const useWorkspaceStore = create(
-  combine(initialWorkspaceState, (set, get) => ({
-    /** Initialize or re-bind workspace state from a cruise result. */
-    reset(cruiseResult: ICruiseResult, mode: WorkspaceResetMode): WorkspaceState {
-      const next =
-        mode === 'hard'
-          ? (() => {
-              const embedded = extractEmbeddedWorkspaceSettings(cruiseResult);
-              return embedded != null
-                ? applySettingsToCruiseResult(cruiseResult, embedded)
-                : hardResetWithoutSettings(cruiseResult);
-            })()
-          : softReset(cruiseResult, pickWorkspaceState(get()));
+const computeVisibleTree = createComputed(
+  (state: WorkspaceOwnState & WorkspaceStateActions): WorkspaceComputedState => ({
+    visibleTree: getVisibleTree(state.cruiseSnapshot, state.selectedFilePaths, state.expandedFolderPaths),
+  }),
+  { keys: ['cruiseSnapshot', 'selectedFilePaths', 'expandedFolderPaths'] },
+);
 
-      set(next);
-      return next;
-    },
+export const useWorkspaceStore = create<WorkspaceState>()(
+  computeVisibleTree(
+    combine(initialWorkspaceState, (set, get): WorkspaceStateActions => ({
+      /** Initialize or re-bind workspace state from a cruise result. */
+      reset(cruiseResult, mode) {
+        const next =
+          mode === 'hard'
+            ? (() => {
+                const embedded = extractEmbeddedWorkspaceSettings(cruiseResult);
+                return embedded != null
+                  ? applySettingsToCruiseResult(cruiseResult, embedded)
+                  : hardResetWithoutSettings(cruiseResult);
+              })()
+            : softReset(cruiseResult, pickOwnWorkspaceState(get()));
 
-    /** Apply external workspace settings against the current cruise result. */
-    syncWorkspaceSettings(workspaceSettings: ViewerWorkspaceSettings): WorkspaceState {
-      const { cruiseResult } = get();
-      if (cruiseResult == null) {
-        throw new Error('syncWorkspaceSettings requires a loaded cruiseResult');
-      }
+        set(next);
+        return next;
+      },
 
-      const next = applySettingsToCruiseResult(cruiseResult, workspaceSettings);
-      set(next);
-      return next;
-    },
+      /** Apply external workspace settings against the current cruise result. */
+      syncWorkspaceSettings(workspaceSettings) {
+        const { cruiseResult } = get();
+        if (cruiseResult == null) {
+          throw new Error('syncWorkspaceSettings requires a loaded cruiseResult');
+        }
 
-    setIgnorePatterns(ignorePatterns: string[]): void {
-      const previous = pickWorkspaceState(get());
-      if (previous.cruiseResult == null) {
-        set({ ignorePatterns });
-        return;
-      }
+        const next = applySettingsToCruiseResult(cruiseResult, workspaceSettings);
+        set(next);
+        return next;
+      },
 
-      const { cruiseSnapshot } = buildFilteredCruiseSnapshot(previous.cruiseResult, ignorePatterns);
-      set(
-        reconcileWorkspaceAgainstSnapshot({
-          cruiseResult: previous.cruiseResult,
-          cruiseSnapshot,
-          ignorePatterns,
-          previous,
-        }),
-      );
-    },
+      setIgnorePatterns(ignorePatterns) {
+        const previous = pickOwnWorkspaceState(get());
+        if (previous.cruiseResult == null) {
+          set({ ignorePatterns });
+          return;
+        }
 
-    setSelectedFilePaths(selectedFilePaths: WorkspaceState['selectedFilePaths']): void {
-      const { cruiseSnapshot } = get();
-      set({
-        selectedFilePaths: pathsToPresenceRecord(
-          toSelectedFilePaths(presenceRecordToPaths(selectedFilePaths), cruiseSnapshot),
-        ),
-      });
-    },
+        const { cruiseSnapshot } = buildFilteredCruiseSnapshot(previous.cruiseResult, ignorePatterns);
+        set(
+          reconcileWorkspaceAgainstSnapshot({
+            cruiseResult: previous.cruiseResult,
+            cruiseSnapshot,
+            ignorePatterns,
+            previous,
+          }),
+        );
+      },
 
-    setExpandedFolderPaths(expandedFolderPaths: WorkspaceState['expandedFolderPaths']): void {
-      set({ expandedFolderPaths });
-    },
+      setSelectedFilePaths(selectedFilePaths) {
+        const { cruiseSnapshot } = get();
+        set({
+          selectedFilePaths: pathsToPresenceRecord(
+            toSelectedFilePaths(presenceRecordToPaths(selectedFilePaths), cruiseSnapshot),
+          ),
+        });
+      },
 
-    /** Replace expanded folders; when folders collapse, move activePath out of collapsed subtrees. */
-    replaceExpandedFolderPaths(paths: readonly string[]): void {
-      const previous = presenceRecordToPaths(get().expandedFolderPaths);
-      const next = [...paths];
-      const collapsed = previous.filter(key => !next.includes(key));
-      const patch: Pick<WorkspaceState, 'expandedFolderPaths'> & Partial<Pick<WorkspaceState, 'activePath'>> = {
-        expandedFolderPaths: pathsToPresenceRecord(next),
-      };
-      if (collapsed.length > 0) {
-        patch.activePath = resolveActivePathAfterCollapse(get().activePath, collapsed);
-      }
-      set(patch);
-    },
+      setExpandedFolderPaths(expandedFolderPaths) {
+        set({ expandedFolderPaths });
+      },
 
-    setActivePath(activePath: string | null): void {
-      set({ activePath });
-    },
+      /** Replace expanded folders; when folders collapse, move activePath out of collapsed subtrees. */
+      replaceExpandedFolderPaths(paths) {
+        const previous = presenceRecordToPaths(get().expandedFolderPaths);
+        const next = [...paths];
+        const collapsed = previous.filter(key => !next.includes(key));
+        const patch: Pick<WorkspaceOwnState, 'expandedFolderPaths'> & Partial<Pick<WorkspaceOwnState, 'activePath'>> = {
+          expandedFolderPaths: pathsToPresenceRecord(next),
+        };
+        if (collapsed.length > 0) {
+          patch.activePath = resolveActivePathAfterCollapse(get().activePath, collapsed);
+        }
+        set(patch);
+      },
 
-    setDependenciesPanelPath(dependenciesPanelPath: string | null): void {
-      set({ dependenciesPanelPath });
-    },
+      setActivePath(activePath) {
+        set({ activePath });
+      },
 
-    setApplicableRulesPanelPath(applicableRulesPanelPath: string | null): void {
-      set({ applicableRulesPanelPath });
-    },
+      setDependenciesPanelPath(dependenciesPanelPath) {
+        set({ dependenciesPanelPath });
+      },
 
-    setUserEdgeHighlights(userEdgeHighlights: WorkspaceState['userEdgeHighlights']): void {
-      set({ userEdgeHighlights });
-    },
+      setApplicableRulesPanelPath(applicableRulesPanelPath) {
+        set({ applicableRulesPanelPath });
+      },
 
-    setUserDependencyHighlight(dependencyKeys: readonly string[], color: string | null): void {
-      set({
-        userEdgeHighlights: applyHighlightKeys(get().userEdgeHighlights, dependencyKeys, color),
-      });
-    },
+      setUserEdgeHighlights(userEdgeHighlights) {
+        set({ userEdgeHighlights });
+      },
 
-    clearAllHighlights(): void {
-      set({ userEdgeHighlights: new Map() });
-    },
+      setUserDependencyHighlight(dependencyKeys, color) {
+        set({
+          userEdgeHighlights: applyHighlightKeys(get().userEdgeHighlights, dependencyKeys, color),
+        });
+      },
 
-    setGraphSettings(graphSettings: WorkspaceState['graphSettings']): void {
-      set({ graphSettings });
-    },
+      clearAllHighlights() {
+        set({ userEdgeHighlights: new Map() });
+      },
 
-    setNodePositions(nodePositions: WorkspaceState['nodePositions']): void {
-      set({ nodePositions });
-    },
-  })),
+      setGraphSettings(graphSettings) {
+        set({ graphSettings });
+      },
+
+      setNodePositions(nodePositions) {
+        set({ nodePositions });
+      },
+    })),
+  ),
 );

@@ -60,6 +60,8 @@ function App() {
   const cruiseResult = useWorkspaceStore(state => state.cruiseResult);
   const ignorePatterns = useWorkspaceStore(state => state.ignorePatterns);
   const cruiseSnapshot = useWorkspaceStore(state => state.cruiseSnapshot);
+  const dependenciesPanelOpen = useWorkspaceStore(state => state.dependenciesPanelPath != null);
+  const applicableRulesPanelOpen = useWorkspaceStore(state => state.applicableRulesPanelPath != null);
   const setIgnorePatterns = useWorkspaceStore(state => state.setIgnorePatterns);
   const resetWorkspace = useWorkspaceStore(state => state.reset);
   const syncWorkspaceSettings = useWorkspaceStore(state => state.syncWorkspaceSettings);
@@ -251,7 +253,7 @@ function App() {
     clearInitialSettingsFileLoadError();
   };
 
-  const { showInFileTree, setSelectedPaths, selectedPaths, showInGraph, activatePath } = orch;
+  const { showInFileTree, setSelectedPaths, showInGraph, activatePath } = orch;
 
   const { openModuleJson, moduleJsonDialog } = useModuleJsonDialog(cruiseResult?.modules ?? []);
 
@@ -266,6 +268,7 @@ function App() {
 
   const handleShowDependencyConnection = useCallback(
     (paths: string[]) => {
+      const selectedPaths = orch.selectedPaths;
       const nextPaths = paths.filter(path => !selectedPaths.includes(path));
       if (nextPaths.length > 0) {
         setSelectedPaths([...selectedPaths, ...nextPaths]);
@@ -283,7 +286,7 @@ function App() {
         graphRef.current?.selectEdge(makeDependencyKey(focusPath, targetPath));
       }
     },
-    [selectedPaths, setSelectedPaths, showInGraph, activatePath],
+    [orch, setSelectedPaths, showInGraph, activatePath],
   );
 
   const commands = useAppCommands({
@@ -296,8 +299,9 @@ function App() {
     openAbout: () => setAboutOpen(true),
     openViewCruiseResultJson: () => setCruiseResultJsonOpen(true),
     openViewActiveModuleJson: () => {
-      if (orch.activePath != null) {
-        openModuleJson(orch.activePath);
+      const activePath = orch.activePath;
+      if (activePath != null) {
+        openModuleJson(activePath);
       }
     },
     openRuleViolationsPicker: () => setRuleViolationsPickerOpen(true),
@@ -400,12 +404,9 @@ function App() {
             fileTreeRef={fileTreeRef}
             onShowInGraph={orch.showInGraph}
             onViewModuleJson={openModuleJson}
-            ruleSetUsed={cruiseSnapshot.ruleSetUsed}
-            violations={cruiseSnapshot.violations}
             onSelectViolationPaths={handleShowDependencyConnection}
             onShowRuleViolations={ruleName => orch.showRuleViolationsOnly([ruleName])}
             onShowCycle={orch.showPathsOnly}
-            highlights={orch.userEdgeHighlights}
             onRemoveHighlightKeys={keys => orch.setUserDependencyHighlight(keys, null)}
             onShowHighlightConnection={(source, target) => handleShowDependencyConnection([source, target])}
             onClearAllHighlights={orch.clearAllHighlights}
@@ -415,28 +416,18 @@ function App() {
           <DependencyGraph ref={graphRef} onShowInFileTree={handleShowInFileTree} onViewModuleJson={openModuleJson} />
         }
         dependenciesPanel={
-          orch.dependenciesPath != null ? (
-            <DependencyPanel
-              path={orch.dependenciesPath}
-              selectedPaths={orch.selectedPaths}
-              expandedKeys={orch.expandedKeys}
-              onClose={orch.handleClosePanel}
-              onShowInGraph={orch.showInGraph}
-              onViewModuleJson={openModuleJson}
-              userEdgeHighlights={orch.userEdgeHighlights}
-              onSetUserDependencyHighlight={orch.setUserDependencyHighlight}
-            />
-          ) : null
+          <DependencyPanel
+            onClose={orch.handleClosePanel}
+            onShowInGraph={orch.showInGraph}
+            onViewModuleJson={openModuleJson}
+          />
         }
         applicableRulesPanel={
-          orch.applicableRulesPath != null ? (
-            <ApplicableRulesPanel
-              path={orch.applicableRulesPath}
-              onClose={orch.handleCloseApplicableRulesPanel}
-              onShowInGraph={orch.showInGraph}
-              onSelectViolationPaths={handleShowDependencyConnection}
-            />
-          ) : null
+          <ApplicableRulesPanel
+            onClose={orch.handleCloseApplicableRulesPanel}
+            onShowInGraph={orch.showInGraph}
+            onSelectViolationPaths={handleShowDependencyConnection}
+          />
         }
         overlay={
           <>
@@ -487,7 +478,6 @@ function App() {
             />
             <HighlightEdgeDialog
               open={highlightEdgeOpen}
-              userEdgeHighlights={orch.userEdgeHighlights}
               onConfirm={orch.setUserDependencyHighlight}
               onClose={() => setHighlightEdgeOpen(false)}
             />
@@ -505,15 +495,14 @@ function App() {
         }
         footer={
           <AppStatusBar
-            activePath={orch.activePath}
             onFocusActivePath={orch.focusActivePath}
             onShowDependenciesPanel={orch.handleShowDependenciesPanel}
             onShowApplicableRulesPanel={orch.handleShowApplicableRulesPanel}
             onViewModuleJson={openModuleJson}
           />
         }
-        dependenciesPanelOpen={orch.dependenciesPanelOpen}
-        applicableRulesPanelOpen={orch.applicableRulesPanelOpen}
+        dependenciesPanelOpen={dependenciesPanelOpen}
+        applicableRulesPanelOpen={applicableRulesPanelOpen}
         sidebarOpen={sidebarOpen}
         sidebarView={sidebarView}
         onSelectSidebarView={handleSelectSidebarView}

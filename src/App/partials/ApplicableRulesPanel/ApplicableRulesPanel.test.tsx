@@ -2,7 +2,7 @@
 
 import type { IFlattenedRuleSet, IModule, IViolation } from 'dependency-cruiser';
 import { useTranslation } from 'react-i18next';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { renderHook, screen } from '@testing-library/react';
 
@@ -10,6 +10,7 @@ import { buildCruiseSnapshot } from '@/domain';
 import { renderWithTheme } from '@/testsUtils';
 
 import { CruiseSnapshotProvider } from '../../contexts';
+import { initialWorkspaceState, useWorkspaceStore } from '../../stores/workspaceStore';
 import { ApplicableRulesPanel } from './ApplicableRulesPanel';
 
 const ruleSet: IFlattenedRuleSet = {
@@ -41,17 +42,22 @@ const violations: IViolation[] = [
 const modules = [{ source: 'src/domain/a.ts', dependencies: [], dependents: [], valid: true }] as IModule[];
 
 describe('ApplicableRulesPanel', () => {
+  beforeEach(() => {
+    useWorkspaceStore.setState({ ...initialWorkspaceState });
+  });
+
   it('renders applicable rules under with/without violation sections', () => {
     const { result: i18n } = renderHook(() => useTranslation());
+    const cruiseSnapshot = buildCruiseSnapshot(modules, ruleSet, violations);
+    useWorkspaceStore.setState({
+      ...initialWorkspaceState,
+      cruiseSnapshot,
+      applicableRulesPanelPath: 'src/domain/a.ts',
+    });
 
     renderWithTheme(
-      <CruiseSnapshotProvider value={buildCruiseSnapshot(modules, ruleSet, violations)}>
-        <ApplicableRulesPanel
-          path="src/domain/a.ts"
-          onClose={vi.fn()}
-          onShowInGraph={vi.fn()}
-          onSelectViolationPaths={vi.fn()}
-        />
+      <CruiseSnapshotProvider value={cruiseSnapshot}>
+        <ApplicableRulesPanel onClose={vi.fn()} onShowInGraph={vi.fn()} onSelectViolationPaths={vi.fn()} />
       </CruiseSnapshotProvider>,
     );
 
@@ -78,15 +84,15 @@ describe('ApplicableRulesPanel', () => {
         ],
       },
     );
+    useWorkspaceStore.setState({
+      ...initialWorkspaceState,
+      cruiseSnapshot: snapshot,
+      applicableRulesPanelPath: 'src/other/a.ts',
+    });
 
     renderWithTheme(
       <CruiseSnapshotProvider value={snapshot}>
-        <ApplicableRulesPanel
-          path="src/other/a.ts"
-          onClose={vi.fn()}
-          onShowInGraph={vi.fn()}
-          onSelectViolationPaths={vi.fn()}
-        />
+        <ApplicableRulesPanel onClose={vi.fn()} onShowInGraph={vi.fn()} onSelectViolationPaths={vi.fn()} />
       </CruiseSnapshotProvider>,
     );
 

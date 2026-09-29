@@ -1,13 +1,30 @@
 import type { IModule } from 'dependency-cruiser';
 import { describe, expect, it } from 'vitest';
 
-import { buildCruiseSnapshot } from '@/domain';
+import { buildCruiseSnapshot, getVisibleTree } from '@/domain';
 
 import { LEAF_NODE_HEIGHT, LEAF_NODE_MIN_WIDTH } from '../getLeafNodeSize';
-import { buildGraph } from './buildGraph';
+import { buildGraph as buildGraphFromVisibleTree } from './buildGraph';
 
 function moduleAt(source: string, dependencies: IModule['dependencies'] = []): IModule {
   return { source, dependencies, dependents: [], valid: true } as IModule;
+}
+
+/** Test helper: derive visibleTree then build the graph. */
+function buildGraph(input: {
+  cruiseSnapshot: ReturnType<typeof buildCruiseSnapshot>;
+  selectedFilePaths: Record<string, boolean | undefined>;
+  expandedFolderPaths: Record<string, boolean | undefined>;
+  folderColors: Map<string, string>;
+}) {
+  const { cruiseSnapshot, selectedFilePaths, expandedFolderPaths, folderColors } = input;
+
+  return buildGraphFromVisibleTree({
+    cruiseSnapshot,
+    selectedFilePaths,
+    visibleTree: getVisibleTree(cruiseSnapshot, selectedFilePaths, expandedFolderPaths),
+    folderColors,
+  });
 }
 
 describe('buildGraph half-checked folders', () => {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import type { CruiseSnapshot } from '@/domain';
+import type { CruiseSnapshot, VisibleTreeNode } from '@/domain';
 
 import { buildGraph } from '../../helpers';
 import type { BuildGraphResult, PresenceRecord } from '../../types';
@@ -21,7 +21,7 @@ function hasAnyPresent(record: PresenceRecord): boolean {
 interface UseBuildGraphInput {
   cruiseSnapshot: CruiseSnapshot;
   selectedFilePaths: PresenceRecord;
-  expandedFolderPaths: PresenceRecord;
+  visibleTree: readonly VisibleTreeNode[];
   folderColors: ReadonlyMap<string, string>;
 }
 
@@ -33,7 +33,7 @@ interface UseBuildGraphResult {
 }
 
 export function useBuildGraph(config: UseBuildGraphInput): UseBuildGraphResult {
-  const { cruiseSnapshot, selectedFilePaths, expandedFolderPaths, folderColors } = config;
+  const { cruiseSnapshot, selectedFilePaths, visibleTree, folderColors } = config;
 
   const [graphResult, setGraphResult] = useState<BuildGraphResult>(createEmptyGraphResult);
   const [isBuildingGraph, setIsBuildingGraph] = useState(() => hasAnyPresent(selectedFilePaths));
@@ -57,7 +57,7 @@ export function useBuildGraph(config: UseBuildGraphInput): UseBuildGraphResult {
     void buildGraph({
       cruiseSnapshot,
       selectedFilePaths,
-      expandedFolderPaths,
+      visibleTree,
       folderColors,
     })
       .then(result => {
@@ -83,7 +83,7 @@ export function useBuildGraph(config: UseBuildGraphInput): UseBuildGraphResult {
     return () => {
       cancelled = true;
     };
-  }, [cruiseSnapshot, selectedFilePaths, expandedFolderPaths, folderColors]);
+  }, [cruiseSnapshot, selectedFilePaths, visibleTree, folderColors]);
 
   const clearBuildFailed = () => {
     setBuildFailed(false);

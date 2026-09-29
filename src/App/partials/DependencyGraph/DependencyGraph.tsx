@@ -88,7 +88,7 @@ function DependencyGraphInner(props: DependencyGraphInnerProps) {
 
   const cruiseSnapshot = useWorkspaceStore(state => state.cruiseSnapshot);
   const selectedFilePaths = useWorkspaceStore(state => state.selectedFilePaths);
-  const expandedFolderPaths = useWorkspaceStore(state => state.expandedFolderPaths);
+  const visibleTree = useWorkspaceStore(state => state.visibleTree);
   const folderBaseColors = useWorkspaceStore(state => state.folderBaseColors);
   const userEdgeHighlights = useWorkspaceStore(state => state.userEdgeHighlights);
   const setUserEdgeHighlights = useWorkspaceStore(state => state.setUserEdgeHighlights);
@@ -111,7 +111,7 @@ function DependencyGraphInner(props: DependencyGraphInnerProps) {
   const { graphResult, isBuildingGraph, buildFailed, clearBuildFailed } = useBuildGraph({
     cruiseSnapshot,
     selectedFilePaths,
-    expandedFolderPaths,
+    visibleTree,
     folderColors,
   });
 
@@ -232,7 +232,7 @@ function DependencyGraphInner(props: DependencyGraphInnerProps) {
     onOpenEdgesTypePicker,
     cruiseSnapshot,
     selectedFilePaths,
-    expandedFolderPaths,
+    visibleTree,
     folderBaseColors,
     userEdgeHighlights,
     setUserEdgeHighlights,
@@ -309,7 +309,7 @@ function DependencyGraphInner(props: DependencyGraphInnerProps) {
           minZoom={0.01}
           maxZoom={20}
           onlyRenderVisibleElements
-          //elementsSelectable={false}
+          elementsSelectable={false}
         >
           <Background color={theme.palette.divider} />
           <Panel position="top-right">

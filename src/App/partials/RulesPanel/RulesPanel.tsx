@@ -1,4 +1,3 @@
-import type { IFlattenedRuleSet, IViolation } from 'dependency-cruiser';
 import { useDeferredValue, useState } from 'react';
 
 import Box from '@mui/material/Box';
@@ -11,19 +10,21 @@ import { RulesList } from './partials/RulesList';
 import { RulesNameFilter } from './partials/RulesNameFilter';
 
 interface RulesPanelProps {
-  ruleSetUsed: IFlattenedRuleSet | undefined;
-  violations: readonly IViolation[] | ReadonlyMap<string, readonly IViolation[]> | undefined;
   onSelectViolationPaths: (paths: string[]) => void;
   onShowRuleViolations: (ruleName: string) => void;
 }
 
 export function RulesPanel(props: RulesPanelProps) {
-  const { ruleSetUsed, violations, onSelectViolationPaths, onShowRuleViolations } = props;
+  const { onSelectViolationPaths, onShowRuleViolations } = props;
 
   const cruiseSnapshot = useCruiseSnapshotRequired();
   const [nameFilter, setNameFilter] = useState('');
   const deferredNameFilter = useDeferredValue(nameFilter);
-  const rules = groupRulesWithViolations(ruleSetUsed, violations, getCruiseSources(cruiseSnapshot));
+  const rules = groupRulesWithViolations(
+    cruiseSnapshot.ruleSetUsed,
+    cruiseSnapshot.violations,
+    getCruiseSources(cruiseSnapshot),
+  );
   const filteredRules = rules.filter(entry => matchesNameFilter(entry.name, deferredNameFilter));
 
   return (

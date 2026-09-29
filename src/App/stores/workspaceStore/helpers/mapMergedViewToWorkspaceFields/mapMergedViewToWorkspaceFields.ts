@@ -1,6 +1,6 @@
 import type { MergedViewerWorkspaceView } from '@/domain';
 
-import type { WorkspaceState } from '../../types';
+import type { WorkspaceOwnState } from '../../types';
 import { normalizeNodePositions } from '../normalizeNodePositions';
 import { pathsToPresenceRecord } from '../pathsToPresenceRecord';
 
@@ -8,7 +8,7 @@ import { pathsToPresenceRecord } from '../pathsToPresenceRecord';
 export function mapMergedViewToWorkspaceFields(
   view: MergedViewerWorkspaceView,
 ): Pick<
-  WorkspaceState,
+  WorkspaceOwnState,
   | 'selectedFilePaths'
   | 'expandedFolderPaths'
   | 'dependenciesPanelPath'
