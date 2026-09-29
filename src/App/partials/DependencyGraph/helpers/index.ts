@@ -2,7 +2,6 @@ export * from './getMinimapNodeColor';
 export * from './buildVirtualLayoutEdges';
 export * from './buildGraph';
 export * from './graphLayoutCache';
-export * from './assignFolderColors';
 export * from './serializeGraphToDot';
 export * from './sortNodesByDepth';
 export * from './dependencyEdgeMembership';

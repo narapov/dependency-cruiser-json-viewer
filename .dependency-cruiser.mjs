@@ -3,7 +3,22 @@ import { buildFolderImportRules } from './.dependency-cruiser/folder-import-rule
 import { buildLayerImportRules } from './.dependency-cruiser/layer-import-rules.mjs';
 
 export default {
-  forbidden: [...buildLayerImportRules(), ...buildFolderImportRules()],
+  forbidden: [
+    ...buildLayerImportRules(),
+    ...buildFolderImportRules(),
+    {
+      name: 'src-no-circular',
+      severity: 'error',
+      from: { path: '^src/' },
+      to: { circular: true, dependencyTypesNot: ['type-only'] },
+    },
+    {
+      name: 'src-no-circular-type-only',
+      severity: 'error',
+      from: { path: '^src/' },
+      to: { circular: true, dependencyTypes: ['type-only'] },
+    },
+  ],
   options: {
     doNotFollow: {
       path: 'node_modules',

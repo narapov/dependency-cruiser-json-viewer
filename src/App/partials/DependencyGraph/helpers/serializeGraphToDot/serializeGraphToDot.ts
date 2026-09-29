@@ -2,8 +2,8 @@ import { hsl } from 'd3-color';
 
 import type { Edge, Node } from '@xyflow/react';
 
+import { parsePastelHsl } from '../../../../helpers/assignFolderColors';
 import type { DependencyEdgeData, FileNodeData, FolderGroupNodeData, FolderNodeData } from '../../types';
-import { parsePastelHsl } from '../assignFolderColors';
 import { getDependencyEdgeVisualStyle } from '../getDependencyEdgeVisualStyle';
 import { getNodeSize } from '../graphLayoutCache';
 

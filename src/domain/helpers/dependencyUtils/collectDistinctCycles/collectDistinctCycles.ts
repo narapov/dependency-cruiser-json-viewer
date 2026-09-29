@@ -1,8 +1,6 @@
 import type { IModule } from 'dependency-cruiser';
 
-export interface DistinctCycle {
-  paths: string[];
-}
+import type { DistinctCycle } from '../../../types';
 
 /** Canonical key for a cycle path so rotations of the same cycle collapse to one entry. */
 function canonicalizeCycleKey(paths: string[]): string {

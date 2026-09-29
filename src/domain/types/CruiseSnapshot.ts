@@ -1,7 +1,7 @@
 import type { IDependency, IFlattenedRuleSet, IModule, IViolation } from 'dependency-cruiser';
 
 import type { RuleWithViolations } from '../helpers/cruiseRules';
-import type { DistinctCycle } from '../helpers/dependencyUtils';
+import type { DistinctCycle } from './DistinctCycle';
 
 /** File-level dependency with explicit endpoints for snapshot edges. */
 export interface ModuleDependency extends IDependency {

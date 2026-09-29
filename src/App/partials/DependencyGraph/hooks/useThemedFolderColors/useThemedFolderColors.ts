@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 
 import type { FolderBaseColor } from '@/domain';
 
-import { mapFolderBaseColorsToThemed, type FolderColorMode } from '../../helpers/assignFolderColors';
+import { mapFolderBaseColorsToThemed, type FolderColorMode } from '../../../../helpers/assignFolderColors';
 
 /** Converts base folder colors to themed pastel HSL for the current color scheme. */
 export function useThemedFolderColors(

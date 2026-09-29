@@ -1,7 +1,7 @@
 import type { Node } from '@xyflow/react';
 
+import { parsePastelHsl, type FolderColorMode } from '../../../../helpers/assignFolderColors';
 import type { FolderGroupNodeData, FolderNodeData } from '../../types';
-import { parsePastelHsl, type FolderColorMode } from '../assignFolderColors';
 
 const MINIMAP_FILE_COLOR = 'var(--mui-palette-background-paper)';
 
