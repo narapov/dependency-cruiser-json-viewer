@@ -37,6 +37,7 @@ const graphResult: BuildGraphResult = {
   nodes: new Map([['a.ts', layoutedA]]),
   tree: new Map([['a.ts', layoutedA]]),
   edges: [],
+  visibleGroupLayouts: {},
 };
 
 const hookInputBase = {
@@ -191,6 +192,7 @@ describe('useBuildGraph', () => {
         ],
       ]),
       edges: [],
+      visibleGroupLayouts: {},
     });
 
     await act(async () => {

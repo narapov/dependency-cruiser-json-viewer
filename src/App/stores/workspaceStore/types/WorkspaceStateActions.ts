@@ -21,4 +21,5 @@ export interface WorkspaceStateActions {
   clearAllHighlights: () => void;
   setGraphSettings: (graphSettings: WorkspaceOwnState['graphSettings']) => void;
   setNodePositions: (nodePositions: WorkspaceOwnState['nodePositions']) => void;
+  setNodeLayouts: (nodeLayouts: WorkspaceOwnState['nodeLayouts']) => void;
 }

@@ -34,6 +34,7 @@ function emptyGraphResult(overrides: Partial<BuildGraphResult> = {}): BuildGraph
     nodes: new Map(),
     tree: new Map(),
     edges: [],
+    visibleGroupLayouts: {},
     ...overrides,
   };
 }
@@ -44,6 +45,7 @@ function graphResultWith(...paths: string[]): BuildGraphResult {
     nodes: new Map(rootNodes.map(node => [node.path, node])),
     tree: new Map(rootNodes.map(node => [node.path, node])),
     edges: [],
+    visibleGroupLayouts: {},
   };
 }
 

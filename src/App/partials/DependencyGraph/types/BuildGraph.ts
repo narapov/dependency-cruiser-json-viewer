@@ -1,5 +1,7 @@
 import type { CruiseSnapshot, VisibleTreeEdge, VisibleTreeNode } from '@/domain';
 
+import type { SerializedLayoutCache } from './SerializedLayoutCache';
+
 /** Sparse presence record (`true` when the path is present). */
 export type PresenceRecord = Record<string, boolean | undefined>;
 
@@ -12,6 +14,8 @@ export interface BuildGraphInput {
   selectedFilePaths: PresenceRecord;
   visibleTree: readonly VisibleTreeNode[];
   options: BuildGraphOptions;
+  /** Optional group layout cache snapshot applied during ELK layout. */
+  layoutCache?: SerializedLayoutCache;
 }
 
 /** Visible-tree node with ELK layout geometry. */
@@ -32,4 +36,6 @@ export interface BuildGraphResult {
   /** Root path → layouted node hierarchy. */
   tree: Map<string, VisibleTreeLayoutedNode>;
   edges: VisibleTreeEdge[];
+  /** Group layouts collected from the visible laid-out tree (for cache merge). */
+  visibleGroupLayouts: SerializedLayoutCache;
 }

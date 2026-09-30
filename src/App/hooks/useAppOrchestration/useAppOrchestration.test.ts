@@ -63,7 +63,7 @@ function createRefs() {
     clearAllHighlights: vi.fn(),
     exportDot: vi.fn(),
     openDotOnline: vi.fn(),
-    getLayoutState: vi.fn(() => ({ autoLayoutOnly: true, edgesType: 'bezier', nodePositions: {} })),
+    getLayoutState: vi.fn(() => ({ autoLayoutOnly: true, edgesType: 'bezier', nodePositions: {}, nodeLayouts: {} })),
     setLayoutState: vi.fn(),
     openEdgesTypePicker: vi.fn(),
   };

@@ -271,6 +271,7 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
       autoLayoutOnly: graphSettings.autoLayoutOnly,
       edgesType: graphSettings.edgesType,
       nodePositions: toGraphNodePositions(state.nodePositions),
+      nodeLayouts: state.nodeLayouts ?? {},
     };
     return {
       ignorePatterns,
@@ -283,6 +284,7 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
       autoLayoutOnly: layout.autoLayoutOnly,
       edgesType: layout.edgesType,
       nodePositions: layout.autoLayoutOnly ? {} : layout.nodePositions,
+      nodeLayouts: layout.autoLayoutOnly ? {} : layout.nodeLayouts,
     };
   };
 

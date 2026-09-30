@@ -1,6 +1,7 @@
 import clsx from 'clsx';
 import {
   memo,
+  useCallback,
   useEffect,
   useImperativeHandle,
   useRef,
@@ -21,7 +22,14 @@ import '@xyflow/react/dist/style.css';
 import { downloadTextFile, openGraphvizOnline, useLogChangedProps, useResolvedColorMode } from '@/Shared';
 
 import { normalizeNodePositions, useWorkspaceStore } from '../../stores/workspaceStore';
-import { getMinimapNodeColor, serializeGraphToDot, toReactFlowEdges } from './helpers';
+import {
+  deserializeLayoutCache,
+  getMinimapNodeColor,
+  serializeGraphToDot,
+  serializeLayoutCache,
+  toReactFlowEdges,
+  type LayoutCache,
+} from './helpers';
 import {
   useAutoFitView,
   useBuildGraph,
@@ -44,7 +52,7 @@ import { GraphLoader } from './partials/GraphLoader';
 import { GraphMarkers } from './partials/GraphMarkers';
 import { NodeContextMenuControlsProvider, useNodeContextMenu } from './partials/NodeContextMenu';
 import { useGraphMarkersStore } from './stores/graphMarkersStore';
-import type { DependencyGraphHandle, GraphLayoutState } from './types';
+import type { DependencyGraphHandle, GraphLayoutState, SerializedLayoutCache } from './types';
 
 import styles from './DependencyGraph.module.css';
 
@@ -58,24 +66,41 @@ const edgeTypes = {
   dependency: DependencyEdge,
 };
 
-function toGraphNodePositions(
+function hasAnyPresent(record: Record<string, boolean | undefined>): boolean {
+  return Object.values(record).some(present => present === true);
+}
+
+/** Converts legacy position-only maps into a serialized layout cache. */
+function legacyPositionsToLayouts(
   nodePositions: Record<string, Record<string, { x: number; y: number } | undefined>> | null,
-): GraphLayoutState['nodePositions'] {
+): SerializedLayoutCache {
   if (nodePositions == null) {
     return {};
   }
+
   return Object.fromEntries(
     Object.entries(nodePositions).map(([groupId, children]) => [
       groupId,
-      Object.fromEntries(
-        Object.entries(children).filter((entry): entry is [string, { x: number; y: number }] => entry[1] != null),
-      ),
+      {
+        id: groupId,
+        children: Object.fromEntries(
+          Object.entries(children)
+            .filter((entry): entry is [string, { x: number; y: number }] => entry[1] != null)
+            .map(([childId, position]) => [childId, { id: childId, position }]),
+        ),
+      },
     ]),
   );
 }
 
-function hasAnyPresent(record: Record<string, boolean | undefined>): boolean {
-  return Object.values(record).some(present => present === true);
+/** Flattens group layouts back to legacy position maps for workspace persistence. */
+function layoutsToLegacyPositions(nodeLayouts: SerializedLayoutCache): GraphLayoutState['nodePositions'] {
+  return Object.fromEntries(
+    Object.entries(nodeLayouts).map(([groupId, entry]) => [
+      groupId,
+      Object.fromEntries(Object.entries(entry.children).map(([childId, child]) => [childId, { ...child.position }])),
+    ]),
+  );
 }
 
 interface DependencyGraphInnerProps {
@@ -99,6 +124,8 @@ function DependencyGraphInner(props: DependencyGraphInnerProps) {
   const setGraphSettings = useWorkspaceStore(state => state.setGraphSettings);
   const nodePositions = useWorkspaceStore(state => state.nodePositions);
   const setNodePositions = useWorkspaceStore(state => state.setNodePositions);
+  const nodeLayouts = useWorkspaceStore(state => state.nodeLayouts);
+  const setNodeLayouts = useWorkspaceStore(state => state.setNodeLayouts);
 
   const { activatePath } = useGraphWorkspaceActions();
 
@@ -110,10 +137,26 @@ function DependencyGraphInner(props: DependencyGraphInnerProps) {
 
   const { autoLayoutOnly, edgesType } = graphSettings;
 
+  const layoutCacheRef = useRef<LayoutCache>(new Map());
+  const [layoutRevision, setLayoutRevision] = useState(0);
+
+  const getLayoutCache = useCallback((): SerializedLayoutCache | undefined => {
+    if (autoLayoutOnly) {
+      return undefined;
+    }
+    return serializeLayoutCache(layoutCacheRef.current);
+  }, [autoLayoutOnly]);
+
+  const requestRebuild = useCallback(() => {
+    setLayoutRevision(revision => revision + 1);
+  }, []);
+
   const { graphResult, isBuildingGraph, buildFailed, clearBuildFailed } = useBuildGraph({
     cruiseSnapshot,
     selectedFilePaths,
     visibleTree,
+    getLayoutCache,
+    layoutRevision,
   });
 
   const {
@@ -130,10 +173,12 @@ function DependencyGraphInner(props: DependencyGraphInnerProps) {
     graphResult,
     cruiseSnapshot,
     folderColors,
+    layoutCacheRef,
     autoLayoutOnly,
+    onRequestRebuild: requestRebuild,
   });
 
-  const layoutApplyKey = `${autoLayoutOnly}\0${edgesType}\0${JSON.stringify(nodePositions)}`;
+  const layoutApplyKey = `${autoLayoutOnly}\0${edgesType}\0${JSON.stringify(nodeLayouts ?? nodePositions)}`;
   const lastAppliedLayoutKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -141,8 +186,14 @@ function DependencyGraphInner(props: DependencyGraphInnerProps) {
       return;
     }
     lastAppliedLayoutKeyRef.current = layoutApplyKey;
-    setLayoutSnapshot({ nodePositions: toGraphNodePositions(nodePositions) });
-  }, [layoutApplyKey, nodePositions, setLayoutSnapshot]);
+    const resolvedLayouts: SerializedLayoutCache =
+      nodeLayouts != null && Object.keys(nodeLayouts).length > 0
+        ? nodeLayouts
+        : legacyPositionsToLayouts(nodePositions);
+    layoutCacheRef.current = deserializeLayoutCache(resolvedLayouts);
+    setLayoutSnapshot({ nodeLayouts: resolvedLayouts });
+    requestRebuild();
+  }, [layoutApplyKey, nodeLayouts, nodePositions, requestRebuild, setLayoutSnapshot]);
 
   const hasSelection = hasAnyPresent(selectedFilePaths);
 
@@ -205,12 +256,18 @@ function DependencyGraphInner(props: DependencyGraphInnerProps) {
       getLayoutState: () => ({
         autoLayoutOnly,
         edgesType,
-        nodePositions: getLayoutSnapshot().nodePositions,
+        nodePositions: layoutsToLegacyPositions(getLayoutSnapshot().nodeLayouts),
+        nodeLayouts: getLayoutSnapshot().nodeLayouts,
       }),
       setLayoutState: state => {
         setGraphSettings({ autoLayoutOnly: state.autoLayoutOnly, edgesType: state.edgesType });
-        setNodePositions(normalizeNodePositions(state.nodePositions));
-        setLayoutSnapshot({ nodePositions: state.nodePositions });
+        const layouts =
+          state.nodeLayouts != null && Object.keys(state.nodeLayouts).length > 0
+            ? state.nodeLayouts
+            : legacyPositionsToLayouts(state.nodePositions);
+        setNodePositions(normalizeNodePositions(layoutsToLegacyPositions(layouts)));
+        setNodeLayouts(Object.keys(layouts).length > 0 ? layouts : null);
+        setLayoutSnapshot({ nodeLayouts: layouts });
       },
     };
   });
@@ -255,6 +312,8 @@ function DependencyGraphInner(props: DependencyGraphInnerProps) {
     setGraphSettings,
     nodePositions,
     setNodePositions,
+    nodeLayouts,
+    setNodeLayouts,
     activatePath,
     t,
     theme,

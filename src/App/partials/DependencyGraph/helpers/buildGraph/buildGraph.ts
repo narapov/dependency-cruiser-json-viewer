@@ -1,6 +1,8 @@
 import { getEdgesForVisibleTree } from '@/domain';
 
 import type { BuildGraphInput, BuildGraphResult, VisibleTreeLayoutedNode } from '../../types';
+import { collectVisibleGroupLayouts } from '../groupLayoutCache/mergeVisibleGroupLayouts';
+import { deserializeLayoutCache, serializeLayoutCache } from '../groupLayoutCache/serializeLayoutCache';
 import { createBuildGraphProfiler } from './createBuildGraphProfiler';
 import { createLayoutedTree } from './createLayoutedTree';
 import { layoutChildren } from './layoutGroup';
@@ -24,6 +26,7 @@ export async function buildGraph({
   selectedFilePaths,
   visibleTree,
   options,
+  layoutCache,
 }: BuildGraphInput): Promise<BuildGraphResult> {
   const profiler = createBuildGraphProfiler(options.debug);
   profiler.start('total');
@@ -36,12 +39,15 @@ export async function buildGraph({
   const edges = getEdgesForVisibleTree(cruiseSnapshot, visibleTree, selectedFilePaths);
   profiler.end('edges');
 
+  const cache = layoutCache != null ? deserializeLayoutCache(layoutCache) : null;
+
   profiler.start('layout');
-  await layoutChildren(rootNodes, cruiseSnapshot, selectedFilePaths, profiler);
+  await layoutChildren(rootNodes, cruiseSnapshot, selectedFilePaths, profiler, cache, null);
   profiler.end('layout');
 
   const nodes = indexLayoutedNodes(rootNodes);
   const tree = new Map(rootNodes.map(node => [node.path, node]));
+  const visibleGroupLayouts = serializeLayoutCache(collectVisibleGroupLayouts(rootNodes));
 
   profiler.end('total');
   profiler.log({
@@ -54,5 +60,6 @@ export async function buildGraph({
     nodes,
     tree,
     edges,
+    visibleGroupLayouts,
   };
 }

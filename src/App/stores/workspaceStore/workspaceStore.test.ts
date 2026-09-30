@@ -60,6 +60,7 @@ function makeSettings(overrides: Partial<ViewerWorkspaceSettings> = {}): ViewerW
     nodePositions: {
       '': { 'src/a.ts': { x: 1, y: 2 } },
     },
+    nodeLayouts: {},
     ...overrides,
   };
 }
@@ -187,6 +188,7 @@ describe('useWorkspaceStore.syncWorkspaceSettings', () => {
         autoLayoutOnly: true,
         edgesType: 'bezier',
         nodePositions: {},
+        nodeLayouts: {},
       }),
     );
 

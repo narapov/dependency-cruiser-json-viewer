@@ -4,13 +4,14 @@ import type { CruiseSnapshot, VisibleTreeNode } from '@/domain';
 import { NEED_PROFILE } from '@/Shared';
 
 import { runBuildGraphInWorker } from '../../helpers/buildGraph';
-import type { BuildGraphResult, PresenceRecord } from '../../types';
+import type { BuildGraphResult, PresenceRecord, SerializedLayoutCache } from '../../types';
 
 function createEmptyGraphResult(): BuildGraphResult {
   return {
     nodes: new Map(),
     tree: new Map(),
     edges: [],
+    visibleGroupLayouts: {},
   };
 }
 
@@ -22,6 +23,10 @@ interface UseBuildGraphInput {
   cruiseSnapshot: CruiseSnapshot;
   selectedFilePaths: PresenceRecord;
   visibleTree: readonly VisibleTreeNode[];
+  /** Returns the current layout cache snapshot for the worker (undefined = cold layout). */
+  getLayoutCache?: () => SerializedLayoutCache | undefined;
+  /** Extra dependency to force a rebuild (e.g. after auto-layout invalidate). */
+  layoutRevision?: number;
 }
 
 interface UseBuildGraphResult {
@@ -32,7 +37,7 @@ interface UseBuildGraphResult {
 }
 
 export function useBuildGraph(config: UseBuildGraphInput): UseBuildGraphResult {
-  const { cruiseSnapshot, selectedFilePaths, visibleTree } = config;
+  const { cruiseSnapshot, selectedFilePaths, visibleTree, getLayoutCache, layoutRevision = 0 } = config;
 
   const [graphResult, setGraphResult] = useState<BuildGraphResult>(createEmptyGraphResult);
   const [isBuildingGraph, setIsBuildingGraph] = useState(() => hasAnyPresent(selectedFilePaths));
@@ -58,6 +63,7 @@ export function useBuildGraph(config: UseBuildGraphInput): UseBuildGraphResult {
       selectedFilePaths,
       visibleTree,
       options: { debug: NEED_PROFILE },
+      layoutCache: getLayoutCache?.(),
     });
 
     void session.promise
@@ -85,7 +91,7 @@ export function useBuildGraph(config: UseBuildGraphInput): UseBuildGraphResult {
       cancelled = true;
       session.terminate();
     };
-  }, [cruiseSnapshot, selectedFilePaths, visibleTree]);
+  }, [cruiseSnapshot, selectedFilePaths, visibleTree, layoutRevision, getLayoutCache]);
 
   const clearBuildFailed = () => {
     setBuildFailed(false);

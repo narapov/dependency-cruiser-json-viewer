@@ -3,9 +3,10 @@ import { describe, expect, it } from 'vitest';
 
 import { buildCruiseSnapshot, getVisibleTree } from '@/domain';
 
-import type { VisibleTreeLayoutedNode } from '../../types';
+import type { SerializedLayoutCache, VisibleTreeLayoutedNode } from '../../types';
 import { LEAF_NODE_HEIGHT, LEAF_NODE_MIN_WIDTH } from '../getLeafNodeSize';
 import { buildGraph as buildGraphFromVisibleTree } from './buildGraph';
+import { GRID_GAP_Y } from './layoutConstants';
 
 function moduleAt(source: string, dependencies: IModule['dependencies'] = []): IModule {
   return { source, dependencies, dependents: [], valid: true } as IModule;
@@ -16,14 +17,16 @@ function buildGraph(input: {
   cruiseSnapshot: ReturnType<typeof buildCruiseSnapshot>;
   selectedFilePaths: Record<string, boolean | undefined>;
   expandedFolderPaths: Record<string, boolean | undefined>;
+  layoutCache?: SerializedLayoutCache;
 }) {
-  const { cruiseSnapshot, selectedFilePaths, expandedFolderPaths } = input;
+  const { cruiseSnapshot, selectedFilePaths, expandedFolderPaths, layoutCache } = input;
 
   return buildGraphFromVisibleTree({
     cruiseSnapshot,
     selectedFilePaths,
     visibleTree: getVisibleTree(cruiseSnapshot, selectedFilePaths, expandedFolderPaths),
     options: { debug: false },
+    layoutCache,
   });
 }
 
@@ -408,5 +411,137 @@ describe('buildGraph layout', () => {
 
     expect(collapsedInner.edges.some(edge => edge.source === 'lib' && edge.target === 'src/foo/bar')).toBe(true);
     expect(collapsedInner.edges.some(edge => edge.target === 'src/foo/bar/c.ts')).toBe(false);
+  });
+});
+
+describe('buildGraph layout cache', () => {
+  it('restores child positions from cache when membership matches on re-expand', async () => {
+    const modules = [moduleAt('src/foo/a.ts'), moduleAt('src/foo/b.ts')];
+    const cruiseSnapshot = buildCruiseSnapshot(modules);
+    const selectedFilePaths = Object.fromEntries(['src/foo/a.ts', 'src/foo/b.ts'].map(p => [p, true]));
+
+    const expanded = await buildGraph({
+      cruiseSnapshot,
+      selectedFilePaths,
+      expandedFolderPaths: Object.fromEntries(['src', 'src/foo'].map(p => [p, true])),
+    });
+
+    const fooEntry = expanded.visibleGroupLayouts['src/foo'];
+    expect(fooEntry).toBeDefined();
+    const cachedA = fooEntry.children['src/foo/a.ts'];
+    const cachedB = fooEntry.children['src/foo/b.ts'];
+    expect(cachedB).toBeDefined();
+    // Place A far from B so restore is not altered by overlap settle.
+    const movedCache = {
+      ...expanded.visibleGroupLayouts,
+      'src/foo': {
+        ...fooEntry,
+        children: {
+          ...fooEntry.children,
+          'src/foo/a.ts': {
+            ...cachedA,
+            position: { x: 99, y: cachedB.position.y + cachedB.height! + 200 },
+          },
+        },
+      },
+    };
+
+    const restored = await buildGraph({
+      cruiseSnapshot,
+      selectedFilePaths,
+      expandedFolderPaths: Object.fromEntries(['src', 'src/foo'].map(p => [p, true])),
+      layoutCache: movedCache,
+    });
+
+    expect(findNode(restored.nodes, 'src/foo/a.ts')?.position).toEqual({
+      x: 99,
+      y: cachedB.position.y + cachedB.height! + 200,
+    });
+  });
+
+  it('cold-layouts when membership changes and still returns visible group layouts', async () => {
+    const modules = [moduleAt('src/foo/a.ts'), moduleAt('src/foo/b.ts')];
+    const cruiseSnapshot = buildCruiseSnapshot(modules);
+
+    const withBoth = await buildGraph({
+      cruiseSnapshot,
+      selectedFilePaths: Object.fromEntries(['src/foo/a.ts', 'src/foo/b.ts'].map(p => [p, true])),
+      expandedFolderPaths: Object.fromEntries(['src', 'src/foo'].map(p => [p, true])),
+    });
+
+    const onlyA = await buildGraph({
+      cruiseSnapshot,
+      selectedFilePaths: Object.fromEntries(['src/foo/a.ts'].map(p => [p, true])),
+      expandedFolderPaths: Object.fromEntries(['src', 'src/foo'].map(p => [p, true])),
+      layoutCache: withBoth.visibleGroupLayouts,
+    });
+
+    expect(findNode(onlyA.nodes, 'src/foo/a.ts')).toBeDefined();
+    expect(findNode(onlyA.nodes, 'src/foo/b.ts')).toBeUndefined();
+    expect(onlyA.visibleGroupLayouts['src/foo']?.children['src/foo/a.ts']).toBeDefined();
+    expect(onlyA.visibleGroupLayouts['src/foo']?.children['src/foo/b.ts']).toBeUndefined();
+  });
+
+  it('merge of visible layouts leaves unrelated cache keys for the caller to preserve', async () => {
+    const modules = [moduleAt('src/a.ts')];
+    const result = await buildGraph({
+      cruiseSnapshot: buildCruiseSnapshot(modules),
+      selectedFilePaths: Object.fromEntries([['src/a.ts', true]]),
+      expandedFolderPaths: Object.fromEntries([['src', true]]),
+    });
+
+    expect(result.visibleGroupLayouts['']).toBeDefined();
+    expect(result.visibleGroupLayouts['src']).toBeDefined();
+    expect(result.visibleGroupLayouts['src/hidden']).toBeUndefined();
+  });
+
+  it('settles siblings after cache apply when an expanded folder grows into a neighbor', async () => {
+    const modules = [moduleAt('src/foo/a.ts'), moduleAt('src/foo/b.ts'), moduleAt('src/bar/c.ts')];
+    const cruiseSnapshot = buildCruiseSnapshot(modules);
+    const selectedFilePaths = Object.fromEntries(['src/foo/a.ts', 'src/foo/b.ts', 'src/bar/c.ts'].map(p => [p, true]));
+
+    const collapsed = await buildGraph({
+      cruiseSnapshot,
+      selectedFilePaths,
+      expandedFolderPaths: Object.fromEntries([['src', true]]),
+    });
+
+    const srcEntry = collapsed.visibleGroupLayouts['src'];
+    expect(srcEntry).toBeDefined();
+    const fooCached = srcEntry.children['src/foo'];
+    const barCached = srcEntry.children['src/bar'];
+    expect(fooCached).toBeDefined();
+    expect(barCached).toBeDefined();
+
+    const tightCache: SerializedLayoutCache = {
+      ...collapsed.visibleGroupLayouts,
+      src: {
+        ...srcEntry,
+        children: {
+          ...srcEntry.children,
+          'src/foo': {
+            ...fooCached,
+            position: { x: 16, y: 52 },
+          },
+          'src/bar': {
+            ...barCached,
+            position: { x: 16, y: 80 },
+          },
+        },
+      },
+    };
+
+    const expanded = await buildGraph({
+      cruiseSnapshot,
+      selectedFilePaths,
+      expandedFolderPaths: Object.fromEntries(['src', 'src/foo'].map(p => [p, true])),
+      layoutCache: tightCache,
+    });
+
+    const foo = findNode(expanded.nodes, 'src/foo')!;
+    const bar = findNode(expanded.nodes, 'src/bar')!;
+    expect(foo).toBeDefined();
+    expect(bar).toBeDefined();
+    expect(bar.position.y).toBeGreaterThanOrEqual(foo.position.y + foo.height + GRID_GAP_Y);
   });
 });

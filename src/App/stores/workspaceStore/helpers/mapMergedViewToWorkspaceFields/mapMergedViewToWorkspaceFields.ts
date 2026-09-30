@@ -17,6 +17,7 @@ export function mapMergedViewToWorkspaceFields(
   | 'userEdgeHighlights'
   | 'graphSettings'
   | 'nodePositions'
+  | 'nodeLayouts'
   | 'activePath'
 > {
   return {
@@ -31,6 +32,7 @@ export function mapMergedViewToWorkspaceFields(
       edgesType: view.edgesType,
     },
     nodePositions: normalizeNodePositions(view.nodePositions),
+    nodeLayouts: Object.keys(view.nodeLayouts).length > 0 ? view.nodeLayouts : null,
     activePath: null,
   };
 }

@@ -27,6 +27,7 @@ const settings = {
   autoLayoutOnly: true,
   edgesType: 'bezier',
   nodePositions: {},
+  nodeLayouts: {},
 };
 
 function createWrapper() {

@@ -70,7 +70,7 @@ vi.mock('./hooks', async importOriginal => {
       onNodeDrag: vi.fn(),
       onNodeDragStop: vi.fn(),
       hasUserLayout: false,
-      getLayoutSnapshot: () => ({ nodePositions: {} }),
+      getLayoutSnapshot: () => ({ nodeLayouts: {} }),
       setLayoutSnapshot: vi.fn(),
     }),
     useHighlightedEdges: () => ({

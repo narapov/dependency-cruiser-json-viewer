@@ -1,6 +1,12 @@
 import type { ICruiseResult } from 'dependency-cruiser';
 
-import { getCruiseSources, isPathInSources, type CruiseSnapshot, type FolderBaseColor } from '@/domain';
+import {
+  getCruiseSources,
+  isPathInSources,
+  type CruiseSnapshot,
+  type FolderBaseColor,
+  type ViewerNodeLayouts,
+} from '@/domain';
 
 import { defaultFolderColorsRecord } from '../../../../helpers';
 import type { WorkspaceOwnState } from '../../types';
@@ -12,6 +18,49 @@ export interface ReconcileWorkspaceAgainstSnapshotInput {
   cruiseSnapshot: CruiseSnapshot;
   ignorePatterns: string[];
   previous: WorkspaceOwnState;
+}
+
+function pruneNodeLayouts(
+  nodeLayouts: WorkspaceOwnState['nodeLayouts'],
+  sources: readonly string[],
+): ViewerNodeLayouts | null {
+  if (nodeLayouts == null) {
+    return null;
+  }
+
+  const validPaths = new Set([
+    ...sources,
+    ...sources.flatMap(source => {
+      const folders: string[] = [];
+      let rest = source;
+      while (rest.includes('/')) {
+        rest = rest.slice(0, rest.lastIndexOf('/'));
+        if (rest) {
+          folders.push(rest);
+        }
+      }
+      return folders;
+    }),
+  ]);
+
+  const pruned = Object.fromEntries(
+    Object.entries(nodeLayouts)
+      .map(([groupId, entry]) => {
+        if (groupId !== '' && !validPaths.has(groupId)) {
+          return null;
+        }
+        const children = Object.fromEntries(
+          Object.entries(entry.children).filter(([childId]) => validPaths.has(childId)),
+        );
+        if (Object.keys(children).length === 0) {
+          return null;
+        }
+        return [groupId, { ...entry, children }] as const;
+      })
+      .filter((entry): entry is readonly [string, ViewerNodeLayouts[string]] => entry != null),
+  );
+
+  return Object.keys(pruned).length > 0 ? pruned : null;
 }
 
 /** Soft-reconcile UI fields against a newly built cruise snapshot. */
@@ -34,8 +83,12 @@ export function reconcileWorkspaceAgainstSnapshot({
   }
 
   const nodePositions = pruneNodePositions(previous.nodePositions, sources);
-  const hadPositions = previous.nodePositions != null && Object.keys(previous.nodePositions).length > 0;
-  const autoLayoutOnly = hadPositions && nodePositions == null ? true : previous.graphSettings.autoLayoutOnly;
+  const nodeLayouts = pruneNodeLayouts(previous.nodeLayouts, sources);
+  const hadLayouts =
+    (previous.nodeLayouts != null && Object.keys(previous.nodeLayouts).length > 0) ||
+    (previous.nodePositions != null && Object.keys(previous.nodePositions).length > 0);
+  const layoutsGone = nodeLayouts == null && nodePositions == null;
+  const autoLayoutOnly = hadLayouts && layoutsGone ? true : previous.graphSettings.autoLayoutOnly;
 
   return {
     cruiseResult,
@@ -69,5 +122,6 @@ export function reconcileWorkspaceAgainstSnapshot({
       edgesType: previous.graphSettings.edgesType,
     },
     nodePositions,
+    nodeLayouts,
   };
 }

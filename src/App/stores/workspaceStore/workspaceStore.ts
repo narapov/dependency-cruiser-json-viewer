@@ -59,6 +59,7 @@ export const initialWorkspaceState: WorkspaceOwnState = {
   userEdgeHighlights: new Map(),
   graphSettings: DEFAULT_GRAPH_SETTINGS,
   nodePositions: null,
+  nodeLayouts: null,
 };
 
 function applySettingsToCruiseResult(
@@ -100,6 +101,7 @@ function hardResetWithoutSettings(cruiseResult: ICruiseResult): WorkspaceOwnStat
     userEdgeHighlights: new Map(),
     graphSettings: DEFAULT_GRAPH_SETTINGS,
     nodePositions: null,
+    nodeLayouts: null,
   };
 }
 
@@ -128,6 +130,7 @@ function pickOwnWorkspaceState(state: WorkspaceOwnState): WorkspaceOwnState {
     userEdgeHighlights: state.userEdgeHighlights,
     graphSettings: state.graphSettings,
     nodePositions: state.nodePositions,
+    nodeLayouts: state.nodeLayouts,
   };
 }
 
@@ -246,6 +249,10 @@ export const useWorkspaceStore = create<WorkspaceState>()(
 
       setNodePositions(nodePositions) {
         set({ nodePositions });
+      },
+
+      setNodeLayouts(nodeLayouts) {
+        set({ nodeLayouts });
       },
     })),
   ),

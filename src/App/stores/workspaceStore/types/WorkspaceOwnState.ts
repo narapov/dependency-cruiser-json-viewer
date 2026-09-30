@@ -1,6 +1,6 @@
 import type { ICruiseResult } from 'dependency-cruiser';
 
-import type { CruiseSnapshot, FolderBaseColor, GraphEdgesType } from '@/domain';
+import type { CruiseSnapshot, FolderBaseColor, GraphEdgesType, ViewerNodeLayouts } from '@/domain';
 
 /** Mutable workspace fields owned by the store (excluding computed + actions). */
 export interface WorkspaceOwnState {
@@ -19,4 +19,5 @@ export interface WorkspaceOwnState {
     edgesType: GraphEdgesType;
   };
   nodePositions: Record<string, Record<string, { x: number; y: number } | undefined>> | null;
+  nodeLayouts: ViewerNodeLayouts | null;
 }
