@@ -1,6 +1,6 @@
 import { memo } from 'react';
 
-import { BaseEdge, MarkerType, type EdgeProps } from '@xyflow/react';
+import { BaseEdge, type EdgeProps } from '@xyflow/react';
 
 import { getEdgeHighlightColor } from '@/domain';
 import { INCOMING_EDGE_COLOR, OUTGOING_EDGE_COLOR, SELECTED_EDGE_COLOR } from '@/Shared';
@@ -8,6 +8,7 @@ import { INCOMING_EDGE_COLOR, OUTGOING_EDGE_COLOR, SELECTED_EDGE_COLOR } from '@
 import { useWorkspaceStore } from '../../../../stores/workspaceStore';
 import { isPathOnDependencyEdge } from '../../helpers/dependencyEdgeMembership';
 import { getDependencyEdgeVisualStyle, isProtectedDependencyEdge } from '../../helpers/getDependencyEdgeVisualStyle';
+import { useGraphMarkersStore } from '../../stores/graphMarkersStore';
 import { useSelectedDependencyEdgeStore } from '../../stores/selectedDependencyEdgeStore';
 import type { DependencyEdgeData } from '../../types';
 import { getDependencyEdgePath } from './helpers/getDependencyEdgePath';
@@ -18,7 +19,6 @@ export const DependencyEdge = memo(function DependencyEdge(props: EdgeProps) {
     source,
     target,
     data,
-    markerEnd: edgeMarkerEnd,
     interactionWidth = 3,
     sourceX,
     sourceY,
@@ -81,15 +81,8 @@ export const DependencyEdge = memo(function DependencyEdge(props: EdgeProps) {
     ...(base.strokeDasharray != null ? { strokeDasharray: base.strokeDasharray } : {}),
   };
 
-  // EdgeWrapper passes a url(#…) string from the store edge.markerEnd; keep color in sync when an object is provided.
-  const markerEnd =
-    typeof edgeMarkerEnd === 'string'
-      ? edgeMarkerEnd
-      : {
-          ...(typeof edgeMarkerEnd === 'object' && edgeMarkerEnd != null ? edgeMarkerEnd : {}),
-          type: MarkerType.ArrowClosed,
-          color: stroke,
-        };
+  const getOrCreateGraphMarkerUrl = useGraphMarkersStore(state => state.getOrCreateGraphMarkerUrl);
+  const markerEnd = getOrCreateGraphMarkerUrl(stroke);
 
   return (
     <>

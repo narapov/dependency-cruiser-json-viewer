@@ -5,3 +5,4 @@ export * from './serializeGraphToDot';
 export * from './sortNodesByDepth';
 export * from './dependencyEdgeMembership';
 export * from './getDependencyEdgeVisualStyle';
+export * from './toReactFlowGraph';

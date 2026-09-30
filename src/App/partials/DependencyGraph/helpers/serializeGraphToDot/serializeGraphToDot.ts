@@ -132,7 +132,7 @@ function resolveBaseEdgeColor(edge: Edge): string {
   if (data?.couldNotResolve === true || data?.severity === 'error') {
     return ERROR_EDGE_HEX;
   }
-  if (data?.valueCircular === true || data?.circular === true) {
+  if (data?.valueCircular === true) {
     return CIRCULAR_EDGE_HEX;
   }
   if (data?.typeOnlyCircular === true) {

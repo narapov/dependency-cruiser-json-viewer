@@ -21,7 +21,7 @@ const { downloadTextFile, openGraphvizOnline } = vi.hoisted(() => ({
 }));
 
 const buildGraphState = {
-  graphResult: { nodes: [], edges: [], visibleNodeIds: new Set<string>(), parentByNode: new Map() },
+  graphResult: { nodes: new Map(), tree: new Map(), edges: [] },
   isBuildingGraph: false,
   buildFailed: false,
   clearBuildFailed,

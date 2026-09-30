@@ -10,8 +10,7 @@ export function flattenViolations(
   if (Array.isArray(violations)) {
     return violations;
   }
-  return violations
-    .values()
-    .flatMap(entries => entries)
-    .toArray();
+
+  const byKey = violations as ReadonlyMap<string, readonly IViolation[]>;
+  return [...byKey.values()].flat();
 }

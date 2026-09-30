@@ -1,12 +1,14 @@
 // @vitest-environment jsdom
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { screen } from '@testing-library/react';
-import { MarkerType, type EdgeProps, type Position } from '@xyflow/react';
+import { type EdgeProps, type Position } from '@xyflow/react';
 
+import { CIRCULAR_EDGE_COLOR } from '@/Shared';
 import { renderWithTheme } from '@/testsUtils';
 
+import { toGraphMarkerId, useGraphMarkersStore } from '../../stores/graphMarkersStore';
 import { useSelectedDependencyEdgeStore } from '../../stores/selectedDependencyEdgeStore';
 import { DependencyEdge } from './DependencyEdge';
 
@@ -26,7 +28,7 @@ vi.mock('@xyflow/react', async importOriginal => {
       <div
         data-testid={`base-edge-${id}`}
         data-stroke={style?.stroke}
-        data-marker-end={typeof markerEnd === 'string' ? markerEnd : markerEnd?.type}
+        data-marker-end={typeof markerEnd === 'string' ? markerEnd : undefined}
       />
     ),
   };
@@ -53,6 +55,11 @@ function edgeProps(overrides: Partial<EdgeProps> = {}): EdgeProps {
 describe('DependencyEdge', () => {
   beforeEach(() => {
     useSelectedDependencyEdgeStore.getState().setSelectedEdgeId(null);
+    useGraphMarkersStore.getState().clearGraphMarkers();
+  });
+
+  afterEach(() => {
+    useGraphMarkersStore.getState().clearGraphMarkers();
   });
 
   it('renders base edge and computed title from flags', () => {
@@ -67,25 +74,19 @@ describe('DependencyEdge', () => {
     expect(container.querySelector('title')?.textContent).toContain('(circular)');
   });
 
-  it('passes ArrowClosed markerEnd to BaseEdge', () => {
-    renderWithTheme(
+  it('uses a shared marker url for the edge stroke without a local marker', () => {
+    const { container } = renderWithTheme(
       <svg>
         <DependencyEdge {...edgeProps()} />
       </svg>,
     );
 
-    expect(screen.getByTestId('base-edge-a->b')).toHaveAttribute('data-marker-end', MarkerType.ArrowClosed);
-  });
-
-  it('forwards string markerEnd urls from EdgeWrapper', () => {
-    const markerUrl = "url('#react-flow__arrowclosed')";
-    renderWithTheme(
-      <svg>
-        <DependencyEdge {...edgeProps({ markerEnd: markerUrl })} />
-      </svg>,
+    expect(screen.getByTestId('base-edge-a->b')).toHaveAttribute(
+      'data-marker-end',
+      `url('#${toGraphMarkerId(CIRCULAR_EDGE_COLOR)}')`,
     );
-
-    expect(screen.getByTestId('base-edge-a->b')).toHaveAttribute('data-marker-end', markerUrl);
+    expect(screen.getByTestId('base-edge-a->b')).toHaveAttribute('data-stroke', CIRCULAR_EDGE_COLOR);
+    expect(container.querySelector('marker')).toBeNull();
   });
 
   it('still renders when data is missing', () => {

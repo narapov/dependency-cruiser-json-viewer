@@ -8,10 +8,9 @@ import type { BuildGraphResult, PresenceRecord } from '../../types';
 
 function createEmptyGraphResult(): BuildGraphResult {
   return {
-    nodes: [],
+    nodes: new Map(),
+    tree: new Map(),
     edges: [],
-    visibleNodeIds: new Set(),
-    parentByNode: new Map(),
   };
 }
 
@@ -23,7 +22,6 @@ interface UseBuildGraphInput {
   cruiseSnapshot: CruiseSnapshot;
   selectedFilePaths: PresenceRecord;
   visibleTree: readonly VisibleTreeNode[];
-  folderColors: ReadonlyMap<string, string>;
 }
 
 interface UseBuildGraphResult {
@@ -34,7 +32,7 @@ interface UseBuildGraphResult {
 }
 
 export function useBuildGraph(config: UseBuildGraphInput): UseBuildGraphResult {
-  const { cruiseSnapshot, selectedFilePaths, visibleTree, folderColors } = config;
+  const { cruiseSnapshot, selectedFilePaths, visibleTree } = config;
 
   const [graphResult, setGraphResult] = useState<BuildGraphResult>(createEmptyGraphResult);
   const [isBuildingGraph, setIsBuildingGraph] = useState(() => hasAnyPresent(selectedFilePaths));
@@ -59,7 +57,6 @@ export function useBuildGraph(config: UseBuildGraphInput): UseBuildGraphResult {
       cruiseSnapshot,
       selectedFilePaths,
       visibleTree,
-      folderColors,
       options: { debug: NEED_PROFILE },
     });
 
@@ -88,7 +85,7 @@ export function useBuildGraph(config: UseBuildGraphInput): UseBuildGraphResult {
       cancelled = true;
       session.terminate();
     };
-  }, [cruiseSnapshot, selectedFilePaths, visibleTree, folderColors]);
+  }, [cruiseSnapshot, selectedFilePaths, visibleTree]);
 
   const clearBuildFailed = () => {
     setBuildFailed(false);

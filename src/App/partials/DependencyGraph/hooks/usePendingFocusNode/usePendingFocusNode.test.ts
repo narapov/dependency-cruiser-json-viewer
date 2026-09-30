@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 import type { Node } from '@xyflow/react';
 
-import type { BuildGraphResult } from '../../types';
+import type { BuildGraphResult, VisibleTreeLayoutedNode } from '../../types';
 import { usePendingFocusNode } from './usePendingFocusNode';
 
 const fitView = vi.hoisted(() => vi.fn(() => Promise.resolve(true)));
@@ -14,17 +14,36 @@ vi.mock('@xyflow/react', () => ({
   useReactFlow: () => ({ fitView, getNode }),
 }));
 
-function stubNode(id: string): Node {
+function stubLayoutNode(id: string): Node {
   return { id, position: { x: 0, y: 0 }, data: {} };
+}
+
+function stubTreeNode(path: string): VisibleTreeLayoutedNode {
+  return {
+    path,
+    valueCircular: false,
+    typeOnlyCircular: false,
+    position: { x: 0, y: 0 },
+    width: 120,
+    height: 32,
+  };
 }
 
 function emptyGraphResult(overrides: Partial<BuildGraphResult> = {}): BuildGraphResult {
   return {
-    nodes: [],
+    nodes: new Map(),
+    tree: new Map(),
     edges: [],
-    visibleNodeIds: new Set(),
-    parentByNode: new Map(),
     ...overrides,
+  };
+}
+
+function graphResultWith(...paths: string[]): BuildGraphResult {
+  const rootNodes = paths.map(stubTreeNode);
+  return {
+    nodes: new Map(rootNodes.map(node => [node.path, node])),
+    tree: new Map(rootNodes.map(node => [node.path, node])),
+    edges: [],
   };
 }
 
@@ -73,7 +92,7 @@ describe('usePendingFocusNode', () => {
   });
 
   it('fits view after rebuild when the node appears in layoutNodes', () => {
-    const pendingNode = stubNode('src/pending.ts');
+    const pendingLayout = stubLayoutNode('src/pending.ts');
     const { result, rerender } = renderHook(
       ({ isBuildingGraph, graphResult, layoutNodes }) =>
         usePendingFocusNode({ isBuildingGraph, graphResult, layoutNodes }),
@@ -93,15 +112,15 @@ describe('usePendingFocusNode', () => {
 
     rerender({
       isBuildingGraph: false,
-      graphResult: emptyGraphResult({ nodes: [pendingNode] }),
+      graphResult: graphResultWith('src/pending.ts'),
       layoutNodes: [],
     });
     expect(fitView).not.toHaveBeenCalled();
 
     rerender({
       isBuildingGraph: false,
-      graphResult: emptyGraphResult({ nodes: [pendingNode] }),
-      layoutNodes: [pendingNode],
+      graphResult: graphResultWith('src/pending.ts'),
+      layoutNodes: [pendingLayout],
     });
 
     expect(fitView).not.toHaveBeenCalled();
@@ -118,7 +137,7 @@ describe('usePendingFocusNode', () => {
   });
 
   it('skips deferred fitView when pending path changes during the timeout', () => {
-    const pendingNode = stubNode('src/pending.ts');
+    const pendingLayout = stubLayoutNode('src/pending.ts');
     const { result, rerender } = renderHook(
       ({ isBuildingGraph, graphResult, layoutNodes }) =>
         usePendingFocusNode({ isBuildingGraph, graphResult, layoutNodes }),
@@ -137,8 +156,8 @@ describe('usePendingFocusNode', () => {
 
     rerender({
       isBuildingGraph: false,
-      graphResult: emptyGraphResult({ nodes: [pendingNode] }),
-      layoutNodes: [pendingNode],
+      graphResult: graphResultWith('src/pending.ts'),
+      layoutNodes: [pendingLayout],
     });
 
     expect(fitView).not.toHaveBeenCalled();
@@ -162,8 +181,8 @@ describe('usePendingFocusNode', () => {
   });
 
   it('drops pending focus when rebuild finishes without the node', () => {
-    const otherNode = stubNode('src/other.ts');
-    const missingNode = stubNode('src/missing.ts');
+    const otherLayout = stubLayoutNode('src/other.ts');
+    const missingLayout = stubLayoutNode('src/missing.ts');
     const { result, rerender } = renderHook(
       ({ isBuildingGraph, graphResult, layoutNodes }) =>
         usePendingFocusNode({ isBuildingGraph, graphResult, layoutNodes }),
@@ -182,16 +201,16 @@ describe('usePendingFocusNode', () => {
 
     rerender({
       isBuildingGraph: false,
-      graphResult: emptyGraphResult({ nodes: [otherNode] }),
-      layoutNodes: [otherNode],
+      graphResult: graphResultWith('src/other.ts'),
+      layoutNodes: [otherLayout],
     });
 
     expect(fitView).not.toHaveBeenCalled();
 
     rerender({
       isBuildingGraph: false,
-      graphResult: emptyGraphResult({ nodes: [otherNode, missingNode] }),
-      layoutNodes: [otherNode, missingNode],
+      graphResult: graphResultWith('src/other.ts', 'src/missing.ts'),
+      layoutNodes: [otherLayout, missingLayout],
     });
 
     act(() => {

@@ -21,7 +21,7 @@ import '@xyflow/react/dist/style.css';
 import { downloadTextFile, openGraphvizOnline, useLogChangedProps, useResolvedColorMode } from '@/Shared';
 
 import { normalizeNodePositions, useWorkspaceStore } from '../../stores/workspaceStore';
-import { getMinimapNodeColor, serializeGraphToDot } from './helpers';
+import { getMinimapNodeColor, serializeGraphToDot, toReactFlowEdges } from './helpers';
 import {
   useAutoFitView,
   useBuildGraph,
@@ -41,7 +41,9 @@ import { GraphEmptySelection } from './partials/GraphEmptySelection';
 import { GraphLayoutToggle } from './partials/GraphLayoutToggle';
 import { GraphLegend } from './partials/GraphLegend';
 import { GraphLoader } from './partials/GraphLoader';
+import { GraphMarkers } from './partials/GraphMarkers';
 import { NodeContextMenuControlsProvider, useNodeContextMenu } from './partials/NodeContextMenu';
+import { useGraphMarkersStore } from './stores/graphMarkersStore';
 import type { DependencyGraphHandle, GraphLayoutState } from './types';
 
 import styles from './DependencyGraph.module.css';
@@ -112,7 +114,6 @@ function DependencyGraphInner(props: DependencyGraphInnerProps) {
     cruiseSnapshot,
     selectedFilePaths,
     visibleTree,
-    folderColors,
   });
 
   const {
@@ -128,6 +129,7 @@ function DependencyGraphInner(props: DependencyGraphInnerProps) {
   } = useGraphLayoutNodes({
     graphResult,
     cruiseSnapshot,
+    folderColors,
     autoLayoutOnly,
   });
 
@@ -142,7 +144,18 @@ function DependencyGraphInner(props: DependencyGraphInnerProps) {
     setLayoutSnapshot({ nodePositions: toGraphNodePositions(nodePositions) });
   }, [layoutApplyKey, nodePositions, setLayoutSnapshot]);
 
-  const { edges: baseEdges } = graphResult;
+  const hasSelection = hasAnyPresent(selectedFilePaths);
+
+  useEffect(() => {
+    if (!hasSelection) {
+      useGraphMarkersStore.getState().clearGraphMarkers();
+    }
+    return () => {
+      useGraphMarkersStore.getState().clearGraphMarkers();
+    };
+  }, [hasSelection]);
+
+  const baseEdges = toReactFlowEdges(graphResult.edges);
 
   const { highlightedEdges, getEdgeHighlight, setUserEdgeHighlight, onEdgeClick, selectEdge, clearSelectedEdge } =
     useHighlightedEdges({
@@ -284,7 +297,7 @@ function DependencyGraphInner(props: DependencyGraphInnerProps) {
     contextMenu,
   });
 
-  if (!hasAnyPresent(selectedFilePaths)) {
+  if (!hasSelection) {
     return <GraphEmptySelection />;
   }
 
@@ -332,6 +345,7 @@ function DependencyGraphInner(props: DependencyGraphInnerProps) {
           />
           <Controls position="bottom-right" showInteractive={false} />
         </ReactFlow>
+        <GraphMarkers />
         {contextMenu}
       </NodeContextMenuControlsProvider>
       {isBuildingGraph && <GraphLoader />}

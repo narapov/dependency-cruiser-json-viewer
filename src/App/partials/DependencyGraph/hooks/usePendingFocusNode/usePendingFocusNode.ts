@@ -59,8 +59,7 @@ export function usePendingFocusNode(config: UsePendingFocusNodeInput): UsePendin
       };
     }
 
-    const inResult = graphResult.nodes.some(node => node.id === path);
-    if (!inResult) {
+    if (!graphResult.nodes.has(path)) {
       // Build finished without this node — it will not appear.
       pendingFocusPathRef.current = null;
     }

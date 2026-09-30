@@ -11,8 +11,5 @@ export interface DependencyEdgeData {
   severity?: 'error' | 'warn';
   ruleNames?: string[];
   aggregated?: DependencyEdgeAggregated[];
-  /** @deprecated Prefer computing title in DependencyEdge from flags. */
-  title?: string;
-  /** @deprecated Prefer valueCircular || typeOnlyCircular. */
-  circular?: boolean;
+  [key: string]: unknown;
 }

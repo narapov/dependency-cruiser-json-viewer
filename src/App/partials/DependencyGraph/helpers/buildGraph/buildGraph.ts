@@ -1,85 +1,58 @@
 import { getEdgesForVisibleTree } from '@/domain';
 
-import type { BuildGraphInput, BuildGraphResult } from '../../types';
-import { sortNodesByDepth } from '../sortNodesByDepth';
-import { visibleTreeEdgesToReactFlowEdges } from './buildGraphEdges';
-import { buildGraphNodes } from './buildGraphNodes';
+import type { BuildGraphInput, BuildGraphResult, VisibleTreeLayoutedNode } from '../../types';
 import { createBuildGraphProfiler } from './createBuildGraphProfiler';
-import { deriveGraphVisibilityFromVisibleTree } from './deriveGraphVisibilityFromVisibleTree';
-import { layoutGroup } from './layoutGroup';
-import type { NodeSize } from './types';
+import { createLayoutedTree } from './createLayoutedTree';
+import { layoutChildren } from './layoutGroup';
 
-/** Builds visible nodes, edges, and ELK layout for the dependency graph. */
+/** Index every layouted node (shared object refs) into a flat path map. */
+function indexLayoutedNodes(roots: readonly VisibleTreeLayoutedNode[]): Map<string, VisibleTreeLayoutedNode> {
+  const nodes = new Map<string, VisibleTreeLayoutedNode>();
+
+  const visit = (node: VisibleTreeLayoutedNode) => {
+    nodes.set(node.path, node);
+    node.children?.forEach(visit);
+  };
+
+  roots.forEach(visit);
+  return nodes;
+}
+
+/** Builds a layouted visible tree, flat node index, and domain edges. */
 export async function buildGraph({
   cruiseSnapshot,
   selectedFilePaths,
   visibleTree,
-  folderColors,
   options,
 }: BuildGraphInput): Promise<BuildGraphResult> {
   const profiler = createBuildGraphProfiler(options.debug);
   profiler.start('total');
 
-  profiler.start('visibleNodes');
-  const {
-    visibleNodes,
-    parentByNode,
-    visibleNodeIds,
-    expandedFolders,
-    circularByPath,
-    unresolvedModules,
-    selectedSet,
-  } = deriveGraphVisibilityFromVisibleTree(cruiseSnapshot, visibleTree, selectedFilePaths);
-  profiler.end('visibleNodes');
-
-  profiler.start('edges');
-  const edges = visibleTreeEdgesToReactFlowEdges(
-    getEdgesForVisibleTree(cruiseSnapshot, visibleTree, selectedFilePaths),
-  );
-  profiler.end('edges');
-
   profiler.start('nodes');
-  const nodeMap = buildGraphNodes({
-    visibleNodes,
-    parentByNode,
-    expandedFolders,
-    circularByPath,
-    unresolvedModules,
-    folderColors,
-  });
-  const groupSizes = new Map<string, NodeSize>();
+  const rootNodes = createLayoutedTree(visibleTree, cruiseSnapshot);
   profiler.end('nodes');
 
+  profiler.start('edges');
+  const edges = getEdgesForVisibleTree(cruiseSnapshot, visibleTree, selectedFilePaths);
+  profiler.end('edges');
+
   profiler.start('layout');
-  await layoutGroup(
-    null,
-    nodeMap,
-    groupSizes,
-    visibleNodes,
-    expandedFolders,
-    visibleNodeIds,
-    parentByNode,
-    cruiseSnapshot,
-    selectedFilePaths,
-    profiler,
-  );
+  await layoutChildren(rootNodes, cruiseSnapshot, selectedFilePaths, profiler);
   profiler.end('layout');
 
-  profiler.start('sort');
-  const nodes = sortNodesByDepth([...nodeMap.values()], cruiseSnapshot);
-  profiler.end('sort');
+  const nodes = indexLayoutedNodes(rootNodes);
+  const tree = new Map(rootNodes.map(node => [node.path, node]));
 
   profiler.end('total');
   profiler.log({
-    selected: selectedSet.size,
-    nodes: nodes.length,
+    selected: Object.values(selectedFilePaths).filter(present => present).length,
+    nodes: nodes.size,
     edges: edges.length,
   });
 
   return {
     nodes,
+    tree,
     edges,
-    visibleNodeIds,
-    parentByNode,
   };
 }

@@ -21,6 +21,7 @@ import {
   reflowForDrag,
   reflowParentSiblings,
   serializePositionCache,
+  toReactFlowNodes,
   updateGroupCacheFromNodes,
   updateGroupPositionCache,
   updateSubtreeGroupCaches,
@@ -49,6 +50,7 @@ import type { BuildGraphResult } from '../../types';
 interface UseGraphLayoutNodesInput {
   graphResult: BuildGraphResult;
   cruiseSnapshot: CruiseSnapshot;
+  folderColors: ReadonlyMap<string, string>;
   autoLayoutOnly?: boolean;
 }
 
@@ -69,16 +71,16 @@ interface UseGraphLayoutNodesResult {
 }
 
 export function useGraphLayoutNodes(config: UseGraphLayoutNodesInput): UseGraphLayoutNodesResult {
-  const { graphResult, cruiseSnapshot, autoLayoutOnly = false } = config;
+  const { graphResult, cruiseSnapshot, folderColors, autoLayoutOnly = false } = config;
 
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
-  console.log('useGraphLayoutNodes nodes', nodes);
   useLogChangedProps('useGraphLayoutNodes', { nodes, setNodes, onNodesChange });
   const positionCacheRef = useRef<PositionCache>(new Map());
   const prevFingerprintsRef = useRef<GroupFingerprints | null>(null);
   const prevSizesRef = useRef<Map<string, NodeSize>>(new Map());
   const prevNodesRef = useRef<Node[] | null>(null);
   const prevParentByNodeRef = useRef<Map<string, string | null> | null>(null);
+  const reactFlowGraphRef = useRef(toReactFlowNodes(graphResult.nodes, cruiseSnapshot, folderColors));
   const [hasUserLayout, setHasUserLayout] = useState(false);
   const [layoutSeed, setLayoutSeed] = useState(0);
   const pendingRestoreRef = useRef<GraphLayoutSnapshot | null>(null);
@@ -94,8 +96,11 @@ export function useGraphLayoutNodes(config: UseGraphLayoutNodesInput): UseGraphL
   }, [autoLayoutOnly]);
 
   useEffect(() => {
+    const reactFlowGraph = toReactFlowNodes(graphResult.nodes, cruiseSnapshot, folderColors);
+    reactFlowGraphRef.current = reactFlowGraph;
+
     if (pendingRestoreRef.current != null) {
-      if (graphResult.nodes.length === 0) {
+      if (graphResult.nodes.size === 0) {
         // Wait for the rebuilt graph; applying against an empty result would wipe the cache.
         setNodes([]);
         return;
@@ -109,7 +114,7 @@ export function useGraphLayoutNodes(config: UseGraphLayoutNodesInput): UseGraphL
       skipStaleGroupPurgeRef.current = true;
     }
 
-    const { nodes: layoutNodes, parentByNode, visibleNodeIds } = graphResult;
+    const { nodes: layoutNodes, parentByNode, visibleNodeIds } = reactFlowGraph;
     const nodeIds = new Set(layoutNodes.map(node => node.id));
     const currentFingerprints = buildGroupFingerprints(nodeIds, parentByNode);
 
@@ -163,7 +168,7 @@ export function useGraphLayoutNodes(config: UseGraphLayoutNodesInput): UseGraphL
     prevNodesRef.current = nextNodes;
     prevParentByNodeRef.current = new Map(parentByNode);
     setNodes(nextNodes);
-  }, [autoLayoutOnly, cruiseSnapshot, graphResult, layoutSeed, setNodes]);
+  }, [autoLayoutOnly, cruiseSnapshot, folderColors, graphResult, layoutSeed, setNodes]);
 
   const getLayoutSnapshot = useCallback((): GraphLayoutSnapshot => {
     return { nodePositions: serializePositionCache(positionCacheRef.current) };
@@ -184,7 +189,7 @@ export function useGraphLayoutNodes(config: UseGraphLayoutNodesInput): UseGraphL
       setNodes(currentNodes =>
         reflowForDrag(
           currentNodes,
-          graphResult.parentByNode,
+          reactFlowGraphRef.current.parentByNode,
           draggedNode.id,
           draggedNode.position,
           prevSizesRef.current,
@@ -192,7 +197,7 @@ export function useGraphLayoutNodes(config: UseGraphLayoutNodesInput): UseGraphL
         ),
       );
     },
-    [autoLayoutOnly, cruiseSnapshot, graphResult.parentByNode, setNodes],
+    [autoLayoutOnly, cruiseSnapshot, setNodes],
   );
 
   const onNodeDragStop = useCallback<OnNodeDrag<Node>>(
@@ -204,40 +209,41 @@ export function useGraphLayoutNodes(config: UseGraphLayoutNodesInput): UseGraphL
       setHasUserLayout(true);
 
       setNodes(currentNodes => {
+        const { parentByNode } = reactFlowGraphRef.current;
         const reflowed = compactAfterDrag(
           reflowForDrag(
             currentNodes,
-            graphResult.parentByNode,
+            parentByNode,
             draggedNode.id,
             draggedNode.position,
             prevSizesRef.current,
             cruiseSnapshot,
           ),
-          graphResult.parentByNode,
+          parentByNode,
           draggedNode.id,
           cruiseSnapshot,
         );
 
         let groupId: string | null = draggedNode.parentId ?? null;
         while (true) {
-          updateGroupCacheFromNodes(positionCacheRef.current, reflowed, graphResult.parentByNode, groupId);
+          updateGroupCacheFromNodes(positionCacheRef.current, reflowed, parentByNode, groupId);
           if (groupId === null) {
             break;
           }
-          groupId = graphResult.parentByNode.get(groupId) ?? null;
+          groupId = parentByNode.get(groupId) ?? null;
         }
 
         prevSizesRef.current = collectNodeSizes(reflowed);
         return reflowed;
       });
     },
-    [autoLayoutOnly, cruiseSnapshot, graphResult.parentByNode, setNodes],
+    [autoLayoutOnly, cruiseSnapshot, setNodes],
   );
 
   const runAutoLayout = useCallback(
     (groupId: string, recursive: boolean) => {
       setNodes(currentNodes => {
-        const { nodes: layoutNodes, parentByNode } = graphResult;
+        const { nodes: layoutNodes, parentByNode } = reactFlowGraphRef.current;
         const nodeIds = new Set(currentNodes.map(node => node.id));
         const currentFingerprints = buildGroupFingerprints(nodeIds, parentByNode);
 
@@ -274,7 +280,7 @@ export function useGraphLayoutNodes(config: UseGraphLayoutNodesInput): UseGraphL
         return nextNodes;
       });
     },
-    [cruiseSnapshot, graphResult, setNodes],
+    [cruiseSnapshot, setNodes],
   );
 
   const onAutoLayoutGroup = useCallback((groupId: string) => runAutoLayout(groupId, false), [runAutoLayout]);

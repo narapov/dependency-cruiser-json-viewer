@@ -6,10 +6,12 @@ import type { Node } from '@xyflow/react';
 
 import type { CruiseSnapshot } from '@/domain';
 
-import type { BuildGraphResult } from '../../types';
+import { toReactFlowNodes } from '../../helpers';
+import type { BuildGraphResult, VisibleTreeLayoutedNode } from '../../types';
 import { useGraphLayoutNodes } from './useGraphLayoutNodes';
 
 const emptyCruiseSnapshot = { nodes: new Map() } as CruiseSnapshot;
+const emptyFolderColors = new Map<string, string>();
 
 vi.mock('../../helpers', async importOriginal => {
   const actual = await importOriginal<typeof import('../../helpers')>();
@@ -34,22 +36,45 @@ vi.mock('../../helpers', async importOriginal => {
   };
 });
 
-function makeNode(id: string, overrides: Partial<Node> = {}): Node {
+function makeLayoutedNode(path: string, overrides: Partial<VisibleTreeLayoutedNode> = {}): VisibleTreeLayoutedNode {
   return {
-    id,
+    path,
+    valueCircular: false,
+    typeOnlyCircular: false,
     position: { x: 0, y: 0 },
-    data: {},
+    width: 120,
+    height: 32,
     ...overrides,
   };
 }
 
-function makeGraphResult(nodes: Node[]): BuildGraphResult {
+function makeGraphResult(rootNodes: VisibleTreeLayoutedNode[]): BuildGraphResult {
+  const nodes = new Map<string, VisibleTreeLayoutedNode>();
+  const visit = (node: VisibleTreeLayoutedNode) => {
+    nodes.set(node.path, node);
+    node.children?.forEach(visit);
+  };
+  rootNodes.forEach(visit);
+
   return {
     nodes,
+    tree: new Map(rootNodes.map(node => [node.path, node])),
     edges: [],
-    visibleNodeIds: new Set(nodes.map(node => node.id)),
-    parentByNode: new Map(),
   };
+}
+
+function renderLayoutHook(
+  graphResult: BuildGraphResult,
+  overrides: { autoLayoutOnly?: boolean; cruiseSnapshot?: CruiseSnapshot } = {},
+) {
+  return renderHook(() =>
+    useGraphLayoutNodes({
+      cruiseSnapshot: overrides.cruiseSnapshot ?? emptyCruiseSnapshot,
+      folderColors: emptyFolderColors,
+      graphResult,
+      autoLayoutOnly: overrides.autoLayoutOnly,
+    }),
+  );
 }
 
 describe('useGraphLayoutNodes', () => {
@@ -58,49 +83,47 @@ describe('useGraphLayoutNodes', () => {
   });
 
   it('applies graphResult nodes into React Flow state', async () => {
-    const graphResult = makeGraphResult([makeNode('a.ts', { position: { x: 10, y: 20 } }), makeNode('b.ts')]);
+    const graphResult = makeGraphResult([
+      makeLayoutedNode('a.ts', { position: { x: 10, y: 20 } }),
+      makeLayoutedNode('b.ts'),
+    ]);
 
-    const { result } = renderHook(() => useGraphLayoutNodes({ cruiseSnapshot: emptyCruiseSnapshot, graphResult }));
+    const { result } = renderLayoutHook(graphResult);
 
     await act(async () => {
       await Promise.resolve();
     });
 
     expect(result.current.nodes.map(node => node.id)).toEqual(['a.ts', 'b.ts']);
-    expect(result.current.hasUserLayout).toBe(false);
+    expect(result.current.nodes.find(node => node.id === 'a.ts')?.position).toEqual({ x: 10, y: 20 });
   });
 
-  it('marks nodes non-draggable in autoLayoutOnly mode', async () => {
-    const graphResult = makeGraphResult([makeNode('a.ts')]);
+  it('disables dragging when autoLayoutOnly is true', async () => {
+    const graphResult = makeGraphResult([makeLayoutedNode('a.ts')]);
 
-    const { result } = renderHook(() =>
-      useGraphLayoutNodes({ cruiseSnapshot: emptyCruiseSnapshot, graphResult, autoLayoutOnly: true }),
-    );
+    const { result } = renderLayoutHook(graphResult, { autoLayoutOnly: true });
 
     await act(async () => {
       await Promise.resolve();
     });
 
     expect(result.current.nodes[0]?.draggable).toBe(false);
-    expect(result.current.hasUserLayout).toBe(false);
   });
 
-  it('ignores drag handlers in autoLayoutOnly mode', async () => {
-    const graphResult = makeGraphResult([makeNode('a.ts')]);
-    const { result } = renderHook(() =>
-      useGraphLayoutNodes({ cruiseSnapshot: emptyCruiseSnapshot, graphResult, autoLayoutOnly: true }),
-    );
+  it('ignores drag when autoLayoutOnly is true', async () => {
+    const graphResult = makeGraphResult([makeLayoutedNode('a.ts')]);
+    const { result } = renderLayoutHook(graphResult, { autoLayoutOnly: true });
 
     await act(async () => {
       await Promise.resolve();
     });
 
     act(() => {
-      const node = makeNode('a.ts', { position: { x: 50, y: 50 } });
+      const node = result.current.nodes[0]!;
       result.current.onNodeDrag({} as never, node, [node]);
     });
     act(() => {
-      const node = makeNode('a.ts', { position: { x: 50, y: 50 } });
+      const node = { ...result.current.nodes[0]!, position: { x: 50, y: 50 } };
       result.current.onNodeDragStop({} as never, node, [node]);
     });
 
@@ -108,8 +131,8 @@ describe('useGraphLayoutNodes', () => {
   });
 
   it('sets hasUserLayout after drag stop', async () => {
-    const graphResult = makeGraphResult([makeNode('a.ts')]);
-    const { result } = renderHook(() => useGraphLayoutNodes({ cruiseSnapshot: emptyCruiseSnapshot, graphResult }));
+    const graphResult = makeGraphResult([makeLayoutedNode('a.ts')]);
+    const { result } = renderLayoutHook(graphResult);
 
     await act(async () => {
       await Promise.resolve();
@@ -117,7 +140,7 @@ describe('useGraphLayoutNodes', () => {
 
     act(() => {
       const node = {
-        ...result.current.nodes[0],
+        ...result.current.nodes[0]!,
         position: { x: 40, y: 10 },
       };
       result.current.onNodeDragStop({} as never, node, [node]);
@@ -127,13 +150,15 @@ describe('useGraphLayoutNodes', () => {
   });
 
   it('returns auto-layout callbacks from the hook', async () => {
-    const folder = makeNode('src', {
-      type: 'folderGroup',
-      data: { label: 'src' },
-    });
-    const graphResult = makeGraphResult([folder]);
+    const graphResult = makeGraphResult([
+      makeLayoutedNode('src', {
+        children: [],
+        width: 200,
+        height: 100,
+      }),
+    ]);
 
-    const { result } = renderHook(() => useGraphLayoutNodes({ cruiseSnapshot: emptyCruiseSnapshot, graphResult }));
+    const { result } = renderLayoutHook(graphResult);
 
     await act(async () => {
       await Promise.resolve();
@@ -148,9 +173,15 @@ describe('useGraphLayoutNodes', () => {
   });
 
   it('resets hasUserLayout when switching to autoLayoutOnly', async () => {
-    const graphResult = makeGraphResult([makeNode('a.ts')]);
+    const graphResult = makeGraphResult([makeLayoutedNode('a.ts')]);
     const { result, rerender } = renderHook(
-      ({ autoLayoutOnly }) => useGraphLayoutNodes({ cruiseSnapshot: emptyCruiseSnapshot, graphResult, autoLayoutOnly }),
+      ({ autoLayoutOnly }) =>
+        useGraphLayoutNodes({
+          cruiseSnapshot: emptyCruiseSnapshot,
+          folderColors: emptyFolderColors,
+          graphResult,
+          autoLayoutOnly,
+        }),
       { initialProps: { autoLayoutOnly: false } },
     );
 
@@ -160,7 +191,7 @@ describe('useGraphLayoutNodes', () => {
 
     act(() => {
       const node = {
-        ...result.current.nodes[0],
+        ...result.current.nodes[0]!,
         position: { x: 30, y: 30 },
       };
       result.current.onNodeDragStop({} as never, node, [node]);
@@ -178,14 +209,19 @@ describe('useGraphLayoutNodes', () => {
   it('defers layout restore until graphResult has nodes, then keeps positions', async () => {
     const { invalidatePositionCache } = await import('../../helpers');
     const emptyGraph = makeGraphResult([]);
-    const readyGraph = makeGraphResult([makeNode('src/a.ts'), makeNode('src/b.ts')]);
+    const readyGraph = makeGraphResult([makeLayoutedNode('src/a.ts'), makeLayoutedNode('src/b.ts')]);
     const restoredPositions = {
       '': { 'src/a.ts': { x: 10, y: 20 }, 'src/b.ts': { x: 30, y: 40 } },
     };
 
     const { result, rerender } = renderHook(
       ({ graphResult }) =>
-        useGraphLayoutNodes({ cruiseSnapshot: emptyCruiseSnapshot, graphResult, autoLayoutOnly: false }),
+        useGraphLayoutNodes({
+          cruiseSnapshot: emptyCruiseSnapshot,
+          folderColors: emptyFolderColors,
+          graphResult,
+          autoLayoutOnly: false,
+        }),
       { initialProps: { graphResult: emptyGraph } },
     );
 
@@ -213,14 +249,25 @@ describe('useGraphLayoutNodes', () => {
 
   it('clears previous sizes and nodes before applying a restored layout', async () => {
     const { reflowParentSiblings, preserveExpandedGroupPositions, collectNodeSizes } = await import('../../helpers');
-    const firstGraph = makeGraphResult([makeNode('old.ts', { position: { x: 1, y: 1 }, width: 120, height: 32 })]);
-    const secondGraph = makeGraphResult([makeNode('old.ts', { position: { x: 2, y: 2 }, width: 140, height: 40 })]);
+    const firstGraph = makeGraphResult([
+      makeLayoutedNode('old.ts', { position: { x: 1, y: 1 }, width: 120, height: 32 }),
+    ]);
+    const secondGraph = makeGraphResult([
+      makeLayoutedNode('old.ts', { position: { x: 2, y: 2 }, width: 140, height: 40 }),
+    ]);
+    const firstReactFlowNodes = toReactFlowNodes(firstGraph.nodes, emptyCruiseSnapshot, emptyFolderColors).nodes;
+    const secondReactFlowNodes = toReactFlowNodes(secondGraph.nodes, emptyCruiseSnapshot, emptyFolderColors).nodes;
     const previousSizes = new Map([['old.ts', { width: 120, height: 32 }]]);
     vi.mocked(collectNodeSizes).mockReturnValue(previousSizes);
 
     const { result, rerender } = renderHook(
       ({ graphResult }) =>
-        useGraphLayoutNodes({ cruiseSnapshot: emptyCruiseSnapshot, graphResult, autoLayoutOnly: false }),
+        useGraphLayoutNodes({
+          cruiseSnapshot: emptyCruiseSnapshot,
+          folderColors: emptyFolderColors,
+          graphResult,
+          autoLayoutOnly: false,
+        }),
       { initialProps: { graphResult: firstGraph } },
     );
 
@@ -235,7 +282,7 @@ describe('useGraphLayoutNodes', () => {
 
     const callBeforeRestore = vi.mocked(reflowParentSiblings).mock.calls.at(-1)?.[0];
     expect(callBeforeRestore?.previousSizes).toBe(previousSizes);
-    expect(callBeforeRestore?.previousNodes).toEqual(firstGraph.nodes);
+    expect(callBeforeRestore?.previousNodes).toEqual(firstReactFlowNodes);
 
     vi.mocked(reflowParentSiblings).mockClear();
     vi.mocked(preserveExpandedGroupPositions).mockClear();
@@ -252,7 +299,7 @@ describe('useGraphLayoutNodes', () => {
       await Promise.resolve();
     });
 
-    expect(vi.mocked(preserveExpandedGroupPositions)).toHaveBeenCalledWith(secondGraph.nodes, null);
+    expect(vi.mocked(preserveExpandedGroupPositions)).toHaveBeenCalledWith(secondReactFlowNodes, null);
     const callAfterRestore = vi.mocked(reflowParentSiblings).mock.calls.at(-1)?.[0];
     expect(callAfterRestore?.previousSizes).toEqual(new Map());
     expect(callAfterRestore?.previousNodes).toBeNull();

@@ -1,14 +1,11 @@
 import ELK from 'elkjs/lib/elk.bundled.js';
 
-import type { Node } from '@xyflow/react';
-
 import { getEdgesAmongNodePaths, type CruiseSnapshot } from '@/domain';
 
+import type { VisibleTreeLayoutedNode } from '../../../types';
 import { LEAF_NODE_HEIGHT, LEAF_NODE_MIN_WIDTH } from '../../getLeafNodeSize';
 import type { BuildGraphProfiler } from '../createBuildGraphProfiler';
-import { getDirectChildren } from '../getDirectChildren';
 import { GROUP_HEADER, GROUP_PADDING } from '../layoutConstants';
-import { applyNodeDimensions, getLeafSizeForPath } from '../nodeDimensions';
 import type { NodeSize } from '../types';
 
 const NODE_HEIGHT = LEAF_NODE_HEIGHT;
@@ -21,18 +18,17 @@ interface LayoutEdge {
   weight: number;
 }
 
-function isExpandedFolder(
-  path: string,
-  visibleNodes: Map<string, 'folder' | 'file'>,
-  expandedFolders: Set<string>,
-): boolean {
-  return visibleNodes.get(path) === 'folder' && expandedFolders.has(path);
-}
-
 function getLayoutSpacing(childCount: number) {
   return {
     nodesep: Math.min(80, 24 + childCount * 2),
     ranksep: Math.min(160, 60 + childCount * 4),
+  };
+}
+
+function emptyGroupSize(): NodeSize {
+  return {
+    width: LEAF_NODE_MIN_WIDTH + GROUP_PADDING * 2,
+    height: GROUP_HEADER + NODE_HEIGHT + GROUP_PADDING * 2,
   };
 }
 
@@ -126,114 +122,58 @@ async function layoutChildrenWithElk(
   );
 }
 
-function applyChildPositions(
-  childIds: string[],
-  childSizes: Map<string, NodeSize>,
-  positions: Map<string, { x: number; y: number }>,
-  folderId: string | null,
-  nodeMap: Map<string, Node>,
-  groupSizes: Map<string, NodeSize>,
-): NodeSize {
-  const { maxX, maxY } = childIds.reduce(
-    (bounds, childId) => {
-      const size = childSizes.get(childId)!;
-      const position = positions.get(childId)!;
-      const node = nodeMap.get(childId)!;
-      node.position = position;
-      if (folderId !== null) {
-        node.parentId = folderId;
-        node.extent = 'parent';
-      }
-
-      return {
-        maxX: Math.max(bounds.maxX, position.x + size.width),
-        maxY: Math.max(bounds.maxY, position.y + size.height),
-      };
-    },
-    { maxX: 0, maxY: 0 },
-  );
-
-  const groupSize = {
-    width: Math.max(maxX + GROUP_PADDING, LEAF_NODE_MIN_WIDTH + GROUP_PADDING * 2),
-    height: Math.max(maxY + GROUP_PADDING, GROUP_HEADER + NODE_HEIGHT + GROUP_PADDING),
-  };
-
-  if (folderId !== null) {
-    groupSizes.set(folderId, groupSize);
-    const groupNode = nodeMap.get(folderId);
-    if (groupNode) {
-      applyNodeDimensions(groupNode, groupSize);
-      groupNode.zIndex = -1;
-    }
-  }
-
-  return groupSize;
-}
-
 /**
- * Recursively layout for folder group (or root) with ELK and updates node sizes.
+ * Recursively layout sibling nodes with ELK and write position/size onto the tree.
  *
  * Layout algorithm (recursive, per folder level):
  *
- * 1. Collect direct children of the current folder (or root when folderId is null).
- * 2. Recurse into expanded subfolders first to compute their sizes.
- * 3. Place direct children with ELK layered (RIGHT). Spacing scales with child count.
+ * 1. Recurse into expanded children (`children` present) to compute their group sizes.
+ * 2. Place siblings with ELK layered (RIGHT). Spacing scales with child count.
  *    Disconnected components are packed separately (`elk.separateConnectedComponents`)
  *    so sparse sibling sets do not collapse into a single column.
  *
  * Sibling edges come from `getEdgesAmongNodePaths` over the current children (same
  * algorithm as visible-tree edges). Edge weight biases crossing minimization and straightness.
- * React Flow draws visual edges after layout from the full visible-tree edge set.
  */
-export async function layoutGroup(
-  folderId: string | null,
-  nodeMap: Map<string, Node>,
-  groupSizes: Map<string, NodeSize>,
-  visibleNodes: Map<string, 'folder' | 'file'>,
-  expandedFolders: Set<string>,
-  visibleNodeIds: Set<string>,
-  parentByNode: Map<string, string | null>,
+export async function layoutChildren(
+  children: VisibleTreeLayoutedNode[],
   cruiseSnapshot: CruiseSnapshot,
   selectedFilePaths: Record<string, boolean | undefined>,
   profiler?: BuildGraphProfiler,
 ): Promise<NodeSize> {
-  const childIds = getDirectChildren(folderId, visibleNodeIds, parentByNode);
-
-  if (childIds.length === 0) {
-    const emptySize = {
-      width: LEAF_NODE_MIN_WIDTH + GROUP_PADDING * 2,
-      height: GROUP_HEADER + NODE_HEIGHT + GROUP_PADDING * 2,
-    };
-    if (folderId !== null) {
-      groupSizes.set(folderId, emptySize);
-    }
-    return emptySize;
+  if (children.length === 0) {
+    return emptyGroupSize();
   }
 
-  const childSizes = await childIds.reduce<Promise<Map<string, NodeSize>>>(async (accPromise, childId) => {
-    const acc = await accPromise;
-    if (isExpandedFolder(childId, visibleNodes, expandedFolders)) {
-      const size = await layoutGroup(
-        childId,
-        nodeMap,
-        groupSizes,
-        visibleNodes,
-        expandedFolders,
-        visibleNodeIds,
-        parentByNode,
-        cruiseSnapshot,
-        selectedFilePaths,
-        profiler,
-      );
-      acc.set(childId, size);
-    } else {
-      acc.set(childId, getLeafSizeForPath(childId, visibleNodes));
+  await children.reduce<Promise<void>>(async (previous, child) => {
+    await previous;
+    if (!child.children) {
+      return;
     }
-    return acc;
-  }, Promise.resolve(new Map<string, NodeSize>()));
+    const size = await layoutChildren(child.children, cruiseSnapshot, selectedFilePaths, profiler);
+    child.width = size.width;
+    child.height = size.height;
+  }, Promise.resolve());
 
+  const childIds = children.map(child => child.path);
+  const childSizes = new Map(children.map(child => [child.path, { width: child.width, height: child.height }]));
   const layoutEdges = buildLayoutEdgesForChildren(cruiseSnapshot, childIds, selectedFilePaths);
   const positions = await layoutChildrenWithElk(childIds, childSizes, layoutEdges, profiler);
 
-  return applyChildPositions(childIds, childSizes, positions, folderId, nodeMap, groupSizes);
+  const { maxX, maxY } = children.reduce(
+    (bounds, child) => {
+      const position = positions.get(child.path)!;
+      child.position = position;
+      return {
+        maxX: Math.max(bounds.maxX, position.x + child.width),
+        maxY: Math.max(bounds.maxY, position.y + child.height),
+      };
+    },
+    { maxX: 0, maxY: 0 },
+  );
+
+  return {
+    width: Math.max(maxX + GROUP_PADDING, LEAF_NODE_MIN_WIDTH + GROUP_PADDING * 2),
+    height: Math.max(maxY + GROUP_PADDING, GROUP_HEADER + NODE_HEIGHT + GROUP_PADDING),
+  };
 }

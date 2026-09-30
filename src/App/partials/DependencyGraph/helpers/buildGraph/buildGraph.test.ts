@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { buildCruiseSnapshot, getVisibleTree } from '@/domain';
 
+import type { VisibleTreeLayoutedNode } from '../../types';
 import { LEAF_NODE_HEIGHT, LEAF_NODE_MIN_WIDTH } from '../getLeafNodeSize';
 import { buildGraph as buildGraphFromVisibleTree } from './buildGraph';
 
@@ -15,17 +16,30 @@ function buildGraph(input: {
   cruiseSnapshot: ReturnType<typeof buildCruiseSnapshot>;
   selectedFilePaths: Record<string, boolean | undefined>;
   expandedFolderPaths: Record<string, boolean | undefined>;
-  folderColors: Map<string, string>;
 }) {
-  const { cruiseSnapshot, selectedFilePaths, expandedFolderPaths, folderColors } = input;
+  const { cruiseSnapshot, selectedFilePaths, expandedFolderPaths } = input;
 
   return buildGraphFromVisibleTree({
     cruiseSnapshot,
     selectedFilePaths,
     visibleTree: getVisibleTree(cruiseSnapshot, selectedFilePaths, expandedFolderPaths),
-    folderColors,
     options: { debug: false },
   });
+}
+
+function findNode(
+  nodes: ReadonlyMap<string, VisibleTreeLayoutedNode>,
+  path: string,
+): VisibleTreeLayoutedNode | undefined {
+  return nodes.get(path);
+}
+
+function collectPaths(nodes: ReadonlyMap<string, VisibleTreeLayoutedNode>): string[] {
+  return [...nodes.keys()];
+}
+
+function isExpandedFolder(node: VisibleTreeLayoutedNode | undefined): boolean {
+  return node?.children != null;
 }
 
 describe('buildGraph half-checked folders', () => {
@@ -38,14 +52,12 @@ describe('buildGraph half-checked folders', () => {
       cruiseSnapshot: buildCruiseSnapshot(modules),
       selectedFilePaths: Object.fromEntries(['src/foo/a.ts'].map(p => [p, true])),
       expandedFolderPaths: Object.fromEntries(['src'].map(p => [p, true])),
-      folderColors: new Map(),
     });
 
-    const folderIds = nodes.filter(node => node.type === 'folder' || node.type === 'folderGroup').map(node => node.id);
-
-    expect(folderIds).toContain('src');
-    expect(folderIds).toContain('src/foo');
-    expect(nodes.some(node => node.id === 'src/foo/a.ts')).toBe(false);
+    expect(collectPaths(nodes)).toEqual(expect.arrayContaining(['src', 'src/foo']));
+    expect(findNode(nodes, 'src/foo/a.ts')).toBeUndefined();
+    expect(isExpandedFolder(findNode(nodes, 'src'))).toBe(true);
+    expect(isExpandedFolder(findNode(nodes, 'src/foo'))).toBe(false);
   });
 
   it('shows selected files inside expanded half-checked folders', async () => {
@@ -53,11 +65,10 @@ describe('buildGraph half-checked folders', () => {
       cruiseSnapshot: buildCruiseSnapshot(modules),
       selectedFilePaths: Object.fromEntries(['src/foo/a.ts'].map(p => [p, true])),
       expandedFolderPaths: Object.fromEntries(['src', 'src/foo'].map(p => [p, true])),
-      folderColors: new Map(),
     });
 
-    expect(nodes.some(node => node.id === 'src/foo/a.ts' && node.type === 'file')).toBe(true);
-    expect(nodes.some(node => node.id === 'src/foo/b.ts')).toBe(false);
+    expect(findNode(nodes, 'src/foo/a.ts')).toBeDefined();
+    expect(findNode(nodes, 'src/foo/b.ts')).toBeUndefined();
   });
 
   it('keeps fully selected folder behavior', async () => {
@@ -69,15 +80,14 @@ describe('buildGraph half-checked folders', () => {
       cruiseSnapshot: buildCruiseSnapshot(modules),
       selectedFilePaths,
       expandedFolderPaths: Object.fromEntries(['src', 'src/foo', 'src/bar'].map(p => [p, true])),
-      folderColors: new Map(),
     });
 
-    const nodeIds = nodes.map(node => node.id);
-    expect(nodeIds).toContain('src');
-    expect(nodeIds).toContain('src/foo/a.ts');
-    expect(nodeIds).toContain('src/foo/b.ts');
-    expect(nodeIds).toContain('src/bar/c.ts');
-    expect(nodeIds).not.toContain('lib/y.ts');
+    const paths = collectPaths(nodes);
+    expect(paths).toContain('src');
+    expect(paths).toContain('src/foo/a.ts');
+    expect(paths).toContain('src/foo/b.ts');
+    expect(paths).toContain('src/bar/c.ts');
+    expect(paths).not.toContain('lib/y.ts');
   });
 
   it('uses separate container roots for unrelated branches', async () => {
@@ -85,15 +95,24 @@ describe('buildGraph half-checked folders', () => {
       cruiseSnapshot: buildCruiseSnapshot(modules),
       selectedFilePaths: Object.fromEntries(['src/foo/a.ts', 'lib/y.ts'].map(p => [p, true])),
       expandedFolderPaths: Object.fromEntries(['src', 'src/foo', 'lib'].map(p => [p, true])),
-      folderColors: new Map(),
     });
 
-    const folderIds = nodes.filter(node => node.type === 'folder' || node.type === 'folderGroup').map(node => node.id);
+    expect(collectPaths(nodes)).toEqual(expect.arrayContaining(['src', 'lib', 'src/foo/a.ts', 'lib/y.ts']));
+  });
 
-    expect(folderIds).toContain('src');
-    expect(folderIds).toContain('lib');
-    expect(nodes.some(node => node.id === 'src/foo/a.ts' && node.type === 'file')).toBe(true);
-    expect(nodes.some(node => node.id === 'lib/y.ts' && node.type === 'file')).toBe(true);
+  it('indexes layouted nodes in both tree and flat nodes map with shared refs', async () => {
+    const { nodes, tree } = await buildGraph({
+      cruiseSnapshot: buildCruiseSnapshot(modules),
+      selectedFilePaths: Object.fromEntries(['src/foo/a.ts'].map(p => [p, true])),
+      expandedFolderPaths: Object.fromEntries(['src', 'src/foo'].map(p => [p, true])),
+    });
+
+    expect(tree.has('src')).toBe(true);
+    expect(nodes.get('src')).toBe(tree.get('src'));
+    expect(nodes.get('src/foo')).toBe(tree.get('src')?.children?.find(child => child.path === 'src/foo'));
+    expect(nodes.get('src/foo/a.ts')).toBe(
+      nodes.get('src/foo')?.children?.find(child => child.path === 'src/foo/a.ts'),
+    );
   });
 });
 
@@ -110,11 +129,9 @@ describe('buildGraph circular dependencies', () => {
       cruiseSnapshot: buildCruiseSnapshot(modules),
       selectedFilePaths: Object.fromEntries(['src/foo/a.ts', 'src/foo/b.ts'].map(p => [p, true])),
       expandedFolderPaths: Object.fromEntries(['src', 'src/foo'].map(p => [p, true])),
-      folderColors: new Map(),
     });
 
-    const fileNode = nodes.find(node => node.id === 'src/foo/a.ts');
-    expect(fileNode?.data.circular).toBe(true);
+    expect(findNode(nodes, 'src/foo/a.ts')?.valueCircular).toBe(true);
   });
 
   it('marks collapsed folders containing circular files', async () => {
@@ -122,69 +139,38 @@ describe('buildGraph circular dependencies', () => {
       cruiseSnapshot: buildCruiseSnapshot(modules),
       selectedFilePaths: Object.fromEntries(['src/foo/a.ts', 'src/foo/b.ts'].map(p => [p, true])),
       expandedFolderPaths: Object.fromEntries(['src'].map(p => [p, true])),
-      folderColors: new Map(),
     });
 
-    const folderNode = nodes.find(node => node.id === 'src/foo' && node.type === 'folder');
-    expect(folderNode?.data.circular).toBe(true);
+    const folderNode = findNode(nodes, 'src/foo');
+    expect(isExpandedFolder(folderNode)).toBe(false);
+    expect(folderNode?.valueCircular).toBe(true);
   });
 
-  it('does not mark expanded folder groups as circular', async () => {
+  it('keeps expanded folder circular flags from the visible tree', async () => {
     const { nodes } = await buildGraph({
       cruiseSnapshot: buildCruiseSnapshot(modules),
       selectedFilePaths: Object.fromEntries(['src/foo/a.ts', 'src/foo/b.ts'].map(p => [p, true])),
       expandedFolderPaths: Object.fromEntries(['src', 'src/foo'].map(p => [p, true])),
-      folderColors: new Map(),
     });
 
-    const groupNode = nodes.find(node => node.id === 'src/foo' && node.type === 'folderGroup');
-    expect(groupNode?.data.circular).toBeUndefined();
+    const groupNode = findNode(nodes, 'src/foo');
+    expect(isExpandedFolder(groupNode)).toBe(true);
+    expect(groupNode?.valueCircular).toBe(true);
   });
 
-  it('marks circular edges in data flags', async () => {
+  it('marks circular edges in domain flags', async () => {
     const { edges } = await buildGraph({
       cruiseSnapshot: buildCruiseSnapshot(modules),
       selectedFilePaths: Object.fromEntries(['src/foo/a.ts', 'src/foo/b.ts'].map(p => [p, true])),
       expandedFolderPaths: Object.fromEntries(['src', 'src/foo'].map(p => [p, true])),
-      folderColors: new Map(),
     });
 
     const circularEdge = edges.find(edge => edge.source === 'src/foo/a.ts');
-    expect(circularEdge?.data?.valueCircular).toBe(true);
-    expect(circularEdge?.style).toBeUndefined();
-  });
-});
-
-describe('buildGraph unresolved modules', () => {
-  it('marks file nodes with couldNotResolve', async () => {
-    const modules = [
-      moduleAt('src/foo/a.ts', [
-        {
-          resolved: 'missing-module',
-          couldNotResolve: true,
-        } as IModule['dependencies'][0],
-      ]),
-      { ...moduleAt('missing-module'), couldNotResolve: true } as IModule,
-    ];
-
-    const { nodes } = await buildGraph({
-      cruiseSnapshot: buildCruiseSnapshot(modules),
-      selectedFilePaths: Object.fromEntries(['src/foo/a.ts', 'missing-module'].map(p => [p, true])),
-      expandedFolderPaths: Object.fromEntries(['src', 'src/foo'].map(p => [p, true])),
-      folderColors: new Map(),
-    });
-
-    const unresolvedNode = nodes.find(node => node.id === 'missing-module');
-    expect(unresolvedNode?.data.couldNotResolve).toBe(true);
-    expect(nodes.find(node => node.id === 'src/foo/a.ts')?.data.couldNotResolve).toBe(false);
+    expect(circularEdge?.valueCircular).toBe(true);
   });
 });
 
 describe('buildGraph type-only dependencies', () => {
-  const noopArgs = {
-    folderColors: new Map(),
-  };
-
   const typeOnlyDep = (resolved: string, circular = false) =>
     ({
       resolved,
@@ -199,19 +185,17 @@ describe('buildGraph type-only dependencies', () => {
       dependencyTypes: ['local', 'import'],
     }) as IModule['dependencies'][0];
 
-  it('marks type-only edges in data', async () => {
+  it('marks type-only edges', async () => {
     const modules = [moduleAt('src/foo/a.ts', [typeOnlyDep('src/foo/b.ts')]), moduleAt('src/foo/b.ts')];
 
     const { edges } = await buildGraph({
       cruiseSnapshot: buildCruiseSnapshot(modules),
       selectedFilePaths: Object.fromEntries(['src/foo/a.ts', 'src/foo/b.ts'].map(p => [p, true])),
       expandedFolderPaths: Object.fromEntries(['src', 'src/foo'].map(p => [p, true])),
-      ...noopArgs,
     });
 
     const edge = edges.find(item => item.source === 'src/foo/a.ts');
-    expect(edge?.data?.typeOnly).toBe(true);
-    expect(edge?.style).toBeUndefined();
+    expect(edge?.typeOnly).toBe(true);
   });
 
   it('marks mixed type-only and value imports as not type-only', async () => {
@@ -224,11 +208,10 @@ describe('buildGraph type-only dependencies', () => {
       cruiseSnapshot: buildCruiseSnapshot(modules),
       selectedFilePaths: Object.fromEntries(['src/foo/a.ts', 'src/foo/b.ts'].map(p => [p, true])),
       expandedFolderPaths: Object.fromEntries(['src', 'src/foo'].map(p => [p, true])),
-      ...noopArgs,
     });
 
     const edge = edges.find(item => item.source === 'src/foo/a.ts');
-    expect(edge?.data?.typeOnly).toBe(false);
+    expect(edge?.typeOnly).toBe(false);
   });
 
   it('does not mark nodes circular for type-only circular dependencies', async () => {
@@ -241,15 +224,13 @@ describe('buildGraph type-only dependencies', () => {
       cruiseSnapshot: buildCruiseSnapshot(modules),
       selectedFilePaths: Object.fromEntries(['src/foo/a.ts', 'src/foo/b.ts'].map(p => [p, true])),
       expandedFolderPaths: Object.fromEntries(['src', 'src/foo'].map(p => [p, true])),
-      ...noopArgs,
     });
 
-    const fileNode = nodes.find(node => node.id === 'src/foo/a.ts');
-    expect(fileNode?.data.circular).toBeFalsy();
+    expect(findNode(nodes, 'src/foo/a.ts')?.valueCircular).toBeFalsy();
 
     const edge = edges.find(item => item.source === 'src/foo/a.ts');
-    expect(edge?.data?.typeOnlyCircular).toBe(true);
-    expect(edge?.data?.typeOnly).toBe(true);
+    expect(edge?.typeOnlyCircular).toBe(true);
+    expect(edge?.typeOnly).toBe(true);
   });
 
   it('marks value circular on nodes and edges', async () => {
@@ -259,20 +240,15 @@ describe('buildGraph type-only dependencies', () => {
       cruiseSnapshot: buildCruiseSnapshot(modules),
       selectedFilePaths: Object.fromEntries(['src/foo/a.ts', 'src/foo/b.ts'].map(p => [p, true])),
       expandedFolderPaths: Object.fromEntries(['src', 'src/foo'].map(p => [p, true])),
-      ...noopArgs,
     });
 
-    expect(nodes.find(node => node.id === 'src/foo/a.ts')?.data.circular).toBe(true);
-    expect(edges.find(item => item.source === 'src/foo/a.ts')?.data?.valueCircular).toBe(true);
-    expect(edges.find(item => item.source === 'src/foo/a.ts')?.data?.typeOnly).toBe(false);
+    expect(findNode(nodes, 'src/foo/a.ts')?.valueCircular).toBe(true);
+    expect(edges.find(item => item.source === 'src/foo/a.ts')?.valueCircular).toBe(true);
+    expect(edges.find(item => item.source === 'src/foo/a.ts')?.typeOnly).toBe(false);
   });
 });
 
 describe('buildGraph layout', () => {
-  const noopArgs = {
-    folderColors: new Map(),
-  };
-
   function manySiblingSources(count: number) {
     return Array.from({ length: count }, (_, index) => `src/foo/f${index}.ts`);
   }
@@ -285,10 +261,9 @@ describe('buildGraph layout', () => {
       cruiseSnapshot: buildCruiseSnapshot(modules),
       selectedFilePaths: Object.fromEntries(sources.map(p => [p, true])),
       expandedFolderPaths: Object.fromEntries(['src', 'src/foo'].map(p => [p, true])),
-      ...noopArgs,
     });
 
-    const fileNodes = nodes.filter(node => node.type === 'file');
+    const fileNodes = sources.map(path => findNode(nodes, path)!);
     const xValues = new Set(fileNodes.map(node => node.position.x));
     expect(fileNodes).toHaveLength(8);
     expect(xValues.size).toBeGreaterThan(1);
@@ -303,10 +278,9 @@ describe('buildGraph layout', () => {
       cruiseSnapshot: buildCruiseSnapshot(modules),
       selectedFilePaths: Object.fromEntries(['src/foo/a.ts', 'src/foo/b.ts', 'src/foo/c.ts'].map(p => [p, true])),
       expandedFolderPaths: Object.fromEntries(['src', 'src/foo'].map(p => [p, true])),
-      ...noopArgs,
     });
 
-    const pos = (id: string) => nodes.find(node => node.id === id)!.position;
+    const pos = (id: string) => findNode(nodes, id)!.position;
     expect(pos('src/foo/a.ts').x).toBeLessThan(pos('src/foo/b.ts').x);
     expect(pos('src/foo/b.ts').x).toBeLessThan(pos('src/foo/c.ts').x);
   });
@@ -321,19 +295,17 @@ describe('buildGraph layout', () => {
       cruiseSnapshot: buildCruiseSnapshot(mediumModules),
       selectedFilePaths: Object.fromEntries(mediumSources.map(p => [p, true])),
       expandedFolderPaths: Object.fromEntries(['src', 'src/foo'].map(p => [p, true])),
-      ...noopArgs,
     });
     const largeGraph = await buildGraph({
       cruiseSnapshot: buildCruiseSnapshot(largeModules),
       selectedFilePaths: Object.fromEntries(largeSources.map(p => [p, true])),
       expandedFolderPaths: Object.fromEntries(['src', 'src/foo'].map(p => [p, true])),
-      ...noopArgs,
     });
 
-    const mediumGroup = mediumGraph.nodes.find(node => node.id === 'src/foo' && node.type === 'folderGroup');
-    const largeGroup = largeGraph.nodes.find(node => node.id === 'src/foo' && node.type === 'folderGroup');
-    const mediumArea = (mediumGroup?.style?.width as number) * (mediumGroup?.style?.height as number);
-    const largeArea = (largeGroup?.style?.width as number) * (largeGroup?.style?.height as number);
+    const mediumGroup = findNode(mediumGraph.nodes, 'src/foo')!;
+    const largeGroup = findNode(largeGraph.nodes, 'src/foo')!;
+    const mediumArea = mediumGroup.width * mediumGroup.height;
+    const largeArea = largeGroup.width * largeGroup.height;
 
     expect(largeArea).toBeGreaterThan(mediumArea);
   });
@@ -346,14 +318,11 @@ describe('buildGraph layout', () => {
       cruiseSnapshot: buildCruiseSnapshot(modules),
       selectedFilePaths: Object.fromEntries([longPath].map(p => [p, true])),
       expandedFolderPaths: Object.fromEntries(['src', 'src/foo'].map(p => [p, true])),
-      ...noopArgs,
     });
 
-    const fileNode = nodes.find(node => node.id === longPath && node.type === 'file');
+    const fileNode = findNode(nodes, longPath);
     expect(fileNode?.width).toBeGreaterThan(LEAF_NODE_MIN_WIDTH);
     expect(fileNode?.height).toBe(LEAF_NODE_HEIGHT);
-    expect(fileNode?.style?.width).toBe(fileNode?.width);
-    expect(fileNode?.style?.height).toBe(fileNode?.height);
   });
 
   it('group size grows when children have longer names', async () => {
@@ -369,21 +338,17 @@ describe('buildGraph layout', () => {
       cruiseSnapshot: buildCruiseSnapshot(shortModules),
       selectedFilePaths: Object.fromEntries(shortSources.map(p => [p, true])),
       expandedFolderPaths: Object.fromEntries(['src', 'src/foo'].map(p => [p, true])),
-      ...noopArgs,
     });
     const longGraph = await buildGraph({
       cruiseSnapshot: buildCruiseSnapshot(longModules),
       selectedFilePaths: Object.fromEntries(longSources.map(p => [p, true])),
       expandedFolderPaths: Object.fromEntries(['src', 'src/foo'].map(p => [p, true])),
-      ...noopArgs,
     });
 
-    const shortGroup = shortGraph.nodes.find(node => node.id === 'src/foo' && node.type === 'folderGroup');
-    const longGroup = longGraph.nodes.find(node => node.id === 'src/foo' && node.type === 'folderGroup');
+    const shortGroup = findNode(shortGraph.nodes, 'src/foo')!;
+    const longGroup = findNode(longGraph.nodes, 'src/foo')!;
 
-    expect(longGroup?.style?.width).toBeGreaterThan(shortGroup?.style?.width as number);
-    expect(longGroup?.width).toBe(longGroup?.style?.width);
-    expect(longGroup?.height).toBe(longGroup?.style?.height);
+    expect(longGroup.width).toBeGreaterThan(shortGroup.width);
   });
 
   it('keeps parent sibling position stable when expanding a folder', async () => {
@@ -392,7 +357,6 @@ describe('buildGraph layout', () => {
     const graphArgs = {
       cruiseSnapshot: buildCruiseSnapshot(modules),
       selectedFilePaths: Object.fromEntries(['src/foo/a.ts', 'src/bar/c.ts', 'src/baz/e.ts'].map(p => [p, true])),
-      ...noopArgs,
     };
 
     const collapsed = await buildGraph({
@@ -404,10 +368,7 @@ describe('buildGraph layout', () => {
       expandedFolderPaths: Object.fromEntries(['src', 'src/foo'].map(p => [p, true])),
     });
 
-    const collapsedFoo = collapsed.nodes.find(node => node.id === 'src/foo');
-    const expandedFoo = expanded.nodes.find(node => node.id === 'src/foo');
-
-    expect(collapsedFoo?.position).toEqual(expandedFoo?.position);
+    expect(findNode(collapsed.nodes, 'src/foo')?.position).toEqual(findNode(expanded.nodes, 'src/foo')?.position);
   });
 
   it('still changes visual edges when a folder is expanded', async () => {
@@ -416,7 +377,6 @@ describe('buildGraph layout', () => {
     const graphArgs = {
       cruiseSnapshot: buildCruiseSnapshot(modules),
       selectedFilePaths: Object.fromEntries(['src/foo/a.ts', 'src/bar/c.ts'].map(p => [p, true])),
-      ...noopArgs,
     };
 
     const collapsed = await buildGraph({
@@ -439,7 +399,6 @@ describe('buildGraph layout', () => {
     const graphArgs = {
       cruiseSnapshot: buildCruiseSnapshot(modules),
       selectedFilePaths: Object.fromEntries(['lib/x.ts', 'src/foo/bar/c.ts'].map(p => [p, true])),
-      ...noopArgs,
     };
 
     const collapsedInner = await buildGraph({
