@@ -24,6 +24,7 @@ function buildGraph(input: {
     selectedFilePaths,
     visibleTree: getVisibleTree(cruiseSnapshot, selectedFilePaths, expandedFolderPaths),
     folderColors,
+    options: { debug: false },
   });
 }
 

@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 
 import type { CruiseSnapshot, VisibleTreeNode } from '@/domain';
+import { NEED_PROFILE } from '@/Shared';
 
-import { buildGraph } from '../../helpers';
+import { runBuildGraphInWorker } from '../../helpers/buildGraph';
 import type { BuildGraphResult, PresenceRecord } from '../../types';
 
 function createEmptyGraphResult(): BuildGraphResult {
@@ -54,12 +55,15 @@ export function useBuildGraph(config: UseBuildGraphInput): UseBuildGraphResult {
     //synchronous update is fine here
     setIsBuildingGraph(true);
 
-    void buildGraph({
+    const session = runBuildGraphInWorker({
       cruiseSnapshot,
       selectedFilePaths,
       visibleTree,
       folderColors,
-    })
+      options: { debug: NEED_PROFILE },
+    });
+
+    void session.promise
       .then(result => {
         if (cancelled) {
           return;
@@ -82,6 +86,7 @@ export function useBuildGraph(config: UseBuildGraphInput): UseBuildGraphResult {
 
     return () => {
       cancelled = true;
+      session.terminate();
     };
   }, [cruiseSnapshot, selectedFilePaths, visibleTree, folderColors]);
 

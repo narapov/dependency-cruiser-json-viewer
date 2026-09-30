@@ -8,15 +8,11 @@ import { buildCruiseSnapshot } from '@/domain';
 import type { BuildGraphResult } from '../../types';
 import { useBuildGraph } from './useBuildGraph';
 
-const buildGraph = vi.hoisted(() => vi.fn());
+const runBuildGraphInWorker = vi.hoisted(() => vi.fn());
 
-vi.mock('../../helpers', async importOriginal => {
-  const actual = await importOriginal<typeof import('../../helpers')>();
-  return {
-    ...actual,
-    buildGraph,
-  };
-});
+vi.mock('../../helpers/buildGraph', () => ({
+  runBuildGraphInWorker,
+}));
 
 const FOLDER_COLORS = new Map<string, string>();
 
@@ -27,6 +23,7 @@ const cruiseSnapshot = buildCruiseSnapshot([
 
 const EMPTY_SELECTION = {};
 const SELECTED_A = { 'a.ts': true };
+const SELECTED_B = { 'b.ts': true };
 const EMPTY_VISIBLE_TREE: never[] = [];
 
 const graphResult: BuildGraphResult = {
@@ -44,11 +41,14 @@ const hookInputBase = {
 
 describe('useBuildGraph', () => {
   afterEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
   });
 
   it('clears graph when selection is empty', async () => {
-    buildGraph.mockResolvedValue(graphResult);
+    runBuildGraphInWorker.mockReturnValue({
+      promise: Promise.resolve(graphResult),
+      terminate: vi.fn(),
+    });
     const { result } = renderHook(() =>
       useBuildGraph({
         ...hookInputBase,
@@ -62,11 +62,14 @@ describe('useBuildGraph', () => {
 
     expect(result.current.graphResult.nodes).toEqual([]);
     expect(result.current.buildFailed).toBe(false);
-    expect(buildGraph).not.toHaveBeenCalled();
+    expect(runBuildGraphInWorker).not.toHaveBeenCalled();
   });
 
   it('loads graph result on success', async () => {
-    buildGraph.mockResolvedValue(graphResult);
+    runBuildGraphInWorker.mockReturnValue({
+      promise: Promise.resolve(graphResult),
+      terminate: vi.fn(),
+    });
     const { result } = renderHook(() =>
       useBuildGraph({
         ...hookInputBase,
@@ -82,17 +85,29 @@ describe('useBuildGraph', () => {
 
     expect(result.current.graphResult).toEqual(graphResult);
     expect(result.current.buildFailed).toBe(false);
-    expect(buildGraph).toHaveBeenCalled();
+    expect(runBuildGraphInWorker).toHaveBeenCalled();
   });
 
-  it('sets buildFailed when buildGraph rejects', async () => {
-    buildGraph.mockRejectedValue(new Error('layout failed'));
+  it('sets buildFailed when worker session rejects', async () => {
+    let rejectLatestBuild: (error: Error) => void = () => {};
+    runBuildGraphInWorker.mockImplementation(() => ({
+      promise: new Promise<BuildGraphResult>((_, reject) => {
+        rejectLatestBuild = reject;
+      }),
+      terminate: vi.fn(),
+    }));
+
     const { result } = renderHook(() =>
       useBuildGraph({
         ...hookInputBase,
         selectedFilePaths: SELECTED_A,
       }),
     );
+
+    await act(async () => {
+      rejectLatestBuild(new Error('layout failed'));
+      await Promise.resolve();
+    });
 
     await waitFor(() => {
       expect(result.current.isBuildingGraph).toBe(false);
@@ -103,13 +118,25 @@ describe('useBuildGraph', () => {
   });
 
   it('clearBuildFailed resets the failure flag', async () => {
-    buildGraph.mockRejectedValue(new Error('layout failed'));
+    let rejectLatestBuild: (error: Error) => void = () => {};
+    runBuildGraphInWorker.mockImplementation(() => ({
+      promise: new Promise<BuildGraphResult>((_, reject) => {
+        rejectLatestBuild = reject;
+      }),
+      terminate: vi.fn(),
+    }));
+
     const { result } = renderHook(() =>
       useBuildGraph({
         ...hookInputBase,
         selectedFilePaths: SELECTED_A,
       }),
     );
+
+    await act(async () => {
+      rejectLatestBuild(new Error('layout failed'));
+      await Promise.resolve();
+    });
 
     await waitFor(() => {
       expect(result.current.buildFailed).toBe(true);
@@ -123,13 +150,13 @@ describe('useBuildGraph', () => {
   });
 
   it('ignores stale results after unmount', async () => {
-    let resolveBuild: (value: BuildGraphResult) => void = () => {};
-    buildGraph.mockImplementation(
-      () =>
-        new Promise<BuildGraphResult>(resolve => {
-          resolveBuild = resolve;
-        }),
-    );
+    let resolveLatestBuild: (value: BuildGraphResult) => void = () => {};
+    runBuildGraphInWorker.mockImplementation(() => ({
+      promise: new Promise<BuildGraphResult>(resolve => {
+        resolveLatestBuild = resolve;
+      }),
+      terminate: vi.fn(),
+    }));
 
     const { unmount } = renderHook(() =>
       useBuildGraph({
@@ -141,10 +168,33 @@ describe('useBuildGraph', () => {
     unmount();
 
     await act(async () => {
-      resolveBuild(graphResult);
+      resolveLatestBuild(graphResult);
       await Promise.resolve();
     });
 
-    expect(buildGraph).toHaveBeenCalled();
+    expect(runBuildGraphInWorker).toHaveBeenCalled();
+  });
+
+  it('terminates the previous worker session when inputs change', async () => {
+    const terminate = vi.fn();
+    runBuildGraphInWorker.mockImplementation(() => ({
+      promise: new Promise<BuildGraphResult>(() => {}),
+      terminate,
+    }));
+
+    const { rerender } = renderHook(
+      (props: { selectedFilePaths: Record<string, boolean | undefined> }) =>
+        useBuildGraph({
+          ...hookInputBase,
+          selectedFilePaths: props.selectedFilePaths,
+        }),
+      { initialProps: { selectedFilePaths: SELECTED_A as Record<string, boolean | undefined> } },
+    );
+
+    const terminateCallsBeforeRerender = terminate.mock.calls.length;
+
+    rerender({ selectedFilePaths: SELECTED_B });
+
+    expect(terminate.mock.calls.length).toBeGreaterThan(terminateCallsBeforeRerender);
   });
 });

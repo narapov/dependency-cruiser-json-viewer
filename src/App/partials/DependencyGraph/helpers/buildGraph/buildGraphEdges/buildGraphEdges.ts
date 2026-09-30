@@ -1,7 +1,6 @@
-import { MarkerType, type Edge } from '@xyflow/react';
+import type { Edge } from '@xyflow/react';
 
 import type { VisibleTreeEdge } from '@/domain';
-import { DEFAULT_EDGE_COLOR } from '@/Shared';
 
 import type { DependencyEdgeData } from '../../../types';
 
@@ -29,7 +28,8 @@ export function visibleTreeEdgesToReactFlowEdges(visibleEdges: readonly VisibleT
       target: edge.target,
       interactionWidth: 3,
       // Marker defs are created from edge.markerEnd in the store, not from BaseEdge props alone.
-      markerEnd: { type: MarkerType.ArrowClosed, color: DEFAULT_EDGE_COLOR },
+      // MarkerType.ArrowClosed — avoid runtime @xyflow/react import in the worker graph.
+      markerEnd: 'arrowclosed',
       data,
     };
   });

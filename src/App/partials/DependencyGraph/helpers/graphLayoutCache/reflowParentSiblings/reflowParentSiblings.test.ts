@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import type { CruisePathNode, CruiseSnapshot } from '@/domain';
+
 import { GRID_GAP_Y, GROUP_HEADER, GROUP_PADDING } from '../../buildGraph';
 import { LEAF_NODE_HEIGHT, LEAF_NODE_MIN_WIDTH } from '../../getLeafNodeSize';
 import { buildGroupFingerprints } from '../buildGroupFingerprints';
@@ -8,6 +10,22 @@ import { nodesOverlap } from '../nodesOverlap';
 import { getNodeSize } from '../resolveGroupSize';
 import type { PositionCache } from '../types';
 import { collectNodeSizes, compactAfterDrag, reflowForDrag, reflowParentSiblings } from './reflowParentSiblings';
+
+/** Minimal cruise snapshot whose ancestors lengths match parentByNode depth. */
+function cruiseSnapshotFromParentByNode(parentByNode: ReadonlyMap<string, string | null>): CruiseSnapshot {
+  const ancestorsOf = (id: string): string[] => {
+    const parent = parentByNode.get(id) ?? null;
+    if (parent === null) {
+      return [];
+    }
+    return [parent, ...ancestorsOf(parent)];
+  };
+
+  const nodes = new Map(
+    [...parentByNode.keys()].map(path => [path, { path, ancestors: ancestorsOf(path) } as CruisePathNode]),
+  );
+  return { nodes } as CruiseSnapshot;
+}
 
 describe('reflowForDrag', () => {
   it('shifts overlapping sibling while keeping dragged node at dropped position', () => {
@@ -24,7 +42,14 @@ describe('reflowForDrag', () => {
     const previousSizes = collectNodeSizes(nodes);
     const draggedPosition = { x: 130, y: 50 };
 
-    const result = reflowForDrag(nodes, parentByNode, 'file-a', draggedPosition, previousSizes);
+    const result = reflowForDrag(
+      nodes,
+      parentByNode,
+      'file-a',
+      draggedPosition,
+      previousSizes,
+      cruiseSnapshotFromParentByNode(parentByNode),
+    );
 
     expect(result.find(n => n.id === 'file-a')?.position).toEqual(draggedPosition);
     const fileB = result.find(n => n.id === 'file-b');
@@ -57,7 +82,14 @@ describe('reflowForDrag', () => {
     const previousSizes = collectNodeSizes(nodes);
     const draggedPosition = { x: 200, y: 100 };
 
-    const result = reflowForDrag(nodes, parentByNode, 'parent/child/file', draggedPosition, previousSizes);
+    const result = reflowForDrag(
+      nodes,
+      parentByNode,
+      'parent/child/file',
+      draggedPosition,
+      previousSizes,
+      cruiseSnapshotFromParentByNode(parentByNode),
+    );
 
     const inner = result.find(n => n.id === 'parent/child');
     const outer = result.find(n => n.id === 'parent');
@@ -80,7 +112,14 @@ describe('reflowForDrag', () => {
     const previousSizes = collectNodeSizes(nodes);
     const draggedPosition = { x: 180, y: 50 };
 
-    const result = reflowForDrag(nodes, parentByNode, 'file-a', draggedPosition, previousSizes);
+    const result = reflowForDrag(
+      nodes,
+      parentByNode,
+      'file-a',
+      draggedPosition,
+      previousSizes,
+      cruiseSnapshotFromParentByNode(parentByNode),
+    );
 
     const groupA = result.find(n => n.id === 'group-a');
     const groupB = result.find(n => n.id === 'group-b');
@@ -102,7 +141,7 @@ describe('compactAfterDrag', () => {
       node('file-b', { parentId: 'folder-a', position: { x: 200, y: 80 }, width: 120, height: 32 }),
     ];
 
-    const result = compactAfterDrag(nodes, parentByNode, 'file-a');
+    const result = compactAfterDrag(nodes, parentByNode, 'file-a', cruiseSnapshotFromParentByNode(parentByNode));
 
     expect(result.find(n => n.id === 'file-a')?.position).toEqual({
       x: GROUP_PADDING,
@@ -141,7 +180,12 @@ describe('compactAfterDrag', () => {
       }),
     ];
 
-    const result = compactAfterDrag(nodes, parentByNode, 'parent/child/file');
+    const result = compactAfterDrag(
+      nodes,
+      parentByNode,
+      'parent/child/file',
+      cruiseSnapshotFromParentByNode(parentByNode),
+    );
 
     expect(result.find(n => n.id === 'parent/child/file')?.position).toEqual({
       x: GROUP_PADDING,
@@ -183,6 +227,7 @@ describe('reflowParentSiblings on expand', () => {
     const result = reflowParentSiblings({
       nodes: grownNodes,
       parentByNode,
+      cruiseSnapshot: cruiseSnapshotFromParentByNode(parentByNode),
       previousSizes,
       cache,
       currentFingerprints,
@@ -219,6 +264,7 @@ describe('reflowParentSiblings on expand', () => {
     const result = reflowParentSiblings({
       nodes: grownNodes,
       parentByNode,
+      cruiseSnapshot: cruiseSnapshotFromParentByNode(parentByNode),
       previousSizes,
       cache,
       currentFingerprints,
@@ -271,6 +317,7 @@ describe('reflowParentSiblings on expand', () => {
     const result = reflowParentSiblings({
       nodes: grownNodes,
       parentByNode,
+      cruiseSnapshot: cruiseSnapshotFromParentByNode(parentByNode),
       previousSizes,
       cache,
       currentFingerprints,
@@ -309,6 +356,7 @@ describe('reflowParentSiblings on expand', () => {
     const result = reflowParentSiblings({
       nodes: grownNodes,
       parentByNode,
+      cruiseSnapshot: cruiseSnapshotFromParentByNode(parentByNode),
       previousSizes,
       cache,
       previousNodes,
@@ -358,6 +406,7 @@ describe('reflowParentSiblings on expand', () => {
     const result = reflowParentSiblings({
       nodes: grownNodes,
       parentByNode,
+      cruiseSnapshot: cruiseSnapshotFromParentByNode(parentByNode),
       previousSizes,
       cache,
       currentFingerprints,
@@ -401,6 +450,7 @@ describe('reflowParentSiblings on expand', () => {
     const result = reflowParentSiblings({
       nodes: grownNodes,
       parentByNode,
+      cruiseSnapshot: cruiseSnapshotFromParentByNode(parentByNode),
       previousSizes,
       cache,
       currentFingerprints,
@@ -435,6 +485,7 @@ describe('reflowParentSiblings on expand', () => {
     const result = reflowParentSiblings({
       nodes: grownNodes,
       parentByNode,
+      cruiseSnapshot: cruiseSnapshotFromParentByNode(parentByNode),
       previousSizes,
       cache,
       currentFingerprints,
@@ -466,6 +517,7 @@ describe('reflowParentSiblings', () => {
     const result = reflowParentSiblings({
       nodes: grownNodes,
       parentByNode,
+      cruiseSnapshot: cruiseSnapshotFromParentByNode(parentByNode),
       previousSizes,
       cache,
     });
@@ -499,6 +551,7 @@ describe('reflowParentSiblings', () => {
     const result = reflowParentSiblings({
       nodes: overlappingNodes,
       parentByNode,
+      cruiseSnapshot: cruiseSnapshotFromParentByNode(parentByNode),
       previousSizes,
       cache,
       currentFingerprints: restoredFingerprints,
@@ -528,6 +581,7 @@ describe('reflowParentSiblings', () => {
     const result = reflowParentSiblings({
       nodes,
       parentByNode,
+      cruiseSnapshot: cruiseSnapshotFromParentByNode(parentByNode),
       previousSizes,
       cache,
       currentFingerprints: fingerprints,

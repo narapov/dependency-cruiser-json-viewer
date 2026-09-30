@@ -127,6 +127,7 @@ function DependencyGraphInner(props: DependencyGraphInnerProps) {
     onAutoLayoutGroupRecursive,
   } = useGraphLayoutNodes({
     graphResult,
+    cruiseSnapshot,
     autoLayoutOnly,
   });
 

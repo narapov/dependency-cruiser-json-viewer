@@ -4,8 +4,12 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 import type { Node } from '@xyflow/react';
 
+import type { CruiseSnapshot } from '@/domain';
+
 import type { BuildGraphResult } from '../../types';
 import { useGraphLayoutNodes } from './useGraphLayoutNodes';
+
+const emptyCruiseSnapshot = { nodes: new Map() } as CruiseSnapshot;
 
 vi.mock('../../helpers', async importOriginal => {
   const actual = await importOriginal<typeof import('../../helpers')>();
@@ -56,7 +60,7 @@ describe('useGraphLayoutNodes', () => {
   it('applies graphResult nodes into React Flow state', async () => {
     const graphResult = makeGraphResult([makeNode('a.ts', { position: { x: 10, y: 20 } }), makeNode('b.ts')]);
 
-    const { result } = renderHook(() => useGraphLayoutNodes({ graphResult }));
+    const { result } = renderHook(() => useGraphLayoutNodes({ cruiseSnapshot: emptyCruiseSnapshot, graphResult }));
 
     await act(async () => {
       await Promise.resolve();
@@ -69,7 +73,9 @@ describe('useGraphLayoutNodes', () => {
   it('marks nodes non-draggable in autoLayoutOnly mode', async () => {
     const graphResult = makeGraphResult([makeNode('a.ts')]);
 
-    const { result } = renderHook(() => useGraphLayoutNodes({ graphResult, autoLayoutOnly: true }));
+    const { result } = renderHook(() =>
+      useGraphLayoutNodes({ cruiseSnapshot: emptyCruiseSnapshot, graphResult, autoLayoutOnly: true }),
+    );
 
     await act(async () => {
       await Promise.resolve();
@@ -81,7 +87,9 @@ describe('useGraphLayoutNodes', () => {
 
   it('ignores drag handlers in autoLayoutOnly mode', async () => {
     const graphResult = makeGraphResult([makeNode('a.ts')]);
-    const { result } = renderHook(() => useGraphLayoutNodes({ graphResult, autoLayoutOnly: true }));
+    const { result } = renderHook(() =>
+      useGraphLayoutNodes({ cruiseSnapshot: emptyCruiseSnapshot, graphResult, autoLayoutOnly: true }),
+    );
 
     await act(async () => {
       await Promise.resolve();
@@ -101,7 +109,7 @@ describe('useGraphLayoutNodes', () => {
 
   it('sets hasUserLayout after drag stop', async () => {
     const graphResult = makeGraphResult([makeNode('a.ts')]);
-    const { result } = renderHook(() => useGraphLayoutNodes({ graphResult }));
+    const { result } = renderHook(() => useGraphLayoutNodes({ cruiseSnapshot: emptyCruiseSnapshot, graphResult }));
 
     await act(async () => {
       await Promise.resolve();
@@ -125,7 +133,7 @@ describe('useGraphLayoutNodes', () => {
     });
     const graphResult = makeGraphResult([folder]);
 
-    const { result } = renderHook(() => useGraphLayoutNodes({ graphResult }));
+    const { result } = renderHook(() => useGraphLayoutNodes({ cruiseSnapshot: emptyCruiseSnapshot, graphResult }));
 
     await act(async () => {
       await Promise.resolve();
@@ -142,7 +150,7 @@ describe('useGraphLayoutNodes', () => {
   it('resets hasUserLayout when switching to autoLayoutOnly', async () => {
     const graphResult = makeGraphResult([makeNode('a.ts')]);
     const { result, rerender } = renderHook(
-      ({ autoLayoutOnly }) => useGraphLayoutNodes({ graphResult, autoLayoutOnly }),
+      ({ autoLayoutOnly }) => useGraphLayoutNodes({ cruiseSnapshot: emptyCruiseSnapshot, graphResult, autoLayoutOnly }),
       { initialProps: { autoLayoutOnly: false } },
     );
 
@@ -176,7 +184,8 @@ describe('useGraphLayoutNodes', () => {
     };
 
     const { result, rerender } = renderHook(
-      ({ graphResult }) => useGraphLayoutNodes({ graphResult, autoLayoutOnly: false }),
+      ({ graphResult }) =>
+        useGraphLayoutNodes({ cruiseSnapshot: emptyCruiseSnapshot, graphResult, autoLayoutOnly: false }),
       { initialProps: { graphResult: emptyGraph } },
     );
 
@@ -210,7 +219,8 @@ describe('useGraphLayoutNodes', () => {
     vi.mocked(collectNodeSizes).mockReturnValue(previousSizes);
 
     const { result, rerender } = renderHook(
-      ({ graphResult }) => useGraphLayoutNodes({ graphResult, autoLayoutOnly: false }),
+      ({ graphResult }) =>
+        useGraphLayoutNodes({ cruiseSnapshot: emptyCruiseSnapshot, graphResult, autoLayoutOnly: false }),
       { initialProps: { graphResult: firstGraph } },
     );
 

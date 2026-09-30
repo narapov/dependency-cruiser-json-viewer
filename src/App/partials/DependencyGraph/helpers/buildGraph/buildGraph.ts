@@ -1,5 +1,4 @@
-import { getCruiseModules, getEdgesForVisibleTree } from '@/domain';
-import { NEED_PROFILE } from '@/Shared';
+import { getEdgesForVisibleTree } from '@/domain';
 
 import type { BuildGraphInput, BuildGraphResult } from '../../types';
 import { sortNodesByDepth } from '../sortNodesByDepth';
@@ -16,11 +15,10 @@ export async function buildGraph({
   selectedFilePaths,
   visibleTree,
   folderColors,
+  options,
 }: BuildGraphInput): Promise<BuildGraphResult> {
-  const profiler = createBuildGraphProfiler(NEED_PROFILE);
+  const profiler = createBuildGraphProfiler(options.debug);
   profiler.start('total');
-
-  const modules = getCruiseModules(cruiseSnapshot);
 
   profiler.start('visibleNodes');
   const {
@@ -61,14 +59,14 @@ export async function buildGraph({
     expandedFolders,
     visibleNodeIds,
     parentByNode,
-    modules,
-    selectedSet,
+    cruiseSnapshot,
+    selectedFilePaths,
     profiler,
   );
   profiler.end('layout');
 
   profiler.start('sort');
-  const nodes = sortNodesByDepth([...nodeMap.values()]);
+  const nodes = sortNodesByDepth([...nodeMap.values()], cruiseSnapshot);
   profiler.end('sort');
 
   profiler.end('total');

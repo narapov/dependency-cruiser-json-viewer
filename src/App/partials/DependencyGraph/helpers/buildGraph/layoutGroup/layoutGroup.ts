@@ -1,9 +1,9 @@
-import type { IModule } from 'dependency-cruiser';
 import ELK from 'elkjs/lib/elk.bundled.js';
 
 import type { Node } from '@xyflow/react';
 
-import { buildVirtualLayoutEdges, type LayoutEdge } from '../../buildVirtualLayoutEdges';
+import { getEdgesAmongNodePaths, type CruiseSnapshot } from '@/domain';
+
 import { LEAF_NODE_HEIGHT, LEAF_NODE_MIN_WIDTH } from '../../getLeafNodeSize';
 import type { BuildGraphProfiler } from '../createBuildGraphProfiler';
 import { getDirectChildren } from '../getDirectChildren';
@@ -14,6 +14,12 @@ import type { NodeSize } from '../types';
 const NODE_HEIGHT = LEAF_NODE_HEIGHT;
 
 const elk = new ELK();
+
+interface LayoutEdge {
+  source: string;
+  target: string;
+  weight: number;
+}
 
 function isExpandedFolder(
   path: string,
@@ -28,6 +34,18 @@ function getLayoutSpacing(childCount: number) {
     nodesep: Math.min(80, 24 + childCount * 2),
     ranksep: Math.min(160, 60 + childCount * 4),
   };
+}
+
+function buildLayoutEdgesForChildren(
+  cruiseSnapshot: CruiseSnapshot,
+  childIds: readonly string[],
+  selectedFilePaths: Record<string, boolean | undefined>,
+): LayoutEdge[] {
+  return getEdgesAmongNodePaths(cruiseSnapshot, childIds, selectedFilePaths).map(edge => ({
+    source: edge.source,
+    target: edge.target,
+    weight: edge.aggregated.length,
+  }));
 }
 
 async function layoutChildrenWithElk(
@@ -163,10 +181,9 @@ function applyChildPositions(
  *    Disconnected components are packed separately (`elk.separateConnectedComponents`)
  *    so sparse sibling sets do not collapse into a single column.
  *
- * Only virtual layout edges between direct siblings at the current level influence layout.
- * Edge weight (dependency count) biases crossing minimization and straightness.
- * Cross-group dependencies (e.g. file in src/foo -> file in src/bar) do not
- * affect positions — React Flow draws visual edges after layout.
+ * Sibling edges come from `getEdgesAmongNodePaths` over the current children (same
+ * algorithm as visible-tree edges). Edge weight biases crossing minimization and straightness.
+ * React Flow draws visual edges after layout from the full visible-tree edge set.
  */
 export async function layoutGroup(
   folderId: string | null,
@@ -176,8 +193,8 @@ export async function layoutGroup(
   expandedFolders: Set<string>,
   visibleNodeIds: Set<string>,
   parentByNode: Map<string, string | null>,
-  modules: readonly IModule[],
-  selectedSet: Set<string>,
+  cruiseSnapshot: CruiseSnapshot,
+  selectedFilePaths: Record<string, boolean | undefined>,
   profiler?: BuildGraphProfiler,
 ): Promise<NodeSize> {
   const childIds = getDirectChildren(folderId, visibleNodeIds, parentByNode);
@@ -204,8 +221,8 @@ export async function layoutGroup(
         expandedFolders,
         visibleNodeIds,
         parentByNode,
-        modules,
-        selectedSet,
+        cruiseSnapshot,
+        selectedFilePaths,
         profiler,
       );
       acc.set(childId, size);
@@ -215,7 +232,7 @@ export async function layoutGroup(
     return acc;
   }, Promise.resolve(new Map<string, NodeSize>()));
 
-  const layoutEdges = buildVirtualLayoutEdges(folderId, childIds, modules, selectedSet);
+  const layoutEdges = buildLayoutEdgesForChildren(cruiseSnapshot, childIds, selectedFilePaths);
   const positions = await layoutChildrenWithElk(childIds, childSizes, layoutEdges, profiler);
 
   return applyChildPositions(childIds, childSizes, positions, folderId, nodeMap, groupSizes);

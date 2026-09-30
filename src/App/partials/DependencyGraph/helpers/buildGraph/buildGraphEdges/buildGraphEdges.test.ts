@@ -1,10 +1,7 @@
 import type { IModule } from 'dependency-cruiser';
 import { describe, expect, it } from 'vitest';
 
-import { MarkerType } from '@xyflow/react';
-
 import { buildCruiseSnapshot, getEdgesForVisibleTree, getVisibleTree, makeDependencyKey } from '@/domain';
-import { DEFAULT_EDGE_COLOR } from '@/Shared';
 
 import { visibleTreeEdgesToReactFlowEdges } from './buildGraphEdges';
 
@@ -44,7 +41,7 @@ describe('visibleTreeEdgesToReactFlowEdges', () => {
       type: 'dependency',
       source: 'src/foo/a.ts',
       target: 'src/foo/b.ts',
-      markerEnd: { type: MarkerType.ArrowClosed, color: DEFAULT_EDGE_COLOR },
+      markerEnd: 'arrowclosed',
       data: {
         typeOnly: true,
         valueCircular: false,

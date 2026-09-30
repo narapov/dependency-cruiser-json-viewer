@@ -1,5 +1,4 @@
 export * from './getMinimapNodeColor';
-export * from './buildVirtualLayoutEdges';
 export * from './buildGraph';
 export * from './graphLayoutCache';
 export * from './serializeGraphToDot';

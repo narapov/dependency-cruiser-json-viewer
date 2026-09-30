@@ -38,7 +38,7 @@ export default defineConfig(({ mode }) => {
       },
     },
     plugins: [
-      react(),
+      react({ exclude: /\.worker\.[tj]sx?$/ }),
       babel({ presets: [reactCompilerPreset()] }),
       ...(process.env.VITEST ? [] : [cruiseWatchPlugin(cruiseResultPath, { watchEnabled: cruiseWatchEnabled })]),
     ],

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useNodesState, type Node, type NodeChange, type OnNodeDrag } from '@xyflow/react';
 
+import type { CruiseSnapshot } from '@/domain';
 import { useLogChangedProps } from '@/Shared';
 
 import {
@@ -47,6 +48,7 @@ import type { BuildGraphResult } from '../../types';
  */
 interface UseGraphLayoutNodesInput {
   graphResult: BuildGraphResult;
+  cruiseSnapshot: CruiseSnapshot;
   autoLayoutOnly?: boolean;
 }
 
@@ -67,7 +69,7 @@ interface UseGraphLayoutNodesResult {
 }
 
 export function useGraphLayoutNodes(config: UseGraphLayoutNodesInput): UseGraphLayoutNodesResult {
-  const { graphResult, autoLayoutOnly = false } = config;
+  const { graphResult, cruiseSnapshot, autoLayoutOnly = false } = config;
 
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   console.log('useGraphLayoutNodes nodes', nodes);
@@ -150,6 +152,7 @@ export function useGraphLayoutNodes(config: UseGraphLayoutNodesInput): UseGraphL
       parentByNode,
       previousSizes: prevSizesRef.current,
       cache: positionCacheRef.current,
+      cruiseSnapshot,
       currentFingerprints,
       previousFingerprints: prevFingerprintsRef.current,
       previousNodes: prevNodesRef.current,
@@ -160,7 +163,7 @@ export function useGraphLayoutNodes(config: UseGraphLayoutNodesInput): UseGraphL
     prevNodesRef.current = nextNodes;
     prevParentByNodeRef.current = new Map(parentByNode);
     setNodes(nextNodes);
-  }, [autoLayoutOnly, graphResult, layoutSeed, setNodes]);
+  }, [autoLayoutOnly, cruiseSnapshot, graphResult, layoutSeed, setNodes]);
 
   const getLayoutSnapshot = useCallback((): GraphLayoutSnapshot => {
     return { nodePositions: serializePositionCache(positionCacheRef.current) };
@@ -185,10 +188,11 @@ export function useGraphLayoutNodes(config: UseGraphLayoutNodesInput): UseGraphL
           draggedNode.id,
           draggedNode.position,
           prevSizesRef.current,
+          cruiseSnapshot,
         ),
       );
     },
-    [autoLayoutOnly, graphResult.parentByNode, setNodes],
+    [autoLayoutOnly, cruiseSnapshot, graphResult.parentByNode, setNodes],
   );
 
   const onNodeDragStop = useCallback<OnNodeDrag<Node>>(
@@ -207,9 +211,11 @@ export function useGraphLayoutNodes(config: UseGraphLayoutNodesInput): UseGraphL
             draggedNode.id,
             draggedNode.position,
             prevSizesRef.current,
+            cruiseSnapshot,
           ),
           graphResult.parentByNode,
           draggedNode.id,
+          cruiseSnapshot,
         );
 
         let groupId: string | null = draggedNode.parentId ?? null;
@@ -225,7 +231,7 @@ export function useGraphLayoutNodes(config: UseGraphLayoutNodesInput): UseGraphL
         return reflowed;
       });
     },
-    [autoLayoutOnly, graphResult.parentByNode, setNodes],
+    [autoLayoutOnly, cruiseSnapshot, graphResult.parentByNode, setNodes],
   );
 
   const runAutoLayout = useCallback(
@@ -250,6 +256,7 @@ export function useGraphLayoutNodes(config: UseGraphLayoutNodesInput): UseGraphL
           parentByNode,
           previousSizes: prevSizesRef.current,
           cache: positionCacheRef.current,
+          cruiseSnapshot,
           currentFingerprints,
           previousFingerprints: currentFingerprints,
           previousNodes: currentNodes,
@@ -267,7 +274,7 @@ export function useGraphLayoutNodes(config: UseGraphLayoutNodesInput): UseGraphL
         return nextNodes;
       });
     },
-    [graphResult, setNodes],
+    [cruiseSnapshot, graphResult, setNodes],
   );
 
   const onAutoLayoutGroup = useCallback((groupId: string) => runAutoLayout(groupId, false), [runAutoLayout]);

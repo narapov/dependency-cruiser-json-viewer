@@ -1,5 +1,7 @@
 import type { Node } from '@xyflow/react';
 
+import type { CruiseSnapshot } from '@/domain';
+
 import { sortNodesByDepth } from '../../sortNodesByDepth';
 import { updateGroupCacheFromNodes } from '../applyPositionCache';
 import { collectFixedNodesForReflow } from '../collectFixedNodesForReflow';
@@ -24,6 +26,7 @@ export interface ReflowInput {
   parentByNode: ReadonlyMap<string, string | null>;
   previousSizes: ReadonlyMap<string, NodeSize>;
   cache: PositionCache;
+  cruiseSnapshot: CruiseSnapshot;
   currentFingerprints?: GroupFingerprints | null;
   previousFingerprints?: GroupFingerprints | null;
   previousNodes?: readonly Node[] | null;
@@ -97,13 +100,14 @@ export function reflowParentSiblings({
   parentByNode,
   previousSizes,
   cache,
+  cruiseSnapshot,
   currentFingerprints = null,
   previousFingerprints = null,
   previousNodes = null,
 }: ReflowInput): Node[] {
   const nodeById = new Map(nodes.map(node => [node.id, { ...node }]));
   resizeFolderGroups(nodeById, parentByNode);
-  const syncedNodes = sortNodesByDepth([...nodeById.values()]);
+  const syncedNodes = sortNodesByDepth([...nodeById.values()], cruiseSnapshot);
 
   const fixedNodeIds = collectFixedNodesForReflow(syncedNodes, previousSizes, previousNodes, parentByNode);
 
@@ -146,7 +150,7 @@ export function reflowParentSiblings({
     }
   }
 
-  return sortNodesByDepth([...nodeById.values()]);
+  return sortNodesByDepth([...nodeById.values()], cruiseSnapshot);
 }
 
 /** Shifts children so the dragged node's groups hug their content padding again. */
@@ -154,6 +158,7 @@ export function compactAfterDrag(
   nodes: Node[],
   parentByNode: ReadonlyMap<string, string | null>,
   draggedNodeId: string,
+  cruiseSnapshot: CruiseSnapshot,
 ): Node[] {
   const nodeById = new Map(nodes.map(node => [node.id, { ...node }]));
 
@@ -163,7 +168,7 @@ export function compactAfterDrag(
 
   resizeFolderGroups(nodeById, parentByNode);
 
-  return sortNodesByDepth([...nodeById.values()]);
+  return sortNodesByDepth([...nodeById.values()], cruiseSnapshot);
 }
 
 /** Places a dragged node and reflows siblings so fixed content does not overlap. */
@@ -173,6 +178,7 @@ export function reflowForDrag(
   draggedNodeId: string,
   draggedPosition: { x: number; y: number },
   previousSizes: ReadonlyMap<string, NodeSize>,
+  cruiseSnapshot: CruiseSnapshot,
 ): Node[] {
   const nodeById = new Map(nodes.map(node => [node.id, { ...node }]));
 
@@ -196,7 +202,7 @@ export function reflowForDrag(
     resizeFolderGroups(nodeById, parentByNode);
   });
 
-  return sortNodesByDepth([...nodeById.values()]);
+  return sortNodesByDepth([...nodeById.values()], cruiseSnapshot);
 }
 
 /** Snapshot of each node's width and height keyed by id. */
