@@ -19,7 +19,7 @@ import { Background, Controls, MiniMap, Panel, ReactFlow, ReactFlowProvider, typ
 
 import '@xyflow/react/dist/style.css';
 
-import { downloadTextFile, openGraphvizOnline, useLogChangedProps, useResolvedColorMode } from '@/Shared';
+import { downloadTextFile, openGraphvizOnline, useResolvedColorMode } from '@/Shared';
 
 import { normalizeNodePositions, useWorkspaceStore } from '../../stores/workspaceStore';
 import {
@@ -178,7 +178,7 @@ function DependencyGraphInner(props: DependencyGraphInnerProps) {
     onRequestRebuild: requestRebuild,
   });
 
-  const layoutApplyKey = `${autoLayoutOnly}\0${edgesType}\0${JSON.stringify(nodeLayouts ?? nodePositions)}`;
+  const layoutApplyKey = `${autoLayoutOnly}\0${JSON.stringify(nodeLayouts ?? nodePositions)}`;
   const lastAppliedLayoutKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -296,66 +296,6 @@ function DependencyGraphInner(props: DependencyGraphInnerProps) {
     ...(autoLayoutOnly ? {} : { onAutoLayoutGroup, onAutoLayoutGroupRecursive }),
   });
 
-  useLogChangedProps('DependencyGraphInner', {
-    imperativeRef,
-    onShowInFileTree,
-    onViewModuleJson,
-    onOpenEdgesTypePicker,
-    cruiseSnapshot,
-    selectedFilePaths,
-    visibleTree,
-    folderBaseColors,
-    userEdgeHighlights,
-    setUserEdgeHighlights,
-    clearAllHighlights,
-    graphSettings,
-    setGraphSettings,
-    nodePositions,
-    setNodePositions,
-    nodeLayouts,
-    setNodeLayouts,
-    activatePath,
-    t,
-    theme,
-    mode,
-    colorMode,
-    folderColors,
-    autoLayoutOnly,
-    edgesType,
-    graphResult,
-    isBuildingGraph,
-    buildFailed,
-    clearBuildFailed,
-    layoutNodes,
-    onNodesChange,
-    onNodeDrag,
-    onNodeDragStop,
-    hasUserLayout,
-    getLayoutSnapshot,
-    setLayoutSnapshot,
-    onAutoLayoutGroup,
-    onAutoLayoutGroupRecursive,
-    layoutApplyKey,
-    lastAppliedLayoutKeyRef,
-    baseEdges,
-    highlightedEdges,
-    getEdgeHighlight,
-    setUserEdgeHighlight,
-    onEdgeClick,
-    selectEdge,
-    clearSelectedEdge,
-    focusNode,
-    onEdgeContextMenu,
-    edgeContextMenu,
-    onPaneClick,
-    onPaneContextMenu,
-    onNodeClick,
-    miniMapNodeColor,
-    openContextMenu,
-    openAtElement,
-    contextMenu,
-  });
-
   if (!hasSelection) {
     return <GraphEmptySelection />;
   }
@@ -432,7 +372,6 @@ interface DependencyGraphProps {
 export const DependencyGraph = memo(function DependencyGraph(props: DependencyGraphProps) {
   const { ref, onShowInFileTree, onViewModuleJson } = props;
 
-  console.log('DependencyGraph rendered');
   const autoLayoutOnly = useWorkspaceStore(state => state.graphSettings.autoLayoutOnly);
   const [edgesTypePickerOpen, setEdgesTypePickerOpen] = useState(false);
 
