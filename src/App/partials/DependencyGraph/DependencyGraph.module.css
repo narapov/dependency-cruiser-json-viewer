@@ -10,6 +10,7 @@
 
 .container :global(.react-flow__controls) {
   margin: 12px;
+  margin-bottom: 24px;
 }
 
 .container :global(.react-flow__minimap) {
