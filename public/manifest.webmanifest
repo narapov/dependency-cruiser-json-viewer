@@ -1,0 +1,17 @@
+{
+  "name": "dependency-cruiser-json-viewer",
+  "short_name": "dependency-cruiser-json-viewer",
+  "description": "Interactive browser viewer for dependency-cruiser JSON cruise results — explore file trees, dependency graphs, and module relations.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1677ff",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
