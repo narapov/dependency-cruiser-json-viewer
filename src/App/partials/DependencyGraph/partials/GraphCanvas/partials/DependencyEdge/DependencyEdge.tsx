@@ -8,6 +8,7 @@ import { INCOMING_EDGE_COLOR, OUTGOING_EDGE_COLOR, SELECTED_EDGE_COLOR } from '@
 import { useWorkspaceStore } from '../../../../../../stores/workspaceStore';
 import { isPathOnDependencyEdge } from '../../helpers/dependencyEdgeMembership';
 import { getDependencyEdgeVisualStyle, isProtectedDependencyEdge } from '../../helpers/getDependencyEdgeVisualStyle';
+import { isEdgeEmphasized } from '../../helpers/isEdgeEmphasized';
 import { useGraphMarkersStore } from '../../stores/graphMarkersStore';
 import { useSelectedDependencyEdgeStore } from '../../stores/selectedDependencyEdgeStore';
 import type { DependencyEdgeData } from '../../types';
@@ -26,6 +27,7 @@ export const DependencyEdge = memo(function DependencyEdge(props: EdgeProps) {
     targetY,
     sourcePosition,
     targetPosition,
+    selected,
   } = props;
 
   const edgeData = data as DependencyEdgeData | undefined;
@@ -39,16 +41,6 @@ export const DependencyEdge = memo(function DependencyEdge(props: EdgeProps) {
   });
   const userEdgeHighlights = useWorkspaceStore(state => state.userEdgeHighlights);
   const isSelected = useSelectedDependencyEdgeStore(state => state.selectedEdgeId === id);
-
-  const [path] = getDependencyEdgePath({
-    sourceX,
-    sourceY,
-    sourcePosition,
-    targetX,
-    targetY,
-    targetPosition,
-    edgesType,
-  });
 
   const base = getDependencyEdgeVisualStyle(source, target, edgeData);
   const protectedEdge = isProtectedDependencyEdge(edgeData);
@@ -80,6 +72,22 @@ export const DependencyEdge = memo(function DependencyEdge(props: EdgeProps) {
     strokeWidth,
     ...(base.strokeDasharray ? { strokeDasharray: base.strokeDasharray } : {}),
   };
+
+  let path: string;
+  if (edgesType === 'libavoidOrthogonal' && edgeData?.avoidPath) {
+    const emphasized = isEdgeEmphasized(style, selected || isSelected);
+    path = !emphasized && edgeData.avoidPathWithJumps ? edgeData.avoidPathWithJumps : edgeData.avoidPath;
+  } else {
+    [path] = getDependencyEdgePath({
+      sourceX,
+      sourceY,
+      sourcePosition,
+      targetX,
+      targetY,
+      targetPosition,
+      edgesType,
+    });
+  }
 
   const getOrCreateGraphMarkerUrl = useGraphMarkersStore(state => state.getOrCreateGraphMarkerUrl);
   const markerEnd = getOrCreateGraphMarkerUrl(stroke);

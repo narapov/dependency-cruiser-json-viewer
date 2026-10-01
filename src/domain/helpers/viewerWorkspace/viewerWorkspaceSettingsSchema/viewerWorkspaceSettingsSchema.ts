@@ -27,7 +27,7 @@ const groupLayoutSchema = object({
   children: record(string(), childLayoutSchema),
 });
 
-const graphEdgesTypeSchema = zodEnum(['bezier', 'straight', 'simpleOrthogonal']);
+const graphEdgesTypeSchema = zodEnum(['bezier', 'straight', 'simpleOrthogonal', 'libavoidOrthogonal']);
 
 /** Zod schema for viewer workspace settings (schemaVersion 1). */
 export const viewerWorkspaceSettingsSchema = object({

@@ -64,7 +64,7 @@ function isReverseSameY(sourceX: number, sourceY: number, targetX: number, targe
 /**
  * Builds an SVG path for a dependency edge.
  * Reverse near-horizontal edges (target left of source) use a custom downward bulge for
- * bezier and straight types; simpleOrthogonal uses React Flow smooth-step without reverse bulge.
+ * bezier and straight types; simpleOrthogonal / libavoidOrthogonal use React Flow smooth-step without reverse bulge.
  *
  * @example
  * getDependencyEdgePath({
@@ -82,11 +82,15 @@ export function getDependencyEdgePath({
   targetPosition,
   edgesType = 'bezier',
 }: GetDependencyEdgePathParams): [path: string, labelX: number, labelY: number, offsetX: number, offsetY: number] {
-  if (edgesType !== 'simpleOrthogonal' && isReverseSameY(sourceX, sourceY, targetX, targetY)) {
+  if (
+    edgesType !== 'simpleOrthogonal' &&
+    edgesType !== 'libavoidOrthogonal' &&
+    isReverseSameY(sourceX, sourceY, targetX, targetY)
+  ) {
     return getReverseHorizontalPath(sourceX, sourceY, targetX, targetY);
   }
 
-  if (edgesType === 'simpleOrthogonal') {
+  if (edgesType === 'simpleOrthogonal' || edgesType === 'libavoidOrthogonal') {
     return getSmoothStepPath({
       sourceX,
       sourceY,

@@ -29,3 +29,6 @@ export * from './sortNodesByDepth';
 export * from './dependencyEdgeMembership';
 export * from './getDependencyEdgeVisualStyle';
 export * from './toReactFlowGraph';
+export * from './avoidRouteToPath';
+export * from './isEdgeEmphasized';
+export * from './routeEdgesWithLibavoid';

@@ -5,7 +5,7 @@ export interface FolderBaseColor {
 }
 
 /** SVG path style for dependency graph edges. */
-export type GraphEdgesType = 'bezier' | 'straight' | 'simpleOrthogonal';
+export type GraphEdgesType = 'bezier' | 'straight' | 'simpleOrthogonal' | 'libavoidOrthogonal';
 
 /** Persisted child geometry within a folder group. */
 export interface ViewerChildLayout {

@@ -154,6 +154,9 @@
     "edgesTypeBezier": "Bezier",
     "edgesTypeStraight": "Rectas",
     "edgesTypeSimpleOrthogonal": "Ortogonal simple",
+    "edgesTypeLibavoidOrthogonal": "Libavoid orthogonal (lento)",
+    "libavoidRoutingProgress": "Enrutando aristas",
+    "libavoidOverlapProgress": "Resolviendo solapamientos",
     "selectEdgesType": "Seleccionar tipo de aristas",
     "edgesTypeOptions": "Opciones de tipo de aristas",
     "edgesTypeActive": "(activo)"

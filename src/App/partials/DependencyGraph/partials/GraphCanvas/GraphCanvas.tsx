@@ -1,10 +1,12 @@
-import { useCallback, useRef, useState, type MouseEvent as ReactMouseEvent, type Ref } from 'react';
+import { useCallback, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent, type Ref } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
+import LinearProgress from '@mui/material/LinearProgress';
 import Snackbar from '@mui/material/Snackbar';
 import { useColorScheme, useTheme } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
 import { Background, Controls, MiniMap, Panel, ReactFlow, type Node } from '@xyflow/react';
 
 import '@xyflow/react/dist/style.css';
@@ -24,6 +26,7 @@ import {
   useGraphLayoutNodes,
   useGraphWorkspaceActions,
   useHighlightedEdges,
+  useLibavoidEdgeRouting,
   usePendingFocusNode,
   useThemedFolderColors,
 } from './hooks';
@@ -110,6 +113,7 @@ export function GraphCanvas(props: GraphCanvasProps) {
 
   const {
     nodes: layoutNodes,
+    parentByNode,
     onNodesChange,
     onNodeDrag,
     onNodeDragStop,
@@ -127,6 +131,24 @@ export function GraphCanvas(props: GraphCanvasProps) {
     onRequestRebuild: requestRebuild,
   });
 
+  const [isNodeDragging, setIsNodeDragging] = useState(false);
+
+  const handleNodeDrag = useCallback(
+    (...args: Parameters<typeof onNodeDrag>) => {
+      setIsNodeDragging(true);
+      onNodeDrag(...args);
+    },
+    [onNodeDrag],
+  );
+
+  const handleNodeDragStop = useCallback(
+    (...args: Parameters<typeof onNodeDragStop>) => {
+      setIsNodeDragging(false);
+      onNodeDragStop(...args);
+    },
+    [onNodeDragStop],
+  );
+
   useApplyWorkspaceLayout({
     autoLayoutOnly,
     nodeLayouts,
@@ -138,11 +160,19 @@ export function GraphCanvas(props: GraphCanvasProps) {
 
   useClearGraphMarkersOnEmptySelection();
 
-  const baseEdges = toReactFlowEdges(graphResult.edges);
+  const baseEdges = useMemo(() => toReactFlowEdges(graphResult.edges), [graphResult.edges]);
+
+  const { routedEdges, routingProgress } = useLibavoidEdgeRouting({
+    edgesType,
+    nodes: layoutNodes,
+    edges: baseEdges,
+    parentByNode,
+    isDragging: isNodeDragging,
+  });
 
   const { highlightedEdges, getEdgeHighlight, setUserEdgeHighlight, onEdgeClick, selectEdge, clearSelectedEdge } =
     useHighlightedEdges({
-      baseEdges,
+      baseEdges: routedEdges,
       userEdgeHighlights,
       onUserEdgeHighlightsChange: setUserEdgeHighlights,
     });
@@ -224,8 +254,8 @@ export function GraphCanvas(props: GraphCanvasProps) {
           onNodeContextMenu={onPaneContextMenu}
           onEdgeContextMenu={onEdgeContextMenu}
           onNodesChange={onNodesChange}
-          onNodeDrag={autoLayoutOnly ? undefined : onNodeDrag}
-          onNodeDragStop={autoLayoutOnly ? undefined : onNodeDragStop}
+          onNodeDrag={autoLayoutOnly ? undefined : handleNodeDrag}
+          onNodeDragStop={autoLayoutOnly ? undefined : handleNodeDragStop}
           nodesDraggable={!autoLayoutOnly}
           minZoom={0.01}
           maxZoom={20}
@@ -239,6 +269,36 @@ export function GraphCanvas(props: GraphCanvasProps) {
               <GraphLegend />
             </Box>
           </Panel>
+          {!!routingProgress && (
+            <Panel position="top-center">
+              <Box
+                sx={{
+                  minWidth: 240,
+                  maxWidth: 360,
+                  px: 1.5,
+                  py: 1,
+                  borderRadius: 1,
+                  bgcolor: 'background.paper',
+                  boxShadow: 1,
+                }}
+              >
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                  {routingProgress.phase === 'overlap'
+                    ? t('graph.libavoidOverlapProgress')
+                    : t('graph.libavoidRoutingProgress')}{' '}
+                  ({routingProgress.completed}/{routingProgress.total})
+                </Typography>
+                <LinearProgress
+                  variant="determinate"
+                  value={
+                    routingProgress.total === 0
+                      ? 0
+                      : Math.min(100, (routingProgress.completed / routingProgress.total) * 100)
+                  }
+                />
+              </Box>
+            </Panel>
+          )}
           <MiniMap
             position="bottom-left"
             pannable

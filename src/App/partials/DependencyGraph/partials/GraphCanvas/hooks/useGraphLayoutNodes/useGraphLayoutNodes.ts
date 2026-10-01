@@ -34,6 +34,7 @@ export interface GraphLayoutSnapshot {
 
 interface UseGraphLayoutNodesResult {
   nodes: Node[];
+  parentByNode: ReadonlyMap<string, string | null>;
   onNodesChange: (changes: NodeChange[]) => void;
   onNodeDrag: OnNodeDrag<Node>;
   onNodeDragStop: OnNodeDrag<Node>;
@@ -151,8 +152,17 @@ export function useGraphLayoutNodes(config: UseGraphLayoutNodesInput): UseGraphL
     [nodes, autoLayoutOnly],
   );
 
+  const parentByNode = useMemo(() => {
+    const map = new Map<string, string | null>();
+    nodes.forEach(node => {
+      map.set(node.id, node.parentId ?? null);
+    });
+    return map;
+  }, [nodes]);
+
   return {
     nodes: layoutNodes,
+    parentByNode,
     onNodesChange,
     onNodeDrag,
     onNodeDragStop,

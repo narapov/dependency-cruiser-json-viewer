@@ -154,6 +154,9 @@
     "edgesTypeBezier": "Безье",
     "edgesTypeStraight": "Прямые",
     "edgesTypeSimpleOrthogonal": "Простой ортогональный",
+    "edgesTypeLibavoidOrthogonal": "Libavoid orthogonal (медленно)",
+    "libavoidRoutingProgress": "Маршрутизация рёбер",
+    "libavoidOverlapProgress": "Устранение наложений",
     "selectEdgesType": "Выбрать тип рёбер",
     "edgesTypeOptions": "Варианты типа рёбер",
     "edgesTypeActive": "(активно)"

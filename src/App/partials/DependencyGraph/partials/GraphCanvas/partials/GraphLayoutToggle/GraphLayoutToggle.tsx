@@ -17,6 +17,7 @@ const EDGES_TYPE_OPTIONS: { value: GraphEdgesType; labelKey: string }[] = [
   { value: 'bezier', labelKey: 'graph.edgesTypeBezier' },
   { value: 'straight', labelKey: 'graph.edgesTypeStraight' },
   { value: 'simpleOrthogonal', labelKey: 'graph.edgesTypeSimpleOrthogonal' },
+  { value: 'libavoidOrthogonal', labelKey: 'graph.edgesTypeLibavoidOrthogonal' },
 ];
 
 export function GraphLayoutToggle() {

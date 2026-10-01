@@ -4,3 +4,4 @@ export * from './getGroupDepth';
 export * from './nodesOverlap';
 export * from './resizeFolderGroups';
 export * from './isDescendantOf';
+export * from './getAbsoluteNodePosition';
