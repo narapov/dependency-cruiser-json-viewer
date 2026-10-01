@@ -7,9 +7,9 @@ import { ensureLibavoidInit } from './ensureLibavoidInit';
 import { LIBAVOID_NEED_PROFILE } from './libavoidNeedProfile';
 import { LIBAVOID_ROUTING_OPTIONS, logLibavoidCall } from './libavoidRoutingOptions';
 import {
-  assignLibavoidPorts,
   buildFlatLibavoidGraph,
   buildHierarchicalLibavoidGraph,
+  resolveLibavoidPortAssignment,
   type LibavoidElkGraph,
   type LibavoidPortAssignment,
 } from './nodesToLibavoidGraph';
@@ -299,7 +299,7 @@ export async function routeEdgesWithLibavoid(input: RouteEdgesWithLibavoidInput)
   }
 
   profiler.start('assignPorts');
-  const ports = assignLibavoidPorts(nodes, edges, parentByNode);
+  const ports = resolveLibavoidPortAssignment(nodes, edges, parentByNode);
   profiler.end('assignPorts');
 
   profiler.start('init');

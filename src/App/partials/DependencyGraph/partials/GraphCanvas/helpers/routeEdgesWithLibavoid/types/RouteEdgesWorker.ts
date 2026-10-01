@@ -1,6 +1,6 @@
 import type { Edge, Node } from '@xyflow/react';
 
-import type { AvoidRoute } from '../../../types';
+import type { AvoidRoute, EdgePort } from '../../../types';
 import type { LibavoidRoutingProgress } from './LibavoidRoutingProgress';
 
 /** Serializable node geometry for the libavoid worker. */
@@ -18,6 +18,8 @@ export interface RouteEdgesWorkerEdge {
   id: string;
   source: string;
   target: string;
+  sourcePort?: EdgePort;
+  targetPort?: EdgePort;
 }
 
 export interface RouteEdgesWorkerRequest {
@@ -48,11 +50,16 @@ export function toRouteEdgesWorkerRequest(input: {
       height: node.height,
       parentId: node.parentId ?? null,
     })),
-    edges: edges.map(edge => ({
-      id: edge.id,
-      source: edge.source,
-      target: edge.target,
-    })),
+    edges: edges.map(edge => {
+      const data = edge.data as { sourcePort?: EdgePort; targetPort?: EdgePort } | undefined;
+      return {
+        id: edge.id,
+        source: edge.source,
+        target: edge.target,
+        ...(data?.sourcePort ? { sourcePort: data.sourcePort } : {}),
+        ...(data?.targetPort ? { targetPort: data.targetPort } : {}),
+      };
+    }),
     parentByNode: [...parentByNode.entries()],
   };
 }
@@ -77,6 +84,10 @@ export function fromRouteEdgesWorkerRequest(request: RouteEdgesWorkerRequest): {
       id: edge.id,
       source: edge.source,
       target: edge.target,
+      data: {
+        ...(edge.sourcePort ? { sourcePort: edge.sourcePort } : {}),
+        ...(edge.targetPort ? { targetPort: edge.targetPort } : {}),
+      },
     })),
     parentByNode: new Map(request.parentByNode),
   };

@@ -1,9 +1,12 @@
-import type { Node } from '@xyflow/react';
+/** Minimal geometry needed to walk parent-relative positions to absolute canvas coords. */
+export interface PositionedNode {
+  position: { x: number; y: number };
+}
 
 /** Absolute canvas position for a node from stored relative positions. */
 export function getAbsoluteNodePosition(
   nodeId: string,
-  nodeById: ReadonlyMap<string, Node>,
+  nodeById: ReadonlyMap<string, PositionedNode>,
   parentByNode: ReadonlyMap<string, string | null>,
 ): { x: number; y: number } {
   const node = nodeById.get(nodeId);

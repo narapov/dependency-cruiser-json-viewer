@@ -188,6 +188,51 @@ describe('nodesToLibavoidGraph', () => {
     expect(edgeById.get('a.ts->b.ts')?.sourcePort).toBe('a.ts:E1');
   });
 
+  it('reuses frozen edge-data ports without re-ordering against the map', () => {
+    const nodes = [
+      makeNode('a.ts', { type: 'file', height: 60 }),
+      makeNode('b.ts', { type: 'file', position: { x: 200, y: 0 } }),
+      makeNode('c.ts', { type: 'file', position: { x: 200, y: 100 } }),
+    ];
+    // Map deliberately swaps natural Y order: b is above c, but ports put b on E1.
+    const edges: Edge[] = [
+      {
+        id: 'a.ts->b.ts',
+        source: 'a.ts',
+        target: 'b.ts',
+        data: {
+          sourcePort: { side: 'east', index: 1, y: 40 },
+          targetPort: { side: 'west', index: 0, y: 20 },
+        },
+      },
+      {
+        id: 'a.ts->c.ts',
+        source: 'a.ts',
+        target: 'c.ts',
+        data: {
+          sourcePort: { side: 'east', index: 0, y: 20 },
+          targetPort: { side: 'west', index: 0, y: 20 },
+        },
+      },
+    ];
+    const parentByNode = new Map<string, string | null>([
+      ['a.ts', null],
+      ['b.ts', null],
+      ['c.ts', null],
+    ]);
+
+    const graph = nodesToLibavoidGraph(nodes, edges, parentByNode);
+    const source = graph.children.find(child => child.id === 'a.ts');
+    const edgeById = new Map(graph.edges.map(edge => [edge.id, edge]));
+
+    expect(source?.ports).toEqual([
+      { id: 'a.ts:E0', x: 100, y: 20, width: 1, height: 1 },
+      { id: 'a.ts:E1', x: 100, y: 40, width: 1, height: 1 },
+    ]);
+    expect(edgeById.get('a.ts->c.ts')?.sourcePort).toBe('a.ts:E0');
+    expect(edgeById.get('a.ts->b.ts')?.sourcePort).toBe('a.ts:E1');
+  });
+
   it('orders WEST ports by source absolute center Y even when edges are listed bottom-first', () => {
     const nodes = [
       makeNode('test.ts', { type: 'file', position: { x: 0, y: 0 } }),

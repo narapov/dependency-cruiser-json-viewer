@@ -1,5 +1,6 @@
 import type { Edge, Node } from '@xyflow/react';
 
+import type { DependencyEdgeData } from '../../../types';
 import { getAbsoluteNodePosition, getNodeSize } from '../../graphLayoutCache';
 
 export interface LibavoidPort {
@@ -197,6 +198,33 @@ function edgesWithAssignedPorts(edges: readonly Edge[], ports: LibavoidPortAssig
 }
 
 /**
+ * Builds a libavoid port assignment from build-time ports on edge data.
+ * Returns `null` when any edge is missing source/target ports (caller should re-assign).
+ */
+export function libavoidPortAssignmentFromEdgeData(edges: readonly Edge[]): LibavoidPortAssignment | null {
+  const eastIndexByEdgeId = new Map<string, number>();
+  const westIndexByEdgeId = new Map<string, number>();
+  const eastPortCount = new Map<string, number>();
+  const westPortCount = new Map<string, number>();
+
+  for (const edge of edges) {
+    const data = edge.data as DependencyEdgeData | undefined;
+    const sourcePort = data?.sourcePort;
+    const targetPort = data?.targetPort;
+    if (!sourcePort || !targetPort || sourcePort.side !== 'east' || targetPort.side !== 'west') {
+      return null;
+    }
+
+    eastIndexByEdgeId.set(edge.id, sourcePort.index);
+    westIndexByEdgeId.set(edge.id, targetPort.index);
+    eastPortCount.set(edge.source, Math.max(eastPortCount.get(edge.source) ?? 0, sourcePort.index + 1));
+    westPortCount.set(edge.target, Math.max(westPortCount.get(edge.target) ?? 0, targetPort.index + 1));
+  }
+
+  return { eastIndexByEdgeId, westIndexByEdgeId, eastPortCount, westPortCount };
+}
+
+/**
  * Assigns global EAST/WEST ports for all routable edges (п1).
  * Port slots are ordered top-to-bottom by the opposite node's absolute center Y.
  */
@@ -231,6 +259,17 @@ export function assignLibavoidPorts(
   });
 
   return { eastIndexByEdgeId, westIndexByEdgeId, eastPortCount, westPortCount };
+}
+
+/**
+ * Prefers build-time edge ports when every edge carries them; otherwise assigns at route time.
+ */
+export function resolveLibavoidPortAssignment(
+  nodes: readonly Node[],
+  edges: readonly Edge[],
+  parentByNode: ReadonlyMap<string, string | null>,
+): LibavoidPortAssignment {
+  return libavoidPortAssignmentFromEdgeData(edges) ?? assignLibavoidPorts(nodes, edges, parentByNode);
 }
 
 /**
@@ -328,21 +367,20 @@ export function buildHierarchicalLibavoidGraph(input: {
 /**
  * Builds a hierarchical ELK JSON graph for whole-graph libavoid routing.
  * Expanded `folderGroup` nodes become containers (children nested with RF-relative coords).
- * All edges hang on the root; EAST/WEST ports are assigned on endpoints.
+ * All edges hang on the root; EAST/WEST ports come from edge data when present.
  */
 export function nodesToLibavoidGraph(
   nodes: readonly Node[],
   edges: readonly Edge[],
   parentByNode: ReadonlyMap<string, string | null>,
 ): LibavoidElkGraph {
-  const ports = assignLibavoidPorts(nodes, edges, parentByNode);
+  const nodeIds = new Set(nodes.map(node => node.id));
+  const routedEdges = edges.filter(edge => nodeIds.has(edge.source) && nodeIds.has(edge.target));
+  const ports = resolveLibavoidPortAssignment(nodes, routedEdges, parentByNode);
   return buildHierarchicalLibavoidGraph({
     parentId: null,
     nodes,
-    edges: edges.filter(edge => {
-      const nodeIds = new Set(nodes.map(node => node.id));
-      return nodeIds.has(edge.source) && nodeIds.has(edge.target);
-    }),
+    edges: routedEdges,
     parentByNode,
     ports,
   });

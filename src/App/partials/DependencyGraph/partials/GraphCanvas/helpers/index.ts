@@ -1,4 +1,6 @@
 export * from './getMinimapNodeColor';
+export * from './assignEdgePorts';
+export * from './resolveEdgePortEndpoint';
 export * from './buildGraph';
 export * from './graphLayoutCache';
 export {

@@ -160,7 +160,10 @@ export function GraphCanvas(props: GraphCanvasProps) {
 
   useClearGraphMarkersOnEmptySelection();
 
-  const baseEdges = useMemo(() => toReactFlowEdges(graphResult.edges), [graphResult.edges]);
+  const baseEdges = useMemo(
+    () => toReactFlowEdges(graphResult.edges, graphResult.edgePortsById),
+    [graphResult.edges, graphResult.edgePortsById],
+  );
 
   const { routedEdges, routingProgress } = useLibavoidEdgeRouting({
     edgesType,

@@ -9,7 +9,9 @@ export {
   assignLibavoidPorts,
   buildFlatLibavoidGraph,
   buildHierarchicalLibavoidGraph,
+  libavoidPortAssignmentFromEdgeData,
   nodesToLibavoidGraph,
+  resolveLibavoidPortAssignment,
 } from './nodesToLibavoidGraph';
 export type {
   LibavoidElkEdge,
