@@ -1,7 +1,6 @@
 import {
   collectRelatedModuleSources,
   getAncestorKeys,
-  getCruiseModules,
   getCruiseSources,
   getCruiseSourcesUnder,
   getSubtreeFolderKeys,
@@ -66,7 +65,7 @@ export function useGraphWorkspaceActions() {
   const showRelatedModules = (path: string, direction: RelatedModuleDirection) => {
     const selectedPaths = presenceRecordToPaths(useWorkspaceStore.getState().selectedFilePaths);
     const expandedKeys = presenceRecordToPaths(useWorkspaceStore.getState().expandedFolderPaths);
-    const related = collectRelatedModuleSources(path, getCruiseModules(cruiseSnapshot), direction);
+    const related = collectRelatedModuleSources(cruiseSnapshot, path, direction);
     const sourceSet = new Set(sources);
     const currentModuleSources = selectedPaths.filter(selected => sourceSet.has(selected));
     const nextSources = [...new Set([...currentModuleSources, ...sourcesForPath(path), ...related])];

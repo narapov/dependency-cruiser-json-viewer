@@ -5,9 +5,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { fireEvent, renderHook, screen } from '@testing-library/react';
 
-import type { ModuleRelation } from '@/domain';
+import { buildCruiseSnapshot, type ModuleRelation } from '@/domain';
 import { renderWithTheme } from '@/testsUtils';
 
+import { initialWorkspaceState, useWorkspaceStore } from '../../../../stores/workspaceStore';
 import { RelationList } from './RelationList';
 
 vi.mock('@/Shared', async importOriginal => {
@@ -64,15 +65,20 @@ const hiddenItems: ModuleRelation[] = [
 
 const listProps = {
   panelPath: 'src/panel.ts',
-  modules: [{ source: 'src/panel.ts', dependencies: [], dependents: [], valid: true }],
   direction: 'dependencies' as const,
-  userEdgeHighlights: new Map<string, string>(),
-  onSetUserDependencyHighlight: vi.fn(),
 };
 
 describe('RelationList', () => {
+  beforeEach(() => {
+    useWorkspaceStore.setState({
+      ...initialWorkspaceState,
+      cruiseSnapshot: buildCruiseSnapshot([{ source: 'src/panel.ts', dependencies: [], dependents: [], valid: true }]),
+    });
+  });
+
   afterEach(() => {
     vi.clearAllMocks();
+    useWorkspaceStore.setState({ ...initialWorkspaceState });
   });
 
   it('shows empty state when there are no items', () => {

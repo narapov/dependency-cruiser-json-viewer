@@ -4,7 +4,6 @@ import {
   collectRelatedModuleSources,
   collectViolationModulePaths,
   getAncestorKeys,
-  getCruiseModules,
   getCruiseSources,
   getCruiseSourcesUnder,
   getParentPath,
@@ -348,7 +347,7 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
     const sources = getCruiseSources(cruiseSnapshot);
     const selectedPaths = presenceRecordToPaths(selectedFilePaths);
     const expandedKeys = presenceRecordToPaths(expandedFolderPaths);
-    const related = collectRelatedModuleSources(path, getCruiseModules(cruiseSnapshot), direction);
+    const related = collectRelatedModuleSources(cruiseSnapshot, path, direction);
     const sourceSet = new Set(sources);
     const currentModuleSources = selectedPaths.filter(selected => sourceSet.has(selected));
     const nextSources = [...new Set([...currentModuleSources, ...sourcesForPath(path), ...related])];

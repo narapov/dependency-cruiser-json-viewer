@@ -1,4 +1,3 @@
-import type { IModule } from 'dependency-cruiser';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -16,24 +15,12 @@ interface RelationListProps {
   items: ModuleRelation[];
   hiddenItems?: ModuleRelation[];
   panelPath: string;
-  modules: IModule[];
   direction: DependencyKeysDirection;
-  userEdgeHighlights: ReadonlyMap<string, string>;
-  onSetUserDependencyHighlight: (dependencyKeys: readonly string[], color: string | null) => void;
   onShowInGraph: (path: string) => void;
 }
 
 export function RelationList(props: RelationListProps) {
-  const {
-    items,
-    hiddenItems = [],
-    panelPath,
-    modules,
-    direction,
-    userEdgeHighlights,
-    onSetUserDependencyHighlight,
-    onShowInGraph,
-  } = props;
+  const { items, hiddenItems = [], panelPath, direction, onShowInGraph } = props;
 
   const { t } = useTranslation();
   const [expandedKeys, setExpandedKeys] = useState(() => initialExpandedKeys(items, ''));
@@ -62,10 +49,7 @@ export function RelationList(props: RelationListProps) {
                 expandedKeys={expandedKeys}
                 onToggleExpand={key => setExpandedKeys(prev => toggleExpandedKey(prev, key))}
                 panelPath={panelPath}
-                modules={modules}
                 direction={direction}
-                userEdgeHighlights={userEdgeHighlights}
-                onSetUserDependencyHighlight={onSetUserDependencyHighlight}
                 onShowInGraph={onShowInGraph}
                 depth={0}
               />
@@ -79,10 +63,7 @@ export function RelationList(props: RelationListProps) {
           <HiddenRelationsSection
             hiddenItems={hiddenItems}
             panelPath={panelPath}
-            modules={modules}
             direction={direction}
-            userEdgeHighlights={userEdgeHighlights}
-            onSetUserDependencyHighlight={onSetUserDependencyHighlight}
             onShowInGraph={onShowInGraph}
           />
         </Box>

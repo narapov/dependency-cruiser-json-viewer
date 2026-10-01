@@ -1,4 +1,3 @@
-import type { IModule } from 'dependency-cruiser';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -18,24 +17,13 @@ import { RelationRow } from '../RelationRow';
 interface HiddenRelationsSectionProps {
   hiddenItems: ModuleRelation[];
   panelPath: string;
-  modules: IModule[];
   direction: DependencyKeysDirection;
-  userEdgeHighlights: ReadonlyMap<string, string>;
-  onSetUserDependencyHighlight: (dependencyKeys: readonly string[], color: string | null) => void;
   onShowInGraph: (path: string) => void;
 }
 
 /** Collapsible section listing relations filtered out of the main list. */
 export function HiddenRelationsSection(props: HiddenRelationsSectionProps) {
-  const {
-    hiddenItems,
-    panelPath,
-    modules,
-    direction,
-    userEdgeHighlights,
-    onSetUserDependencyHighlight,
-    onShowInGraph,
-  } = props;
+  const { hiddenItems, panelPath, direction, onShowInGraph } = props;
 
   const { t } = useTranslation();
   const [hiddenExpandedKeys, setHiddenExpandedKeys] = useState(() => initialExpandedKeys(hiddenItems, 'hidden:'));
@@ -81,10 +69,7 @@ export function HiddenRelationsSection(props: HiddenRelationsSectionProps) {
                 expandedKeys={hiddenExpandedKeys}
                 onToggleExpand={key => setHiddenExpandedKeys(prev => toggleExpandedKey(prev, key))}
                 panelPath={panelPath}
-                modules={modules}
                 direction={direction}
-                userEdgeHighlights={userEdgeHighlights}
-                onSetUserDependencyHighlight={onSetUserDependencyHighlight}
                 onShowInGraph={onShowInGraph}
                 depth={0}
               />

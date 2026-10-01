@@ -1,13 +1,12 @@
-import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
 
-import { getCruiseModules, getCruiseSources, getNodeRelations, isPathInSources } from '@/domain';
+import { getNodeRelations } from '@/domain';
 
-import { presenceRecordToPaths, useWorkspaceStore } from '../../stores/workspaceStore';
+import { useWorkspaceStore } from '../../stores/workspaceStore';
 import { DependencyPanelHeader } from './partials/DependencyPanelHeader';
 import { RelationList } from './partials/RelationList';
 
@@ -23,27 +22,14 @@ export function DependencyPanel(props: DependencyPanelProps) {
   const { t } = useTranslation();
   const cruiseSnapshot = useWorkspaceStore(state => state.cruiseSnapshot);
   const path = useWorkspaceStore(state => {
-    const sources = getCruiseSources(state.cruiseSnapshot);
-    return state.dependenciesPanelPath != null && isPathInSources(state.dependenciesPanelPath, sources)
-      ? state.dependenciesPanelPath
-      : null;
+    const panelPath = state.dependenciesPanelPath;
+    return panelPath && state.cruiseSnapshot.nodes.has(panelPath) ? panelPath : null;
   });
   const selectedFilePaths = useWorkspaceStore(state => state.selectedFilePaths);
-  const expandedFolderPaths = useWorkspaceStore(state => state.expandedFolderPaths);
-  const userEdgeHighlights = useWorkspaceStore(state => state.userEdgeHighlights);
-  const onSetUserDependencyHighlight = useWorkspaceStore(state => state.setUserDependencyHighlight);
 
-  const selectedPaths = useMemo(() => presenceRecordToPaths(selectedFilePaths), [selectedFilePaths]);
-  const expandedKeys = useMemo(() => presenceRecordToPaths(expandedFolderPaths), [expandedFolderPaths]);
-  const expandedFolders = useMemo(() => new Set(expandedKeys), [expandedKeys]);
-  const modules = useMemo(() => getCruiseModules(cruiseSnapshot), [cruiseSnapshot]);
+  const relations = path ? getNodeRelations(path, cruiseSnapshot, selectedFilePaths) : null;
 
-  const relations = useMemo(
-    () => (path != null ? getNodeRelations(path, cruiseSnapshot, selectedPaths, expandedFolders) : null),
-    [path, cruiseSnapshot, selectedPaths, expandedFolders],
-  );
-
-  if (path == null || relations == null) {
+  if (!path || !relations) {
     return null;
   }
 
@@ -65,10 +51,7 @@ export function DependencyPanel(props: DependencyPanelProps) {
           items={relations.dependencies}
           hiddenItems={relations.hiddenDependencies}
           panelPath={path}
-          modules={modules}
           direction="dependencies"
-          userEdgeHighlights={userEdgeHighlights}
-          onSetUserDependencyHighlight={onSetUserDependencyHighlight}
           onShowInGraph={onShowInGraph}
         />
 
@@ -80,10 +63,7 @@ export function DependencyPanel(props: DependencyPanelProps) {
           items={relations.dependents}
           hiddenItems={relations.hiddenDependents}
           panelPath={path}
-          modules={modules}
           direction="dependents"
-          userEdgeHighlights={userEdgeHighlights}
-          onSetUserDependencyHighlight={onSetUserDependencyHighlight}
           onShowInGraph={onShowInGraph}
         />
       </Box>

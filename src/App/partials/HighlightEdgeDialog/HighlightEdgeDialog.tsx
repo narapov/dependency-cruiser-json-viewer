@@ -1,11 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
-import {
-  collectRelatedModuleSources,
-  getCruiseModules,
-  getDependencyKeysBetweenPaths,
-  getEdgeHighlightColor,
-} from '@/domain';
+import { collectRelatedModuleSources, getDependencyKeysBetweenPaths, getEdgeHighlightColor } from '@/domain';
 import { AppDialog, AppDialogContent, AppDialogTitle } from '@/Shared';
 
 import { useWorkspaceStore } from '../../stores/workspaceStore';
@@ -43,13 +38,13 @@ function HighlightEdgeDialogContent(props: HighlightEdgeDialogContentProps) {
   const { t } = useTranslation();
   const { step, sourcePath, targetPath, selectSource, selectTarget } = useHighlightEdgeDialogState();
 
-  const modules = getCruiseModules(cruiseSnapshot);
-  const targetSources = sourcePath != null ? collectRelatedModuleSources(sourcePath, modules, 'dependencies') : [];
+  const targetSources =
+    sourcePath != null ? collectRelatedModuleSources(cruiseSnapshot, sourcePath, 'dependencies') : [];
   const targetAllowedPaths = expandPathsWithAncestors(targetSources, cruiseSnapshot);
 
   const dependencyKeys =
     sourcePath != null && targetPath != null
-      ? getDependencyKeysBetweenPaths(sourcePath, targetPath, 'dependencies', modules)
+      ? getDependencyKeysBetweenPaths(cruiseSnapshot, sourcePath, targetPath, 'dependencies')
       : [];
 
   const currentHighlight =
