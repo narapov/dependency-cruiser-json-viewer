@@ -71,6 +71,45 @@ describe('toReactFlowEdges', () => {
       }),
     ]);
   });
+
+  it('merges source/target port y and side from the port map', () => {
+    const modules = [
+      moduleAt('src/foo/a.ts', [
+        {
+          resolved: 'src/foo/b.ts',
+          circular: false,
+          typeOnly: false,
+          dependencyTypes: ['local'],
+        } as IModule['dependencies'][0],
+      ]),
+      moduleAt('src/foo/b.ts'),
+    ];
+    const snapshot = buildCruiseSnapshot(modules);
+    const selectedFilePaths = selected('src/foo/a.ts', 'src/foo/b.ts');
+    const visibleTree = getVisibleTree(snapshot, selectedFilePaths, {
+      src: true,
+      'src/foo': true,
+    });
+    const visibleEdges = getEdgesForVisibleTree(snapshot, visibleTree, selectedFilePaths);
+    const edgeKey = makeDependencyKey('src/foo/a.ts', 'src/foo/b.ts');
+    const [edge] = toReactFlowEdges(
+      visibleEdges,
+      new Map([
+        [
+          edgeKey,
+          {
+            source: { side: 'east', index: 0, y: 12 },
+            target: { side: 'west', index: 1, y: 24 },
+          },
+        ],
+      ]),
+    );
+
+    expect(edge?.data).toMatchObject({
+      sourcePort: { side: 'east', index: 0, y: 12 },
+      targetPort: { side: 'west', index: 1, y: 24 },
+    });
+  });
 });
 
 describe('toReactFlowNodes', () => {

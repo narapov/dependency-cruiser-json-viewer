@@ -172,6 +172,24 @@ describe('buildGraph circular dependencies', () => {
     const circularEdge = edges.find(edge => edge.source === 'src/foo/a.ts');
     expect(circularEdge?.valueCircular).toBe(true);
   });
+
+  it('assigns frozen edge ports for sample edges after layout', async () => {
+    const { edges, edgePortsById } = await buildGraph({
+      cruiseSnapshot: buildCruiseSnapshot(modules),
+      selectedFilePaths: Object.fromEntries(['src/foo/a.ts', 'src/foo/b.ts'].map(p => [p, true])),
+      expandedFolderPaths: Object.fromEntries(['src', 'src/foo'].map(p => [p, true])),
+    });
+
+    expect(edges.length).toBeGreaterThan(0);
+    edges.forEach(edge => {
+      const ports = edgePortsById.get(edge.key);
+      expect(ports).toBeDefined();
+      expect(ports?.source).toMatchObject({ side: 'east', index: expect.any(Number) });
+      expect(ports?.target).toMatchObject({ side: 'west', index: expect.any(Number) });
+      expect(ports?.source.y).toBeGreaterThan(0);
+      expect(ports?.target.y).toBeGreaterThan(0);
+    });
+  });
 });
 
 describe('buildGraph type-only dependencies', () => {

@@ -38,6 +38,7 @@ const graphResult: BuildGraphResult = {
   tree: new Map([['a.ts', layoutedA]]),
   edges: [],
   visibleGroupLayouts: {},
+  edgePortsById: new Map(),
 };
 
 const hookInputBase = {

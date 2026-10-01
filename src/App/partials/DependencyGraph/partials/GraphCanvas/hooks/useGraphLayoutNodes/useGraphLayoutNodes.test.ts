@@ -40,6 +40,7 @@ function makeGraphResult(
     tree: new Map(rootNodes.map(node => [node.path, node])),
     edges: [],
     visibleGroupLayouts,
+    edgePortsById: new Map(),
   };
 }
 

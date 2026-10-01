@@ -16,6 +16,7 @@ vi.mock('@xyflow/react', async importOriginal => {
   const actual = await importOriginal<typeof import('@xyflow/react')>();
   return {
     ...actual,
+    useInternalNode: () => undefined,
     BaseEdge: ({
       id,
       style,

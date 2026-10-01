@@ -1,6 +1,7 @@
 import { getEdgesForVisibleTree } from '@/domain';
 
 import type { BuildGraphInput, BuildGraphResult, VisibleTreeLayoutedNode } from '../../types';
+import { assignEdgePorts } from '../assignEdgePorts';
 import { collectVisibleGroupLayouts } from '../groupLayoutCache/mergeVisibleGroupLayouts';
 import { deserializeLayoutCache, serializeLayoutCache } from '../groupLayoutCache/serializeLayoutCache';
 import { createBuildGraphProfiler } from './createBuildGraphProfiler';
@@ -20,7 +21,20 @@ function indexLayoutedNodes(roots: readonly VisibleTreeLayoutedNode[]): Map<stri
   return nodes;
 }
 
-/** Builds a layouted visible tree, flat node index, and domain edges. */
+/** Build parent map from layouted-node children links (roots stay `null`). */
+function buildParentByNode(nodes: ReadonlyMap<string, VisibleTreeLayoutedNode>): Map<string, string | null> {
+  const parentByNode = new Map<string, string | null>([...nodes.keys()].map(path => [path, null]));
+
+  nodes.forEach(node => {
+    node.children?.forEach(child => {
+      parentByNode.set(child.path, node.path);
+    });
+  });
+
+  return parentByNode;
+}
+
+/** Builds a layouted visible tree, flat node index, domain edges, and frozen edge ports. */
 export async function buildGraph({
   cruiseSnapshot,
   selectedFilePaths,
@@ -49,6 +63,24 @@ export async function buildGraph({
   const tree = new Map(rootNodes.map(node => [node.path, node]));
   const visibleGroupLayouts = serializeLayoutCache(collectVisibleGroupLayouts(rootNodes));
 
+  profiler.start('ports');
+  const parentByNode = buildParentByNode(nodes);
+  const edgePortsById = assignEdgePorts({
+    nodes: [...nodes.values()].map(node => ({
+      id: node.path,
+      position: node.position,
+      width: node.width,
+      height: node.height,
+    })),
+    edges: edges.map(edge => ({
+      id: edge.key,
+      source: edge.source,
+      target: edge.target,
+    })),
+    parentByNode,
+  });
+  profiler.end('ports');
+
   profiler.end('total');
   profiler.log({
     selected: Object.values(selectedFilePaths).filter(present => present).length,
@@ -61,5 +93,6 @@ export async function buildGraph({
     tree,
     edges,
     visibleGroupLayouts,
+    edgePortsById,
   };
 }
