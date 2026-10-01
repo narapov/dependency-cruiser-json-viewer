@@ -2,7 +2,7 @@
 
 import type { IModule } from 'dependency-cruiser';
 import { useTranslation } from 'react-i18next';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { fireEvent, renderHook, screen } from '@testing-library/react';
 
@@ -10,7 +10,7 @@ import { buildCruiseSnapshot } from '@/domain';
 import { copyToClipboard } from '@/Shared';
 import { renderWithTheme } from '@/testsUtils';
 
-import { CruiseSnapshotProvider } from '../../contexts';
+import { initialWorkspaceState, useWorkspaceStore } from '../../stores/workspaceStore';
 import { CircularPanel } from './CircularPanel';
 
 vi.mock('@/Shared', async importOriginal => {
@@ -50,15 +50,19 @@ const modulesWithCycles: IModule[] = [
 
 function renderPanel(modules: IModule[], handlers: { onShowCycle?: () => void; onShowInGraph?: () => void } = {}) {
   const { onShowCycle = vi.fn(), onShowInGraph = vi.fn() } = handlers;
+  useWorkspaceStore.setState({
+    ...initialWorkspaceState,
+    cruiseSnapshot: buildCruiseSnapshot(modules),
+  });
 
-  return renderWithTheme(
-    <CruiseSnapshotProvider value={buildCruiseSnapshot(modules)}>
-      <CircularPanel onShowCycle={onShowCycle} onShowInGraph={onShowInGraph} />
-    </CruiseSnapshotProvider>,
-  );
+  return renderWithTheme(<CircularPanel onShowCycle={onShowCycle} onShowInGraph={onShowInGraph} />);
 }
 
 describe('CircularPanel', () => {
+  beforeEach(() => {
+    useWorkspaceStore.setState({ ...initialWorkspaceState });
+  });
+
   afterEach(() => {
     vi.clearAllMocks();
   });

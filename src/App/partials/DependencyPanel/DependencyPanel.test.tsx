@@ -8,7 +8,6 @@ import { fireEvent, renderHook, screen } from '@testing-library/react';
 import { buildCruiseSnapshot } from '@/domain';
 import { renderWithTheme } from '@/testsUtils';
 
-import { CruiseSnapshotProvider } from '../../contexts';
 import { initialWorkspaceState, pathsToPresenceRecord, useWorkspaceStore } from '../../stores/workspaceStore';
 import { DependencyPanel } from './DependencyPanel';
 
@@ -37,16 +36,14 @@ const modules = [
 const selectedPaths = ['src/foo/a.ts', 'src/foo/b.ts', 'src/bar/c.ts'];
 
 function seedPanel(path: string, selected: string[], panelModules: IModule[] = modules) {
-  const cruiseSnapshot = buildCruiseSnapshot(panelModules);
   useWorkspaceStore.setState({
     ...initialWorkspaceState,
-    cruiseSnapshot,
+    cruiseSnapshot: buildCruiseSnapshot(panelModules),
     dependenciesPanelPath: path,
     selectedFilePaths: pathsToPresenceRecord(selected),
     expandedFolderPaths: {},
     userEdgeHighlights: new Map(),
   });
-  return cruiseSnapshot;
 }
 
 describe('DependencyPanel', () => {
@@ -59,12 +56,10 @@ describe('DependencyPanel', () => {
     const onClose = vi.fn();
     const onShowInGraph = vi.fn();
     const onViewModuleJson = vi.fn();
-    const cruiseSnapshot = seedPanel('src/foo/a.ts', selectedPaths);
+    seedPanel('src/foo/a.ts', selectedPaths);
 
     renderWithTheme(
-      <CruiseSnapshotProvider value={cruiseSnapshot}>
-        <DependencyPanel onClose={onClose} onShowInGraph={onShowInGraph} onViewModuleJson={onViewModuleJson} />
-      </CruiseSnapshotProvider>,
+      <DependencyPanel onClose={onClose} onShowInGraph={onShowInGraph} onViewModuleJson={onViewModuleJson} />,
     );
 
     expect(screen.getByText('src/foo/a.ts')).toBeInTheDocument();
@@ -86,26 +81,18 @@ describe('DependencyPanel', () => {
 
   it('shows empty relation lists when there are no relations', () => {
     const { result: i18n } = renderHook(() => useTranslation());
-    const cruiseSnapshot = seedPanel('src/bar/c.ts', ['src/bar/c.ts'], [moduleAt('src/bar/c.ts')]);
+    seedPanel('src/bar/c.ts', ['src/bar/c.ts'], [moduleAt('src/bar/c.ts')]);
 
-    renderWithTheme(
-      <CruiseSnapshotProvider value={cruiseSnapshot}>
-        <DependencyPanel onClose={vi.fn()} onShowInGraph={vi.fn()} onViewModuleJson={vi.fn()} />
-      </CruiseSnapshotProvider>,
-    );
+    renderWithTheme(<DependencyPanel onClose={vi.fn()} onShowInGraph={vi.fn()} onViewModuleJson={vi.fn()} />);
 
     expect(screen.getAllByText(i18n.current.t('dependencyPanel.noDependencies'))).toHaveLength(2);
   });
 
   it('shows hidden dependents for unselected modules', () => {
     const { result: i18n } = renderHook(() => useTranslation());
-    const cruiseSnapshot = seedPanel('src/foo/a.ts', selectedPaths);
+    seedPanel('src/foo/a.ts', selectedPaths);
 
-    renderWithTheme(
-      <CruiseSnapshotProvider value={cruiseSnapshot}>
-        <DependencyPanel onClose={vi.fn()} onShowInGraph={vi.fn()} onViewModuleJson={vi.fn()} />
-      </CruiseSnapshotProvider>,
-    );
+    renderWithTheme(<DependencyPanel onClose={vi.fn()} onShowInGraph={vi.fn()} onViewModuleJson={vi.fn()} />);
 
     expect(screen.getByText(i18n.current.t('dependencyPanel.hidden', { count: 1 }))).toBeInTheDocument();
     fireEvent.click(screen.getByText(i18n.current.t('dependencyPanel.hidden', { count: 1 })));

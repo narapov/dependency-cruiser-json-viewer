@@ -9,7 +9,7 @@ import { QuickPickFileResultsList } from '../../../QuickPick';
 import { usePathSearchState } from '../../hooks';
 
 interface PathSearchBodyProps {
-  /** When set, only these paths are searchable (e.g. module files without ancestor folders). */
+  /** When set, only these paths (files and/or folders) are searchable. */
   allowedPaths?: readonly string[];
   onSelect: (path: string) => void;
 }

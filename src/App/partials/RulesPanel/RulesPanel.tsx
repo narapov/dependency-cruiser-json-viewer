@@ -4,7 +4,7 @@ import Box from '@mui/material/Box';
 
 import { getCruiseSources, groupRulesWithViolations } from '@/domain';
 
-import { useCruiseSnapshotRequired } from '../../contexts';
+import { useWorkspaceStore } from '../../stores/workspaceStore';
 import { matchesNameFilter } from './helpers/matchesNameFilter';
 import { RulesList } from './partials/RulesList';
 import { RulesNameFilter } from './partials/RulesNameFilter';
@@ -17,7 +17,7 @@ interface RulesPanelProps {
 export function RulesPanel(props: RulesPanelProps) {
   const { onSelectViolationPaths, onShowRuleViolations } = props;
 
-  const cruiseSnapshot = useCruiseSnapshotRequired();
+  const cruiseSnapshot = useWorkspaceStore(state => state.cruiseSnapshot);
   const [nameFilter, setNameFilter] = useState('');
   const deferredNameFilter = useDeferredValue(nameFilter);
   const rules = groupRulesWithViolations(

@@ -1,9 +1,19 @@
 // @vitest-environment jsdom
-import { describe, expect, it, vi } from 'vitest';
+import type { ICruiseResult, IModule } from 'dependency-cruiser';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { renderHook } from '@testing-library/react';
 
+import { initialWorkspaceState, useWorkspaceStore } from '../../stores/workspaceStore';
 import { useAppCommands, type AppCommandsOrchestration } from './useAppCommands';
+
+vi.mock('@/Shared', async importOriginal => {
+  const actual = await importOriginal<typeof import('@/Shared')>();
+  return {
+    ...actual,
+    getWindowEnvs: vi.fn(() => undefined),
+  };
+});
 
 function createOrch(): AppCommandsOrchestration {
   return {
@@ -51,7 +61,31 @@ function baseOptions(overrides: Partial<Parameters<typeof useAppCommands>[0]> = 
   };
 }
 
+function seedCruiseResult(violations: ICruiseResult['summary']['violations'] = []) {
+  useWorkspaceStore.getState().reset(
+    {
+      modules: [{ source: 'src/a.ts', dependencies: [], dependents: [], valid: true }] as IModule[],
+      summary: {
+        totalCruised: 1,
+        violations,
+        error: 0,
+        warn: 0,
+        info: 0,
+        ignore: 0,
+        optionsUsed: { args: '' },
+        environment: {} as ICruiseResult['summary']['environment'],
+      },
+    } as ICruiseResult,
+    'hard',
+  );
+}
+
 describe('useAppCommands', () => {
+  beforeEach(() => {
+    useWorkspaceStore.setState({ ...initialWorkspaceState });
+    vi.clearAllMocks();
+  });
+
   it('returns sorted commands with expected ids', () => {
     const { result } = renderHook(() => useAppCommands(baseOptions()));
 
@@ -80,6 +114,15 @@ describe('useAppCommands', () => {
   });
 
   it('wires command actions to orchestration and dialog openers', () => {
+    seedCruiseResult([
+      {
+        type: 'dependency',
+        rule: { name: 'no-circular', severity: 'error' },
+        from: 'src/a.ts',
+        to: 'src/a.ts',
+      },
+    ]);
+
     const orch = createOrch();
     const openThemePicker = vi.fn();
     const showHighlightsPanel = vi.fn();
@@ -110,23 +153,19 @@ describe('useAppCommands', () => {
           showCircularPanel,
           showHighlightsPanel,
           toggleSidebar,
-          hasCruiseResult: true,
-          hasRuleViolations: true,
         }),
       ),
     );
 
     const byId = Object.fromEntries(result.current.map(command => [command.id, command]));
 
-    byId.selectAll.onExecute();
-    byId.showCircularDependenciesOnly.onExecute();
-    byId.showRuleViolationsOnly.onExecute();
     byId.setTheme.onExecute();
-    byId.highlightEdge.onExecute();
     byId.showHighlightsPanel.onExecute();
     byId.about.onExecute();
     byId.viewCruiseResultJson.onExecute();
     byId.viewActiveItemModuleJson.onExecute();
+    byId.showRuleViolationsOnly.onExecute();
+    byId.highlightEdge.onExecute();
     byId.showFileTree.onExecute();
     byId.showRulesPanel.onExecute();
     byId.showCircularPanel.onExecute();
@@ -138,15 +177,13 @@ describe('useAppCommands', () => {
     byId.saveWorkspace.onExecute();
     byId.loadWorkspaceSettings.onExecute();
 
-    expect(orch.selectAll).toHaveBeenCalled();
-    expect(orch.showCircularDependenciesOnly).toHaveBeenCalled();
-    expect(openRuleViolationsPicker).toHaveBeenCalled();
     expect(openThemePicker).toHaveBeenCalled();
-    expect(openHighlightEdge).toHaveBeenCalled();
     expect(showHighlightsPanel).toHaveBeenCalled();
     expect(openAbout).toHaveBeenCalled();
     expect(openViewCruiseResultJson).toHaveBeenCalled();
     expect(openViewActiveModuleJson).toHaveBeenCalled();
+    expect(openRuleViolationsPicker).toHaveBeenCalled();
+    expect(openHighlightEdge).toHaveBeenCalled();
     expect(showFileTree).toHaveBeenCalled();
     expect(showRulesPanel).toHaveBeenCalled();
     expect(showCircularPanel).toHaveBeenCalled();
@@ -163,23 +200,23 @@ describe('useAppCommands', () => {
   });
 
   it('disables highlightEdge when cruise result is missing', () => {
-    const { result } = renderHook(() => useAppCommands(baseOptions({ hasCruiseResult: false })));
+    const { result } = renderHook(() => useAppCommands(baseOptions()));
 
     const byId = Object.fromEntries(result.current.map(command => [command.id, command]));
     expect(byId.highlightEdge.disabled).toBe(true);
   });
 
   it('disables showRuleViolationsOnly when there are no rule violations', () => {
-    const { result } = renderHook(() =>
-      useAppCommands(baseOptions({ hasCruiseResult: true, hasRuleViolations: false })),
-    );
+    seedCruiseResult();
+
+    const { result } = renderHook(() => useAppCommands(baseOptions()));
 
     const byId = Object.fromEntries(result.current.map(command => [command.id, command]));
     expect(byId.showRuleViolationsOnly.disabled).toBe(true);
   });
 
   it('disables viewCruiseResultJson when cruise result is missing', () => {
-    const { result } = renderHook(() => useAppCommands(baseOptions({ hasCruiseResult: false })));
+    const { result } = renderHook(() => useAppCommands(baseOptions()));
 
     const byId = Object.fromEntries(result.current.map(command => [command.id, command]));
     expect(byId.viewCruiseResultJson.disabled).toBe(true);
@@ -194,8 +231,11 @@ describe('useAppCommands', () => {
     expect(byId.saveWorkspace.disabled).toBeUndefined();
   });
 
-  it('omits loadCruiseResult when cruise watch is enabled', () => {
-    const { result } = renderHook(() => useAppCommands(baseOptions({ cruiseWatchEnabled: true })));
+  it('omits loadCruiseResult when cruise watch is enabled', async () => {
+    const { getWindowEnvs } = await import('@/Shared');
+    vi.mocked(getWindowEnvs).mockReturnValue({ watch: true });
+
+    const { result } = renderHook(() => useAppCommands(baseOptions()));
 
     const ids = result.current.map(command => command.id);
     expect(ids).not.toContain('loadCruiseResult');

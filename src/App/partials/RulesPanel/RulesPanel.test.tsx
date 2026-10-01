@@ -2,14 +2,14 @@
 
 import type { IFlattenedRuleSet, IViolation } from 'dependency-cruiser';
 import { useTranslation } from 'react-i18next';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { fireEvent, renderHook, screen, within } from '@testing-library/react';
 
 import { buildCruiseSnapshot } from '@/domain';
 import { renderWithTheme } from '@/testsUtils';
 
-import { CruiseSnapshotProvider } from '../../contexts';
+import { initialWorkspaceState, useWorkspaceStore } from '../../stores/workspaceStore';
 import { RulesPanel } from './RulesPanel';
 
 const ruleSet: IFlattenedRuleSet = {
@@ -53,10 +53,18 @@ const SINGLE_SOURCE_TREE = buildCruiseSnapshot(
 );
 
 function renderRulesPanel(ui: Parameters<typeof renderWithTheme>[0], tree = CRUISE_TREE) {
-  return renderWithTheme(<CruiseSnapshotProvider value={tree}>{ui}</CruiseSnapshotProvider>);
+  useWorkspaceStore.setState({
+    ...initialWorkspaceState,
+    cruiseSnapshot: tree,
+  });
+  return renderWithTheme(ui);
 }
 
 describe('RulesPanel', () => {
+  beforeEach(() => {
+    useWorkspaceStore.setState({ ...initialWorkspaceState });
+  });
+
   it('renders rule names under with/without violation sections', () => {
     const { result: i18n } = renderHook(() => useTranslation());
 

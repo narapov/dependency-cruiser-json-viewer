@@ -2,7 +2,7 @@ import Box from '@mui/material/Box';
 
 import { getCruiseSources } from '@/domain';
 
-import { useCruiseSnapshotRequired } from '../../contexts';
+import { useWorkspaceStore } from '../../stores/workspaceStore';
 import { CircularList } from './partials/CircularList';
 
 interface CircularPanelProps {
@@ -13,7 +13,7 @@ interface CircularPanelProps {
 export function CircularPanel(props: CircularPanelProps) {
   const { onShowCycle, onShowInGraph } = props;
 
-  const cruiseSnapshot = useCruiseSnapshotRequired();
+  const cruiseSnapshot = useWorkspaceStore(state => state.cruiseSnapshot);
   const sourceSet = new Set(getCruiseSources(cruiseSnapshot));
   const cycles = cruiseSnapshot.cycles
     .map(cycle => ({

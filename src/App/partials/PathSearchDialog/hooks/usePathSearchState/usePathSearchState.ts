@@ -1,10 +1,10 @@
 import { useDeferredValue, useMemo, useState } from 'react';
 
-import { useCruiseSnapshotRequired } from '../../../../contexts';
+import { useWorkspaceStore } from '../../../../stores/workspaceStore';
 import { buildSearchItems, searchPaths, type QuickPickFileItem } from '../../../QuickPick';
 
 interface UsePathSearchStateConfig {
-  /** When set, only these paths are searchable (e.g. module files without ancestor folders). */
+  /** When set, only these paths (files and/or folders) are searchable. */
   allowedPaths?: readonly string[];
 }
 
@@ -12,7 +12,7 @@ interface UsePathSearchStateConfig {
 export function usePathSearchState(config: UsePathSearchStateConfig = {}) {
   const { allowedPaths } = config;
 
-  const cruiseSnapshot = useCruiseSnapshotRequired();
+  const cruiseSnapshot = useWorkspaceStore(state => state.cruiseSnapshot);
   const [query, setQuery] = useState('');
   const deferredQuery = useDeferredValue(query);
 

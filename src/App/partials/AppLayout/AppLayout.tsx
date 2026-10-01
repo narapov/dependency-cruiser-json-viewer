@@ -3,6 +3,7 @@ import { Group, Panel, Separator } from 'react-resizable-panels';
 
 import Box from '@mui/material/Box';
 
+import { useWorkspaceStore } from '../../stores/workspaceStore';
 import { APP_PANELS_GROUP_ID, useAppPanelsLayout, type SidebarView } from './hooks';
 import { SidebarToggle } from './partials/SidebarToggle';
 
@@ -16,8 +17,6 @@ export interface AppLayoutProps {
   applicableRulesPanel: ReactNode | null;
   overlay: ReactNode | null;
   footer: ReactNode;
-  dependenciesPanelOpen: boolean;
-  applicableRulesPanelOpen: boolean;
   sidebarOpen: boolean;
   sidebarView: SidebarView;
   onSelectSidebarView: (view: SidebarView) => void;
@@ -76,12 +75,13 @@ export function AppLayout(props: AppLayoutProps) {
     applicableRulesPanel,
     overlay,
     footer,
-    dependenciesPanelOpen,
-    applicableRulesPanelOpen,
     sidebarOpen,
     sidebarView,
     onSelectSidebarView,
   } = props;
+
+  const dependenciesPanelOpen = useWorkspaceStore(state => state.dependenciesPanelPath != null);
+  const applicableRulesPanelOpen = useWorkspaceStore(state => state.applicableRulesPanelPath != null);
 
   const showDependencies = dependenciesPanelOpen && dependenciesPanel != null;
   const showApplicableRules = applicableRulesPanelOpen && applicableRulesPanel != null;

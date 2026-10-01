@@ -7,7 +7,6 @@ import Typography from '@mui/material/Typography';
 
 import { getCruiseModules, getCruiseSources, getNodeRelations, isPathInSources } from '@/domain';
 
-import { useCruiseSnapshotRequired } from '../../contexts';
 import { presenceRecordToPaths, useWorkspaceStore } from '../../stores/workspaceStore';
 import { DependencyPanelHeader } from './partials/DependencyPanelHeader';
 import { RelationList } from './partials/RelationList';
@@ -22,7 +21,7 @@ export function DependencyPanel(props: DependencyPanelProps) {
   const { onClose, onShowInGraph, onViewModuleJson } = props;
 
   const { t } = useTranslation();
-  const cruiseSnapshot = useCruiseSnapshotRequired();
+  const cruiseSnapshot = useWorkspaceStore(state => state.cruiseSnapshot);
   const path = useWorkspaceStore(state => {
     const sources = getCruiseSources(state.cruiseSnapshot);
     return state.dependenciesPanelPath != null && isPathInSources(state.dependenciesPanelPath, sources)

@@ -9,7 +9,6 @@ import { renderHook, screen } from '@testing-library/react';
 import { buildCruiseSnapshot } from '@/domain';
 import { renderWithTheme } from '@/testsUtils';
 
-import { CruiseSnapshotProvider } from '../../contexts';
 import { initialWorkspaceState, useWorkspaceStore } from '../../stores/workspaceStore';
 import { ApplicableRulesPanel } from './ApplicableRulesPanel';
 
@@ -56,9 +55,7 @@ describe('ApplicableRulesPanel', () => {
     });
 
     renderWithTheme(
-      <CruiseSnapshotProvider value={cruiseSnapshot}>
-        <ApplicableRulesPanel onClose={vi.fn()} onShowInGraph={vi.fn()} onSelectViolationPaths={vi.fn()} />
-      </CruiseSnapshotProvider>,
+      <ApplicableRulesPanel onClose={vi.fn()} onShowInGraph={vi.fn()} onSelectViolationPaths={vi.fn()} />,
     );
 
     expect(screen.getByText(i18n.current.t('applicableRulesPanel.title'))).toBeInTheDocument();
@@ -91,9 +88,7 @@ describe('ApplicableRulesPanel', () => {
     });
 
     renderWithTheme(
-      <CruiseSnapshotProvider value={snapshot}>
-        <ApplicableRulesPanel onClose={vi.fn()} onShowInGraph={vi.fn()} onSelectViolationPaths={vi.fn()} />
-      </CruiseSnapshotProvider>,
+      <ApplicableRulesPanel onClose={vi.fn()} onShowInGraph={vi.fn()} onSelectViolationPaths={vi.fn()} />,
     );
 
     expect(screen.getByText(i18n.current.t('applicableRulesPanel.empty'))).toBeInTheDocument();

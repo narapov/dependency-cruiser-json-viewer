@@ -1,12 +1,11 @@
 // @vitest-environment jsdom
-import type { ReactNode } from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { act, renderHook } from '@testing-library/react';
 
 import { buildCruiseSnapshot } from '@/domain';
 
-import { CruiseSnapshotProvider } from '../../../../contexts';
+import { initialWorkspaceState, useWorkspaceStore } from '../../../../stores/workspaceStore';
 import type { QuickPickCommand } from '../../types';
 import { useQuickPickState } from './useQuickPickState';
 
@@ -22,13 +21,16 @@ const COMMANDS: QuickPickCommand[] = [
   { id: 'about', label: 'About', onExecute: vi.fn() },
 ];
 
-function wrapper(props: { children: ReactNode }) {
-  return <CruiseSnapshotProvider value={CRUISE_TREE}>{props.children}</CruiseSnapshotProvider>;
-}
-
 describe('useQuickPickState', () => {
+  beforeEach(() => {
+    useWorkspaceStore.setState({
+      ...initialWorkspaceState,
+      cruiseSnapshot: CRUISE_TREE,
+    });
+  });
+
   it('starts closed with empty query', () => {
-    const { result } = renderHook(() => useQuickPickState(COMMANDS), { wrapper });
+    const { result } = renderHook(() => useQuickPickState(COMMANDS));
 
     expect(result.current.open).toBe(false);
     expect(result.current.query).toBe('');
@@ -36,7 +38,7 @@ describe('useQuickPickState', () => {
   });
 
   it('openFileMode opens with empty query and no file results until typed', () => {
-    const { result } = renderHook(() => useQuickPickState(COMMANDS), { wrapper });
+    const { result } = renderHook(() => useQuickPickState(COMMANDS));
 
     act(() => {
       result.current.openFileMode();
@@ -48,7 +50,7 @@ describe('useQuickPickState', () => {
   });
 
   it('filters files when query is typed in file mode', () => {
-    const { result } = renderHook(() => useQuickPickState(COMMANDS), { wrapper });
+    const { result } = renderHook(() => useQuickPickState(COMMANDS));
 
     act(() => {
       result.current.openFileMode();
@@ -59,7 +61,7 @@ describe('useQuickPickState', () => {
   });
 
   it('openCommandMode opens with > prefix and ranks recent commands first', () => {
-    const { result } = renderHook(() => useQuickPickState(COMMANDS, ['setTheme', 'about']), { wrapper });
+    const { result } = renderHook(() => useQuickPickState(COMMANDS, ['setTheme', 'about']));
 
     act(() => {
       result.current.openCommandMode();
@@ -71,7 +73,7 @@ describe('useQuickPickState', () => {
   });
 
   it('toggleFileMode opens when closed and closes when open', () => {
-    const { result } = renderHook(() => useQuickPickState(COMMANDS), { wrapper });
+    const { result } = renderHook(() => useQuickPickState(COMMANDS));
 
     act(() => {
       result.current.toggleFileMode();
@@ -85,7 +87,7 @@ describe('useQuickPickState', () => {
   });
 
   it('close resets query', () => {
-    const { result } = renderHook(() => useQuickPickState(COMMANDS), { wrapper });
+    const { result } = renderHook(() => useQuickPickState(COMMANDS));
 
     act(() => {
       result.current.openFileMode();
@@ -100,7 +102,7 @@ describe('useQuickPickState', () => {
   });
 
   it('switches to command mode when query starts with >', () => {
-    const { result } = renderHook(() => useQuickPickState(COMMANDS), { wrapper });
+    const { result } = renderHook(() => useQuickPickState(COMMANDS));
 
     act(() => {
       result.current.openFileMode();
@@ -113,7 +115,7 @@ describe('useQuickPickState', () => {
   });
 
   it('keeps command mode when query is only >', () => {
-    const { result } = renderHook(() => useQuickPickState(COMMANDS), { wrapper });
+    const { result } = renderHook(() => useQuickPickState(COMMANDS));
 
     act(() => {
       result.current.openCommandMode();

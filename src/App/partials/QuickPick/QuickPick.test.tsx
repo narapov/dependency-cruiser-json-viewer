@@ -8,7 +8,7 @@ import { act, fireEvent, renderHook, screen, waitFor, within } from '@testing-li
 import { buildCruiseSnapshot } from '@/domain';
 import { renderWithTheme } from '@/testsUtils';
 
-import { CruiseSnapshotProvider } from '../../contexts';
+import { initialWorkspaceState, useWorkspaceStore } from '../../stores/workspaceStore';
 import { RECENT_COMMANDS_STORAGE_KEY } from './helpers/recentCommandIds';
 import { QuickPick, type QuickPickCommand, type QuickPickHandle } from './QuickPick';
 
@@ -23,13 +23,18 @@ function getKeyboardRoot(input: HTMLElement) {
 }
 
 function renderQuickPick(ui: Parameters<typeof renderWithTheme>[0]) {
-  return renderWithTheme(<CruiseSnapshotProvider value={CRUISE_TREE}>{ui}</CruiseSnapshotProvider>);
+  useWorkspaceStore.setState({
+    ...initialWorkspaceState,
+    cruiseSnapshot: CRUISE_TREE,
+  });
+  return renderWithTheme(ui);
 }
 
 describe('QuickPick', () => {
   beforeEach(() => {
     Element.prototype.scrollIntoView = vi.fn();
     localStorage.clear();
+    useWorkspaceStore.setState({ ...initialWorkspaceState });
   });
 
   afterEach(() => {

@@ -1,11 +1,11 @@
 import { useDeferredValue, useMemo, useState } from 'react';
 
-import { useCruiseSnapshotRequired } from '../../../../contexts';
+import { useWorkspaceStore } from '../../../../stores/workspaceStore';
 import { buildSearchItems, searchCommands, searchPaths } from '../../helpers';
 import type { QuickPickCommand } from '../../types';
 
 export function useQuickPickState(commands: QuickPickCommand[], recentCommandIds: string[] = []) {
-  const cruiseSnapshot = useCruiseSnapshotRequired();
+  const cruiseSnapshot = useWorkspaceStore(state => state.cruiseSnapshot);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const allItems = useMemo(() => buildSearchItems(cruiseSnapshot), [cruiseSnapshot]);

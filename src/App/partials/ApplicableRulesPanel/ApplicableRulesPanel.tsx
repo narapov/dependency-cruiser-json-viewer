@@ -6,7 +6,6 @@ import Typography from '@mui/material/Typography';
 
 import { getCruiseSources, isPathInSources } from '@/domain';
 
-import { useCruiseSnapshotRequired } from '../../contexts';
 import { useWorkspaceStore } from '../../stores/workspaceStore';
 import { ApplicableRulesList } from './partials/ApplicableRulesList';
 import { ApplicableRulesPanelHeader } from './partials/ApplicableRulesPanelHeader';
@@ -21,7 +20,7 @@ export function ApplicableRulesPanel(props: ApplicableRulesPanelProps) {
   const { onClose, onShowInGraph, onSelectViolationPaths } = props;
 
   const { t } = useTranslation();
-  const cruiseSnapshot = useCruiseSnapshotRequired();
+  const cruiseSnapshot = useWorkspaceStore(state => state.cruiseSnapshot);
   const path = useWorkspaceStore(state => {
     const sources = getCruiseSources(state.cruiseSnapshot);
     return state.applicableRulesPanelPath != null && isPathInSources(state.applicableRulesPanelPath, sources)

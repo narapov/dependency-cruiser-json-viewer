@@ -1,33 +1,49 @@
 // @vitest-environment jsdom
 
-import type { IModule } from 'dependency-cruiser';
+import type { ICruiseResult, IModule } from 'dependency-cruiser';
 import { useTranslation } from 'react-i18next';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { fireEvent, renderHook, screen } from '@testing-library/react';
 
-import { buildCruiseSnapshot } from '@/domain';
 import { USER_EDGE_HIGHLIGHT_COLORS } from '@/Shared';
 import { renderWithTheme } from '@/testsUtils';
 
-import { CruiseSnapshotProvider } from '../../contexts';
+import { initialWorkspaceState, useWorkspaceStore } from '../../stores/workspaceStore';
 import { HighlightEdgeDialog } from './HighlightEdgeDialog';
 
 function moduleAt(source: string, dependencies: IModule['dependencies'] = []): IModule {
   return { source, dependencies, dependents: [], valid: true } as IModule;
 }
 
-function renderDialog(modules: IModule[], onConfirm = vi.fn(), onClose = vi.fn()) {
-  return renderWithTheme(
-    <CruiseSnapshotProvider value={buildCruiseSnapshot(modules)}>
-      <HighlightEdgeDialog open onConfirm={onConfirm} onClose={onClose} />
-    </CruiseSnapshotProvider>,
+function seedModules(modules: IModule[]) {
+  useWorkspaceStore.getState().reset(
+    {
+      modules,
+      summary: {
+        totalCruised: modules.length,
+        violations: [],
+        error: 0,
+        warn: 0,
+        info: 0,
+        ignore: 0,
+        optionsUsed: { args: '' },
+        environment: {} as ICruiseResult['summary']['environment'],
+      },
+    } as ICruiseResult,
+    'hard',
   );
+}
+
+function renderDialog(modules: IModule[], onConfirm = vi.fn(), onClose = vi.fn()) {
+  seedModules(modules);
+  return renderWithTheme(<HighlightEdgeDialog open onConfirm={onConfirm} onClose={onClose} />);
 }
 
 describe('HighlightEdgeDialog', () => {
   beforeEach(() => {
     Element.prototype.scrollIntoView = vi.fn();
+    useWorkspaceStore.setState({ ...initialWorkspaceState });
   });
 
   it('walks source → target → color and confirms a highlight', async () => {
