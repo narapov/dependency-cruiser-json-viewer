@@ -4,7 +4,6 @@ import type { QuickPickFileItem } from '../../types';
 import { PathSearchTier } from '../pathSearchTier';
 
 export { getPathSearchTier, PathSearchTier } from '../pathSearchTier';
-export type { PathSearchTier } from '../pathSearchTier';
 
 const TIER_SCORE_MULTIPLIER: Record<(typeof PathSearchTier)[keyof typeof PathSearchTier], number> = {
   [PathSearchTier.Src]: 100,
