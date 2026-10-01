@@ -1,7 +1,12 @@
 import type { IFlattenedRuleSet, IModule, IViolation } from 'dependency-cruiser';
 
 import type { CruisePathNode, CruiseSnapshot, ModuleDependency } from '../../../types';
-import { flattenViolations, isRuleApplicableToPath, type RuleWithViolations } from '../../cruiseRules';
+import {
+  flattenViolations,
+  groupRulesWithViolations,
+  isRuleApplicableToPath,
+  type RuleWithViolations,
+} from '../../cruiseRules';
 import { makeDependencyKey } from '../../dependencyKey';
 import { collectDistinctCycles } from '../../dependencyUtils';
 import { getAncestorKeys, getBaseName, getParentPath } from '../../pathUtils';
@@ -244,8 +249,15 @@ export function buildCruiseSnapshot(
   const { modulesDependenciesByDependencyKey, modulesDependenciesBySource, modulesDependenciesByTarget } =
     buildModulesDependencies(modules);
   const namedRules = collectNamedRules(ruleSetUsed);
-  const allViolations = flattenViolations(violations);
-  const tree = createTree(modules, modulesDependenciesBySource, modulesDependenciesByTarget, namedRules, allViolations);
+  const moduleSources = new Set(modules.map(module => module.source));
+  const scopedViolations = flattenViolations(violations).filter(violation => moduleSources.has(violation.from));
+  const tree = createTree(
+    modules,
+    modulesDependenciesBySource,
+    modulesDependenciesByTarget,
+    namedRules,
+    scopedViolations,
+  );
   const nodes = createFlatTree(tree);
 
   return {
@@ -257,7 +269,8 @@ export function buildCruiseSnapshot(
       byTarget: modulesDependenciesByTarget as Map<string, ModuleDependency[]>,
     },
     cycles: collectDistinctCycles(modules),
+    rules: groupRulesWithViolations(ruleSetUsed, scopedViolations),
     ruleSetUsed,
-    violations: indexViolationsByDependencyKey(allViolations),
+    violations: indexViolationsByDependencyKey(scopedViolations),
   };
 }

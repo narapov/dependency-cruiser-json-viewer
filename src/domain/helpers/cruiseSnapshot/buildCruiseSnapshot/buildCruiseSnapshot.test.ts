@@ -86,7 +86,7 @@ describe('buildCruiseSnapshot', () => {
     ).toBe(true);
   });
 
-  it('attaches applicableRules and indexes violations by dependency key', () => {
+  it('attaches applicableRules, global rules, and indexes violations by dependency key', () => {
     const ruleSet: IFlattenedRuleSet = {
       forbidden: [
         {
@@ -127,6 +127,58 @@ describe('buildCruiseSnapshot', () => {
     expect(folderRules?.find(entry => entry.name === 'domain-only-domain')?.violations).toHaveLength(1);
     expect(snapshot.ruleSetUsed).toBe(ruleSet);
     expect(snapshot.violations.get(makeDependencyKey('src/domain/a.ts', 'src/App/App.tsx'))).toEqual(violations);
+    expect(snapshot.rules.map(entry => entry.name)).toEqual(['no-circular', 'domain-only-domain']);
+    expect(snapshot.rules.find(entry => entry.name === 'no-circular')?.violations).toHaveLength(0);
+    expect(snapshot.rules.find(entry => entry.name === 'domain-only-domain')?.violations).toEqual(violations);
+  });
+
+  it('scopes violations and rules to snapshot module from paths and keeps orphan names', () => {
+    const ruleSet: IFlattenedRuleSet = {
+      forbidden: [
+        {
+          name: 'domain-only-domain',
+          severity: 'error',
+          from: { path: '^src/domain' },
+          to: { pathNot: '^src/domain' },
+        },
+      ],
+    };
+
+    const keptViolation: IViolation = {
+      type: 'dependency',
+      rule: { name: 'domain-only-domain', severity: 'error' },
+      from: 'src/domain/a.ts',
+      to: 'src/App/App.tsx',
+    };
+    const droppedViolation: IViolation = {
+      type: 'dependency',
+      rule: { name: 'domain-only-domain', severity: 'error' },
+      from: 'src/ignored/x.ts',
+      to: 'src/App/App.tsx',
+    };
+    const orphanViolation: IViolation = {
+      type: 'dependency',
+      rule: { name: 'ghost-rule', severity: 'warn' },
+      from: 'src/domain/a.ts',
+      to: 'src/domain/b.ts',
+    };
+
+    const snapshot = buildCruiseSnapshot([moduleAt('src/domain/a.ts'), moduleAt('src/domain/b.ts')], ruleSet, [
+      keptViolation,
+      droppedViolation,
+      orphanViolation,
+    ]);
+
+    expect(snapshot.violations.size).toBe(2);
+    expect(snapshot.violations.get(makeDependencyKey('src/ignored/x.ts', 'src/App/App.tsx'))).toBeUndefined();
+    expect(snapshot.rules.map(entry => entry.name)).toEqual(['domain-only-domain', 'ghost-rule']);
+    expect(snapshot.rules.find(entry => entry.name === 'domain-only-domain')?.violations).toEqual([keptViolation]);
+    expect(snapshot.rules.find(entry => entry.name === 'ghost-rule')?.rule).toBeNull();
+    expect(snapshot.rules.find(entry => entry.name === 'ghost-rule')?.violations).toEqual([orphanViolation]);
+    expect(
+      snapshot.nodes.get('src/domain/a.ts')?.applicableRules.find(entry => entry.name === 'domain-only-domain')
+        ?.violations,
+    ).toEqual([keptViolation]);
   });
 
   it('returns an empty snapshot for no modules', () => {
@@ -135,6 +187,7 @@ describe('buildCruiseSnapshot', () => {
     expect(snapshot.tree.size).toBe(0);
     expect(getCruiseSources(snapshot)).toEqual([]);
     expect(snapshot.cycles).toEqual([]);
+    expect(snapshot.rules).toEqual([]);
     expect(snapshot.ruleSetUsed).toBeUndefined();
     expect(snapshot.violations.size).toBe(0);
   });

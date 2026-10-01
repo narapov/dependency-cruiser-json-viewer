@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next';
 
-import { getCruiseSources, groupRulesWithViolations } from '@/domain';
 import { getWindowEnvs } from '@/Shared';
 
 import type { QuickPickCommand } from '../../partials/QuickPick';
@@ -92,14 +91,9 @@ export function useAppCommands(config: UseAppCommandsOptions): QuickPickCommand[
   const { t } = useTranslation();
   const cruiseWatchEnabled = getWindowEnvs()?.watch === true;
   const hasCruiseResult = useWorkspaceStore(state => state.cruiseResult != null);
-  const cruiseSnapshot = useWorkspaceStore(state => state.cruiseSnapshot);
-  const hasRuleViolations =
-    hasCruiseResult &&
-    groupRulesWithViolations(
-      cruiseSnapshot.ruleSetUsed,
-      cruiseSnapshot.violations,
-      getCruiseSources(cruiseSnapshot),
-    ).some(entry => entry.violations.length > 0);
+  const hasRuleViolations = useWorkspaceStore(state =>
+    state.cruiseResult != null ? state.cruiseSnapshot.rules.some(entry => entry.violations.length > 0) : false,
+  );
 
   const commands: QuickPickCommand[] = [
     { id: 'clearLocalStorage', label: t('commands.clearLocalStorage'), onExecute: clearLocalStorage },

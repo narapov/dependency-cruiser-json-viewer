@@ -2,8 +2,6 @@ import { useDeferredValue, useState } from 'react';
 
 import Box from '@mui/material/Box';
 
-import { getCruiseSources, groupRulesWithViolations } from '@/domain';
-
 import { useWorkspaceStore } from '../../stores/workspaceStore';
 import { matchesNameFilter } from './helpers/matchesNameFilter';
 import { RulesList } from './partials/RulesList';
@@ -17,14 +15,9 @@ interface RulesPanelProps {
 export function RulesPanel(props: RulesPanelProps) {
   const { onSelectViolationPaths, onShowRuleViolations } = props;
 
-  const cruiseSnapshot = useWorkspaceStore(state => state.cruiseSnapshot);
+  const rules = useWorkspaceStore(state => state.cruiseSnapshot.rules);
   const [nameFilter, setNameFilter] = useState('');
   const deferredNameFilter = useDeferredValue(nameFilter);
-  const rules = groupRulesWithViolations(
-    cruiseSnapshot.ruleSetUsed,
-    cruiseSnapshot.violations,
-    getCruiseSources(cruiseSnapshot),
-  );
   const filteredRules = rules.filter(entry => matchesNameFilter(entry.name, deferredNameFilter));
 
   return (

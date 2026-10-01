@@ -49,7 +49,9 @@ export interface CruiseSnapshot {
     byTarget: Map<string, ModuleDependency[]>;
   };
   cycles: DistinctCycle[];
+  /** Global rules catalog (forbidden → allowed → required, then orphans), scoped to snapshot modules. */
+  rules: RuleWithViolations[];
   ruleSetUsed?: IFlattenedRuleSet;
-  /** Violations keyed by `makeDependencyKey(from, to)`. */
+  /** Violations keyed by `makeDependencyKey(from, to)`, scoped to snapshot module `from` paths. */
   violations: Map<string, IViolation[]>;
 }

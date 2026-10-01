@@ -377,8 +377,7 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
     if (cruiseResult == null) {
       return;
     }
-    const sources = getCruiseSources(cruiseSnapshot);
-    showPathsOnly(collectViolationModulePaths(cruiseResult.summary.violations, ruleNames, sources));
+    showPathsOnly(collectViolationModulePaths(cruiseSnapshot.violations, ruleNames));
   };
 
   const setUserDependencyHighlight = (dependencyKeys: readonly string[], color: string | null) => {

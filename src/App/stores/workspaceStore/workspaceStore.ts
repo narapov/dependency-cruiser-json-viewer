@@ -37,6 +37,7 @@ export const EMPTY_CRUISE_SNAPSHOT: CruiseSnapshot = {
     byTarget: new Map(),
   },
   cycles: [],
+  rules: [],
   violations: new Map(),
 };
 

@@ -1,7 +1,5 @@
 import { useState, type ReactNode } from 'react';
 
-import { getCruiseSources, groupRulesWithViolations } from '@/domain';
-
 import { useWorkspaceStore } from '../../stores/workspaceStore';
 import { RuleViolationsPickerDialog } from './RuleViolationsPickerDialog';
 
@@ -24,11 +22,7 @@ export function useRuleViolationsPickerDialog(config: UseRuleViolationsPickerDia
   const rules =
     cruiseResult == null
       ? []
-      : groupRulesWithViolations(
-          cruiseSnapshot.ruleSetUsed,
-          cruiseSnapshot.violations,
-          getCruiseSources(cruiseSnapshot),
-        )
+      : cruiseSnapshot.rules
           .filter(entry => entry.violations.length > 0)
           .map(entry => ({
             name: entry.name,
