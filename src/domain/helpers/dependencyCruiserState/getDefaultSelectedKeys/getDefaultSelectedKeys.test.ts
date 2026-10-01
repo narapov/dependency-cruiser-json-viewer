@@ -1,55 +1,48 @@
 import { describe, expect, it } from 'vitest';
 
+import { buildCruiseSnapshot } from '../../cruiseSnapshot';
 import { getDefaultSelectedKeys } from './getDefaultSelectedKeys';
 
-describe('getDefaultSelectedKeys', () => {
-  it('selects all paths under each top-level folder', () => {
-    const sources = ['src/foo/a.ts', 'src/bar/b.ts', 'lib/x.ts'];
-    const selected = getDefaultSelectedKeys(sources);
+function treeFrom(...sources: string[]) {
+  return buildCruiseSnapshot(sources.map(source => ({ source, dependencies: [], dependents: [], valid: true })));
+}
 
-    expect(selected).toContain('src');
-    expect(selected).toContain('src/foo');
-    expect(selected).toContain('src/foo/a.ts');
-    expect(selected).toContain('src/bar');
-    expect(selected).toContain('src/bar/b.ts');
-    expect(selected).toContain('lib');
-    expect(selected).toContain('lib/x.ts');
+describe('getDefaultSelectedKeys', () => {
+  it('selects all files under each top-level folder', () => {
+    const selected = getDefaultSelectedKeys(treeFrom('src/foo/a.ts', 'src/bar/b.ts', 'lib/x.ts'));
+
+    expect(selected).toEqual(expect.arrayContaining(['src/foo/a.ts', 'src/bar/b.ts', 'lib/x.ts']));
+    expect(selected).not.toContain('src');
+    expect(selected).not.toContain('src/foo');
+    expect(selected).not.toContain('lib');
+    expect(selected).toHaveLength(3);
   });
 
-  it('returns empty when there are no top-level folders', () => {
-    expect(getDefaultSelectedKeys(['index.ts'])).toEqual([]);
+  it('selects root-level files when there are no folders', () => {
+    expect(getDefaultSelectedKeys(treeFrom('index.ts'))).toEqual(['index.ts']);
   });
 
   it('excludes root node_modules and its descendants', () => {
-    const sources = ['node_modules/pkg/index.js'];
-    const selected = getDefaultSelectedKeys(sources);
+    const selected = getDefaultSelectedKeys(treeFrom('node_modules/pkg/index.js'));
 
-    expect(selected).not.toContain('node_modules');
-    expect(selected).not.toContain('node_modules/pkg');
-    expect(selected).not.toContain('node_modules/pkg/index.js');
+    expect(selected).toEqual([]);
   });
 
   it('excludes node_modules when mixed with other top-level folders', () => {
-    const sources = ['src/a.ts', 'node_modules/b/index.js'];
-    const selected = getDefaultSelectedKeys(sources);
+    const selected = getDefaultSelectedKeys(treeFrom('src/a.ts', 'node_modules/b/index.js'));
 
-    expect(selected).toContain('src');
-    expect(selected).toContain('src/a.ts');
+    expect(selected).toEqual(['src/a.ts']);
     expect(selected).not.toContain('node_modules');
-    expect(selected).not.toContain('node_modules/b');
     expect(selected).not.toContain('node_modules/b/index.js');
   });
 
   it('excludes nested node_modules under other top-level folders', () => {
-    const sources = ['packages/app/node_modules/bar/index.js', 'packages/app/src/x.ts'];
-    const selected = getDefaultSelectedKeys(sources);
+    const selected = getDefaultSelectedKeys(
+      treeFrom('packages/app/node_modules/bar/index.js', 'packages/app/src/x.ts'),
+    );
 
-    expect(selected).toContain('packages');
-    expect(selected).toContain('packages/app');
-    expect(selected).toContain('packages/app/src');
-    expect(selected).toContain('packages/app/src/x.ts');
-    expect(selected).not.toContain('packages/app/node_modules');
-    expect(selected).not.toContain('packages/app/node_modules/bar');
+    expect(selected).toEqual(['packages/app/src/x.ts']);
+    expect(selected).not.toContain('packages');
     expect(selected).not.toContain('packages/app/node_modules/bar/index.js');
   });
 });

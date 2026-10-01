@@ -1,27 +1,17 @@
-import type { IModule } from 'dependency-cruiser';
-
 import Box from '@mui/material/Box';
 
-import { collectDistinctCycles } from '@/domain';
-
+import { useWorkspaceStore } from '../../stores/workspaceStore';
 import { CircularList } from './partials/CircularList';
 
 interface CircularPanelProps {
-  modules: readonly IModule[];
-  sources: readonly string[];
   onShowCycle: (paths: string[]) => void;
   onShowInGraph: (path: string) => void;
 }
 
 export function CircularPanel(props: CircularPanelProps) {
-  const { modules, sources, onShowCycle, onShowInGraph } = props;
+  const { onShowCycle, onShowInGraph } = props;
 
-  const sourceSet = new Set(sources);
-  const cycles = collectDistinctCycles(modules)
-    .map(cycle => ({
-      paths: cycle.paths.filter(path => sourceSet.has(path)),
-    }))
-    .filter(cycle => cycle.paths.length > 0);
+  const cycles = useWorkspaceStore(state => state.cruiseSnapshot.cycles);
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>

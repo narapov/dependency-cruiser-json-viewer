@@ -50,7 +50,7 @@ describe('buildLayerImportRules', () => {
     expect(re(rule.from.path as string).test(from)).toBe(true);
     expect(re(rule.from.pathNot as string).test('src/App/partials/QuickPick/QuickPick.tsx')).toBe(true);
 
-    expect(re(rule.to.path as string).test('src/App/partials/FileTree/helpers/treeIndex')).toBe(true);
+    expect(re(rule.to.path as string).test('src/App/partials/FileTree/helpers/buildFileTree')).toBe(true);
     expect(re(rule.to.path as string).test('src/App/partials/FileTree/FileTree.tsx')).toBe(true);
     expect(re(rule.to.path as string).test('src/App/partials/FileTree/index.ts')).toBe(false);
     expect(re(rule.to.path as string).test('src/App/hooks/useAppCommands/index.ts')).toBe(false);

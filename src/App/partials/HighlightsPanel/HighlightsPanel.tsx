@@ -8,19 +8,20 @@ import Typography from '@mui/material/Typography';
 
 import { groupHighlightsByColor } from '@/domain';
 
+import { useWorkspaceStore } from '../../stores/workspaceStore';
 import { HighlightColorGroup } from './partials/HighlightColorGroup';
 
 interface HighlightsPanelProps {
-  highlights: ReadonlyMap<string, string>;
   onRemoveDependencyKeys: (keys: readonly string[]) => void;
   onShowConnection: (source: string, target: string) => void;
   onClearAll: () => void;
 }
 
 export function HighlightsPanel(props: HighlightsPanelProps) {
-  const { highlights, onRemoveDependencyKeys, onShowConnection, onClearAll } = props;
+  const { onRemoveDependencyKeys, onShowConnection, onClearAll } = props;
 
   const { t } = useTranslation();
+  const highlights = useWorkspaceStore(state => state.userEdgeHighlights);
   const groups = groupHighlightsByColor(highlights);
   const isEmpty = groups.length === 0;
 

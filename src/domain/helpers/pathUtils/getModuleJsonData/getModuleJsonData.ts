@@ -5,7 +5,7 @@ import { collectSourcesUnderFolder } from '../collectSourcesUnderFolder';
 /** Module JSON for a file path, or all nested modules under a folder path. */
 export function getModuleJsonData(path: string, allModules: readonly IModule[]): IModule | IModule[] | null {
   const fileModule = allModules.find(module => module.source === path);
-  if (fileModule != null) {
+  if (fileModule) {
     return fileModule;
   }
 

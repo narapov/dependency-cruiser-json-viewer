@@ -1,9 +1,10 @@
 import type { IViolation } from 'dependency-cruiser';
 import { describe, expect, it } from 'vitest';
 
+import { makeDependencyKey } from '../../dependencyKey';
 import { collectViolationModulePaths } from './collectViolationModulePaths';
 
-const violations: IViolation[] = [
+const violationList: IViolation[] = [
   {
     type: 'dependency',
     rule: { name: 'domain-only-domain', severity: 'error' },
@@ -30,9 +31,13 @@ const violations: IViolation[] = [
   },
 ];
 
+function violationsByKey(list: readonly IViolation[]): Map<string, IViolation[]> {
+  return Map.groupBy(list, violation => makeDependencyKey(violation.from, violation.to));
+}
+
 describe('collectViolationModulePaths', () => {
   it('collects unique from and to paths from all violations', () => {
-    expect(collectViolationModulePaths(violations).sort()).toEqual(
+    expect(collectViolationModulePaths(violationsByKey(violationList)).sort()).toEqual(
       [
         'src/App/App.tsx',
         'src/Shared/index.ts',
@@ -46,29 +51,18 @@ describe('collectViolationModulePaths', () => {
   });
 
   it('filters by rule names when provided', () => {
-    expect(collectViolationModulePaths(violations, ['domain-only-domain']).sort()).toEqual(
+    expect(collectViolationModulePaths(violationsByKey(violationList), ['domain-only-domain']).sort()).toEqual(
       ['src/App/App.tsx', 'src/Shared/index.ts', 'src/domain/a.ts', 'src/domain/b.ts'].sort(),
     );
   });
 
   it('returns all paths when rule names is empty', () => {
-    expect(collectViolationModulePaths(violations, []).sort()).toEqual(collectViolationModulePaths(violations).sort());
+    const byKey = violationsByKey(violationList);
+    expect(collectViolationModulePaths(byKey, []).sort()).toEqual(collectViolationModulePaths(byKey).sort());
   });
 
-  it('filters violations whose from is not in sources', () => {
-    expect(collectViolationModulePaths(violations, undefined, ['src/domain/a.ts', 'src/App/App.tsx']).sort()).toEqual(
-      ['src/App/App.tsx', 'src/domain/a.ts'].sort(),
-    );
-  });
-
-  it('combines rule name and sources filters', () => {
-    expect(
-      collectViolationModulePaths(violations, ['domain-only-domain'], ['src/domain/b.ts', 'src/Shared/index.ts']),
-    ).toEqual(['src/domain/b.ts', 'src/Shared/index.ts']);
-  });
-
-  it('returns empty array when violations are missing', () => {
-    expect(collectViolationModulePaths(undefined)).toEqual([]);
+  it('returns empty array when the map is empty', () => {
+    expect(collectViolationModulePaths(new Map())).toEqual([]);
   });
 
   it('includes only from when to is missing or equals from', () => {
@@ -80,6 +74,6 @@ describe('collectViolationModulePaths', () => {
         to: 'src/self.ts',
       },
     ];
-    expect(collectViolationModulePaths(selfViolation)).toEqual(['src/self.ts']);
+    expect(collectViolationModulePaths(violationsByKey(selfViolation))).toEqual(['src/self.ts']);
   });
 });

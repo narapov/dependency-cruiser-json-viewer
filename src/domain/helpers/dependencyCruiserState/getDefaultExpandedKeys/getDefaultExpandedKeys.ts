@@ -1,5 +1,7 @@
-/** Default expanded folders: `src` when present in the cruise sources. */
-export function getDefaultExpandedKeys(sources: string[]): string[] {
-  const hasSrc = sources.some(source => source === 'src' || source.startsWith('src/'));
-  return hasSrc ? ['src'] : [];
+import type { CruiseSnapshot } from '../../../types';
+
+/** Default expanded folders: `src` when present as a folder in the cruise snapshot. */
+export function getDefaultExpandedKeys(cruiseSnapshot: CruiseSnapshot): string[] {
+  const src = cruiseSnapshot.nodes.get('src');
+  return src?.isFolder ? ['src'] : [];
 }

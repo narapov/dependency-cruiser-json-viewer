@@ -1,5 +1,7 @@
 import type { IAnyRuleType, IFlattenedRuleSet, IViolation, SeverityType } from 'dependency-cruiser';
 
+import { flattenViolations } from '../flattenViolations';
+
 export interface RuleWithViolations {
   name: string;
   severity: SeverityType;
@@ -18,18 +20,18 @@ function ruleName(rule: IAnyRuleType): string | undefined {
 }
 
 function ruleSeverity(rule: IAnyRuleType, fallback: SeverityType = 'warn'): SeverityType {
-  return 'severity' in rule && rule.severity != null ? rule.severity : fallback;
+  return 'severity' in rule && rule.severity ? rule.severity : fallback;
 }
 
 /** Collect named rules from a flattened rule set in forbidden → allowed → required order. */
 function collectNamedRules(ruleSet: IFlattenedRuleSet | undefined): NamedRuleEntry[] {
-  if (ruleSet == null) {
+  if (!ruleSet) {
     return [];
   }
 
   return [...(ruleSet.forbidden ?? []), ...(ruleSet.allowed ?? []), ...(ruleSet.required ?? [])].flatMap(rule => {
     const name = ruleName(rule);
-    if (name == null) {
+    if (!name) {
       return [];
     }
     return [{ name, severity: ruleSeverity(rule), rule }];
@@ -41,11 +43,13 @@ function collectNamedRules(ruleSet: IFlattenedRuleSet | undefined): NamedRuleEnt
  */
 export function groupRulesWithViolations(
   ruleSet: IFlattenedRuleSet | undefined,
-  violations: readonly IViolation[] | undefined,
+  violations: readonly IViolation[] | ReadonlyMap<string, readonly IViolation[]> | undefined,
   sources?: readonly string[],
 ): RuleWithViolations[] {
-  const sourceSet = sources == null ? null : new Set(sources);
-  const visibleViolations = (violations ?? []).filter(violation => sourceSet == null || sourceSet.has(violation.from));
+  const sourceSet = !sources ? null : new Set(sources);
+  const visibleViolations = flattenViolations(violations).filter(
+    violation => !sourceSet || sourceSet.has(violation.from),
+  );
 
   const violationsByName = new Map<string, IViolation[]>();
   visibleViolations.forEach(violation => {

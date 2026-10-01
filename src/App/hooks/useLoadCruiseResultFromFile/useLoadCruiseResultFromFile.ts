@@ -7,6 +7,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import type { ViewerWorkspaceSettings } from '@/domain';
 
 import { isViewerFileLoadAbort, readViewerFile, resolveViewerFileParseErrorMessage } from '../../helpers';
+import { useWorkspaceStore } from '../../stores/workspaceStore';
 import { useFileLoadNotice } from '../useFileLoadNotice';
 
 export interface LoadedCruiseResultFile {
@@ -52,8 +53,8 @@ export function useLoadCruiseResultFromFile(config: UseLoadCruiseResultFromFileO
         return;
       }
 
-      queryClient.setQueryData(['cruise-result'], parsed.cruiseResult);
       onLoaded?.({ cruiseResult: parsed.cruiseResult, settings: parsed.settings });
+      queryClient.setQueryData(['cruise-result'], useWorkspaceStore.getState().cruiseResult ?? parsed.cruiseResult);
       if (parsed.workspaceSettingsIgnored) {
         setFileLoadError(t('app.ignoredInvalidWorkspaceSettings'));
       } else {

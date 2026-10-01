@@ -51,6 +51,7 @@ function makeSettings(overrides: Partial<ViewerWorkspaceSettings> = {}): ViewerW
     autoLayoutOnly: true,
     edgesType: 'bezier',
     nodePositions: {},
+    nodeLayouts: {},
     ...overrides,
   };
 }

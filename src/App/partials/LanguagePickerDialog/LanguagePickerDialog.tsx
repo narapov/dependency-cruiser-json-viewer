@@ -14,7 +14,7 @@ interface LanguagePickerDialogProps {
 }
 
 function getLanguageIndex(language: LanguageOptionValue | undefined): number {
-  if (language == null) {
+  if (!language) {
     return 0;
   }
   const index = LANGUAGE_OPTIONS.findIndex(option => option.value === language);

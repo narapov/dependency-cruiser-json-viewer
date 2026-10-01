@@ -57,7 +57,7 @@ export function RuleListItem(props: RuleListItemProps) {
   const [expanded, setExpanded] = useState(false);
   const count = entry.violations.length;
   const hasViolations = count > 0;
-  const canViewJson = entry.rule != null;
+  const canViewJson = !!entry.rule;
   const nameMatchIndexes = findSubstringMatchIndexes(entry.name, nameFilter);
   const showViolationsLabel = t('rules.showViolationsOnly');
 

@@ -1,102 +1,58 @@
-import type { IModule } from 'dependency-cruiser';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useCallback, useEffect, useRef } from 'react';
 
-import Alert from '@mui/material/Alert';
-import AlertTitle from '@mui/material/AlertTitle';
-import Button from '@mui/material/Button';
-import CircularProgress from '@mui/material/CircularProgress';
-import Snackbar from '@mui/material/Snackbar';
-import Stack from '@mui/material/Stack';
-
-import {
-  countIgnoredModules,
-  CruiseResultParseError,
-  filterCruiseResult,
-  groupRulesWithViolations,
-  makeDependencyKey,
-  type ViewerWorkspaceSettings,
-} from '@/domain';
+import { makeDependencyKey } from '@/domain';
 import { getWindowEnvs } from '@/Shared';
 
-import { resolveWorkspaceApply } from './helpers';
 import {
   useAppCommands,
+  useAppFileLoading,
   useAppOrchestration,
   useCruiseResult,
-  useCruiseResultFileDrop,
+  useCruiseResultUpdatedNotice,
   useCruiseResultWatch,
-  useIgnorePatterns,
-  useInitialDependencyCruiserState,
-  useInitialWorkspaceSettingsFromCli,
-  useLoadCruiseResultFromFile,
-  useLoadWorkspaceSettingsFromFile,
-  useModuleJsonDialog,
-  type LoadedCruiseResultFile,
 } from './hooks';
-import { AboutDialog } from './partials/AboutDialog';
+import { useAboutDialog } from './partials/AboutDialog';
 import { AppHeader } from './partials/AppHeader';
 import { AppLayout, useSidebarOpen, useSidebarShortcut, useSidebarView, type SidebarView } from './partials/AppLayout';
 import { ApplicableRulesPanel } from './partials/ApplicableRulesPanel';
 import { AppSidebar } from './partials/AppSidebar';
 import { AppStatusBar } from './partials/AppStatusBar';
-import { CruiseResultDropOverlay } from './partials/CruiseResultDropOverlay';
-import { CruiseResultFileInput } from './partials/CruiseResultFileInput';
+import { CruiseResultEmptyState } from './partials/CruiseResultEmptyState';
+import { CruiseResultLoading } from './partials/CruiseResultLoading';
 import { DependencyGraph, type DependencyGraphHandle } from './partials/DependencyGraph';
 import { DependencyPanel } from './partials/DependencyPanel';
 import { type FileTreeHandle } from './partials/FileTree';
-import { HighlightEdgeDialog } from './partials/HighlightEdgeDialog';
-import { IgnorePatternsDialog } from './partials/IgnorePatternsDialog';
-import { JsonViewDialog } from './partials/JsonViewDialog';
-import { LanguagePickerDialog } from './partials/LanguagePickerDialog';
+import { useHighlightEdgeDialog } from './partials/HighlightEdgeDialog';
+import { useIgnorePatternsDialog } from './partials/IgnorePatternsDialog';
+import { useCruiseResultJsonDialog, useModuleJsonDialog } from './partials/JsonViewDialog';
+import { useLanguagePickerDialog } from './partials/LanguagePickerDialog';
 import { QuickPick, type QuickPickHandle } from './partials/QuickPick';
-import { RuleViolationsPickerDialog } from './partials/RuleViolationsPickerDialog';
-import { ThemePickerDialog } from './partials/ThemePickerDialog';
-
-import styles from './App.module.css';
+import { useRuleViolationsPickerDialog } from './partials/RuleViolationsPickerDialog';
+import { useThemePickerDialog } from './partials/ThemePickerDialog';
+import { useWorkspaceStore } from './stores/workspaceStore';
 
 function App() {
-  const { t } = useTranslation();
   const { data, isPending, isError, error } = useCruiseResult();
-  const { patterns, setPatterns } = useIgnorePatterns();
-  const [cruiseLoadId, setCruiseLoadId] = useState(0);
-  const [cruiseResultUpdatedOpen, setCruiseResultUpdatedOpen] = useState(false);
+  const cruiseResult = useWorkspaceStore(state => state.cruiseResult);
+  const resetWorkspace = useWorkspaceStore(state => state.reset);
   const cruiseWatchEnabled = getWindowEnvs()?.watch === true;
 
   const fileTreeRef = useRef<FileTreeHandle>(null);
   const graphRef = useRef<DependencyGraphHandle>(null);
   const quickPickRef = useRef<QuickPickHandle>(null);
-  const [themePickerOpen, setThemePickerOpen] = useState(false);
-  const [languagePickerOpen, setLanguagePickerOpen] = useState(false);
-  const [ignorePatternsOpen, setIgnorePatternsOpen] = useState(false);
-  const [aboutOpen, setAboutOpen] = useState(false);
-  const [cruiseResultJsonOpen, setCruiseResultJsonOpen] = useState(false);
-  const [ruleViolationsPickerOpen, setRuleViolationsPickerOpen] = useState(false);
-  const [highlightEdgeOpen, setHighlightEdgeOpen] = useState(false);
 
-  const filteredData = useMemo(() => (data ? filterCruiseResult(data, patterns) : undefined), [data, patterns]);
+  useEffect(() => {
+    if (!data) {
+      return;
+    }
+    if (useWorkspaceStore.getState().cruiseResult) {
+      return;
+    }
+    resetWorkspace(data, 'hard');
+  }, [data, resetWorkspace]);
 
-  const ignoredModuleCount = useMemo(() => (data ? countIgnoredModules(data, patterns) : 0), [data, patterns]);
+  const isHydrating = data && !cruiseResult;
 
-  const sources = useMemo(() => filteredData?.modules.map(module => module.source) ?? [], [filteredData?.modules]);
-  const modules: IModule[] = filteredData?.modules ?? [];
-  const rulesWithViolations = useMemo(
-    () =>
-      groupRulesWithViolations(data?.summary.ruleSetUsed, data?.summary.violations, sources).filter(
-        entry => entry.violations.length > 0,
-      ),
-    [data?.summary.ruleSetUsed, data?.summary.violations, sources],
-  );
-  const ruleViolationsPickerOptions = useMemo(
-    () =>
-      rulesWithViolations.map(entry => ({
-        name: entry.name,
-        severity: entry.severity,
-        violationCount: entry.violations.length,
-      })),
-    [rulesWithViolations],
-  );
-  const initialDependencyCruiserState = useInitialDependencyCruiserState(sources);
   const { sidebarOpen, setSidebarOpen, toggleSidebarOpen } = useSidebarOpen();
   const { sidebarView, setSidebarView } = useSidebarView();
   useSidebarShortcut({
@@ -132,150 +88,36 @@ function App() {
   );
 
   const orch = useAppOrchestration({
-    sources,
-    unfilteredCruiseResult: data,
-    ignorePatterns: patterns,
     fileTreeRef,
     graphRef,
-    initialDependencyCruiserState,
-    cruiseLoadId,
   });
 
-  useCruiseResultWatch({
-    cruiseLoadId,
-    setCruiseLoadId,
-    setPatterns,
-    getCurrentWorkspaceSettings: orch.getCurrentWorkspaceSettings,
-    applyWorkspaceView: orch.applyWorkspaceView,
+  useCruiseResultWatch();
+
+  const fileLoading = useAppFileLoading({
+    cruiseWatchEnabled,
+    cruiseReady: !!cruiseResult,
   });
 
-  const isInitialCruiseResult = useRef(true);
-  useEffect(() => {
-    if (!cruiseWatchEnabled || data == null) {
-      return;
-    }
-    if (isInitialCruiseResult.current) {
-      isInitialCruiseResult.current = false;
-      return;
-    }
-    setCruiseResultUpdatedOpen(true);
-  }, [data, cruiseWatchEnabled]);
-
-  const handleCruiseLoaded = useCallback(
-    ({ cruiseResult, settings }: LoadedCruiseResultFile) => {
-      const nextCruiseLoadId = cruiseLoadId + 1;
-      setCruiseLoadId(nextCruiseLoadId);
-      if (settings) {
-        setPatterns(settings.ignorePatterns);
-        const { sourcesKey, view, lastInitialSelectedKeys, lastInitialExpandedKeys } = resolveWorkspaceApply({
-          cruiseResult,
-          settings,
-        });
-        orch.applyWorkspaceView({
-          view,
-          sourcesKey,
-          cruiseLoadId: nextCruiseLoadId,
-          lastInitialSelectedKeys,
-          lastInitialExpandedKeys,
-        });
-      } else {
-        setPatterns([]);
-      }
-    },
-    [cruiseLoadId, setPatterns, orch],
-  );
-
-  const handleWorkspaceSettingsLoaded = useCallback(
-    (settings: ViewerWorkspaceSettings) => {
-      if (data == null) {
-        return;
-      }
-      setPatterns(settings.ignorePatterns);
-      const { sourcesKey, view, lastInitialSelectedKeys, lastInitialExpandedKeys } = resolveWorkspaceApply({
-        cruiseResult: data,
-        settings,
-      });
-      orch.applyWorkspaceView({
-        view,
-        sourcesKey,
-        cruiseLoadId,
-        lastInitialSelectedKeys,
-        lastInitialExpandedKeys,
-      });
-    },
-    [data, cruiseLoadId, setPatterns, orch],
-  );
-
-  const {
-    fileInputRef: cruiseFileInputRef,
-    openFilePicker: openCruiseFilePicker,
-    handleFileSelect: handleCruiseFileSelect,
-    isLoading: isCruiseFileLoading,
-    fileLoadError: cruiseFileLoadError,
-    setFileLoadError: setCruiseFileLoadError,
-    clearFileLoadError: clearCruiseFileLoadError,
-  } = useLoadCruiseResultFromFile({ onLoaded: handleCruiseLoaded });
-
-  const {
-    fileInputRef: settingsFileInputRef,
-    openFilePicker: openSettingsFilePicker,
-    handleFileSelect: handleSettingsFileSelect,
-    isLoading: isSettingsFileLoading,
-    fileLoadError: settingsFileLoadError,
-    clearFileLoadError: clearSettingsFileLoadError,
-  } = useLoadWorkspaceSettingsFromFile({ onLoaded: handleWorkspaceSettingsLoaded });
-
-  const { fileLoadError: initialSettingsFileLoadError, clearFileLoadError: clearInitialSettingsFileLoadError } =
-    useInitialWorkspaceSettingsFromCli({
-      cruiseReady: data != null,
-      onLoaded: handleWorkspaceSettingsLoaded,
-    });
-
-  const isFileLoading = isCruiseFileLoading || isSettingsFileLoading;
-
-  const { isDraggingFile, isDropAllowed } = useCruiseResultFileDrop({
-    enabled: !cruiseWatchEnabled && !isFileLoading,
-    onFile: file => {
-      clearSettingsFileLoadError();
-      clearInitialSettingsFileLoadError();
-      clearCruiseFileLoadError();
-      void handleCruiseFileSelect(file);
-    },
-    onInvalidFile: () => {
-      clearSettingsFileLoadError();
-      clearInitialSettingsFileLoadError();
-      setCruiseFileLoadError(t('app.dropCruiseResultInvalidFile'));
-    },
+  const { notice } = useCruiseResultUpdatedNotice({
+    data,
+    cruiseWatchEnabled,
   });
 
-  const openLoadCruiseResult = () => {
-    if (cruiseWatchEnabled || isFileLoading) {
-      return;
-    }
-    clearSettingsFileLoadError();
-    clearInitialSettingsFileLoadError();
-    openCruiseFilePicker();
-  };
+  const { showInFileTree, setSelectedPaths, showInGraph, activatePath } = orch;
 
-  const openLoadSettings = () => {
-    if (isFileLoading) {
-      return;
-    }
-    clearCruiseFileLoadError();
-    clearInitialSettingsFileLoadError();
-    openSettingsFilePicker();
-  };
-
-  const fileLoadError = cruiseFileLoadError ?? settingsFileLoadError ?? initialSettingsFileLoadError;
-  const clearFileLoadError = () => {
-    clearCruiseFileLoadError();
-    clearSettingsFileLoadError();
-    clearInitialSettingsFileLoadError();
-  };
-
-  const { showInFileTree, setSelectedPaths, selectedPaths, showInGraph, activatePath } = orch;
-
-  const { openModuleJson, moduleJsonDialog } = useModuleJsonDialog(data?.modules ?? []);
+  const { openThemePicker, themePickerDialog } = useThemePickerDialog();
+  const { openLanguagePicker, languagePickerDialog } = useLanguagePickerDialog();
+  const { openAbout, aboutDialog } = useAboutDialog();
+  const { openIgnorePatterns, ignorePatternsDialog } = useIgnorePatternsDialog();
+  const { openRuleViolationsPicker, ruleViolationsPickerDialog } = useRuleViolationsPickerDialog({
+    onConfirm: ruleNames => orch.showRuleViolationsOnly(ruleNames),
+  });
+  const { openHighlightEdge, highlightEdgeDialog } = useHighlightEdgeDialog({
+    onConfirm: orch.setUserDependencyHighlight,
+  });
+  const { openViewCruiseResultJson, cruiseResultJsonDialog } = useCruiseResultJsonDialog();
+  const { openModuleJson, moduleJsonDialog } = useModuleJsonDialog();
 
   const handleShowInFileTree = useCallback(
     (path: string) => {
@@ -288,6 +130,7 @@ function App() {
 
   const handleShowDependencyConnection = useCallback(
     (paths: string[]) => {
+      const selectedPaths = orch.selectedPaths;
       const nextPaths = paths.filter(path => !selectedPaths.includes(path));
       if (nextPaths.length > 0) {
         setSelectedPaths([...selectedPaths, ...nextPaths]);
@@ -295,35 +138,36 @@ function App() {
       const focusPath = paths[0];
       const targetPath = paths[1];
       // Expand both ends so the graph edge id is file→file (not collapsed folder reps).
-      if (targetPath != null) {
+      if (targetPath) {
         activatePath(targetPath);
       }
-      if (focusPath != null) {
+      if (focusPath) {
         showInGraph(focusPath);
       }
-      if (focusPath != null && targetPath != null) {
+      if (focusPath && targetPath) {
         graphRef.current?.selectEdge(makeDependencyKey(focusPath, targetPath));
       }
     },
-    [selectedPaths, setSelectedPaths, showInGraph, activatePath],
+    [orch, setSelectedPaths, showInGraph, activatePath],
   );
 
   const commands = useAppCommands({
     orch,
-    openThemePicker: () => setThemePickerOpen(true),
-    openLanguagePicker: () => setLanguagePickerOpen(true),
-    openIgnorePatterns: () => setIgnorePatternsOpen(true),
-    openLoadCruiseResult,
-    openLoadSettings,
-    openAbout: () => setAboutOpen(true),
-    openViewCruiseResultJson: () => setCruiseResultJsonOpen(true),
+    openThemePicker,
+    openLanguagePicker,
+    openIgnorePatterns,
+    openLoadCruiseResult: fileLoading.openLoadCruiseResult,
+    openLoadSettings: fileLoading.openLoadSettings,
+    openAbout,
+    openViewCruiseResultJson,
     openViewActiveModuleJson: () => {
-      if (orch.activePath != null) {
-        openModuleJson(orch.activePath);
+      const activePath = orch.activePath;
+      if (activePath) {
+        openModuleJson(activePath);
       }
     },
-    openRuleViolationsPicker: () => setRuleViolationsPickerOpen(true),
-    openHighlightEdge: () => setHighlightEdgeOpen(true),
+    openRuleViolationsPicker,
+    openHighlightEdge,
     showFileTree: () => {
       setSidebarView('files');
       setSidebarOpen(true);
@@ -341,237 +185,99 @@ function App() {
       setSidebarOpen(true);
     },
     toggleSidebar: toggleSidebarOpen,
-    fileLoadInProgress: isFileLoading,
-    cruiseWatchEnabled,
-    hasCruiseResult: data != null,
-    hasRuleViolations: rulesWithViolations.length > 0,
+    fileLoadInProgress: fileLoading.isFileLoading,
   });
 
-  if (isPending) {
+  if (isPending || isHydrating) {
     return (
-      <div className={styles.centered}>
-        <CircularProgress size={32} />
-        <CruiseResultDropOverlay open={isDraggingFile} allowed={isDropAllowed} />
-      </div>
+      <CruiseResultLoading isDraggingFile={fileLoading.isDraggingFile} isDropAllowed={fileLoading.isDropAllowed} />
     );
   }
 
   if (isError) {
-    const apiParseError = error instanceof CruiseResultParseError ? t('app.invalidCruiseResultFormat') : null;
-
     return (
-      <div className={styles.centered}>
-        <Stack spacing={2} sx={{ maxWidth: 480, px: 2, alignItems: 'center' }}>
-          {apiParseError ? (
-            <Alert severity="error" sx={{ width: '100%' }}>
-              {apiParseError}
-            </Alert>
-          ) : (
-            <Alert severity="info" sx={{ width: '100%' }}>
-              <AlertTitle>{t('app.noCruiseResultTitle')}</AlertTitle>
-              {t('app.noCruiseResultMessage')}
-            </Alert>
-          )}
-          {fileLoadError && (
-            <Alert severity="error" sx={{ width: '100%' }}>
-              {fileLoadError}
-            </Alert>
-          )}
-          {!cruiseWatchEnabled &&
-            (isFileLoading ? (
-              <CircularProgress size={32} />
-            ) : (
-              <Button variant="contained" onClick={openLoadCruiseResult} disabled={isFileLoading}>
-                {t('app.loadCruiseResult')}
-              </Button>
-            ))}
-          {!cruiseWatchEnabled && (
-            <CruiseResultFileInput ref={cruiseFileInputRef} onFileSelect={handleCruiseFileSelect} />
-          )}
-        </Stack>
-        <CruiseResultDropOverlay open={isDraggingFile} allowed={isDropAllowed} />
-      </div>
+      <CruiseResultEmptyState
+        error={error}
+        cruiseWatchEnabled={cruiseWatchEnabled}
+        isFileLoading={fileLoading.isFileLoading}
+        fileLoadError={fileLoading.fileLoadError}
+        isDraggingFile={fileLoading.isDraggingFile}
+        isDropAllowed={fileLoading.isDropAllowed}
+        onLoadCruiseResult={fileLoading.openLoadCruiseResult}
+        cruiseFileInputRef={fileLoading.cruiseFileInputRef}
+        onCruiseFileSelect={fileLoading.handleCruiseFileSelect}
+      />
     );
   }
 
-  const totalModulesCount = data.modules.length;
-  const filteredModulesCount = modules.length;
+  if (!cruiseResult) {
+    return null;
+  }
 
   return (
     <AppLayout
       header={
         <AppHeader
-          filteredModulesCount={filteredModulesCount}
-          totalModulesCount={totalModulesCount}
-          hasIgnoredModules={ignoredModuleCount > 0}
-          watchMode={cruiseWatchEnabled}
           onOpenFileSearch={() => quickPickRef.current?.openFileMode()}
           onOpenCommandPalette={() => quickPickRef.current?.openCommandMode()}
-          onOpenIgnorePatterns={() => setIgnorePatternsOpen(true)}
-          onOpenAbout={() => setAboutOpen(true)}
+          onOpenIgnorePatterns={openIgnorePatterns}
+          onOpenAbout={openAbout}
         />
       }
       sidebar={
         <AppSidebar
           view={sidebarView}
           fileTreeRef={fileTreeRef}
-          sources={sources}
-          selectedKeys={orch.selectedPaths}
-          onSelect={orch.setSelectedPaths}
-          expandedKeys={orch.expandedKeys}
-          onExpand={orch.updateExpandedKeys}
-          onExpandRecursive={orch.expandRecursive}
           onShowInGraph={orch.showInGraph}
-          onShowDependenciesPanel={orch.handleShowDependenciesPanel}
-          onShowApplicableRulesPanel={orch.handleShowApplicableRulesPanel}
           onViewModuleJson={openModuleJson}
-          activePath={orch.activePath}
-          ruleSetUsed={data.summary.ruleSetUsed}
-          violations={data.summary.violations}
           onSelectViolationPaths={handleShowDependencyConnection}
           onShowRuleViolations={ruleName => orch.showRuleViolationsOnly([ruleName])}
-          modules={modules}
           onShowCycle={orch.showPathsOnly}
-          highlights={orch.userEdgeHighlights}
           onRemoveHighlightKeys={keys => orch.setUserDependencyHighlight(keys, null)}
           onShowHighlightConnection={(source, target) => handleShowDependencyConnection([source, target])}
           onClearAllHighlights={orch.clearAllHighlights}
         />
       }
       main={
-        <DependencyGraph
-          ref={graphRef}
-          modules={modules}
-          selectedPaths={orch.selectedPaths}
-          expandedKeys={orch.expandedKeys}
-          folderBaseColors={orch.folderBaseColors}
-          onToggleFolder={orch.toggleFolder}
-          onExpandRecursive={orch.expandRecursive}
-          onShowInFileTree={handleShowInFileTree}
-          onShowDependenciesPanel={orch.handleShowDependenciesPanel}
-          onShowApplicableRulesPanel={orch.handleShowApplicableRulesPanel}
-          onViewModuleJson={openModuleJson}
-          onHideOthers={orch.hideOthers}
-          onShowDirectDependencies={orch.showDirectDependencies}
-          onShowDirectDependents={orch.showDirectDependents}
-          onActivePathChange={orch.activatePath}
-          activePath={orch.activePath}
-          userEdgeHighlights={orch.userEdgeHighlights}
-          onUserEdgeHighlightsChange={orch.setUserEdgeHighlights}
-          onClearAllHighlights={orch.clearAllHighlights}
-        />
+        <DependencyGraph ref={graphRef} onShowInFileTree={handleShowInFileTree} onViewModuleJson={openModuleJson} />
       }
       dependenciesPanel={
-        orch.dependenciesPath != null ? (
-          <DependencyPanel
-            path={orch.dependenciesPath}
-            modules={modules}
-            selectedPaths={orch.selectedPaths}
-            expandedKeys={orch.expandedKeys}
-            onClose={orch.handleClosePanel}
-            onShowInGraph={orch.showInGraph}
-            onViewModuleJson={openModuleJson}
-            userEdgeHighlights={orch.userEdgeHighlights}
-            onSetUserDependencyHighlight={orch.setUserDependencyHighlight}
-          />
-        ) : null
+        <DependencyPanel
+          onClose={orch.handleClosePanel}
+          onShowInGraph={orch.showInGraph}
+          onViewModuleJson={openModuleJson}
+        />
       }
       applicableRulesPanel={
-        orch.applicableRulesPath != null ? (
-          <ApplicableRulesPanel
-            path={orch.applicableRulesPath}
-            modules={modules}
-            ruleSetUsed={data.summary.ruleSetUsed}
-            violations={data.summary.violations}
-            onClose={orch.handleCloseApplicableRulesPanel}
-            onShowInGraph={orch.showInGraph}
-            onSelectViolationPaths={handleShowDependencyConnection}
-          />
-        ) : null
+        <ApplicableRulesPanel
+          onClose={orch.handleCloseApplicableRulesPanel}
+          onShowInGraph={orch.showInGraph}
+          onSelectViolationPaths={handleShowDependencyConnection}
+        />
       }
       overlay={
         <>
-          <QuickPick
-            ref={quickPickRef}
-            sources={sources}
-            commands={commands}
-            onSelectPath={orch.handleQuickPickSelect}
-          />
-          {!cruiseWatchEnabled && (
-            <CruiseResultFileInput ref={cruiseFileInputRef} onFileSelect={handleCruiseFileSelect} />
-          )}
-          <CruiseResultFileInput ref={settingsFileInputRef} onFileSelect={handleSettingsFileSelect} />
-          {isFileLoading && (
-            <div className={styles.fileLoadOverlay}>
-              <CircularProgress size={32} />
-            </div>
-          )}
-          <CruiseResultDropOverlay open={isDraggingFile} allowed={isDropAllowed} />
-          <Snackbar
-            open={Boolean(fileLoadError)}
-            autoHideDuration={6000}
-            onClose={clearFileLoadError}
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-          >
-            <Alert severity="error" onClose={clearFileLoadError} sx={{ width: '100%' }}>
-              {fileLoadError}
-            </Alert>
-          </Snackbar>
-          <Snackbar
-            open={cruiseResultUpdatedOpen}
-            autoHideDuration={4000}
-            onClose={() => setCruiseResultUpdatedOpen(false)}
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-          >
-            <Alert severity="success" onClose={() => setCruiseResultUpdatedOpen(false)} sx={{ width: '100%' }}>
-              {t('app.cruiseResultUpdated')}
-            </Alert>
-          </Snackbar>
-          <ThemePickerDialog open={themePickerOpen} onClose={() => setThemePickerOpen(false)} />
-          <LanguagePickerDialog open={languagePickerOpen} onClose={() => setLanguagePickerOpen(false)} />
-          <IgnorePatternsDialog
-            open={ignorePatternsOpen}
-            patterns={patterns}
-            onClose={() => setIgnorePatternsOpen(false)}
-            onSave={setPatterns}
-          />
-          <RuleViolationsPickerDialog
-            open={ruleViolationsPickerOpen}
-            rules={ruleViolationsPickerOptions}
-            onClose={() => setRuleViolationsPickerOpen(false)}
-            onConfirm={ruleNames => orch.showRuleViolationsOnly(ruleNames)}
-          />
-          <HighlightEdgeDialog
-            open={highlightEdgeOpen}
-            sources={sources}
-            modules={modules}
-            userEdgeHighlights={orch.userEdgeHighlights}
-            onConfirm={orch.setUserDependencyHighlight}
-            onClose={() => setHighlightEdgeOpen(false)}
-          />
-          <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} />
-          <JsonViewDialog
-            open={cruiseResultJsonOpen}
-            title={t('cruiseResultJson.title')}
-            data={data ?? null}
-            onClose={() => setCruiseResultJsonOpen(false)}
-            shouldExpandNode={level => level < 4}
-            fullScreen
-          />
+          <QuickPick ref={quickPickRef} commands={commands} onSelectPath={orch.handleQuickPickSelect} />
+          {fileLoading.overlay}
+          {notice}
+          {themePickerDialog}
+          {languagePickerDialog}
+          {ignorePatternsDialog}
+          {ruleViolationsPickerDialog}
+          {highlightEdgeDialog}
+          {aboutDialog}
+          {cruiseResultJsonDialog}
           {moduleJsonDialog}
         </>
       }
       footer={
         <AppStatusBar
-          activePath={orch.activePath}
           onFocusActivePath={orch.focusActivePath}
           onShowDependenciesPanel={orch.handleShowDependenciesPanel}
           onShowApplicableRulesPanel={orch.handleShowApplicableRulesPanel}
           onViewModuleJson={openModuleJson}
         />
       }
-      dependenciesPanelOpen={orch.dependenciesPanelOpen}
-      applicableRulesPanelOpen={orch.applicableRulesPanelOpen}
       sidebarOpen={sidebarOpen}
       sidebarView={sidebarView}
       onSelectSidebarView={handleSelectSidebarView}

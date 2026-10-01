@@ -1,13 +1,16 @@
-import { useEffect, useImperativeHandle, useRef, type Ref, type SyntheticEvent } from 'react';
+import { useEffect, useImperativeHandle, useRef, type MouseEvent, type Ref, type SyntheticEvent } from 'react';
 
 import Box from '@mui/material/Box';
 import { useRichTreeViewApiRef } from '@mui/x-tree-view/hooks';
 import { RichTreeView } from '@mui/x-tree-view/RichTreeView';
 
-import { isPathVisibleInSelection } from '@/domain';
+import { expandSelectionWithSelectedAncestors, isPathVisibleInSelectionRecord, toSelectedFilePaths } from '@/domain';
 
-import { buildFileTree, buildTreeIndex } from './helpers';
-import { FileTreeItem, FileTreeProvider } from './partials/FileTreeItem';
+import { pathsToPresenceRecord, presenceRecordToPaths, useWorkspaceStore } from '../../stores/workspaceStore';
+import { FileTreeActionsProvider } from './contexts';
+import { buildFileTree } from './helpers';
+import { useFileTreeContextMenu } from './hooks';
+import { FileTreeItem } from './partials/FileTreeItem';
 import type { FileTreeHandle } from './types';
 
 const CLICK_DELAY_MS = 250;
@@ -16,48 +19,35 @@ const SELECTION_PROPAGATION = { descendants: true, parents: true } as const;
 
 interface FileTreeProps {
   ref?: Ref<FileTreeHandle>;
-  sources: string[];
-  selectedKeys?: string[];
-  onSelect?: (keys: string[]) => void;
-  expandedKeys: string[];
-  onExpand: (keys: string[]) => void;
-  onExpandRecursive?: (path: string) => void;
-  onShowInGraph?: (path: string) => void;
-  onShowDependenciesPanel?: (path: string) => void;
-  onShowApplicableRulesPanel?: (path: string) => void;
+  onShowInGraph: (path: string) => void;
   onViewModuleJson: (path: string) => void;
-  activePath?: string | null;
 }
 
 export function FileTree(props: FileTreeProps) {
-  const {
-    ref,
-    sources,
-    selectedKeys = [],
-    onSelect,
-    expandedKeys,
-    onExpand,
-    onExpandRecursive,
-    onShowInGraph,
-    onShowDependenciesPanel,
-    onShowApplicableRulesPanel,
-    onViewModuleJson,
-    activePath = null,
-  } = props;
+  const { ref, onShowInGraph, onViewModuleJson } = props;
+
+  const cruiseSnapshot = useWorkspaceStore(state => state.cruiseSnapshot);
+  const selectedFilePaths = useWorkspaceStore(state => state.selectedFilePaths);
+  const expandedFolderPaths = useWorkspaceStore(state => state.expandedFolderPaths);
+  const activePath = useWorkspaceStore(state => state.activePath);
+  const setSelectedFilePaths = useWorkspaceStore(state => state.setSelectedFilePaths);
+  const replaceExpandedFolderPaths = useWorkspaceStore(state => state.replaceExpandedFolderPaths);
+
+  const selectedKeys = expandSelectionWithSelectedAncestors(presenceRecordToPaths(selectedFilePaths), cruiseSnapshot);
+  const expandedKeys = presenceRecordToPaths(expandedFolderPaths);
 
   const apiRef = useRichTreeViewApiRef();
   const clickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const treeData = buildFileTree(sources);
-  const treeIndex = buildTreeIndex(treeData);
+  const treeData = buildFileTree(cruiseSnapshot);
 
-  const canShowNodeInGraph = (key: string) => isPathVisibleInSelection(key, selectedKeys);
+  const { openContextMenu, contextMenu } = useFileTreeContextMenu({
+    onShowInGraph,
+    onViewModuleJson,
+  });
 
-  const toggleExpand = (key: string) => {
-    onExpand(
-      expandedKeys.includes(key) ? expandedKeys.filter(expandedKey => expandedKey !== key) : [...expandedKeys, key],
-    );
-  };
+  const canShowNodeInGraph = (key: string) =>
+    isPathVisibleInSelectionRecord(key, selectedFilePaths, cruiseSnapshot.nodes.get(key)?.descendantFiles ?? new Set());
 
   useImperativeHandle(ref, () => ({
     focusPath(path: string) {
@@ -71,14 +61,14 @@ export function FileTree(props: FileTreeProps) {
   const handleSelectedItemsChange = (_event: unknown, itemIds?: string[]) => {
     const keys = Array.isArray(_event) ? _event : itemIds;
     if (keys) {
-      onSelect?.(keys);
+      setSelectedFilePaths(pathsToPresenceRecord(toSelectedFilePaths(keys, cruiseSnapshot)));
     }
   };
 
   const handleExpandedItemsChange = (_event: unknown, itemIds?: string[]) => {
     const keys = Array.isArray(_event) ? _event : itemIds;
     if (keys) {
-      onExpand(keys);
+      replaceExpandedFolderPaths(keys);
     }
   };
 
@@ -86,7 +76,7 @@ export function FileTree(props: FileTreeProps) {
     if (!canShowNodeInGraph(itemId)) {
       return;
     }
-    onShowInGraph?.(itemId);
+    onShowInGraph(itemId);
   };
 
   const handleItemClick = (event: SyntheticEvent, itemId: string) => {
@@ -113,20 +103,6 @@ export function FileTree(props: FileTreeProps) {
     }, CLICK_DELAY_MS);
   };
 
-  const fileTreeContext = {
-    activePath,
-    selectedKeys,
-    expandedKeys,
-    treeIndex,
-    canShowInGraph: canShowNodeInGraph,
-    onExpandRecursive,
-    onShowDependenciesPanel,
-    onShowApplicableRulesPanel,
-    onShowInGraph: handleShowInGraph,
-    onViewModuleJson,
-    onToggleExpand: toggleExpand,
-  };
-
   useEffect(() => {
     if (!activePath) {
       return;
@@ -150,9 +126,9 @@ export function FileTree(props: FileTreeProps) {
   return (
     <Box
       sx={{ height: '100%', minHeight: 0, minWidth: 0, overflowX: 'auto', overflowY: 'auto', userSelect: 'none' }}
-      onContextMenu={event => event.preventDefault()}
+      onContextMenu={(event: MouseEvent) => event.preventDefault()}
     >
-      <FileTreeProvider value={fileTreeContext}>
+      <FileTreeActionsProvider value={{ openContextMenu, onShowInGraph }}>
         <RichTreeView
           sx={{
             minWidth: 'max-content',
@@ -180,7 +156,8 @@ export function FileTree(props: FileTreeProps) {
           onItemClick={handleItemClick}
           slots={{ item: FileTreeItem }}
         />
-      </FileTreeProvider>
+        {contextMenu}
+      </FileTreeActionsProvider>
     </Box>
   );
 }

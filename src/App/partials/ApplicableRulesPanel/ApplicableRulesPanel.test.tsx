@@ -2,12 +2,14 @@
 
 import type { IFlattenedRuleSet, IModule, IViolation } from 'dependency-cruiser';
 import { useTranslation } from 'react-i18next';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { renderHook, screen } from '@testing-library/react';
 
+import { buildCruiseSnapshot } from '@/domain';
 import { renderWithTheme } from '@/testsUtils';
 
+import { initialWorkspaceState, useWorkspaceStore } from '../../stores/workspaceStore';
 import { ApplicableRulesPanel } from './ApplicableRulesPanel';
 
 const ruleSet: IFlattenedRuleSet = {
@@ -39,19 +41,21 @@ const violations: IViolation[] = [
 const modules = [{ source: 'src/domain/a.ts', dependencies: [], dependents: [], valid: true }] as IModule[];
 
 describe('ApplicableRulesPanel', () => {
+  beforeEach(() => {
+    useWorkspaceStore.setState({ ...initialWorkspaceState });
+  });
+
   it('renders applicable rules under with/without violation sections', () => {
     const { result: i18n } = renderHook(() => useTranslation());
+    const cruiseSnapshot = buildCruiseSnapshot(modules, ruleSet, violations);
+    useWorkspaceStore.setState({
+      ...initialWorkspaceState,
+      cruiseSnapshot,
+      applicableRulesPanelPath: 'src/domain/a.ts',
+    });
 
     renderWithTheme(
-      <ApplicableRulesPanel
-        path="src/domain/a.ts"
-        modules={modules}
-        ruleSetUsed={ruleSet}
-        violations={violations}
-        onClose={vi.fn()}
-        onShowInGraph={vi.fn()}
-        onSelectViolationPaths={vi.fn()}
-      />,
+      <ApplicableRulesPanel onClose={vi.fn()} onShowInGraph={vi.fn()} onSelectViolationPaths={vi.fn()} />,
     );
 
     expect(screen.getByText(i18n.current.t('applicableRulesPanel.title'))).toBeInTheDocument();
@@ -64,25 +68,27 @@ describe('ApplicableRulesPanel', () => {
   it('shows empty state when no rules apply', () => {
     const { result: i18n } = renderHook(() => useTranslation());
 
+    const snapshot = buildCruiseSnapshot(
+      [{ source: 'src/other/a.ts', dependencies: [], dependents: [], valid: true }] as IModule[],
+      {
+        forbidden: [
+          {
+            name: 'domain-only',
+            severity: 'error',
+            from: { path: '^src/domain/' },
+            to: {},
+          },
+        ],
+      },
+    );
+    useWorkspaceStore.setState({
+      ...initialWorkspaceState,
+      cruiseSnapshot: snapshot,
+      applicableRulesPanelPath: 'src/other/a.ts',
+    });
+
     renderWithTheme(
-      <ApplicableRulesPanel
-        path="src/other/a.ts"
-        modules={[{ source: 'src/other/a.ts', dependencies: [], dependents: [], valid: true }] as IModule[]}
-        ruleSetUsed={{
-          forbidden: [
-            {
-              name: 'domain-only',
-              severity: 'error',
-              from: { path: '^src/domain/' },
-              to: {},
-            },
-          ],
-        }}
-        violations={undefined}
-        onClose={vi.fn()}
-        onShowInGraph={vi.fn()}
-        onSelectViolationPaths={vi.fn()}
-      />,
+      <ApplicableRulesPanel onClose={vi.fn()} onShowInGraph={vi.fn()} onSelectViolationPaths={vi.fn()} />,
     );
 
     expect(screen.getByText(i18n.current.t('applicableRulesPanel.empty'))).toBeInTheDocument();

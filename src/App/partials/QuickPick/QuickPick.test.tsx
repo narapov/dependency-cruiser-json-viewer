@@ -5,21 +5,36 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { act, fireEvent, renderHook, screen, waitFor, within } from '@testing-library/react';
 
+import { buildCruiseSnapshot } from '@/domain';
 import { renderWithTheme } from '@/testsUtils';
 
+import { initialWorkspaceState, useWorkspaceStore } from '../../stores/workspaceStore';
 import { RECENT_COMMANDS_STORAGE_KEY } from './helpers/recentCommandIds';
 import { QuickPick, type QuickPickCommand, type QuickPickHandle } from './QuickPick';
 
 const SOURCES = ['src/a.ts', 'src/b/c.ts', 'src/utils/helpers.ts'];
 
+const CRUISE_TREE = buildCruiseSnapshot(
+  SOURCES.map(source => ({ source, dependencies: [], dependents: [], valid: true })),
+);
+
 function getKeyboardRoot(input: HTMLElement) {
   return input.closest('.MuiDialogContent-root')!.firstChild as HTMLElement;
+}
+
+function renderQuickPick(ui: Parameters<typeof renderWithTheme>[0]) {
+  useWorkspaceStore.setState({
+    ...initialWorkspaceState,
+    cruiseSnapshot: CRUISE_TREE,
+  });
+  return renderWithTheme(ui);
 }
 
 describe('QuickPick', () => {
   beforeEach(() => {
     Element.prototype.scrollIntoView = vi.fn();
     localStorage.clear();
+    useWorkspaceStore.setState({ ...initialWorkspaceState });
   });
 
   afterEach(() => {
@@ -33,7 +48,7 @@ describe('QuickPick', () => {
     const ref = createRef<QuickPickHandle>();
     const commands: QuickPickCommand[] = [{ id: 'about', label: 'About', onExecute: vi.fn() }];
 
-    renderWithTheme(<QuickPick ref={ref} sources={SOURCES} commands={commands} onSelectPath={onSelectPath} />);
+    renderQuickPick(<QuickPick ref={ref} commands={commands} onSelectPath={onSelectPath} />);
 
     act(() => {
       ref.current?.openFileMode();
@@ -68,7 +83,7 @@ describe('QuickPick', () => {
       { id: 'setTheme', label: 'Set Theme', onExecute },
     ];
 
-    renderWithTheme(<QuickPick ref={ref} sources={SOURCES} commands={commands} onSelectPath={onSelectPath} />);
+    renderQuickPick(<QuickPick ref={ref} commands={commands} onSelectPath={onSelectPath} />);
 
     act(() => {
       ref.current?.openCommandMode();
@@ -99,7 +114,7 @@ describe('QuickPick', () => {
     const ref = createRef<QuickPickHandle>();
     const commands: QuickPickCommand[] = [{ id: 'clearLocalStorage', label: 'Clear Local Storage', onExecute }];
 
-    renderWithTheme(<QuickPick ref={ref} sources={SOURCES} commands={commands} onSelectPath={vi.fn()} />);
+    renderQuickPick(<QuickPick ref={ref} commands={commands} onSelectPath={vi.fn()} />);
 
     act(() => {
       ref.current?.openCommandMode();
@@ -120,13 +135,8 @@ describe('QuickPick', () => {
   it('prevents Tab default and resets highlight when query changes', async () => {
     const { result: i18n } = renderHook(() => useTranslation());
     const ref = createRef<QuickPickHandle>();
-    renderWithTheme(
-      <QuickPick
-        ref={ref}
-        sources={SOURCES}
-        commands={[{ id: 'about', label: 'About', onExecute: vi.fn() }]}
-        onSelectPath={vi.fn()}
-      />,
+    renderQuickPick(
+      <QuickPick ref={ref} commands={[{ id: 'about', label: 'About', onExecute: vi.fn() }]} onSelectPath={vi.fn()} />,
     );
 
     act(() => {
@@ -164,7 +174,7 @@ describe('QuickPick', () => {
       { id: 'about', label: 'About', onExecute: vi.fn() },
     ];
 
-    renderWithTheme(<QuickPick ref={ref} sources={SOURCES} commands={commands} onSelectPath={vi.fn()} />);
+    renderQuickPick(<QuickPick ref={ref} commands={commands} onSelectPath={vi.fn()} />);
 
     act(() => {
       ref.current?.openCommandMode();

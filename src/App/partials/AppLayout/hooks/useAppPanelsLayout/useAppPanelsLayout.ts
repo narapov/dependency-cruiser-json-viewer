@@ -29,9 +29,9 @@ export function useAppPanelsLayout(panelIds: string[]) {
   const onLayoutChanged = (nextLayout: Layout, meta: LayoutChangedMeta) => {
     const previous = prevLayoutRef.current;
 
-    if (previous != null && layoutsHaveDifferentPanelSets(previous, nextLayout)) {
+    if (previous && layoutsHaveDifferentPanelSets(previous, nextLayout)) {
       const preserved = preserveSharedPanelSizes(previous, nextLayout);
-      if (preserved != null) {
+      if (preserved) {
         prevLayoutRef.current = preserved;
         persistLayout(preserved, { isUserInteraction: true });
         queueMicrotask(() => {

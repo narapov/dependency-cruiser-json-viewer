@@ -10,7 +10,7 @@ import ru from './locales/ru.json';
 
 function getStoredLanguage(): LanguageOptionValue {
   const stored = localStorage.getItem(LANGUAGE_STORAGE_KEY);
-  if (stored != null && SUPPORTED_LANGUAGES.includes(stored as LanguageOptionValue)) {
+  if (stored && SUPPORTED_LANGUAGES.includes(stored as LanguageOptionValue)) {
     return stored as LanguageOptionValue;
   }
   return 'en';

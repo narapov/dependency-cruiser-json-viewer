@@ -40,14 +40,14 @@ export function useRelationRowContextMenu(config: RelationRowContextMenuOptions)
 
   const contextMenu = (
     <Menu
-      open={anchorPosition !== null}
+      open={!!anchorPosition}
       onClose={handleClose}
       anchorReference="anchorPosition"
       anchorPosition={anchorPosition ?? undefined}
     >
       <MenuItem onClick={handleAction(() => void copyToClipboard(path))}>{t('actions.copyPath')}</MenuItem>
       <MenuItem onClick={handleAction(() => onShowInGraph(path))}>{t('actions.showInGraph')}</MenuItem>
-      {highlightEnabled && onSetHighlight != null && (
+      {highlightEnabled && onSetHighlight && (
         <EdgeHighlightSubmenu
           currentHighlight={currentHighlight}
           onSetHighlight={onSetHighlight}

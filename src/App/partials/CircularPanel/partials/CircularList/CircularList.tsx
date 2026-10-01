@@ -1,11 +1,10 @@
 import { useTranslation } from 'react-i18next';
 
-import List from '@mui/material/List';
 import Typography from '@mui/material/Typography';
 
 import type { DistinctCycle } from '@/domain';
 
-import { CircularListItem } from '../CircularListItem';
+import { CircularSection } from '../CircularSection';
 
 interface CircularListProps {
   cycles: DistinctCycle[];
@@ -26,16 +25,32 @@ export function CircularList(props: CircularListProps) {
     );
   }
 
+  const withoutIgnored = cycles.filter(cycle => cycle.members.every(member => !member.ignored));
+  const withIgnored = cycles.filter(
+    cycle => cycle.members.some(member => member.ignored) && cycle.members.some(member => !member.ignored),
+  );
+  const fullyIgnored = cycles.filter(cycle => cycle.members.every(member => member.ignored));
+
   return (
-    <List dense disablePadding sx={{ py: 0.5 }}>
-      {cycles.map(cycle => (
-        <CircularListItem
-          key={cycle.paths.join('\0')}
-          paths={cycle.paths}
-          onShowCycle={onShowCycle}
-          onShowInGraph={onShowInGraph}
-        />
-      ))}
-    </List>
+    <>
+      <CircularSection
+        title={t('circular.withoutIgnored')}
+        cycles={withoutIgnored}
+        onShowCycle={onShowCycle}
+        onShowInGraph={onShowInGraph}
+      />
+      <CircularSection
+        title={t('circular.withIgnored')}
+        cycles={withIgnored}
+        onShowCycle={onShowCycle}
+        onShowInGraph={onShowInGraph}
+      />
+      <CircularSection
+        title={t('circular.fullyIgnored')}
+        cycles={fullyIgnored}
+        onShowCycle={onShowCycle}
+        onShowInGraph={onShowInGraph}
+      />
+    </>
   );
 }

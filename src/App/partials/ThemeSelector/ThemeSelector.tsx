@@ -30,7 +30,7 @@ export function ThemeSelector() {
       exclusive
       value={mode}
       onChange={(_, value: typeof mode | null) => {
-        if (value != null) {
+        if (value) {
           setMode(value);
         }
       }}

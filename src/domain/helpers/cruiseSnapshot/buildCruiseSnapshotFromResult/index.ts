@@ -1,0 +1,1 @@
+export { buildCruiseSnapshotFromResult } from './buildCruiseSnapshotFromResult';

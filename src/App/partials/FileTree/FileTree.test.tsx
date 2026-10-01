@@ -4,37 +4,46 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { act, fireEvent, screen } from '@testing-library/react';
 
+import { buildCruiseSnapshot } from '@/domain';
 import { renderWithTheme } from '@/testsUtils';
 
+import { initialWorkspaceState, pathsToPresenceRecord, useWorkspaceStore } from '../../stores/workspaceStore';
 import { FileTree } from './FileTree';
 import type { FileTreeHandle } from './types';
 
 const SOURCES = ['src/a.ts', 'src/b/c.ts'];
 
-const defaultProps = {
-  sources: SOURCES,
-  selectedKeys: SOURCES,
-  expandedKeys: ['src', 'src/b'],
-  onExpand: vi.fn(),
-  onViewModuleJson: vi.fn(),
-};
+const CRUISE_TREE = buildCruiseSnapshot(
+  SOURCES.map(source => ({ source, dependencies: [], dependents: [], valid: true })),
+);
+
+function seedWorkspace(overrides?: { selectedKeys?: string[]; expandedKeys?: string[]; activePath?: string | null }) {
+  useWorkspaceStore.setState({
+    ...initialWorkspaceState,
+    cruiseSnapshot: CRUISE_TREE,
+    selectedFilePaths: pathsToPresenceRecord(overrides?.selectedKeys ?? SOURCES),
+    expandedFolderPaths: pathsToPresenceRecord(overrides?.expandedKeys ?? ['src', 'src/b']),
+    activePath: overrides?.activePath ?? null,
+  });
+}
 
 describe('FileTree', () => {
   beforeEach(() => {
     Element.prototype.scrollIntoView = vi.fn();
     vi.useFakeTimers();
+    seedWorkspace();
   });
 
   afterEach(() => {
     vi.useRealTimers();
     vi.clearAllMocks();
+    useWorkspaceStore.setState({ ...initialWorkspaceState });
   });
 
   it('debounces item click into onShowInGraph for selected paths', () => {
     const onShowInGraph = vi.fn();
-    const onExpand = vi.fn();
 
-    renderWithTheme(<FileTree {...defaultProps} onExpand={onExpand} onShowInGraph={onShowInGraph} />);
+    renderWithTheme(<FileTree onShowInGraph={onShowInGraph} onViewModuleJson={vi.fn()} />);
 
     fireEvent.click(screen.getByText('a.ts'));
     expect(onShowInGraph).not.toHaveBeenCalled();
@@ -48,8 +57,9 @@ describe('FileTree', () => {
 
   it('does not show unselected paths in graph on click', () => {
     const onShowInGraph = vi.fn();
+    seedWorkspace({ selectedKeys: ['src/a.ts'] });
 
-    renderWithTheme(<FileTree {...defaultProps} selectedKeys={['src/a.ts']} onShowInGraph={onShowInGraph} />);
+    renderWithTheme(<FileTree onShowInGraph={onShowInGraph} onViewModuleJson={vi.fn()} />);
 
     fireEvent.click(screen.getByText('c.ts'));
     act(() => {
@@ -62,7 +72,7 @@ describe('FileTree', () => {
   it('does not show in graph when clicking the checkbox', () => {
     const onShowInGraph = vi.fn();
 
-    renderWithTheme(<FileTree {...defaultProps} onShowInGraph={onShowInGraph} />);
+    renderWithTheme(<FileTree onShowInGraph={onShowInGraph} onViewModuleJson={vi.fn()} />);
 
     const treeItem = screen.getByText('a.ts').closest('[role="treeitem"]');
     expect(treeItem).toBeInTheDocument();
@@ -77,7 +87,7 @@ describe('FileTree', () => {
   it('exposes focusPath that scrolls and focuses the item', () => {
     const ref = createRef<FileTreeHandle>();
 
-    renderWithTheme(<FileTree {...defaultProps} ref={ref} />);
+    renderWithTheme(<FileTree ref={ref} onShowInGraph={vi.fn()} onViewModuleJson={vi.fn()} />);
 
     act(() => {
       ref.current?.focusPath('src/a.ts');
@@ -91,19 +101,17 @@ describe('FileTree', () => {
   });
 
   it('toggles expand via FileTreeItem double-click on folders', () => {
-    const onExpand = vi.fn();
-
-    renderWithTheme(<FileTree {...defaultProps} onExpand={onExpand} />);
+    renderWithTheme(<FileTree onShowInGraph={vi.fn()} onViewModuleJson={vi.fn()} />);
 
     fireEvent.doubleClick(screen.getByText('b'));
 
-    expect(onExpand).toHaveBeenCalledWith(['src']);
+    expect(useWorkspaceStore.getState().expandedFolderPaths).toEqual({ src: true });
   });
 
   it('shows in graph on Enter for navigable FileTreeItem', () => {
     const onShowInGraph = vi.fn();
 
-    renderWithTheme(<FileTree {...defaultProps} onShowInGraph={onShowInGraph} />);
+    renderWithTheme(<FileTree onShowInGraph={onShowInGraph} onViewModuleJson={vi.fn()} />);
 
     const treeItem = screen.getByText('a.ts').closest('[role="treeitem"]');
     expect(treeItem).toBeInTheDocument();

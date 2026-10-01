@@ -15,7 +15,7 @@ interface ThemePickerDialogProps {
 }
 
 function getThemeIndex(mode: ThemeOptionValue | undefined): number {
-  if (mode == null) {
+  if (!mode) {
     return 0;
   }
   const index = THEME_OPTIONS.findIndex(option => option.value === mode);

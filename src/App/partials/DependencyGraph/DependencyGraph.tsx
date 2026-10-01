@@ -1,357 +1,42 @@
 import clsx from 'clsx';
-import type { IModule } from 'dependency-cruiser';
-import { useImperativeHandle, useState, type MouseEvent as ReactMouseEvent, type Ref } from 'react';
-import { useTranslation } from 'react-i18next';
+import { memo, type Ref } from 'react';
 
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Snackbar from '@mui/material/Snackbar';
-import { useColorScheme, useTheme } from '@mui/material/styles';
-import { Background, Controls, MiniMap, Panel, ReactFlow, ReactFlowProvider, type Node } from '@xyflow/react';
+import { ReactFlowProvider } from '@xyflow/react';
 
-import '@xyflow/react/dist/style.css';
-
-import type { FolderBaseColor, GraphEdgesType } from '@/domain';
-import { downloadTextFile, openGraphvizOnline, useResolvedColorMode } from '@/Shared';
-
-import { EdgesTypeProvider, GraphActionsProvider } from './contexts';
-import { buildEdgeDependencyKeyMap, getMinimapNodeColor, serializeGraphToDot } from './helpers';
-import {
-  useAutoFitView,
-  useBuildGraph,
-  useEdgeContextMenu,
-  useGraphLayoutNodes,
-  useHighlightedEdges,
-  useHighlightedNodes,
-  usePendingFocusNode,
-  useThemedFolderColors,
-} from './hooks';
-import { DependencyEdge } from './partials/DependencyEdge';
-import { EdgesTypePickerDialog } from './partials/EdgesTypePickerDialog';
-import { FileNode } from './partials/FileNode';
-import { FolderGroupNode } from './partials/FolderGroupNode';
-import { FolderNode } from './partials/FolderNode';
+import { useWorkspaceStore } from '../../stores/workspaceStore';
+import { GraphCanvas } from './partials/GraphCanvas';
 import { GraphEmptySelection } from './partials/GraphEmptySelection';
-import { GraphLayoutToggle } from './partials/GraphLayoutToggle';
-import { GraphLegend } from './partials/GraphLegend';
-import { GraphLoader } from './partials/GraphLoader';
 import type { DependencyGraphHandle } from './types';
 
 import styles from './DependencyGraph.module.css';
 
-const nodeTypes = {
-  folder: FolderNode,
-  folderGroup: FolderGroupNode,
-  file: FileNode,
-};
-
-const edgeTypes = {
-  dependency: DependencyEdge,
-};
-
-interface DependencyGraphInnerProps {
-  imperativeRef?: Ref<DependencyGraphHandle>;
-  modules: IModule[];
-  selectedPaths: string[];
-  expandedKeys: string[];
-  folderBaseColors: Readonly<Record<string, FolderBaseColor>>;
-  onToggleFolder: (path: string) => void;
-  onExpandRecursive: (path: string) => void;
-  onShowInFileTree: (path: string) => void;
-  onShowDependenciesPanel: (path: string) => void;
-  onShowApplicableRulesPanel: (path: string) => void;
-  onViewModuleJson: (path: string) => void;
-  onHideOthers: (path: string) => void;
-  onShowDirectDependencies: (path: string) => void;
-  onShowDirectDependents: (path: string) => void;
-  onActivePathChange?: (path: string) => void;
-  activePath?: string | null;
-  userEdgeHighlights: ReadonlyMap<string, string>;
-  onUserEdgeHighlightsChange: (next: ReadonlyMap<string, string>) => void;
-  onClearAllHighlights: () => void;
-  autoLayoutOnly: boolean;
-  onAutoLayoutOnlyChange: (value: boolean) => void;
-  edgesType: GraphEdgesType;
-  onEdgesTypeChange: (value: GraphEdgesType) => void;
-  onOpenEdgesTypePicker: () => void;
+function hasAnyPresent(record: Record<string, boolean | undefined>): boolean {
+  return Object.values(record).some(present => present === true);
 }
 
-function DependencyGraphInner(props: DependencyGraphInnerProps) {
-  const {
-    imperativeRef,
-    modules,
-    selectedPaths,
-    expandedKeys,
-    folderBaseColors,
-    onToggleFolder,
-    onExpandRecursive,
-    onShowInFileTree,
-    onShowDependenciesPanel,
-    onShowApplicableRulesPanel,
-    onViewModuleJson,
-    onHideOthers,
-    onShowDirectDependencies,
-    onShowDirectDependents,
-    onActivePathChange,
-    activePath,
-    userEdgeHighlights,
-    onUserEdgeHighlightsChange,
-    onClearAllHighlights,
-    autoLayoutOnly,
-    onAutoLayoutOnlyChange,
-    edgesType,
-    onEdgesTypeChange,
-    onOpenEdgesTypePicker,
-  } = props;
-
-  const { t } = useTranslation();
-  const theme = useTheme();
-  const { mode } = useColorScheme();
-  const colorMode = useResolvedColorMode();
-  const folderColors = useThemedFolderColors(folderBaseColors, colorMode);
-
-  const { graphResult, isBuildingGraph, buildFailed, clearBuildFailed, expandedFolders } = useBuildGraph({
-    modules,
-    selectedPaths,
-    expandedKeys,
-    folderColors,
-  });
-
-  const {
-    nodes: layoutNodes,
-    onNodesChange,
-    onNodeDrag,
-    onNodeDragStop,
-    hasUserLayout,
-    getLayoutSnapshot,
-    setLayoutSnapshot,
-    onAutoLayoutGroup,
-    onAutoLayoutGroupRecursive,
-  } = useGraphLayoutNodes({
-    graphResult,
-    autoLayoutOnly,
-  });
-
-  const { edges: baseEdges, visibleNodeIds } = graphResult;
-
-  const { highlightedNodes } = useHighlightedNodes({
-    nodes: layoutNodes,
-    activePath,
-  });
-
-  const { highlightedEdges, getEdgeHighlight, setUserEdgeHighlight, onEdgeClick, selectEdge, clearSelectedEdge } =
-    useHighlightedEdges({
-      modules,
-      selectedPaths,
-      expandedFolders,
-      baseEdges,
-      visibleNodeIds,
-      activePath,
-      userEdgeHighlights,
-      onUserEdgeHighlightsChange,
-    });
-
-  useAutoFitView({
-    selectedPaths,
-    layoutNodesLength: layoutNodes.length,
-    hasUserLayout,
-    autoLayoutOnly,
-  });
-
-  const { focusNode } = usePendingFocusNode({
-    isBuildingGraph,
-    graphResult,
-    layoutNodes,
-  });
-
-  const { onEdgeContextMenu, edgeContextMenu } = useEdgeContextMenu({
-    onFocusNode: focusNode,
-    getEdgeHighlight,
-    onSetUserEdgeHighlight: setUserEdgeHighlight,
-  });
-
-  useImperativeHandle(imperativeRef, () => {
-    const buildDot = () => {
-      const edgeDependencyKeyMap = buildEdgeDependencyKeyMap(
-        modules,
-        selectedPaths,
-        expandedFolders,
-        visibleNodeIds,
-        baseEdges,
-      );
-      return serializeGraphToDot({
-        nodes: layoutNodes,
-        edges: baseEdges,
-        userEdgeHighlights,
-        edgeDependencyKeyMap,
-      });
-    };
-
-    return {
-      focusNode,
-      selectEdge,
-      clearAllHighlights: onClearAllHighlights,
-      exportDot: () => {
-        downloadTextFile('graph.dot', buildDot(), 'text/vnd.graphviz');
-      },
-      openDotOnline: () => {
-        openGraphvizOnline(buildDot());
-      },
-      openEdgesTypePicker: onOpenEdgesTypePicker,
-      getLayoutState: () => ({
-        autoLayoutOnly,
-        edgesType,
-        nodePositions: getLayoutSnapshot().nodePositions,
-      }),
-      setLayoutState: state => {
-        onAutoLayoutOnlyChange(state.autoLayoutOnly);
-        onEdgesTypeChange(state.edgesType);
-        setLayoutSnapshot({ nodePositions: state.nodePositions });
-      },
-    };
-  });
-
-  const onPaneClick = () => {
-    clearSelectedEdge();
-  };
-
-  const onPaneContextMenu = (event: ReactMouseEvent | MouseEvent) => {
-    event.preventDefault();
-  };
-
-  const onNodeClick = (_: ReactMouseEvent, node: Node) => {
-    clearSelectedEdge();
-    if (activePath === node.id) {
-      return;
-    }
-    onActivePathChange?.(node.id);
-  };
-
-  const miniMapNodeColor = (graphNode: Node) => getMinimapNodeColor(graphNode, colorMode);
-
-  const graphActions = {
-    onToggleFolder,
-    onExpandRecursive,
-    onShowInFileTree,
-    onShowDependenciesPanel,
-    onShowApplicableRulesPanel,
-    onViewModuleJson,
-    onHideOthers,
-    onShowDirectDependencies,
-    onShowDirectDependents,
-    ...(autoLayoutOnly ? {} : { onAutoLayoutGroup, onAutoLayoutGroupRecursive }),
-  };
-
-  if (selectedPaths.length === 0) {
-    return <GraphEmptySelection />;
-  }
-
-  return (
-    <Box sx={{ position: 'relative', height: '100%', minHeight: 0 }}>
-      <GraphActionsProvider value={graphActions}>
-        <EdgesTypeProvider value={edgesType}>
-          <ReactFlow
-            nodes={highlightedNodes}
-            edges={highlightedEdges}
-            nodeTypes={nodeTypes}
-            edgeTypes={edgeTypes}
-            colorMode={mode ?? 'system'}
-            onNodeClick={onNodeClick}
-            onEdgeClick={onEdgeClick}
-            onPaneClick={onPaneClick}
-            onPaneContextMenu={onPaneContextMenu}
-            onNodeContextMenu={onPaneContextMenu}
-            onEdgeContextMenu={onEdgeContextMenu}
-            onNodesChange={onNodesChange}
-            onNodeDrag={autoLayoutOnly ? undefined : onNodeDrag}
-            onNodeDragStop={autoLayoutOnly ? undefined : onNodeDragStop}
-            nodesDraggable={!autoLayoutOnly}
-            minZoom={0.01}
-            maxZoom={20}
-            onlyRenderVisibleElements
-            proOptions={{ hideAttribution: true }}
-          >
-            <Background color={theme.palette.divider} />
-            <Panel position="top-right">
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                <GraphLayoutToggle
-                  checked={autoLayoutOnly}
-                  onChange={onAutoLayoutOnlyChange}
-                  edgesType={edgesType}
-                  onEdgesTypeChange={onEdgesTypeChange}
-                />
-                <GraphLegend />
-              </Box>
-            </Panel>
-            <MiniMap
-              position="bottom-left"
-              pannable
-              zoomable
-              nodeColor={miniMapNodeColor}
-              nodeStrokeColor={colorMode === 'dark' ? theme.palette.grey[600] : theme.palette.grey[500]}
-              nodeStrokeWidth={1}
-              maskStrokeColor={colorMode === 'dark' ? theme.palette.common.white : theme.palette.common.black}
-              maskStrokeWidth={2}
-              style={{ width: 160, height: 120 }}
-            />
-            <Controls position="bottom-right" showInteractive={false} />
-          </ReactFlow>
-        </EdgesTypeProvider>
-      </GraphActionsProvider>
-      {isBuildingGraph && <GraphLoader />}
-      {edgeContextMenu}
-      <Snackbar
-        open={buildFailed}
-        autoHideDuration={6000}
-        onClose={clearBuildFailed}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert severity="error" onClose={clearBuildFailed} sx={{ width: '100%' }}>
-          {t('graph.buildError')}
-        </Alert>
-      </Snackbar>
-    </Box>
-  );
-}
-
-interface DependencyGraphProps extends Omit<
-  DependencyGraphInnerProps,
-  | 'imperativeRef'
-  | 'autoLayoutOnly'
-  | 'onAutoLayoutOnlyChange'
-  | 'edgesType'
-  | 'onEdgesTypeChange'
-  | 'onOpenEdgesTypePicker'
-> {
+interface DependencyGraphProps {
   ref?: Ref<DependencyGraphHandle>;
+  onShowInFileTree: (path: string) => void;
+  onViewModuleJson: (path: string) => void;
 }
 
-export function DependencyGraph(props: DependencyGraphProps) {
-  const { ref, ...rest } = props;
+export const DependencyGraph = memo(function DependencyGraph(props: DependencyGraphProps) {
+  const { ref, onShowInFileTree, onViewModuleJson } = props;
 
-  const [autoLayoutOnly, setAutoLayoutOnly] = useState(true);
-  const [edgesType, setEdgesType] = useState<GraphEdgesType>('bezier');
-  const [edgesTypePickerOpen, setEdgesTypePickerOpen] = useState(false);
+  const autoLayoutOnly = useWorkspaceStore(state => state.graphSettings.autoLayoutOnly);
+  const selectedFilePaths = useWorkspaceStore(state => state.selectedFilePaths);
+
+  const hasSelection = hasAnyPresent(selectedFilePaths);
 
   return (
     <div className={clsx(styles.container, autoLayoutOnly && styles.layoutLocked)}>
-      <ReactFlowProvider>
-        <DependencyGraphInner
-          imperativeRef={ref}
-          autoLayoutOnly={autoLayoutOnly}
-          onAutoLayoutOnlyChange={setAutoLayoutOnly}
-          edgesType={edgesType}
-          onEdgesTypeChange={setEdgesType}
-          onOpenEdgesTypePicker={() => setEdgesTypePickerOpen(true)}
-          {...rest}
-        />
-      </ReactFlowProvider>
-      <EdgesTypePickerDialog
-        open={edgesTypePickerOpen}
-        edgesType={edgesType}
-        onEdgesTypeChange={setEdgesType}
-        onClose={() => setEdgesTypePickerOpen(false)}
-      />
+      {hasSelection ? (
+        <ReactFlowProvider>
+          <GraphCanvas ref={ref} onShowInFileTree={onShowInFileTree} onViewModuleJson={onViewModuleJson} />
+        </ReactFlowProvider>
+      ) : (
+        <GraphEmptySelection />
+      )}
     </div>
   );
-}
+});

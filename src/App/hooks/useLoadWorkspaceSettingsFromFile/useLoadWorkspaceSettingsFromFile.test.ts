@@ -49,6 +49,7 @@ const settings = {
   autoLayoutOnly: true,
   edgesType: 'bezier',
   nodePositions: {},
+  nodeLayouts: {},
 };
 
 describe('useLoadWorkspaceSettingsFromFile', () => {

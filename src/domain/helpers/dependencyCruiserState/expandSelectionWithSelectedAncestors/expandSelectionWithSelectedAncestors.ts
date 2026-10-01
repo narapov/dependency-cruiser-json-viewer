@@ -1,18 +1,20 @@
-import { getAncestorKeys } from '../../pathUtils';
+import type { CruiseSnapshot } from '../../../types';
 
-/** Expand a file selection with folder ancestors whose every source descendant is selected. */
-export function expandSelectionWithSelectedAncestors(selectedPaths: string[], sources: string[]): string[] {
+/** Derive fully-selected folder ancestors for UI from a file-only selection. */
+export function expandSelectionWithSelectedAncestors(
+  selectedPaths: readonly string[],
+  cruiseSnapshot: CruiseSnapshot,
+): string[] {
   const selected = new Set(selectedPaths);
-  const folders = [...new Set(sources.flatMap(source => getAncestorKeys(source)))].sort(
-    (a, b) => b.length - a.length || b.localeCompare(a),
-  );
 
-  for (const folder of folders) {
-    const filesUnder = sources.filter(source => source.startsWith(`${folder}/`));
-    if (filesUnder.length > 0 && filesUnder.every(file => selected.has(file))) {
-      selected.add(folder);
-    }
-  }
+  [...cruiseSnapshot.nodes.values()]
+    .filter(node => node.isFolder)
+    .forEach(node => {
+      const { descendantFiles } = node;
+      if (descendantFiles.size > 0 && [...descendantFiles].every(file => selected.has(file))) {
+        selected.add(node.path);
+      }
+    });
 
   return [...selected];
 }

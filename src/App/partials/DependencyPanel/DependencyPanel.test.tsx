@@ -1,12 +1,14 @@
 // @vitest-environment jsdom
 import type { IModule } from 'dependency-cruiser';
 import { useTranslation } from 'react-i18next';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { fireEvent, renderHook, screen } from '@testing-library/react';
 
+import { buildCruiseSnapshot } from '@/domain';
 import { renderWithTheme } from '@/testsUtils';
 
+import { initialWorkspaceState, pathsToPresenceRecord, useWorkspaceStore } from '../../stores/workspaceStore';
 import { DependencyPanel } from './DependencyPanel';
 
 vi.mock('@/Shared', async importOriginal => {
@@ -33,29 +35,31 @@ const modules = [
 
 const selectedPaths = ['src/foo/a.ts', 'src/foo/b.ts', 'src/bar/c.ts'];
 
-const highlightProps = {
-  userEdgeHighlights: new Map<string, string>(),
-  onSetUserDependencyHighlight: vi.fn(),
-};
+function seedPanel(path: string, selected: string[], panelModules: IModule[] = modules) {
+  useWorkspaceStore.setState({
+    ...initialWorkspaceState,
+    cruiseSnapshot: buildCruiseSnapshot(panelModules),
+    dependenciesPanelPath: path,
+    selectedFilePaths: pathsToPresenceRecord(selected),
+    expandedFolderPaths: {},
+    userEdgeHighlights: new Map(),
+  });
+}
 
 describe('DependencyPanel', () => {
+  beforeEach(() => {
+    useWorkspaceStore.setState({ ...initialWorkspaceState });
+  });
+
   it('renders sections, nested relations, and wires header actions', () => {
     const { result: i18n } = renderHook(() => useTranslation());
     const onClose = vi.fn();
     const onShowInGraph = vi.fn();
     const onViewModuleJson = vi.fn();
+    seedPanel('src/foo/a.ts', selectedPaths);
 
     renderWithTheme(
-      <DependencyPanel
-        path="src/foo/a.ts"
-        modules={modules}
-        selectedPaths={selectedPaths}
-        expandedKeys={[]}
-        onClose={onClose}
-        onShowInGraph={onShowInGraph}
-        onViewModuleJson={onViewModuleJson}
-        {...highlightProps}
-      />,
+      <DependencyPanel onClose={onClose} onShowInGraph={onShowInGraph} onViewModuleJson={onViewModuleJson} />,
     );
 
     expect(screen.getByText('src/foo/a.ts')).toBeInTheDocument();
@@ -77,38 +81,18 @@ describe('DependencyPanel', () => {
 
   it('shows empty relation lists when there are no relations', () => {
     const { result: i18n } = renderHook(() => useTranslation());
+    seedPanel('src/bar/c.ts', ['src/bar/c.ts'], [moduleAt('src/bar/c.ts')]);
 
-    renderWithTheme(
-      <DependencyPanel
-        path="src/bar/c.ts"
-        modules={[moduleAt('src/bar/c.ts')]}
-        selectedPaths={['src/bar/c.ts']}
-        expandedKeys={[]}
-        onClose={vi.fn()}
-        onShowInGraph={vi.fn()}
-        onViewModuleJson={vi.fn()}
-        {...highlightProps}
-      />,
-    );
+    renderWithTheme(<DependencyPanel onClose={vi.fn()} onShowInGraph={vi.fn()} onViewModuleJson={vi.fn()} />);
 
     expect(screen.getAllByText(i18n.current.t('dependencyPanel.noDependencies'))).toHaveLength(2);
   });
 
   it('shows hidden dependents for unselected modules', () => {
     const { result: i18n } = renderHook(() => useTranslation());
+    seedPanel('src/foo/a.ts', selectedPaths);
 
-    renderWithTheme(
-      <DependencyPanel
-        path="src/foo/a.ts"
-        modules={modules}
-        selectedPaths={selectedPaths}
-        expandedKeys={[]}
-        onClose={vi.fn()}
-        onShowInGraph={vi.fn()}
-        onViewModuleJson={vi.fn()}
-        {...highlightProps}
-      />,
-    );
+    renderWithTheme(<DependencyPanel onClose={vi.fn()} onShowInGraph={vi.fn()} onViewModuleJson={vi.fn()} />);
 
     expect(screen.getByText(i18n.current.t('dependencyPanel.hidden', { count: 1 }))).toBeInTheDocument();
     fireEvent.click(screen.getByText(i18n.current.t('dependencyPanel.hidden', { count: 1 })));

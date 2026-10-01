@@ -9,7 +9,7 @@ export function applyHighlightKeys(
   }
 
   return dependencyKeys.reduce((next, key) => {
-    if (color == null) {
+    if (!color) {
       next.delete(key);
     } else {
       next.set(key, color);

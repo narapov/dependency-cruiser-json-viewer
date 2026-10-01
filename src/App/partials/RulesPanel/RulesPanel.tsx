@@ -1,28 +1,23 @@
-import type { IFlattenedRuleSet, IViolation } from 'dependency-cruiser';
 import { useDeferredValue, useState } from 'react';
 
 import Box from '@mui/material/Box';
 
-import { groupRulesWithViolations } from '@/domain';
-
+import { useWorkspaceStore } from '../../stores/workspaceStore';
 import { matchesNameFilter } from './helpers/matchesNameFilter';
 import { RulesList } from './partials/RulesList';
 import { RulesNameFilter } from './partials/RulesNameFilter';
 
 interface RulesPanelProps {
-  ruleSetUsed: IFlattenedRuleSet | undefined;
-  violations: readonly IViolation[] | undefined;
-  sources: readonly string[];
   onSelectViolationPaths: (paths: string[]) => void;
   onShowRuleViolations: (ruleName: string) => void;
 }
 
 export function RulesPanel(props: RulesPanelProps) {
-  const { ruleSetUsed, violations, sources, onSelectViolationPaths, onShowRuleViolations } = props;
+  const { onSelectViolationPaths, onShowRuleViolations } = props;
 
+  const rules = useWorkspaceStore(state => state.cruiseSnapshot.rules);
   const [nameFilter, setNameFilter] = useState('');
   const deferredNameFilter = useDeferredValue(nameFilter);
-  const rules = groupRulesWithViolations(ruleSetUsed, violations, sources);
   const filteredRules = rules.filter(entry => matchesNameFilter(entry.name, deferredNameFilter));
 
   return (

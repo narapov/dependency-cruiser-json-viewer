@@ -107,6 +107,8 @@ Feature/
 - Naming: PascalCase folders/files for components, `useXxx` for hooks, barrel `index.ts` in each folder.
 - Iteration: prefer `filter` / `map` / `flatMap` / `reduce` / `some` / `every` / `find` over `for` / `continue`. Use `forEach` (or `for...of`) for pure side effects (e.g. mutating a `Map`, `localStorage.removeItem`) — do not use `reduce` only to run side effects. Keep `while` for parent-path walks where there is no array to iterate.
 - Helpers: every exported helper must have a JSDoc comment with a short description. Prefer description (and optional `example`) only — do not document parameter or return types in JSDoc; TypeScript already covers those.
+- Booleans: do not write `=== true` / `=== false`; use the value (or `!value`) directly. Prefer `if (node?.isFolder)` over `if (node?.isFolder === true)`.
+- Nullish checks: prefer truthiness over `== null` / `!= null` for objects, arrays, functions, and for strings in normal flow where `''` is as invalid as null (paths, colors, titles). Use `if (!cruiseResult)`, `if (path)`, `open={!!menuState}`. Keep explicit null checks when the distinction matters: type predicates (`.filter((x): x is T => x != null)`), numbers (`0` is valid), intentional sentinels (`groupId === null` for graph root, `localStorage.getItem(...) === null`, first-render `prev !== null`), and APIs where `null` and `undefined` differ.
 - Tool config files (Prettier, commitlint, Vite, etc.): prefer `*.config.ts` when the tool supports TypeScript; use `.cjs` / `.mjs` only when the tool requires it or TS is not supported.
 - Keep diffs minimal — do not change unrelated code.
 

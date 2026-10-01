@@ -13,7 +13,7 @@ export function matchesPathRestriction(
   path?: string | string[],
   pathNot?: string | string[],
 ): boolean {
-  const pathOk = path == null || matchesAnyPattern(modulePath, path);
-  const pathNotOk = pathNot == null || !matchesAnyPattern(modulePath, pathNot);
+  const pathOk = !path || matchesAnyPattern(modulePath, path);
+  const pathNotOk = !pathNot || !matchesAnyPattern(modulePath, pathNot);
   return pathOk && pathNotOk;
 }

@@ -1,8 +1,8 @@
-import type { FolderBaseColor } from '@/domain';
+import type { CruiseSnapshot, FolderBaseColor } from '@/domain';
 
-import { assignFolderBaseColors, folderBaseColorsToRecord } from '../../partials/DependencyGraph';
+import { assignFolderBaseColors, folderBaseColorsToRecord } from '../assignFolderColors';
 
-/** Default pastel folder colors derived from module source paths. */
-export function defaultFolderColorsRecord(sources: string[]): Record<string, FolderBaseColor> {
-  return folderBaseColorsToRecord(assignFolderBaseColors(sources));
+/** Default pastel folder colors derived from the cruise snapshot folders. */
+export function defaultFolderColorsRecord(snapshot: CruiseSnapshot): Record<string, FolderBaseColor> {
+  return folderBaseColorsToRecord(assignFolderBaseColors(snapshot));
 }

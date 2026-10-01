@@ -15,7 +15,7 @@ interface TextWithFloatingActionsProps {
 
 /** Merge a base style object with an optional MUI `sx` prop into one `sx` value. */
 function mergeSx(base: Record<string, unknown>, sx?: SxProps<Theme>): SxProps<Theme> {
-  if (sx == null) {
+  if (!sx) {
     return base;
   }
   if (Array.isArray(sx)) {

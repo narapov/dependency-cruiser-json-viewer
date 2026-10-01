@@ -1,5 +1,5 @@
 export * from './collectViolationModulePaths';
-export * from './getRulesApplicableToPath';
+export * from './flattenViolations';
 export * from './groupRulesWithViolations';
 export * from './isRuleApplicableToPath';
 export * from './matchesPathRestriction';

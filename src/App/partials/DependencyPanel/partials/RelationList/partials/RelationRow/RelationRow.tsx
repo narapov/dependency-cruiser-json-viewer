@@ -1,4 +1,3 @@
-import type { IModule } from 'dependency-cruiser';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -25,6 +24,7 @@ import {
 } from '@/domain';
 import { copyToClipboard, highlightColorMenuListSx, HighlightColorSwatches, TextWithFloatingActions } from '@/Shared';
 
+import { useWorkspaceStore } from '../../../../../../stores/workspaceStore';
 import { getRelationPathStyle, keyPrefixForChild } from '../../helpers';
 import { useRelationRowContextMenu } from '../../hooks';
 
@@ -34,36 +34,24 @@ interface RelationRowProps {
   expandedKeys: Set<string>;
   onToggleExpand: (key: string) => void;
   panelPath: string;
-  modules: IModule[];
   direction: DependencyKeysDirection;
-  userEdgeHighlights: ReadonlyMap<string, string>;
-  onSetUserDependencyHighlight: (dependencyKeys: readonly string[], color: string | null) => void;
   onShowInGraph: (path: string) => void;
   depth: number;
 }
 
 /** One relation row with optional expandable nested children. */
 export function RelationRow(props: RelationRowProps) {
-  const {
-    item,
-    expandKey,
-    expandedKeys,
-    onToggleExpand,
-    panelPath,
-    modules,
-    direction,
-    userEdgeHighlights,
-    onSetUserDependencyHighlight,
-    onShowInGraph,
-    depth,
-  } = props;
+  const { item, expandKey, expandedKeys, onToggleExpand, panelPath, direction, onShowInGraph, depth } = props;
 
   const { t } = useTranslation();
+  const cruiseSnapshot = useWorkspaceStore(state => state.cruiseSnapshot);
+  const userEdgeHighlights = useWorkspaceStore(state => state.userEdgeHighlights);
+  const onSetUserDependencyHighlight = useWorkspaceStore(state => state.setUserDependencyHighlight);
   const hasChildren = (item.children?.length ?? 0) > 0;
   const expanded = expandedKeys.has(expandKey);
   const highlightEnabled = !hasChildren;
   const dependencyKeys = highlightEnabled
-    ? getDependencyKeysBetweenPaths(panelPath, item.path, direction, modules)
+    ? getDependencyKeysBetweenPaths(cruiseSnapshot, panelPath, item.path, direction)
     : [];
   const currentHighlight = highlightEnabled ? getEdgeHighlightColor(dependencyKeys, userEdgeHighlights) : undefined;
 
@@ -120,7 +108,7 @@ export function RelationRow(props: RelationRowProps) {
               ) : (
                 <Box sx={{ width: 24, flexShrink: 0 }} />
               )}
-              {highlightEnabled && currentHighlight != null && (
+              {highlightEnabled && currentHighlight && (
                 <Box
                   aria-hidden
                   sx={{
@@ -151,7 +139,7 @@ export function RelationRow(props: RelationRowProps) {
                     sx={{ p: 0.25, position: 'relative' }}
                   >
                     <ColorizeOutlined fontSize="small" />
-                    {currentHighlight != null && (
+                    {currentHighlight && (
                       <Box
                         sx={{
                           position: 'absolute',
@@ -210,7 +198,7 @@ export function RelationRow(props: RelationRowProps) {
       {highlightEnabled && (
         <Menu
           anchorEl={highlightMenuAnchor}
-          open={highlightMenuAnchor != null}
+          open={!!highlightMenuAnchor}
           onClose={() => setHighlightMenuAnchor(null)}
           slotProps={{ list: { sx: highlightColorMenuListSx } }}
         >
@@ -234,10 +222,7 @@ export function RelationRow(props: RelationRowProps) {
                 expandedKeys={expandedKeys}
                 onToggleExpand={onToggleExpand}
                 panelPath={panelPath}
-                modules={modules}
                 direction={direction}
-                userEdgeHighlights={userEdgeHighlights}
-                onSetUserDependencyHighlight={onSetUserDependencyHighlight}
                 onShowInGraph={onShowInGraph}
                 depth={depth + 1}
               />

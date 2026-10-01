@@ -6,9 +6,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 
+import { getCruiseSources } from '@/domain';
 import { CRUISE_RESULT_CHANGED_EVENT } from '@/Shared';
 
 import { fetchCruiseResult } from '../../api/cruiseResult';
+import { initialWorkspaceState, useWorkspaceStore } from '../../stores/workspaceStore';
 import { useCruiseResultWatch } from './useCruiseResultWatch';
 
 const socketOn = vi.fn();
@@ -61,6 +63,7 @@ describe('useCruiseResultWatch', () => {
     socketDisconnect.mockClear();
     changedHandler = undefined;
     delete window.envs;
+    useWorkspaceStore.setState({ ...initialWorkspaceState, userEdgeHighlights: new Map() });
     vi.mocked(fetchCruiseResult).mockReset();
     vi.mocked(fetchCruiseResult).mockResolvedValue(cruiseResult);
   });
@@ -72,57 +75,37 @@ describe('useCruiseResultWatch', () => {
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     );
 
-    renderHook(
-      () =>
-        useCruiseResultWatch({
-          cruiseLoadId: 0,
-          setCruiseLoadId: vi.fn(),
-          setPatterns: vi.fn(),
-          getCurrentWorkspaceSettings: vi.fn(() => null),
-          applyWorkspaceView: vi.fn(),
-        }),
-      { wrapper },
-    );
+    renderHook(() => useCruiseResultWatch(), { wrapper });
 
     expect(socketOn).not.toHaveBeenCalled();
   });
 
-  it('refetches and applies current workspace settings on change event', async () => {
+  it('refetches and soft-resets the workspace on change event', async () => {
     window.envs = { watch: true };
     const queryClient = new QueryClient();
     const setQueryData = vi.spyOn(queryClient, 'setQueryData');
-
-    const setCruiseLoadId = vi.fn();
-    const setPatterns = vi.fn();
-    const applyWorkspaceView = vi.fn();
-    const getCurrentWorkspaceSettings = vi.fn(() => ({
-      ignorePatterns: ['**/*.test.ts'],
-      selectedFiles: ['src/a.ts'],
-      expandedKeys: ['src'],
-      dependenciesPath: null,
-      applicableRulesPath: null,
-      userEdgeHighlights: {},
-      folderColors: {},
-      autoLayoutOnly: true,
-      edgesType: 'bezier' as const,
-      nodePositions: {},
-    }));
+    useWorkspaceStore.getState().reset(
+      {
+        ...cruiseResult,
+        modules: [
+          ...cruiseResult.modules,
+          {
+            source: 'src/b.ts',
+            dependencies: [],
+            dependents: [],
+            valid: true,
+          },
+        ],
+      } as ICruiseResult,
+      'hard',
+    );
+    useWorkspaceStore.getState().setActivePath('src/a.ts');
 
     const wrapper = ({ children }: { children: ReactNode }) => (
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     );
 
-    renderHook(
-      () =>
-        useCruiseResultWatch({
-          cruiseLoadId: 2,
-          setCruiseLoadId,
-          setPatterns,
-          getCurrentWorkspaceSettings,
-          applyWorkspaceView,
-        }),
-      { wrapper },
-    );
+    renderHook(() => useCruiseResultWatch(), { wrapper });
 
     expect(socketOn).toHaveBeenCalledWith(CRUISE_RESULT_CHANGED_EVENT, expect.any(Function));
     expect(changedHandler).toBeTypeOf('function');
@@ -134,14 +117,8 @@ describe('useCruiseResultWatch', () => {
     await waitFor(() => {
       expect(fetchCruiseResult).toHaveBeenCalledWith(undefined, { cacheBust: true });
       expect(setQueryData).toHaveBeenCalledWith(['cruise-result'], cruiseResult);
-      expect(setCruiseLoadId).toHaveBeenCalledWith(3);
-      expect(setPatterns).toHaveBeenCalledWith(['**/*.test.ts']);
-      expect(applyWorkspaceView).toHaveBeenCalledWith(
-        expect.objectContaining({
-          cruiseLoadId: 3,
-          sourcesKey: 'src/a.ts',
-        }),
-      );
+      expect(getCruiseSources(useWorkspaceStore.getState().cruiseSnapshot).sort()).toEqual(['src/a.ts'].sort());
+      expect(useWorkspaceStore.getState().activePath).toBe('src/a.ts');
     });
   });
 });

@@ -1,12 +1,13 @@
 // @vitest-environment jsdom
 
 import { useTranslation } from 'react-i18next';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { fireEvent, renderHook, screen, waitFor } from '@testing-library/react';
 
 import { renderWithTheme } from '@/testsUtils';
 
+import { initialWorkspaceState, useWorkspaceStore } from '../../stores/workspaceStore';
 import { HighlightsPanel } from './HighlightsPanel';
 
 const sampleHighlights = new Map([
@@ -16,16 +17,19 @@ const sampleHighlights = new Map([
 ]);
 
 describe('HighlightsPanel', () => {
+  beforeEach(() => {
+    useWorkspaceStore.setState({ ...initialWorkspaceState });
+  });
+
   it('shows empty state when there are no highlights', () => {
     const { result: i18n } = renderHook(() => useTranslation());
 
+    useWorkspaceStore.setState({
+      ...initialWorkspaceState,
+      userEdgeHighlights: new Map(),
+    });
     renderWithTheme(
-      <HighlightsPanel
-        highlights={new Map()}
-        onRemoveDependencyKeys={vi.fn()}
-        onShowConnection={vi.fn()}
-        onClearAll={vi.fn()}
-      />,
+      <HighlightsPanel onRemoveDependencyKeys={vi.fn()} onShowConnection={vi.fn()} onClearAll={vi.fn()} />,
     );
 
     expect(screen.getByText(i18n.current.t('highlights.empty'))).toBeInTheDocument();
@@ -35,13 +39,12 @@ describe('HighlightsPanel', () => {
   it('keeps color groups expanded by default', () => {
     const { result: i18n } = renderHook(() => useTranslation());
 
+    useWorkspaceStore.setState({
+      ...initialWorkspaceState,
+      userEdgeHighlights: sampleHighlights,
+    });
     renderWithTheme(
-      <HighlightsPanel
-        highlights={sampleHighlights}
-        onRemoveDependencyKeys={vi.fn()}
-        onShowConnection={vi.fn()}
-        onClearAll={vi.fn()}
-      />,
+      <HighlightsPanel onRemoveDependencyKeys={vi.fn()} onShowConnection={vi.fn()} onClearAll={vi.fn()} />,
     );
 
     expect(screen.getByText('src/a.ts → src/b.ts')).toBeInTheDocument();
@@ -53,13 +56,12 @@ describe('HighlightsPanel', () => {
   it('collapses and expands a color group', async () => {
     const { result: i18n } = renderHook(() => useTranslation());
 
+    useWorkspaceStore.setState({
+      ...initialWorkspaceState,
+      userEdgeHighlights: new Map([['src/a.ts->src/b.ts', '#ff0000']]),
+    });
     renderWithTheme(
-      <HighlightsPanel
-        highlights={new Map([['src/a.ts->src/b.ts', '#ff0000']])}
-        onRemoveDependencyKeys={vi.fn()}
-        onShowConnection={vi.fn()}
-        onClearAll={vi.fn()}
-      />,
+      <HighlightsPanel onRemoveDependencyKeys={vi.fn()} onShowConnection={vi.fn()} onClearAll={vi.fn()} />,
     );
 
     expect(screen.getByText('src/a.ts → src/b.ts')).toBeInTheDocument();
@@ -79,9 +81,12 @@ describe('HighlightsPanel', () => {
     const onRemoveDependencyKeys = vi.fn();
     const onShowConnection = vi.fn();
 
+    useWorkspaceStore.setState({
+      ...initialWorkspaceState,
+      userEdgeHighlights: sampleHighlights,
+    });
     renderWithTheme(
       <HighlightsPanel
-        highlights={sampleHighlights}
         onRemoveDependencyKeys={onRemoveDependencyKeys}
         onShowConnection={onShowConnection}
         onClearAll={vi.fn()}
@@ -101,9 +106,12 @@ describe('HighlightsPanel', () => {
     const onShowConnection = vi.fn();
     const onRemoveDependencyKeys = vi.fn();
 
+    useWorkspaceStore.setState({
+      ...initialWorkspaceState,
+      userEdgeHighlights: sampleHighlights,
+    });
     renderWithTheme(
       <HighlightsPanel
-        highlights={sampleHighlights}
         onRemoveDependencyKeys={onRemoveDependencyKeys}
         onShowConnection={onShowConnection}
         onClearAll={vi.fn()}
@@ -120,15 +128,16 @@ describe('HighlightsPanel', () => {
     const { result: i18n } = renderHook(() => useTranslation());
     const onRemoveDependencyKeys = vi.fn();
 
+    useWorkspaceStore.setState({
+      ...initialWorkspaceState,
+      userEdgeHighlights: new Map([
+        ['src/a.ts->src/b.ts', '#ff0000'],
+        ['src/e.ts->src/f.ts', '#ff0000'],
+        ['src/c.ts->src/d.ts', '#00ff00'],
+      ]),
+    });
     renderWithTheme(
       <HighlightsPanel
-        highlights={
-          new Map([
-            ['src/a.ts->src/b.ts', '#ff0000'],
-            ['src/e.ts->src/f.ts', '#ff0000'],
-            ['src/c.ts->src/d.ts', '#00ff00'],
-          ])
-        }
         onRemoveDependencyKeys={onRemoveDependencyKeys}
         onShowConnection={vi.fn()}
         onClearAll={vi.fn()}
@@ -147,13 +156,12 @@ describe('HighlightsPanel', () => {
     const { result: i18n } = renderHook(() => useTranslation());
     const onClearAll = vi.fn();
 
+    useWorkspaceStore.setState({
+      ...initialWorkspaceState,
+      userEdgeHighlights: new Map([['src/a.ts->src/b.ts', '#ff0000']]),
+    });
     renderWithTheme(
-      <HighlightsPanel
-        highlights={new Map([['src/a.ts->src/b.ts', '#ff0000']])}
-        onRemoveDependencyKeys={vi.fn()}
-        onShowConnection={vi.fn()}
-        onClearAll={onClearAll}
-      />,
+      <HighlightsPanel onRemoveDependencyKeys={vi.fn()} onShowConnection={vi.fn()} onClearAll={onClearAll} />,
     );
 
     fireEvent.click(screen.getByRole('button', { name: i18n.current.t('highlights.clearAll') }));

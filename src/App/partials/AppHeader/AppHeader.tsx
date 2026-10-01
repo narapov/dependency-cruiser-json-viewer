@@ -10,8 +10,10 @@ import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 
-import { formatShortcut } from '@/Shared';
+import { countIgnoredModules, getCruiseSources } from '@/domain';
+import { formatShortcut, getWindowEnvs } from '@/Shared';
 
+import { useWorkspaceStore } from '../../stores/workspaceStore';
 import { LanguageSelector } from '../LanguageSelector';
 import { ThemeSelector } from '../ThemeSelector';
 
@@ -50,10 +52,6 @@ const headerIconButtonSx = {
 } as const;
 
 interface AppHeaderProps {
-  filteredModulesCount?: number;
-  totalModulesCount?: number;
-  hasIgnoredModules?: boolean;
-  watchMode?: boolean;
   onOpenFileSearch: () => void;
   onOpenCommandPalette: () => void;
   onOpenIgnorePatterns: () => void;
@@ -61,18 +59,18 @@ interface AppHeaderProps {
 }
 
 export function AppHeader(props: AppHeaderProps) {
-  const {
-    filteredModulesCount,
-    totalModulesCount,
-    hasIgnoredModules = false,
-    watchMode = false,
-    onOpenFileSearch,
-    onOpenCommandPalette,
-    onOpenIgnorePatterns,
-    onOpenAbout,
-  } = props;
+  const { onOpenFileSearch, onOpenCommandPalette, onOpenIgnorePatterns, onOpenAbout } = props;
 
   const { t } = useTranslation();
+  const cruiseResult = useWorkspaceStore(state => state.cruiseResult);
+  const ignorePatterns = useWorkspaceStore(state => state.ignorePatterns);
+  const cruiseSnapshot = useWorkspaceStore(state => state.cruiseSnapshot);
+  const watchMode = getWindowEnvs()?.watch === true;
+
+  const totalModulesCount = cruiseResult?.modules.length;
+  const filteredModulesCount = cruiseResult ? getCruiseSources(cruiseSnapshot).length : undefined;
+  const hasIgnoredModules = cruiseResult ? countIgnoredModules(cruiseResult, ignorePatterns) > 0 : false;
+
   const searchFilesLabel = t('app.searchFiles', { shortcut: formatShortcut('P') });
   const commandPaletteLabel = t('app.commandPalette');
   const ignorePatternsLabel = t('ignorePatterns.setIgnorePatterns');

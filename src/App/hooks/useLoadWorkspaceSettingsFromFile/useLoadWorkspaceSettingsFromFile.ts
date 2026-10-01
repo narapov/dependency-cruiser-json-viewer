@@ -46,11 +46,11 @@ export function useLoadWorkspaceSettingsFromFile(config: UseLoadWorkspaceSetting
         return;
       }
 
-      if (queryClient.getQueryData(['cruise-result']) == null) {
+      if (!queryClient.getQueryData(['cruise-result'])) {
         setFileLoadError(t('app.loadWorkspaceSettingsRequiresCruise'));
         return;
       }
-      if (parsed.settings == null) {
+      if (!parsed.settings) {
         setFileLoadError(t('app.missingWorkspaceSettings'));
         return;
       }

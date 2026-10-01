@@ -19,6 +19,32 @@ domain → domain only
 
 Layer boundaries are enforced by [`.dependency-cruiser/layer-import-rules.mjs`](../.dependency-cruiser/layer-import-rules.mjs) (`domain-only-domain`, `shared-only-shared-and-domain`, `shared-feature-partials-only-shared-domain-and-self`, `domain-feature-partials-only-domain-and-self`, `app-root-only-shared-domain-and-partial-barrels`).
 
+## Data & state
+
+### State management — Zustand
+
+- App UI and workspace state live in Zustand stores (e.g. [`src/App/stores/workspaceStore/`](../src/App/stores/workspaceStore/), feature stores such as graph markers).
+- Stores hold the loaded cruise result, settings, and derived UI fields. Heavy indexing of cruise data does not belong in React context or ad-hoc component logic.
+
+### CruiseSnapshot — precompute on load
+
+- After a cruise result is loaded (and filtered), build an immutable [`CruiseSnapshot`](../src/domain/types/CruiseSnapshot.ts) via `buildCruiseSnapshotFromResult` / `buildCruiseSnapshot` (see the workspace load path in [`workspaceStore.ts`](../src/App/stores/workspaceStore/workspaceStore.ts)).
+- Anything that can be derived once from modules, rules, and violations — path tree, `ancestors`, `descendantFiles`, dependency indexes, cycles, rules, violations — should be computed **in the snapshot at load time**, not rediscovered later while chasing UI/helper performance bottlenecks.
+- Runtime code should read snapshot indexes. New expensive aggregates over cruise data should extend the snapshot first, not recompute on a hot path.
+
+### Paths — prefer snapshot topology
+
+- Do not parse or slice path strings, and do not call `getAncestorKeys` or walk the tree from scratch, when the node already exists in the snapshot.
+- Hierarchy: use `node.ancestors` (nearest parent → root).
+- Files under a folder: use `node.descendantFiles` (and helpers such as `getCruiseSourcesUnder`).
+- `pathUtils` (`getAncestorKeys`, `getParentPath`, …) is for **building** the snapshot or when a node is not yet in the index. After load, look up `cruiseSnapshot.nodes` first.
+
+### Collections — prefer Map for lookup
+
+- When selecting by key (path, dependency key, id), prefer a `Map` (or a `Set` for membership) over arrays plus `find` / `includes` / linear `filter`.
+- The snapshot already follows this (`nodes`, dependency indexes, `violations`, edge maps on `CruisePathNode`); new index code should do the same.
+- Keep arrays when order matters for UI or when lookup is not needed.
+
 ## Module structure
 
 Each public module is a folder with `ComponentName.tsx` + `index.ts`:
@@ -44,6 +70,10 @@ Feature/
 │   └── useXxx/
 │       ├── useXxx.ts
 │       └── index.ts
+├── stores/
+│   └── storeName/
+│       ├── storeName.ts
+│       └── index.ts
 ├── hocs/
 ├── constants/
 ├── api/
@@ -58,13 +88,14 @@ Feature/
 
 - **Private subcomponents** → `partials/SubComponent/`
 - **Private utilities** → `helpers/helperName/`
+- **Zustand stores** → `stores/storeName/`
 - **Domain types** → `types/TypeName.ts` (≤2 related interfaces per file)
 - **Type barrel** → `ComponentName.types.ts` (re-export only, no definitions)
 - **Styles** → `ComponentName.module.css`
 
 Import from outside a module **only through its `index.ts`**.
 
-Allowed subfolders (`subdir`): `hooks`, `partials`, `hocs`, `contexts`, `types`, `constants`, `helpers`, `api`.
+Allowed subfolders (`subdir`): `hooks`, `partials`, `hocs`, `contexts`, `types`, `constants`, `helpers`, `api`, `stores`.
 
 ### Folder import rules (per directory)
 

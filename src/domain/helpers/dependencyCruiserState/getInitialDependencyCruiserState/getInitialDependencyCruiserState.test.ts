@@ -1,21 +1,26 @@
 import { describe, expect, it } from 'vitest';
 
+import { buildCruiseSnapshot } from '../../cruiseSnapshot';
 import { getDefaultExpandedKeys } from '../getDefaultExpandedKeys';
 import { getDefaultSelectedKeys } from '../getDefaultSelectedKeys';
 import { getInitialDependencyCruiserState } from './getInitialDependencyCruiserState';
 
-describe('getInitialDependencyCruiserState', () => {
-  it('composes default selected and expanded keys', () => {
-    const sources = ['src/foo/a.ts', 'src/bar/b.ts', 'lib/x.ts'];
+function treeFrom(...sources: string[]) {
+  return buildCruiseSnapshot(sources.map(source => ({ source, dependencies: [], dependents: [], valid: true })));
+}
 
-    expect(getInitialDependencyCruiserState(sources)).toEqual({
-      selectedKeys: getDefaultSelectedKeys(sources),
-      expandedKeys: getDefaultExpandedKeys(sources),
+describe('getInitialDependencyCruiserState', () => {
+  it('returns default selected and expanded keys for a cruise snapshot', () => {
+    const cruiseSnapshot = treeFrom('src/foo/a.ts', 'lib/x.ts');
+    expect(getInitialDependencyCruiserState(cruiseSnapshot)).toEqual({
+      selectedKeys: getDefaultSelectedKeys(cruiseSnapshot),
+      expandedKeys: getDefaultExpandedKeys(cruiseSnapshot),
     });
   });
 
-  it('returns empty keys for empty sources', () => {
-    expect(getInitialDependencyCruiserState([])).toEqual({
+  it('returns empty keys for an empty cruise snapshot', () => {
+    const cruiseSnapshot = buildCruiseSnapshot([]);
+    expect(getInitialDependencyCruiserState(cruiseSnapshot)).toEqual({
       selectedKeys: [],
       expandedKeys: [],
     });

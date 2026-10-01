@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import type { IModule } from 'dependency-cruiser';
+import type { ICruiseResult, IModule } from 'dependency-cruiser';
 import { useTranslation } from 'react-i18next';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -9,15 +9,41 @@ import { fireEvent, renderHook, screen } from '@testing-library/react';
 import { USER_EDGE_HIGHLIGHT_COLORS } from '@/Shared';
 import { renderWithTheme } from '@/testsUtils';
 
+import { initialWorkspaceState, useWorkspaceStore } from '../../stores/workspaceStore';
 import { HighlightEdgeDialog } from './HighlightEdgeDialog';
 
 function moduleAt(source: string, dependencies: IModule['dependencies'] = []): IModule {
   return { source, dependencies, dependents: [], valid: true } as IModule;
 }
 
+function seedModules(modules: IModule[]) {
+  useWorkspaceStore.getState().reset(
+    {
+      modules,
+      summary: {
+        totalCruised: modules.length,
+        violations: [],
+        error: 0,
+        warn: 0,
+        info: 0,
+        ignore: 0,
+        optionsUsed: { args: '' },
+        environment: {} as ICruiseResult['summary']['environment'],
+      },
+    } as ICruiseResult,
+    'hard',
+  );
+}
+
+function renderDialog(modules: IModule[], onConfirm = vi.fn(), onClose = vi.fn()) {
+  seedModules(modules);
+  return renderWithTheme(<HighlightEdgeDialog open onConfirm={onConfirm} onClose={onClose} />);
+}
+
 describe('HighlightEdgeDialog', () => {
   beforeEach(() => {
     Element.prototype.scrollIntoView = vi.fn();
+    useWorkspaceStore.setState({ ...initialWorkspaceState });
   });
 
   it('walks source → target → color and confirms a highlight', async () => {
@@ -29,16 +55,7 @@ describe('HighlightEdgeDialog', () => {
       moduleAt('src/b.ts'),
     ];
 
-    renderWithTheme(
-      <HighlightEdgeDialog
-        open
-        sources={['src/a.ts', 'src/b.ts']}
-        modules={modules}
-        userEdgeHighlights={new Map()}
-        onConfirm={onConfirm}
-        onClose={onClose}
-      />,
-    );
+    renderDialog(modules, onConfirm, onClose);
 
     expect(screen.getByText(i18n.current.t('highlightEdge.selectSource'))).toBeInTheDocument();
 
@@ -73,16 +90,7 @@ describe('HighlightEdgeDialog', () => {
       moduleAt('src/foo/c.ts'),
     ];
 
-    renderWithTheme(
-      <HighlightEdgeDialog
-        open
-        sources={['src/a.ts', 'src/foo/b.ts', 'src/foo/c.ts']}
-        modules={modules}
-        userEdgeHighlights={new Map()}
-        onConfirm={onConfirm}
-        onClose={onClose}
-      />,
-    );
+    renderDialog(modules, onConfirm, onClose);
 
     const sourceInput = screen.getByPlaceholderText(i18n.current.t('quickPick.filePlaceholder'));
     fireEvent.change(sourceInput, { target: { value: 'a.ts' } });

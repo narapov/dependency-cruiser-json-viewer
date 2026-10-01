@@ -1,4 +1,3 @@
-import type { IFlattenedRuleSet, IModule, IViolation } from 'dependency-cruiser';
 import type { ReactNode, Ref } from 'react';
 
 import Box from '@mui/material/Box';
@@ -12,24 +11,11 @@ import { RulesPanel } from '../RulesPanel';
 interface AppSidebarProps {
   view: SidebarView;
   fileTreeRef?: Ref<FileTreeHandle>;
-  sources: string[];
-  selectedKeys: string[];
-  onSelect: (keys: string[]) => void;
-  expandedKeys: string[];
-  onExpand: (keys: string[]) => void;
-  onExpandRecursive: (path: string) => void;
   onShowInGraph: (path: string) => void;
-  onShowDependenciesPanel: (path: string) => void;
-  onShowApplicableRulesPanel: (path: string) => void;
   onViewModuleJson: (path: string) => void;
-  activePath: string | null;
-  ruleSetUsed: IFlattenedRuleSet | undefined;
-  violations: readonly IViolation[] | undefined;
   onSelectViolationPaths: (paths: string[]) => void;
   onShowRuleViolations: (ruleName: string) => void;
-  modules: readonly IModule[];
   onShowCycle: (paths: string[]) => void;
-  highlights: ReadonlyMap<string, string>;
   onRemoveHighlightKeys: (keys: readonly string[]) => void;
   onShowHighlightConnection: (source: string, target: string) => void;
   onClearAllHighlights: () => void;
@@ -58,24 +44,11 @@ export function AppSidebar(props: AppSidebarProps) {
   const {
     view,
     fileTreeRef,
-    sources,
-    selectedKeys,
-    onSelect,
-    expandedKeys,
-    onExpand,
-    onExpandRecursive,
     onShowInGraph,
-    onShowDependenciesPanel,
-    onShowApplicableRulesPanel,
     onViewModuleJson,
-    activePath,
-    ruleSetUsed,
-    violations,
     onSelectViolationPaths,
     onShowRuleViolations,
-    modules,
     onShowCycle,
-    highlights,
     onRemoveHighlightKeys,
     onShowHighlightConnection,
     onClearAllHighlights,
@@ -84,36 +57,16 @@ export function AppSidebar(props: AppSidebarProps) {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
       <ViewPanel active={view === 'files'}>
-        <FileTree
-          ref={fileTreeRef}
-          sources={sources}
-          selectedKeys={selectedKeys}
-          onSelect={onSelect}
-          expandedKeys={expandedKeys}
-          onExpand={onExpand}
-          onExpandRecursive={onExpandRecursive}
-          onShowInGraph={onShowInGraph}
-          onShowDependenciesPanel={onShowDependenciesPanel}
-          onShowApplicableRulesPanel={onShowApplicableRulesPanel}
-          onViewModuleJson={onViewModuleJson}
-          activePath={activePath}
-        />
+        <FileTree ref={fileTreeRef} onShowInGraph={onShowInGraph} onViewModuleJson={onViewModuleJson} />
       </ViewPanel>
       <ViewPanel active={view === 'rules'}>
-        <RulesPanel
-          ruleSetUsed={ruleSetUsed}
-          violations={violations}
-          sources={sources}
-          onSelectViolationPaths={onSelectViolationPaths}
-          onShowRuleViolations={onShowRuleViolations}
-        />
+        <RulesPanel onSelectViolationPaths={onSelectViolationPaths} onShowRuleViolations={onShowRuleViolations} />
       </ViewPanel>
       <ViewPanel active={view === 'circular'}>
-        <CircularPanel modules={modules} sources={sources} onShowCycle={onShowCycle} onShowInGraph={onShowInGraph} />
+        <CircularPanel onShowCycle={onShowCycle} onShowInGraph={onShowInGraph} />
       </ViewPanel>
       <ViewPanel active={view === 'highlights'}>
         <HighlightsPanel
-          highlights={highlights}
           onRemoveDependencyKeys={onRemoveHighlightKeys}
           onShowConnection={onShowHighlightConnection}
           onClearAll={onClearAllHighlights}

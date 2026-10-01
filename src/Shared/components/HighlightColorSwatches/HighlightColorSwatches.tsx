@@ -52,7 +52,7 @@ export function HighlightColorSwatches(props: HighlightColorSwatchesProps) {
           </Box>
         </MenuItem>
       ))}
-      {currentHighlight != null && (
+      {currentHighlight && (
         <MenuItem onClick={handleSelect(null)} sx={{ gridColumn: '1 / -1', justifyContent: 'center', mt: 0.5 }}>
           {t('actions.clear')}
         </MenuItem>

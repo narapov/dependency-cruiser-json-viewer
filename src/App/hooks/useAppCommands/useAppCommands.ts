@@ -1,6 +1,9 @@
 import { useTranslation } from 'react-i18next';
 
+import { getWindowEnvs } from '@/Shared';
+
 import type { QuickPickCommand } from '../../partials/QuickPick';
+import { useWorkspaceStore } from '../../stores/workspaceStore';
 
 export interface AppCommandsOrchestration {
   clearLocalStorage: () => void;
@@ -42,9 +45,6 @@ interface UseAppCommandsOptions {
   showHighlightsPanel: () => void;
   toggleSidebar: () => void;
   fileLoadInProgress?: boolean;
-  cruiseWatchEnabled?: boolean;
-  hasCruiseResult?: boolean;
-  hasRuleViolations?: boolean;
 }
 
 export function useAppCommands(config: UseAppCommandsOptions): QuickPickCommand[] {
@@ -86,12 +86,14 @@ export function useAppCommands(config: UseAppCommandsOptions): QuickPickCommand[
     showHighlightsPanel,
     toggleSidebar,
     fileLoadInProgress = false,
-    cruiseWatchEnabled = false,
-    hasCruiseResult = false,
-    hasRuleViolations = false,
   } = config;
 
   const { t } = useTranslation();
+  const cruiseWatchEnabled = getWindowEnvs()?.watch === true;
+  const hasCruiseResult = useWorkspaceStore(state => !!state.cruiseResult);
+  const hasRuleViolations = useWorkspaceStore(state =>
+    state.cruiseResult ? state.cruiseSnapshot.rules.some(entry => entry.violations.length > 0) : false,
+  );
 
   const commands: QuickPickCommand[] = [
     { id: 'clearLocalStorage', label: t('commands.clearLocalStorage'), onExecute: clearLocalStorage },

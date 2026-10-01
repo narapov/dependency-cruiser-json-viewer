@@ -1,0 +1,97 @@
+import { useCallback, useState, type MouseEvent } from 'react';
+import { useTranslation } from 'react-i18next';
+
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import type { Edge, EdgeMouseHandler } from '@xyflow/react';
+
+import { EdgeHighlightSubmenu } from '@/Shared';
+
+import { EdgeContextMenuHeader } from '../../partials/EdgeContextMenuHeader';
+
+export interface UseEdgeContextMenuOptions {
+  onFocusNode: (path: string) => void;
+  getEdgeHighlight: (edge: Edge) => string | undefined;
+  onSetUserEdgeHighlight: (edge: Edge, color: string | null) => void;
+}
+
+export function useEdgeContextMenu(config: UseEdgeContextMenuOptions) {
+  const { onFocusNode, getEdgeHighlight, onSetUserEdgeHighlight } = config;
+
+  const { t } = useTranslation();
+  const [menuState, setMenuState] = useState<{
+    anchorPosition: { top: number; left: number };
+    edge: Edge;
+  } | null>(null);
+
+  const handleClose = useCallback(() => {
+    setMenuState(null);
+  }, []);
+
+  const handleMenuClose = useCallback(
+    (event: Partial<{ stopPropagation: () => void }>) => {
+      event.stopPropagation?.();
+      handleClose();
+    },
+    [handleClose],
+  );
+
+  const handleAction = useCallback(
+    (action: () => void) => (event: MouseEvent) => {
+      event.stopPropagation();
+      handleClose();
+      action();
+    },
+    [handleClose],
+  );
+
+  const stopBackdropPropagation = useCallback((event: MouseEvent) => {
+    event.stopPropagation();
+    event.preventDefault();
+  }, []);
+
+  const onEdgeContextMenu: EdgeMouseHandler = useCallback((event, edge) => {
+    event.preventDefault();
+    setMenuState({
+      anchorPosition: { top: event.clientY, left: event.clientX },
+      edge,
+    });
+  }, []);
+
+  const edgeContextMenu = (
+    <Menu
+      open={!!menuState}
+      onClose={handleMenuClose}
+      anchorReference="anchorPosition"
+      anchorPosition={menuState?.anchorPosition}
+      slotProps={{
+        paper: { sx: { maxWidth: 'min(500px, calc(100% - 20px))' } },
+        backdrop: {
+          onMouseDown: stopBackdropPropagation,
+          onClick: (event: MouseEvent) => {
+            event.stopPropagation();
+          },
+        },
+      }}
+    >
+      {menuState && (
+        <>
+          <EdgeContextMenuHeader source={menuState.edge.source} target={menuState.edge.target} />
+          <MenuItem onClick={handleAction(() => onFocusNode(menuState.edge.source))}>
+            {t('graph.edgeMenu.viewSource')}
+          </MenuItem>
+          <MenuItem onClick={handleAction(() => onFocusNode(menuState.edge.target))}>
+            {t('graph.edgeMenu.viewTarget')}
+          </MenuItem>
+          <EdgeHighlightSubmenu
+            currentHighlight={getEdgeHighlight(menuState.edge)}
+            onSetHighlight={color => onSetUserEdgeHighlight(menuState.edge, color)}
+            onClose={handleClose}
+          />
+        </>
+      )}
+    </Menu>
+  );
+
+  return { onEdgeContextMenu, edgeContextMenu };
+}

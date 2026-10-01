@@ -1,5 +1,3 @@
-import type { IModule } from 'dependency-cruiser';
-import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Box from '@mui/material/Box';
@@ -8,41 +6,32 @@ import Typography from '@mui/material/Typography';
 
 import { getNodeRelations } from '@/domain';
 
+import { useWorkspaceStore } from '../../stores/workspaceStore';
 import { DependencyPanelHeader } from './partials/DependencyPanelHeader';
 import { RelationList } from './partials/RelationList';
 
 interface DependencyPanelProps {
-  path: string;
-  modules: IModule[];
-  selectedPaths: string[];
-  expandedKeys: string[];
   onClose: () => void;
   onShowInGraph: (path: string) => void;
   onViewModuleJson: (path: string) => void;
-  userEdgeHighlights: ReadonlyMap<string, string>;
-  onSetUserDependencyHighlight: (dependencyKeys: readonly string[], color: string | null) => void;
 }
 
 export function DependencyPanel(props: DependencyPanelProps) {
-  const {
-    path,
-    modules,
-    selectedPaths,
-    expandedKeys,
-    onClose,
-    onShowInGraph,
-    onViewModuleJson,
-    userEdgeHighlights,
-    onSetUserDependencyHighlight,
-  } = props;
+  const { onClose, onShowInGraph, onViewModuleJson } = props;
 
   const { t } = useTranslation();
-  const expandedFolders = useMemo(() => new Set(expandedKeys), [expandedKeys]);
+  const cruiseSnapshot = useWorkspaceStore(state => state.cruiseSnapshot);
+  const path = useWorkspaceStore(state => {
+    const panelPath = state.dependenciesPanelPath;
+    return panelPath && state.cruiseSnapshot.nodes.has(panelPath) ? panelPath : null;
+  });
+  const selectedFilePaths = useWorkspaceStore(state => state.selectedFilePaths);
 
-  const relations = useMemo(
-    () => getNodeRelations(path, modules, selectedPaths, expandedFolders),
-    [path, modules, selectedPaths, expandedFolders],
-  );
+  const relations = path ? getNodeRelations(path, cruiseSnapshot, selectedFilePaths) : null;
+
+  if (!path || !relations) {
+    return null;
+  }
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
@@ -62,10 +51,7 @@ export function DependencyPanel(props: DependencyPanelProps) {
           items={relations.dependencies}
           hiddenItems={relations.hiddenDependencies}
           panelPath={path}
-          modules={modules}
           direction="dependencies"
-          userEdgeHighlights={userEdgeHighlights}
-          onSetUserDependencyHighlight={onSetUserDependencyHighlight}
           onShowInGraph={onShowInGraph}
         />
 
@@ -77,10 +63,7 @@ export function DependencyPanel(props: DependencyPanelProps) {
           items={relations.dependents}
           hiddenItems={relations.hiddenDependents}
           panelPath={path}
-          modules={modules}
           direction="dependents"
-          userEdgeHighlights={userEdgeHighlights}
-          onSetUserDependencyHighlight={onSetUserDependencyHighlight}
           onShowInGraph={onShowInGraph}
         />
       </Box>

@@ -1,50 +1,22 @@
-import type { ICruiseResult } from 'dependency-cruiser';
 import { useEffect, useEffectEvent } from 'react';
 import { io } from 'socket.io-client';
 
 import { useQueryClient } from '@tanstack/react-query';
 
-import type { ViewerWorkspaceSettings } from '@/domain';
 import { CRUISE_RESULT_CHANGED_EVENT, CRUISE_RESULT_SOCKET_PATH, getWindowEnvs } from '@/Shared';
 
 import { fetchCruiseResult } from '../../api/cruiseResult';
-import { resolveWorkspaceApply, type ResolvedWorkspaceApply } from '../../helpers';
+import { useWorkspaceStore } from '../../stores/workspaceStore';
 
-interface UseCruiseResultWatchOptions {
-  cruiseLoadId: number;
-  setCruiseLoadId: (next: number) => void;
-  setPatterns: (patterns: string[]) => void;
-  getCurrentWorkspaceSettings: () => ViewerWorkspaceSettings | null;
-  applyWorkspaceView: (
-    input: ResolvedWorkspaceApply & {
-      cruiseLoadId: number;
-    },
-  ) => void;
-}
-
-/** Subscribe to cruise-result watch notifications and re-apply current workspace settings. */
-export function useCruiseResultWatch(config: UseCruiseResultWatchOptions): void {
-  const { cruiseLoadId, setCruiseLoadId, setPatterns, getCurrentWorkspaceSettings, applyWorkspaceView } = config;
-
+/** Subscribe to cruise-result watch notifications and soft-reset the workspace. */
+export function useCruiseResultWatch(): void {
   const queryClient = useQueryClient();
   const watchEnabled = getWindowEnvs()?.watch === true;
 
   const onCruiseResultChanged = useEffectEvent(async () => {
-    const settings = getCurrentWorkspaceSettings();
-    const nextCruiseLoadId = cruiseLoadId + 1;
     const cruiseResult = await fetchCruiseResult(undefined, { cacheBust: true });
-    const resolved = settings != null ? resolveWorkspaceApply({ cruiseResult, settings }) : null;
-
-    queryClient.setQueryData<ICruiseResult>(['cruise-result'], cruiseResult);
-    setCruiseLoadId(nextCruiseLoadId);
-    if (settings == null || resolved == null) {
-      return;
-    }
-    setPatterns(settings.ignorePatterns);
-    applyWorkspaceView({
-      ...resolved,
-      cruiseLoadId: nextCruiseLoadId,
-    });
+    const next = useWorkspaceStore.getState().reset(cruiseResult, 'soft');
+    queryClient.setQueryData(['cruise-result'], next.cruiseResult);
   });
 
   useEffect(() => {

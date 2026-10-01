@@ -1,9 +1,15 @@
 import type { ICruiseResult, IModule } from 'dependency-cruiser';
 
-import type { FolderBaseColor, MergedViewerWorkspaceView, ViewerWorkspaceSettings } from '../../../types';
+import type {
+  FolderBaseColor,
+  MergedViewerWorkspaceView,
+  ViewerNodeLayouts,
+  ViewerWorkspaceSettings,
+} from '../../../types';
 import { makeDependencyKey } from '../../dependencyKey';
 import { getParentPath } from '../../pathUtils';
 import { VIEWER_WORKSPACE_EXTENSION_KEY } from '../constants';
+import { nodeLayoutsToNodePositions, nodePositionsToNodeLayouts } from '../viewerWorkspaceSettingsSchema';
 
 /** Whether a path is a folder ancestor of one or more module sources. */
 export function isFolderPath(path: string, sources: string[]): boolean {
@@ -24,7 +30,7 @@ export function collectFolderPaths(sources: string[]): Set<string> {
     sources.flatMap(source => {
       const folders: string[] = [];
       let current = getParentPath(source);
-      while (current != null) {
+      while (current) {
         folders.push(current);
         current = getParentPath(current);
       }
@@ -41,6 +47,34 @@ export function collectAllDependencyKeys(modules: IModule[]): Set<string> {
         .filter((dep): dep is typeof dep & { resolved: string } => Boolean(dep.resolved))
         .map(dep => makeDependencyKey(module.source, dep.resolved)),
     ),
+  );
+}
+
+/** Prefer explicit nodeLayouts; otherwise migrate legacy nodePositions. */
+export function resolveNodeLayouts(settings: ViewerWorkspaceSettings): ViewerNodeLayouts {
+  if (Object.keys(settings.nodeLayouts).length > 0) {
+    return settings.nodeLayouts;
+  }
+  return nodePositionsToNodeLayouts(settings.nodePositions);
+}
+
+function filterNodeLayouts(nodeLayouts: ViewerNodeLayouts, validPaths: Set<string>): ViewerNodeLayouts {
+  return Object.fromEntries(
+    Object.entries(nodeLayouts)
+      .map(([groupId, entry]) => {
+        const groupOk = groupId === '' || validPaths.has(groupId);
+        if (!groupOk) {
+          return null;
+        }
+        const filteredChildren = Object.fromEntries(
+          Object.entries(entry.children).filter(([childId]) => validPaths.has(childId)),
+        );
+        if (Object.keys(filteredChildren).length === 0) {
+          return null;
+        }
+        return [groupId, { ...entry, children: filteredChildren }] as const;
+      })
+      .filter((entry): entry is readonly [string, ViewerNodeLayouts[string]] => entry != null),
   );
 }
 
@@ -79,10 +113,10 @@ function settingsFullyCorrespond(
   if (!selectedFilesOk || !expandedOk) {
     return false;
   }
-  if (settings.dependenciesPath != null && !isPathInSources(settings.dependenciesPath, sources)) {
+  if (settings.dependenciesPath && !isPathInSources(settings.dependenciesPath, sources)) {
     return false;
   }
-  if (settings.applicableRulesPath != null && !isPathInSources(settings.applicableRulesPath, sources)) {
+  if (settings.applicableRulesPath && !isPathInSources(settings.applicableRulesPath, sources)) {
     return false;
   }
   if (!Object.keys(settings.userEdgeHighlights).every(key => dependencyKeys.has(key))) {
@@ -94,11 +128,12 @@ function settingsFullyCorrespond(
   if (![...folderPaths].every(path => path in settings.folderColors)) {
     return false;
   }
-  return Object.entries(settings.nodePositions).every(([groupId, children]) => {
+  const layouts = resolveNodeLayouts(settings);
+  return Object.entries(layouts).every(([groupId, entry]) => {
     if (groupId !== '' && !validPaths.has(groupId)) {
       return false;
     }
-    return Object.keys(children).every(childId => validPaths.has(childId));
+    return Object.keys(entry.children).every(childId => validPaths.has(childId));
   });
 }
 
@@ -107,11 +142,11 @@ function filterScalarSettings(settings: ViewerWorkspaceSettings, sources: string
     selectedFiles: settings.selectedFiles.filter(path => sources.includes(path)),
     expandedKeys: settings.expandedKeys.filter(path => isPathInSources(path, sources)),
     dependenciesPath:
-      settings.dependenciesPath != null && isPathInSources(settings.dependenciesPath, sources)
+      settings.dependenciesPath && isPathInSources(settings.dependenciesPath, sources)
         ? settings.dependenciesPath
         : null,
     applicableRulesPath:
-      settings.applicableRulesPath != null && isPathInSources(settings.applicableRulesPath, sources)
+      settings.applicableRulesPath && isPathInSources(settings.applicableRulesPath, sources)
         ? settings.applicableRulesPath
         : null,
   };
@@ -135,8 +170,13 @@ export function replaceWorkspaceSettings({
   const folderPaths = collectFolderPaths(sources);
   const dependencyKeys = collectAllDependencyKeys(modules);
   const validPaths = new Set([...sources, ...folderPaths]);
+  const resolvedLayouts = resolveNodeLayouts(settings);
 
   if (settingsFullyCorrespond(settings, sources, folderPaths, dependencyKeys, validPaths)) {
+    const nodePositions =
+      Object.keys(settings.nodePositions).length > 0
+        ? settings.nodePositions
+        : nodeLayoutsToNodePositions(resolvedLayouts);
     return {
       selectedFiles: settings.selectedFiles,
       expandedKeys: settings.expandedKeys,
@@ -146,7 +186,8 @@ export function replaceWorkspaceSettings({
       folderColors: settings.folderColors,
       autoLayoutOnly: settings.autoLayoutOnly,
       edgesType: settings.edgesType,
-      nodePositions: settings.nodePositions,
+      nodePositions,
+      nodeLayouts: resolvedLayouts,
     };
   }
 
@@ -166,10 +207,13 @@ export function replaceWorkspaceSettings({
     }
   }
 
-  const filteredPositions = filterNodePositions(settings.nodePositions, validPaths);
-  const fileHadPositions = Object.keys(settings.nodePositions).length > 0;
-  const autoLayoutOnly =
-    fileHadPositions && Object.keys(filteredPositions).length === 0 ? true : settings.autoLayoutOnly;
+  const filteredLayouts = filterNodeLayouts(resolvedLayouts, validPaths);
+  const filteredPositions =
+    Object.keys(settings.nodePositions).length > 0
+      ? filterNodePositions(settings.nodePositions, validPaths)
+      : nodeLayoutsToNodePositions(filteredLayouts);
+  const fileHadLayouts = Object.keys(resolvedLayouts).length > 0;
+  const autoLayoutOnly = fileHadLayouts && Object.keys(filteredLayouts).length === 0 ? true : settings.autoLayoutOnly;
 
   return {
     selectedFiles,
@@ -181,6 +225,7 @@ export function replaceWorkspaceSettings({
     autoLayoutOnly,
     edgesType: settings.edgesType,
     nodePositions: filteredPositions,
+    nodeLayouts: filteredLayouts,
   };
 }
 

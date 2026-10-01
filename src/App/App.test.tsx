@@ -3,89 +3,90 @@ import type { ICruiseResult } from 'dependency-cruiser';
 import { useTranslation } from 'react-i18next';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { fireEvent, renderHook, screen } from '@testing-library/react';
+import { fireEvent, renderHook, screen, waitFor } from '@testing-library/react';
 
 import { CruiseResultParseError } from '@/domain';
 import { renderWithTheme } from '@/testsUtils';
 
 import App from './App';
+import { initialWorkspaceState, useWorkspaceStore } from './stores/workspaceStore';
 
 const openFilePicker = vi.fn();
 const openSettingsFilePicker = vi.fn();
 const useCruiseResult = vi.fn();
 
-vi.mock('./hooks', () => ({
-  useCruiseResult: (...args: unknown[]) => useCruiseResult(...args),
-  useLoadCruiseResultFromFile: () => ({
-    fileInputRef: { current: null },
-    openFilePicker,
-    handleFileSelect: vi.fn(),
-    isLoading: false,
-    fileLoadError: null,
-    setFileLoadError: vi.fn(),
-    clearFileLoadError: vi.fn(),
-  }),
-  useLoadWorkspaceSettingsFromFile: () => ({
-    fileInputRef: { current: null },
-    openFilePicker: openSettingsFilePicker,
-    handleFileSelect: vi.fn(),
-    isLoading: false,
-    fileLoadError: null,
-    clearFileLoadError: vi.fn(),
-  }),
-  useInitialWorkspaceSettingsFromCli: () => ({
-    fileLoadError: null,
-    clearFileLoadError: vi.fn(),
-  }),
-  useCruiseResultFileDrop: () => ({ isDraggingFile: false, isDropAllowed: true }),
-  useIgnorePatterns: () => ({ patterns: ['**/*.test.ts'], setPatterns: vi.fn() }),
-  useInitialDependencyCruiserState: () => ({
-    selectedKeys: ['src/a.ts'],
-    expandedKeys: ['src'],
-  }),
-  useAppOrchestration: () => ({
-    dependenciesPanelOpen: false,
-    applicableRulesPanelOpen: false,
-    selectedPaths: ['src/a.ts'],
-    expandedKeys: ['src'],
-    activePath: 'src/a.ts',
-    dependenciesPath: null,
-    applicableRulesPath: null,
-    userEdgeHighlights: new Map(),
-    setSelectedPaths: vi.fn(),
-    updateExpandedKeys: vi.fn(),
-    activatePath: vi.fn(),
-    showInGraph: vi.fn(),
-    showInFileTree: vi.fn(),
-    toggleFolder: vi.fn(),
-    expandRecursive: vi.fn(),
-    handleShowDependenciesPanel: vi.fn(),
-    handleClosePanel: vi.fn(),
-    handleShowApplicableRulesPanel: vi.fn(),
-    handleCloseApplicableRulesPanel: vi.fn(),
-    handleQuickPickSelect: vi.fn(),
-    focusActivePath: vi.fn(),
-    applyWorkspaceView: vi.fn(),
-    getCurrentWorkspaceSettings: vi.fn(() => null),
-    setUserDependencyHighlight: vi.fn(),
-    clearAllHighlights: vi.fn(),
-    viewActiveItemApplicableRulesPanel: vi.fn(),
-  }),
-  useAppCommands: () => [],
-  useCruiseResultWatch: vi.fn(),
-  useModuleJsonDialog: () => ({
-    openModuleJson: vi.fn(),
-    moduleJsonDialog: null,
-  }),
-}));
+vi.mock('./hooks', async importOriginal => {
+  const actual = await importOriginal<typeof import('./hooks')>();
+  return {
+    ...actual,
+    useCruiseResult: (...args: unknown[]) => useCruiseResult(...args),
+    useAppFileLoading: () => ({
+      openLoadCruiseResult: () => {
+        openFilePicker();
+      },
+      openLoadSettings: () => {
+        openSettingsFilePicker();
+      },
+      isFileLoading: false,
+      fileLoadError: null,
+      clearFileLoadError: vi.fn(),
+      isDraggingFile: false,
+      isDropAllowed: true,
+      cruiseFileInputRef: { current: null },
+      handleCruiseFileSelect: vi.fn(),
+      overlay: null,
+    }),
+    useCruiseResultUpdatedNotice: () => ({ notice: null, open: false }),
+    useAppOrchestration: () => ({
+      dependenciesPanelOpen: false,
+      applicableRulesPanelOpen: false,
+      selectedPaths: ['src/a.ts'],
+      expandedKeys: ['src'],
+      activePath: 'src/a.ts',
+      dependenciesPath: null,
+      applicableRulesPath: null,
+      userEdgeHighlights: new Map(),
+      folderBaseColors: {},
+      setSelectedPaths: vi.fn(),
+      updateExpandedKeys: vi.fn(),
+      activatePath: vi.fn(),
+      showInGraph: vi.fn(),
+      showInFileTree: vi.fn(),
+      toggleFolder: vi.fn(),
+      expandRecursive: vi.fn(),
+      handleShowDependenciesPanel: vi.fn(),
+      handleClosePanel: vi.fn(),
+      handleShowApplicableRulesPanel: vi.fn(),
+      handleCloseApplicableRulesPanel: vi.fn(),
+      handleQuickPickSelect: vi.fn(),
+      focusActivePath: vi.fn(),
+      getCurrentWorkspaceSettings: vi.fn(() => null),
+      setUserDependencyHighlight: vi.fn(),
+      setUserEdgeHighlights: vi.fn(),
+      clearAllHighlights: vi.fn(),
+      viewActiveItemApplicableRulesPanel: vi.fn(),
+      hideOthers: vi.fn(),
+      showDirectDependencies: vi.fn(),
+      showDirectDependents: vi.fn(),
+      showPathsOnly: vi.fn(),
+      showRuleViolationsOnly: vi.fn(),
+    }),
+    useAppCommands: () => [],
+    useCruiseResultWatch: vi.fn(),
+  };
+});
 
 vi.mock('./partials/FileTree', () => ({
   FileTree: () => <div data-testid="file-tree" />,
 }));
 
-vi.mock('./partials/DependencyGraph', () => ({
-  DependencyGraph: () => <div data-testid="dependency-graph" />,
-}));
+vi.mock('./partials/DependencyGraph', async importOriginal => {
+  const actual = await importOriginal<typeof import('./partials/DependencyGraph')>();
+  return {
+    ...actual,
+    DependencyGraph: () => <div data-testid="dependency-graph" />,
+  };
+});
 
 vi.mock('./partials/QuickPick', () => ({
   QuickPick: () => null,
@@ -117,6 +118,7 @@ describe('App', () => {
   beforeEach(() => {
     localStorage.clear();
     openFilePicker.mockClear();
+    useWorkspaceStore.setState({ ...initialWorkspaceState, userEdgeHighlights: new Map() });
   });
 
   it('shows loading state while cruise result is pending', () => {
@@ -157,7 +159,7 @@ describe('App', () => {
     expect(screen.getByText(i18n.current.t('app.invalidCruiseResultFormat'))).toBeInTheDocument();
   });
 
-  it('renders main layout with filtered module count and opens about dialog', () => {
+  it('renders main layout with filtered module count and opens about dialog', async () => {
     const { result: i18n } = renderHook(() => useTranslation());
     useCruiseResult.mockReturnValue({
       data: cruiseResult,
@@ -168,9 +170,11 @@ describe('App', () => {
 
     renderWithTheme(<App />);
 
-    expect(screen.getByTestId('file-tree')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByTestId('file-tree')).toBeInTheDocument();
+    });
     expect(screen.getByTestId('dependency-graph')).toBeInTheDocument();
-    expect(screen.getByText(i18n.current.t('app.modulesCountFiltered', { filtered: 1, total: 2 }))).toBeInTheDocument();
+    expect(screen.getByText(i18n.current.t('app.modulesCountFiltered', { filtered: 2, total: 2 }))).toBeInTheDocument();
 
     fireEvent.click(screen.getByLabelText(i18n.current.t('app.about')));
     expect(screen.getByRole('dialog')).toBeInTheDocument();
