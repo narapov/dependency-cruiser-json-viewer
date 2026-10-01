@@ -210,7 +210,11 @@
   },
   "circular": {
     "empty": "No circular dependencies",
-    "showCycle": "Show cycle"
+    "showCycle": "Show cycle",
+    "withoutIgnored": "Without ignored",
+    "withIgnored": "With ignored",
+    "fullyIgnored": "Fully ignored",
+    "ignored": "ignored"
   },
   "rules": {
     "empty": "No rules in this cruise result.",

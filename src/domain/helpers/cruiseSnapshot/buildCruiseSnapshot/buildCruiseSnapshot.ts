@@ -1,6 +1,6 @@
 import type { IFlattenedRuleSet, IModule, IViolation } from 'dependency-cruiser';
 
-import type { CruisePathNode, CruiseSnapshot, ModuleDependency } from '../../../types';
+import type { CruisePathNode, CruiseSnapshot, DistinctCycle, ModuleDependency } from '../../../types';
 import {
   flattenViolations,
   groupRulesWithViolations,
@@ -240,11 +240,13 @@ function createFlatTree(tree: ReadonlyMap<string, CruisePathNode>): Map<string, 
 /**
  * Build an immutable path index (files + folders) from filtered cruise modules.
  * Computed once after load / ignore filtering; consumers look up paths instead of rescanning modules.
+ * Pass `cycles` to attach a precomputed catalog (e.g. from unfiltered modules); otherwise collect from `modules`.
  */
 export function buildCruiseSnapshot(
   modules: readonly IModule[],
   ruleSetUsed?: IFlattenedRuleSet,
   violations?: readonly IViolation[] | ReadonlyMap<string, readonly IViolation[]>,
+  cycles?: readonly DistinctCycle[],
 ): CruiseSnapshot {
   const { modulesDependenciesByDependencyKey, modulesDependenciesBySource, modulesDependenciesByTarget } =
     buildModulesDependencies(modules);
@@ -268,7 +270,7 @@ export function buildCruiseSnapshot(
       bySource: modulesDependenciesBySource as Map<string, ModuleDependency[]>,
       byTarget: modulesDependenciesByTarget as Map<string, ModuleDependency[]>,
     },
-    cycles: collectDistinctCycles(modules),
+    cycles: cycles != null ? [...cycles] : collectDistinctCycles(modules),
     rules: groupRulesWithViolations(ruleSetUsed, scopedViolations),
     ruleSetUsed,
     violations: indexViolationsByDependencyKey(scopedViolations),

@@ -18,7 +18,7 @@ function node(id: string, parentId?: string): Node {
 
 function snapshotWithAncestors(entries: ReadonlyArray<[string, string[]]>): CruiseSnapshot {
   const nodes = new Map(entries.map(([path, ancestors]) => [path, { path, ancestors } as CruisePathNode]));
-  return { nodes, rules: [] } as CruiseSnapshot;
+  return { nodes, rules: [] } as unknown as CruiseSnapshot;
 }
 
 describe('sortNodesByDepth', () => {

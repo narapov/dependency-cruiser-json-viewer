@@ -5,6 +5,8 @@ import { combine } from 'zustand/middleware';
 
 import {
   applyHighlightKeys,
+  buildCruiseSnapshotFromResult,
+  getCruiseModules,
   getCruiseSources,
   getInitialDependencyCruiserState,
   getVisibleTree,
@@ -18,7 +20,6 @@ import {
 
 import { defaultFolderColorsRecord } from '../../helpers';
 import {
-  buildFilteredCruiseSnapshot,
   extractEmbeddedWorkspaceSettings,
   mapMergedViewToWorkspaceFields,
   pathsToPresenceRecord,
@@ -68,10 +69,10 @@ function applySettingsToCruiseResult(
   settings: ViewerWorkspaceSettings,
 ): WorkspaceOwnState {
   const stripped = stripViewerWorkspaceExtension(cruiseResult);
-  const { filteredCruiseResult, cruiseSnapshot } = buildFilteredCruiseSnapshot(stripped, settings.ignorePatterns);
+  const cruiseSnapshot = buildCruiseSnapshotFromResult(stripped, settings.ignorePatterns);
   const view = replaceWorkspaceSettings({
     sources: getCruiseSources(cruiseSnapshot),
-    modules: filteredCruiseResult.modules,
+    modules: getCruiseModules(cruiseSnapshot),
     settings,
     defaultFolderColors: defaultFolderColorsRecord(cruiseSnapshot),
   });
@@ -86,7 +87,7 @@ function applySettingsToCruiseResult(
 
 function hardResetWithoutSettings(cruiseResult: ICruiseResult): WorkspaceOwnState {
   const stripped = stripViewerWorkspaceExtension(cruiseResult);
-  const { cruiseSnapshot } = buildFilteredCruiseSnapshot(stripped, []);
+  const cruiseSnapshot = buildCruiseSnapshotFromResult(stripped, []);
   const initial = getInitialDependencyCruiserState(cruiseSnapshot);
 
   return {
@@ -108,7 +109,7 @@ function hardResetWithoutSettings(cruiseResult: ICruiseResult): WorkspaceOwnStat
 
 function softReset(cruiseResult: ICruiseResult, previous: WorkspaceOwnState): WorkspaceOwnState {
   const stripped = stripViewerWorkspaceExtension(cruiseResult);
-  const { cruiseSnapshot } = buildFilteredCruiseSnapshot(stripped, previous.ignorePatterns);
+  const cruiseSnapshot = buildCruiseSnapshotFromResult(stripped, previous.ignorePatterns);
   return reconcileWorkspaceAgainstSnapshot({
     cruiseResult: stripped,
     cruiseSnapshot,
@@ -180,7 +181,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
           return;
         }
 
-        const { cruiseSnapshot } = buildFilteredCruiseSnapshot(previous.cruiseResult, ignorePatterns);
+        const cruiseSnapshot = buildCruiseSnapshotFromResult(previous.cruiseResult, ignorePatterns);
         set(
           reconcileWorkspaceAgainstSnapshot({
             cruiseResult: previous.cruiseResult,

@@ -1,7 +1,5 @@
 import Box from '@mui/material/Box';
 
-import { getCruiseSources } from '@/domain';
-
 import { useWorkspaceStore } from '../../stores/workspaceStore';
 import { CircularList } from './partials/CircularList';
 
@@ -13,13 +11,7 @@ interface CircularPanelProps {
 export function CircularPanel(props: CircularPanelProps) {
   const { onShowCycle, onShowInGraph } = props;
 
-  const cruiseSnapshot = useWorkspaceStore(state => state.cruiseSnapshot);
-  const sourceSet = new Set(getCruiseSources(cruiseSnapshot));
-  const cycles = cruiseSnapshot.cycles
-    .map(cycle => ({
-      paths: cycle.paths.filter(path => sourceSet.has(path)),
-    }))
-    .filter(cycle => cycle.paths.length > 0);
+  const cycles = useWorkspaceStore(state => state.cruiseSnapshot.cycles);
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>

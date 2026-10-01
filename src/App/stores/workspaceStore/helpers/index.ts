@@ -1,4 +1,3 @@
-export * from './buildFilteredCruiseSnapshot';
 export * from './extractEmbeddedWorkspaceSettings';
 export * from './mapMergedViewToWorkspaceFields';
 export * from './normalizeNodePositions';

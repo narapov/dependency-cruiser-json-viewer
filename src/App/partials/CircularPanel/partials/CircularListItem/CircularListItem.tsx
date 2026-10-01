@@ -13,17 +13,18 @@ import ListItem from '@mui/material/ListItem';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 
-import { getBaseName } from '@/domain';
+import { getBaseName, type DistinctCycleMember } from '@/domain';
 import { copyToClipboard, TextWithFloatingActions } from '@/Shared';
 
 interface CircularListItemProps {
-  paths: string[];
+  members: DistinctCycleMember[];
   onShowCycle: (paths: string[]) => void;
   onShowInGraph: (path: string) => void;
 }
 
-function formatCycleLabel(paths: string[]): string {
-  return paths.map(getBaseName).join(' → ');
+function formatMemberLabel(member: DistinctCycleMember, ignoredLabel: string): string {
+  const base = getBaseName(member.path);
+  return member.ignored ? `${base} (${ignoredLabel})` : base;
 }
 
 const circularRowActionsHoverSx = {
@@ -38,12 +39,17 @@ const circularRowActionsHoverSx = {
 } as const;
 
 export function CircularListItem(props: CircularListItemProps) {
-  const { paths, onShowCycle, onShowInGraph } = props;
+  const { members, onShowCycle, onShowInGraph } = props;
 
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
-  const label = formatCycleLabel(paths);
-  const fullPaths = paths.join(' → ');
+  const ignoredLabel = t('circular.ignored');
+  const label = members.map(member => formatMemberLabel(member, ignoredLabel)).join(' → ');
+  const fullPaths = members
+    .map(member => (member.ignored ? `${member.path} (${ignoredLabel})` : member.path))
+    .join(' → ');
+  const presentPaths = members.filter(member => !member.ignored).map(member => member.path);
+  const canShowCycle = presentPaths.length > 0;
   const showLabel = t('circular.showCycle');
   const expandLabel = expanded ? t('actions.collapse') : t('actions.expand');
 
@@ -77,15 +83,18 @@ export function CircularListItem(props: CircularListItemProps) {
           trailingClassName="circularRowActions"
           trailing={
             <Tooltip title={showLabel}>
-              <IconButton
-                edge="end"
-                size="small"
-                aria-label={showLabel}
-                onClick={() => onShowCycle(paths)}
-                sx={{ p: 0.25 }}
-              >
-                <VisibilityOutlined fontSize="small" />
-              </IconButton>
+              <span>
+                <IconButton
+                  edge="end"
+                  size="small"
+                  aria-label={showLabel}
+                  disabled={!canShowCycle}
+                  onClick={() => onShowCycle(presentPaths)}
+                  sx={{ p: 0.25 }}
+                >
+                  <VisibilityOutlined fontSize="small" />
+                </IconButton>
+              </span>
             </Tooltip>
           }
         >
@@ -96,9 +105,9 @@ export function CircularListItem(props: CircularListItemProps) {
       </ListItem>
       <Collapse in={expanded} timeout="auto" unmountOnExit>
         <List dense disablePadding sx={{ pl: 4, pb: 0.5 }}>
-          {paths.map(path => (
+          {members.map(member => (
             <ListItem
-              key={path}
+              key={member.path}
               disableGutters
               sx={{
                 display: 'block',
@@ -120,23 +129,25 @@ export function CircularListItem(props: CircularListItemProps) {
                         edge="end"
                         size="small"
                         aria-label={t('actions.copyPath')}
-                        onClick={() => void copyToClipboard(path)}
+                        onClick={() => void copyToClipboard(member.path)}
                         sx={{ p: 0.25 }}
                       >
                         <ContentCopyOutlined fontSize="small" />
                       </IconButton>
                     </Tooltip>
-                    <Tooltip title={t('actions.showInGraph')}>
-                      <IconButton
-                        edge="end"
-                        size="small"
-                        aria-label={t('actions.showInGraph')}
-                        onClick={() => onShowInGraph(path)}
-                        sx={{ p: 0.25 }}
-                      >
-                        <MyLocationOutlined fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
+                    {!member.ignored ? (
+                      <Tooltip title={t('actions.showInGraph')}>
+                        <IconButton
+                          edge="end"
+                          size="small"
+                          aria-label={t('actions.showInGraph')}
+                          onClick={() => onShowInGraph(member.path)}
+                          sx={{ p: 0.25 }}
+                        >
+                          <MyLocationOutlined fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    ) : null}
                   </>
                 }
               >
@@ -146,9 +157,10 @@ export function CircularListItem(props: CircularListItemProps) {
                     fontSize: 12,
                     lineHeight: 1.3,
                     wordBreak: 'break-all',
+                    color: member.ignored ? 'text.secondary' : undefined,
                   }}
                 >
-                  {path}
+                  {member.ignored ? `${member.path} (${ignoredLabel})` : member.path}
                 </Typography>
               </TextWithFloatingActions>
             </ListItem>

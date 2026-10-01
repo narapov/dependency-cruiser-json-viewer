@@ -9,7 +9,7 @@ import type { LayoutCache } from '../../helpers';
 import type { BuildGraphResult, VisibleTreeLayoutedNode } from '../../types';
 import { useGraphLayoutNodes } from './useGraphLayoutNodes';
 
-const emptyCruiseSnapshot = { nodes: new Map(), rules: [] } as CruiseSnapshot;
+const emptyCruiseSnapshot = { nodes: new Map(), rules: [] } as unknown as CruiseSnapshot;
 const emptyFolderColors = new Map<string, string>();
 
 function makeLayoutedNode(path: string, overrides: Partial<VisibleTreeLayoutedNode> = {}): VisibleTreeLayoutedNode {
