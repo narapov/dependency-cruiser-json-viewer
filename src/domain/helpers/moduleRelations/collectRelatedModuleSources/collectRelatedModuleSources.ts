@@ -9,7 +9,7 @@ export function collectRelatedModuleSources(
   direction: RelatedModuleDirection,
 ): string[] {
   const node = snapshot.nodes.get(path);
-  if (node == null) {
+  if (!node) {
     return [];
   }
 

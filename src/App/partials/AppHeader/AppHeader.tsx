@@ -68,8 +68,8 @@ export function AppHeader(props: AppHeaderProps) {
   const watchMode = getWindowEnvs()?.watch === true;
 
   const totalModulesCount = cruiseResult?.modules.length;
-  const filteredModulesCount = cruiseResult != null ? getCruiseSources(cruiseSnapshot).length : undefined;
-  const hasIgnoredModules = cruiseResult != null ? countIgnoredModules(cruiseResult, ignorePatterns) > 0 : false;
+  const filteredModulesCount = cruiseResult ? getCruiseSources(cruiseSnapshot).length : undefined;
+  const hasIgnoredModules = cruiseResult ? countIgnoredModules(cruiseResult, ignorePatterns) > 0 : false;
 
   const searchFilesLabel = t('app.searchFiles', { shortcut: formatShortcut('P') });
   const commandPaletteLabel = t('app.commandPalette');

@@ -3,7 +3,7 @@ import type { CruiseSnapshot } from '../../../types';
 /** Module sources under a folder path (or `[path]` for a file); empty when unknown. */
 export function getCruiseSourcesUnder(snapshot: CruiseSnapshot, path: string): string[] {
   const node = snapshot.nodes.get(path);
-  if (node == null) {
+  if (!node) {
     return [];
   }
   if (!node.isFolder) {

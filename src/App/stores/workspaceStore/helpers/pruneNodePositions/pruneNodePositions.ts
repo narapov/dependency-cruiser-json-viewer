@@ -8,7 +8,7 @@ export function pruneNodePositions(
   nodePositions: WorkspaceOwnState['nodePositions'],
   sources: readonly string[],
 ): WorkspaceOwnState['nodePositions'] {
-  if (nodePositions == null) {
+  if (!nodePositions) {
     return null;
   }
 
@@ -17,11 +17,11 @@ export function pruneNodePositions(
     Object.entries(nodePositions)
       .map(([groupId, children]) => {
         const groupOk = groupId === '' || validPaths.has(groupId);
-        if (!groupOk || children == null) {
+        if (!groupOk || !children) {
           return null;
         }
         const filteredChildren = Object.fromEntries(
-          Object.entries(children).filter(([childId, position]) => position != null && validPaths.has(childId)),
+          Object.entries(children).filter(([childId, position]) => position && validPaths.has(childId)),
         );
         if (Object.keys(filteredChildren).length === 0) {
           return null;

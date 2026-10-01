@@ -26,7 +26,7 @@ export function parseViewerFileJson(text: string): ParsedViewerFile {
   const cruiseResult = validateCruiseResult(parsed);
   const extensionValue = (parsed as Record<string, unknown>)[VIEWER_WORKSPACE_EXTENSION_KEY];
 
-  if (extensionValue == null) {
+  if (!extensionValue) {
     return { cruiseResult: stripViewerWorkspaceExtension(cruiseResult) };
   }
 

@@ -39,7 +39,7 @@ export function usePendingFocusNode(config: UsePendingFocusNodeInput): UsePendin
 
   useEffect(() => {
     const path = pendingFocusPathRef.current;
-    if (path == null || isBuildingGraph) {
+    if (!path || isBuildingGraph) {
       return;
     }
 

@@ -73,7 +73,7 @@ export function useGraphLayoutNodes(config: UseGraphLayoutNodesInput): UseGraphL
   }, [autoLayoutOnly]);
 
   useEffect(() => {
-    if (pendingRestoreRef.current != null) {
+    if (pendingRestoreRef.current) {
       layoutCacheRef.current = deserializeLayoutCache(pendingRestoreRef.current);
       pendingRestoreRef.current = null;
     }

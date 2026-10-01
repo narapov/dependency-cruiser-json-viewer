@@ -18,7 +18,7 @@ export function usePathSearchState(config: UsePathSearchStateConfig = {}) {
 
   const allItems = useMemo(() => {
     const items = buildSearchItems(cruiseSnapshot);
-    if (allowedPaths == null) {
+    if (!allowedPaths) {
       return items;
     }
 

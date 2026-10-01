@@ -10,7 +10,7 @@ export function pickCruiseResultDropFile(files: ArrayLike<File>): File | null {
     return null;
   }
   const [file] = list;
-  return file != null && isCruiseResultJsonFile(file) ? file : null;
+  return file && isCruiseResultJsonFile(file) ? file : null;
 }
 
 /** Whether dragged file items look like a single `application/json` file. */
@@ -20,5 +20,5 @@ export function isCruiseResultDragAllowed(dataTransfer: DataTransfer): boolean {
     return false;
   }
   const [item] = fileItems;
-  return item != null && item.type === 'application/json';
+  return item && item.type === 'application/json';
 }

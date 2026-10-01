@@ -60,7 +60,7 @@ export function useEdgeContextMenu(config: UseEdgeContextMenuOptions) {
 
   const edgeContextMenu = (
     <Menu
-      open={menuState !== null}
+      open={!!menuState}
       onClose={handleMenuClose}
       anchorReference="anchorPosition"
       anchorPosition={menuState?.anchorPosition}

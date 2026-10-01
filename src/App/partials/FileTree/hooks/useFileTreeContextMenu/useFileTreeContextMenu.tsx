@@ -54,12 +54,11 @@ export function useFileTreeContextMenu(config: UseFileTreeContextMenuOptions) {
   );
 
   const path = menuState?.path;
-  const node = path != null ? cruiseSnapshot.nodes.get(path) : undefined;
+  const node = path ? cruiseSnapshot.nodes.get(path) : undefined;
   const isFolder = node?.isFolder === true;
   const expandedKeys = presenceRecordToPaths(expandedFolderPaths);
-  const expanded = path != null && expandedFolderPaths[path] === true;
-  const navigable =
-    path != null && isPathVisibleInSelectionRecord(path, selectedFilePaths, node?.descendantFiles ?? new Set());
+  const expanded = path && expandedFolderPaths[path] === true;
+  const navigable = path && isPathVisibleInSelectionRecord(path, selectedFilePaths, node?.descendantFiles ?? new Set());
 
   const toggleExpand = (folderPath: string) => {
     replaceExpandedFolderPaths(toggleExpandedKey(expandedKeys, folderPath));
@@ -73,12 +72,12 @@ export function useFileTreeContextMenu(config: UseFileTreeContextMenuOptions) {
 
   const contextMenu: ReactNode = (
     <Menu
-      open={menuState !== null}
+      open={!!menuState}
       onClose={handleClose}
       anchorReference="anchorPosition"
       anchorPosition={menuState?.anchorPosition}
     >
-      {path != null && (
+      {path && (
         <>
           <MenuItem onClick={handleAction(() => void copyToClipboard(path))}>{t('actions.copyPath')}</MenuItem>
           {navigable && (

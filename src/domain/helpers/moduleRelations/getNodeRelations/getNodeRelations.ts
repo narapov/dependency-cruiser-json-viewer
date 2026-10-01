@@ -22,7 +22,7 @@ function splitExternalByVisibility(
 
   buckets.forEach(aggregated => {
     const first = aggregated[0];
-    if (first == null) {
+    if (!first) {
       return;
     }
     const path = endpoint === 'target' ? first.target : first.source;
@@ -61,7 +61,7 @@ export function getNodeRelations(
   selectedFilePaths: Record<string, boolean | undefined>,
 ): ModuleRelations {
   const node = snapshot.nodes.get(path);
-  if (node == null) {
+  if (!node) {
     return EMPTY_RELATIONS;
   }
 

@@ -10,7 +10,7 @@ interface UseCruiseResultFileDropOptions {
 
 /** Whether the drag event carries file payloads (not in-app node drags). */
 function dataTransferHasFiles(dataTransfer: DataTransfer | null): boolean {
-  if (dataTransfer == null) {
+  if (!dataTransfer) {
     return false;
   }
   return Array.from(dataTransfer.types).includes('Files');
@@ -41,7 +41,7 @@ export function useCruiseResultFileDrop(config: UseCruiseResultFileDropOptions) 
     };
 
     const syncDropAllowed = (dataTransfer: DataTransfer | null) => {
-      if (dataTransfer == null) {
+      if (!dataTransfer) {
         return;
       }
       const allowed = isCruiseResultDragAllowed(dataTransfer);
@@ -85,7 +85,7 @@ export function useCruiseResultFileDrop(config: UseCruiseResultFileDropOptions) 
       resetDrag();
 
       const files = event.dataTransfer?.files;
-      if (files == null || files.length === 0) {
+      if (!files || files.length === 0) {
         return;
       }
 

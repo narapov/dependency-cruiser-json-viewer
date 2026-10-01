@@ -12,7 +12,7 @@ function node(id: string, parentId?: string): Node {
     type: 'file',
     position: { x: 0, y: 0 },
     data: {},
-    ...(parentId != null ? { parentId } : {}),
+    ...(parentId ? { parentId } : {}),
   };
 }
 

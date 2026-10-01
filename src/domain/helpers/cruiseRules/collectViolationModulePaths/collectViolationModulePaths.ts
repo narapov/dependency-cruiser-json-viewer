@@ -10,12 +10,12 @@ export function collectViolationModulePaths(
   violations: ReadonlyMap<string, readonly IViolation[]>,
   ruleNames?: readonly string[],
 ): string[] {
-  const ruleNameSet = ruleNames == null || ruleNames.length === 0 ? null : new Set(ruleNames);
+  const ruleNameSet = !ruleNames || ruleNames.length === 0 ? null : new Set(ruleNames);
 
   return [
     ...new Set(
       [...violations.values()].flat().flatMap(violation => {
-        if (ruleNameSet != null && !ruleNameSet.has(violation.rule.name)) {
+        if (ruleNameSet && !ruleNameSet.has(violation.rule.name)) {
           return [];
         }
         if (violation.to && violation.to !== violation.from) {

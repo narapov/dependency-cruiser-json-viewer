@@ -46,7 +46,7 @@ export function EdgeHighlightSubmenu(props: EdgeHighlightSubmenuProps) {
       </MenuItem>
       <Menu
         anchorEl={submenuAnchor}
-        open={submenuAnchor != null}
+        open={!!submenuAnchor}
         onClose={handleSubmenuClose}
         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'left' }}

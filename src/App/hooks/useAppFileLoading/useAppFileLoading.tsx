@@ -35,7 +35,7 @@ export function useAppFileLoading(config: UseAppFileLoadingOptions) {
 
   const handleCruiseLoaded = useCallback(
     ({ cruiseResult: loadedCruiseResult, settings }: LoadedCruiseResultFile) => {
-      const toReset = settings != null ? serializeViewerWorkspace(loadedCruiseResult, settings) : loadedCruiseResult;
+      const toReset = settings ? serializeViewerWorkspace(loadedCruiseResult, settings) : loadedCruiseResult;
       resetWorkspace(toReset, 'hard');
     },
     [resetWorkspace],
@@ -43,7 +43,7 @@ export function useAppFileLoading(config: UseAppFileLoadingOptions) {
 
   const handleWorkspaceSettingsLoaded = useCallback(
     (settings: ViewerWorkspaceSettings) => {
-      if (useWorkspaceStore.getState().cruiseResult == null) {
+      if (!useWorkspaceStore.getState().cruiseResult) {
         return;
       }
       syncWorkspaceSettings(settings);

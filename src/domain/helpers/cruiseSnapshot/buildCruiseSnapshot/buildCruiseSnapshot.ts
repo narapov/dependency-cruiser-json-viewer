@@ -20,17 +20,16 @@ interface NamedRuleEntry {
 
 /** Collect named rules from a flattened rule set in forbidden → allowed → required order. */
 function collectNamedRules(ruleSet: IFlattenedRuleSet | undefined): NamedRuleEntry[] {
-  if (ruleSet == null) {
+  if (!ruleSet) {
     return [];
   }
 
   return [...(ruleSet.forbidden ?? []), ...(ruleSet.allowed ?? []), ...(ruleSet.required ?? [])].flatMap(rule => {
     const name = 'name' in rule && typeof rule.name === 'string' ? rule.name : undefined;
-    if (name == null) {
+    if (!name) {
       return [];
     }
-    const severity =
-      'severity' in rule && rule.severity != null ? rule.severity : ('warn' as RuleWithViolations['severity']);
+    const severity = 'severity' in rule && rule.severity ? rule.severity : ('warn' as RuleWithViolations['severity']);
     return [{ name, severity, rule }];
   });
 }
@@ -270,7 +269,7 @@ export function buildCruiseSnapshot(
       bySource: modulesDependenciesBySource as Map<string, ModuleDependency[]>,
       byTarget: modulesDependenciesByTarget as Map<string, ModuleDependency[]>,
     },
-    cycles: cycles != null ? [...cycles] : collectDistinctCycles(modules),
+    cycles: cycles ? [...cycles] : collectDistinctCycles(modules),
     rules: groupRulesWithViolations(ruleSetUsed, scopedViolations),
     ruleSetUsed,
     violations: indexViolationsByDependencyKey(scopedViolations),

@@ -22,7 +22,7 @@ export function filterCruiseResult(result: ICruiseResult, patterns: string[]): I
     .map(module => ({
       ...module,
       dependencies: (Array.isArray(module.dependencies) ? module.dependencies : []).filter(
-        dependency => dependency.resolved == null || !excluded.has(dependency.resolved),
+        dependency => !dependency.resolved || !excluded.has(dependency.resolved),
       ),
     }));
 

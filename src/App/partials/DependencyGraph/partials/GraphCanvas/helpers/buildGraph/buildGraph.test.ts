@@ -43,7 +43,7 @@ function collectPaths(nodes: ReadonlyMap<string, VisibleTreeLayoutedNode>): stri
 }
 
 function isExpandedFolder(node: VisibleTreeLayoutedNode | undefined): boolean {
-  return node?.children != null;
+  return !!node?.children;
 }
 
 describe('buildGraph half-checked folders', () => {

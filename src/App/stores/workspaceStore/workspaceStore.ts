@@ -152,7 +152,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
           mode === 'hard'
             ? (() => {
                 const embedded = extractEmbeddedWorkspaceSettings(cruiseResult);
-                return embedded != null
+                return embedded
                   ? applySettingsToCruiseResult(cruiseResult, embedded)
                   : hardResetWithoutSettings(cruiseResult);
               })()
@@ -165,7 +165,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
       /** Apply external workspace settings against the current cruise result. */
       syncWorkspaceSettings(workspaceSettings) {
         const { cruiseResult } = get();
-        if (cruiseResult == null) {
+        if (!cruiseResult) {
           throw new Error('syncWorkspaceSettings requires a loaded cruiseResult');
         }
 
@@ -176,7 +176,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
 
       setIgnorePatterns(ignorePatterns) {
         const previous = pickOwnWorkspaceState(get());
-        if (previous.cruiseResult == null) {
+        if (!previous.cruiseResult) {
           set({ ignorePatterns });
           return;
         }

@@ -6,7 +6,7 @@ export function toSelectedFilePaths(paths: readonly string[], cruiseSnapshot: Cr
 
   paths.forEach(path => {
     const node = cruiseSnapshot.nodes.get(path);
-    if (node == null) {
+    if (!node) {
       return;
     }
     if (node.isFolder) {

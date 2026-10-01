@@ -13,5 +13,5 @@ export function matchesNameFilter(name: string, filter: string): boolean {
   if (trimmed.length === 0) {
     return true;
   }
-  return fuzzysort.single(trimmed, name) != null;
+  return !!fuzzysort.single(trimmed, name);
 }

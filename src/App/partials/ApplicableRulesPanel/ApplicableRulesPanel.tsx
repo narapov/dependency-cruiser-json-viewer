@@ -23,13 +23,13 @@ export function ApplicableRulesPanel(props: ApplicableRulesPanelProps) {
   const cruiseSnapshot = useWorkspaceStore(state => state.cruiseSnapshot);
   const path = useWorkspaceStore(state => {
     const sources = getCruiseSources(state.cruiseSnapshot);
-    return state.applicableRulesPanelPath != null && isPathInSources(state.applicableRulesPanelPath, sources)
+    return state.applicableRulesPanelPath && isPathInSources(state.applicableRulesPanelPath, sources)
       ? state.applicableRulesPanelPath
       : null;
   });
-  const rules = path != null ? (cruiseSnapshot.nodes.get(path)?.applicableRules ?? []) : [];
+  const rules = path ? (cruiseSnapshot.nodes.get(path)?.applicableRules ?? []) : [];
 
-  if (path == null) {
+  if (!path) {
     return null;
   }
 

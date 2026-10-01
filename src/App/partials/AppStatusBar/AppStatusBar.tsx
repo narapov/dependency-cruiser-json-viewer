@@ -30,9 +30,9 @@ export function AppStatusBar(props: AppStatusBarProps) {
   const { t } = useTranslation();
   const activePath = useWorkspaceStore(state => {
     const sources = getCruiseSources(state.cruiseSnapshot);
-    return state.activePath != null && isPathInSources(state.activePath, sources) ? state.activePath : null;
+    return state.activePath && isPathInSources(state.activePath, sources) ? state.activePath : null;
   });
-  const hasSelection = activePath != null;
+  const hasSelection = !!activePath;
   const label = activePath ?? t('statusBar.noSelection');
 
   return (

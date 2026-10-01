@@ -47,7 +47,7 @@ export function ApplicableRuleListItem(props: ApplicableRuleListItemProps) {
   const [expanded, setExpanded] = useState(false);
   const count = entry.violations.length;
   const hasViolations = count > 0;
-  const canViewJson = entry.rule != null;
+  const canViewJson = !!entry.rule;
 
   return (
     <>

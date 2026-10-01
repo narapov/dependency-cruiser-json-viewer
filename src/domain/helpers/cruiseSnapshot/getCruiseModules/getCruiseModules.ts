@@ -7,6 +7,6 @@ import { getCruiseSources } from '../getCruiseSources';
 export function getCruiseModules(snapshot: CruiseSnapshot, paths?: readonly string[]): IModule[] {
   return (paths ?? getCruiseSources(snapshot)).flatMap(path => {
     const module = snapshot.nodes.get(path)?.originModule;
-    return module != null ? [module] : [];
+    return module ? [module] : [];
   });
 }

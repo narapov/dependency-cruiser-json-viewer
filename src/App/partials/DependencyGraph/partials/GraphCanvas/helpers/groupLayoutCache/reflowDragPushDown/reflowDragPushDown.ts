@@ -83,7 +83,7 @@ function resizeAncestorGroupsDeepestFirst(
 ): void {
   const ancestors: string[] = [];
   let current: string | null = parentByNode.get(nodeId) ?? null;
-  while (current !== null) {
+  while (current) {
     const groupNode = nodeById.get(current);
     if (groupNode?.type === 'folderGroup') {
       ancestors.push(current);
@@ -125,15 +125,13 @@ export function updateCacheFromReactFlowNodes(
         height: getNodeSize(node).height,
       }));
 
-    const groupNode = groupId != null ? nodeById.get(groupId) : undefined;
-    const groupSize =
-      groupNode != null
-        ? getNodeSize(groupNode)
-        : {
-            width: Math.max(...children.map(c => c.position.x + c.width), GROUP_PADDING) + GROUP_PADDING,
-            height:
-              Math.max(...children.map(c => c.position.y + c.height), GROUP_HEADER + GROUP_PADDING) + GROUP_PADDING,
-          };
+    const groupNode = groupId ? nodeById.get(groupId) : undefined;
+    const groupSize = groupNode
+      ? getNodeSize(groupNode)
+      : {
+          width: Math.max(...children.map(c => c.position.x + c.width), GROUP_PADDING) + GROUP_PADDING,
+          height: Math.max(...children.map(c => c.position.y + c.height), GROUP_HEADER + GROUP_PADDING) + GROUP_PADDING,
+        };
 
     cache.set(groupId, buildGroupLayoutEntry(groupId, children, groupSize));
 

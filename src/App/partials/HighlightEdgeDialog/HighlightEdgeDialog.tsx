@@ -38,12 +38,11 @@ function HighlightEdgeDialogContent(props: HighlightEdgeDialogContentProps) {
   const { t } = useTranslation();
   const { step, sourcePath, targetPath, selectSource, selectTarget } = useHighlightEdgeDialogState();
 
-  const targetSources =
-    sourcePath != null ? collectRelatedModuleSources(cruiseSnapshot, sourcePath, 'dependencies') : [];
+  const targetSources = sourcePath ? collectRelatedModuleSources(cruiseSnapshot, sourcePath, 'dependencies') : [];
   const targetAllowedPaths = expandPathsWithAncestors(targetSources, cruiseSnapshot);
 
   const dependencyKeys =
-    sourcePath != null && targetPath != null
+    sourcePath && targetPath
       ? getDependencyKeysBetweenPaths(cruiseSnapshot, sourcePath, targetPath, 'dependencies')
       : [];
 

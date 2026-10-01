@@ -69,7 +69,7 @@ export function toDotColor(color: string): string {
   }
 
   const parsed = parsePastelHsl(color);
-  if (parsed == null) {
+  if (!parsed) {
     return DEFAULT_FILE_FILL;
   }
 
@@ -98,9 +98,9 @@ function getAbsoluteOrigin(node: Node, nodeById: ReadonlyMap<string, Node>): { x
   let y = node.position.y;
   let parentId = node.parentId;
 
-  while (parentId != null) {
+  while (parentId) {
     const parent = nodeById.get(parentId);
-    if (parent == null) {
+    if (!parent) {
       break;
     }
     x += parent.position.x;
@@ -146,7 +146,7 @@ function resolveBaseEdgeColor(edge: Edge): string {
 
 function getNodeLabel(node: Node): string {
   const data = node.data as FileNodeData | FolderNodeData | FolderGroupNodeData | undefined;
-  if (data != null && typeof data.label === 'string' && data.label.length > 0) {
+  if (data && typeof data.label === 'string' && data.label.length > 0) {
     return data.label;
   }
   return node.id;
@@ -181,7 +181,7 @@ function emitLeafNode(node: Node, rect: AbsoluteRect, graphHeight: number, inden
   let border = DEFAULT_NODE_BORDER;
   if (node.type === 'folder') {
     const rawFill = getFolderFillColor(node);
-    fill = rawFill != null ? toDotColor(rawFill) : DEFAULT_FILE_FILL;
+    fill = rawFill ? toDotColor(rawFill) : DEFAULT_FILE_FILL;
   } else if (node.type === 'file') {
     const colors = getFileNodeColors(node.data as FileNodeData | undefined);
     fill = colors.fill;
@@ -226,7 +226,7 @@ function emitCluster(
     `${indent}  graph [bb="${llx},${lly},${urx},${ury}"];`,
   ];
 
-  if (rawFill != null) {
+  if (rawFill) {
     lines.push(`${indent}  bgcolor=${quoteDot(toDotColor(rawFill))};`);
   }
 
@@ -246,7 +246,7 @@ function emitCluster(
 function emitEdge(edge: Edge, userEdgeHighlights: ReadonlyMap<string, string>, indent: string): string {
   const highlightColor = resolveUserHighlightColor(edge, userEdgeHighlights);
   const color = highlightColor ?? resolveBaseEdgeColor(edge);
-  const strokeWidth = resolveEdgePenWidth(edge, highlightColor != null);
+  const strokeWidth = resolveEdgePenWidth(edge, !!highlightColor);
   const attrs = [`color=${quoteDot(color)}`, `penwidth=${strokeWidth}`];
 
   const data = edge.data as DependencyEdgeData | undefined;
@@ -269,7 +269,7 @@ export function serializeGraphToDot({ nodes, edges, userEdgeHighlights }: Serial
   nodes.forEach(node => {
     const parentId = node.parentId ?? null;
     const siblings = childrenByParent.get(parentId);
-    if (siblings == null) {
+    if (!siblings) {
       childrenByParent.set(parentId, [node]);
       return;
     }

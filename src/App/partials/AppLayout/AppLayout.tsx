@@ -80,11 +80,11 @@ export function AppLayout(props: AppLayoutProps) {
     onSelectSidebarView,
   } = props;
 
-  const dependenciesPanelOpen = useWorkspaceStore(state => state.dependenciesPanelPath != null);
-  const applicableRulesPanelOpen = useWorkspaceStore(state => state.applicableRulesPanelPath != null);
+  const dependenciesPanelOpen = useWorkspaceStore(state => !!state.dependenciesPanelPath);
+  const applicableRulesPanelOpen = useWorkspaceStore(state => !!state.applicableRulesPanelPath);
 
-  const showDependencies = dependenciesPanelOpen && dependenciesPanel != null;
-  const showApplicableRules = applicableRulesPanelOpen && applicableRulesPanel != null;
+  const showDependencies = dependenciesPanelOpen && dependenciesPanel;
+  const showApplicableRules = applicableRulesPanelOpen && applicableRulesPanel;
 
   const panelIds = [
     ...(sidebarOpen ? ['sidebar'] : []),

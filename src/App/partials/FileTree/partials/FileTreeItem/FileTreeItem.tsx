@@ -31,7 +31,7 @@ export const FileTreeItem = memo(function FileTreeItem(props: TreeItemProps & { 
   );
   const replaceExpandedFolderPaths = useWorkspaceStore(state => state.replaceExpandedFolderPaths);
 
-  const isFolder = item != null && !isTreeLeaf(item);
+  const isFolder = !!item && !isTreeLeaf(item);
 
   const toggleExpand = () => {
     const expandedKeys = presenceRecordToPaths(useWorkspaceStore.getState().expandedFolderPaths);

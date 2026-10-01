@@ -33,7 +33,7 @@ export function invalidateGroupLayoutRecursive(cache: LayoutCache, groupId: Grou
   }
 
   [...cache.keys()]
-    .filter(id => id === groupId || (id != null && (id === groupId || id.startsWith(`${groupId}/`))))
+    .filter(id => id === groupId || (id && (id === groupId || id.startsWith(`${groupId}/`))))
     .forEach(id => {
       cache.delete(id);
     });

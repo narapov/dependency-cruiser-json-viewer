@@ -82,10 +82,10 @@ function seedWorkspace(
 ) {
   const modules = overrides.modules ?? modulesOf(SOURCES);
   useWorkspaceStore.getState().reset(cruiseResultOf(modules, overrides.violations), 'hard');
-  if (overrides.selectedKeys != null) {
+  if (overrides.selectedKeys) {
     useWorkspaceStore.getState().setSelectedFilePaths(pathsToPresenceRecord(overrides.selectedKeys));
   }
-  if (overrides.expandedKeys != null) {
+  if (overrides.expandedKeys) {
     useWorkspaceStore.getState().setExpandedFolderPaths(pathsToPresenceRecord(overrides.expandedKeys));
   }
 }

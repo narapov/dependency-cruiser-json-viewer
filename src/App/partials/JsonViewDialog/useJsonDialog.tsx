@@ -26,7 +26,7 @@ export function useJsonDialog(defaults: Partial<JsonDialogView> = {}): {
   const openJsonDialog = (next: Partial<JsonDialogView> = {}) => {
     const title = next.title ?? defaults.title;
     const data = next.data ?? defaults.data;
-    if (title == null || data == null) {
+    if (!title || !data) {
       return;
     }
     setView({
@@ -40,7 +40,7 @@ export function useJsonDialog(defaults: Partial<JsonDialogView> = {}): {
 
   const jsonDialog = (
     <JsonViewDialog
-      open={view != null}
+      open={!!view}
       title={view?.title ?? ''}
       data={view?.data ?? null}
       onClose={() => setView(null)}

@@ -20,7 +20,7 @@ export function useCruiseResultJsonDialog(): {
 
   const openViewCruiseResultJson = () => {
     const cruiseResult = useWorkspaceStore.getState().cruiseResult;
-    if (cruiseResult == null) {
+    if (!cruiseResult) {
       return;
     }
     openJsonDialog({ data: cruiseResult });

@@ -42,16 +42,16 @@ function App() {
   const quickPickRef = useRef<QuickPickHandle>(null);
 
   useEffect(() => {
-    if (data == null) {
+    if (!data) {
       return;
     }
-    if (useWorkspaceStore.getState().cruiseResult != null) {
+    if (useWorkspaceStore.getState().cruiseResult) {
       return;
     }
     resetWorkspace(data, 'hard');
   }, [data, resetWorkspace]);
 
-  const isHydrating = data != null && cruiseResult == null;
+  const isHydrating = data && !cruiseResult;
 
   const { sidebarOpen, setSidebarOpen, toggleSidebarOpen } = useSidebarOpen();
   const { sidebarView, setSidebarView } = useSidebarView();
@@ -96,7 +96,7 @@ function App() {
 
   const fileLoading = useAppFileLoading({
     cruiseWatchEnabled,
-    cruiseReady: cruiseResult != null,
+    cruiseReady: !!cruiseResult,
   });
 
   const { notice } = useCruiseResultUpdatedNotice({
@@ -138,13 +138,13 @@ function App() {
       const focusPath = paths[0];
       const targetPath = paths[1];
       // Expand both ends so the graph edge id is file→file (not collapsed folder reps).
-      if (targetPath != null) {
+      if (targetPath) {
         activatePath(targetPath);
       }
-      if (focusPath != null) {
+      if (focusPath) {
         showInGraph(focusPath);
       }
-      if (focusPath != null && targetPath != null) {
+      if (focusPath && targetPath) {
         graphRef.current?.selectEdge(makeDependencyKey(focusPath, targetPath));
       }
     },
@@ -162,7 +162,7 @@ function App() {
     openViewCruiseResultJson,
     openViewActiveModuleJson: () => {
       const activePath = orch.activePath;
-      if (activePath != null) {
+      if (activePath) {
         openModuleJson(activePath);
       }
     },
@@ -210,7 +210,7 @@ function App() {
     );
   }
 
-  if (cruiseResult == null) {
+  if (!cruiseResult) {
     return null;
   }
 

@@ -17,7 +17,7 @@ describe('useSidebarView', () => {
     { stored: 'highlights', expected: 'highlights' as const },
     { stored: 'bogus', expected: 'files' as const },
   ])('resolves stored value $stored to $expected', ({ stored, expected }) => {
-    if (stored != null) {
+    if (stored) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
     }
 

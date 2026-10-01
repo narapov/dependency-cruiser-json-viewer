@@ -4,7 +4,7 @@ import type { IViolation } from 'dependency-cruiser';
 export function flattenViolations(
   violations: readonly IViolation[] | ReadonlyMap<string, readonly IViolation[]> | undefined,
 ): readonly IViolation[] {
-  if (violations == null) {
+  if (!violations) {
     return [];
   }
   if (Array.isArray(violations)) {

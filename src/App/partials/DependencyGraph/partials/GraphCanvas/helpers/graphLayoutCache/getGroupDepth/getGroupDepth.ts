@@ -8,7 +8,7 @@ export function getGroupDepth(groupId: GroupId, parentByNode: ReadonlyMap<string
 
   let depth = 0;
   let current: string | null = groupId;
-  while (current !== null) {
+  while (current) {
     depth++;
     current = parentByNode.get(current) ?? null;
   }

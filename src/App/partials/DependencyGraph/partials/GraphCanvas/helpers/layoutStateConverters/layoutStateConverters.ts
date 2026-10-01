@@ -6,7 +6,7 @@ import type { GraphLayoutState, SerializedLayoutCache } from '../../../../types'
 export function legacyPositionsToLayouts(
   nodePositions: Record<string, Record<string, { x: number; y: number } | undefined>> | null,
 ): SerializedLayoutCache {
-  if (nodePositions == null) {
+  if (!nodePositions) {
     return {};
   }
 

@@ -19,16 +19,15 @@ export function useRuleViolationsPickerDialog(config: UseRuleViolationsPickerDia
 
   const cruiseResult = useWorkspaceStore(state => state.cruiseResult);
   const cruiseSnapshot = useWorkspaceStore(state => state.cruiseSnapshot);
-  const rules =
-    cruiseResult == null
-      ? []
-      : cruiseSnapshot.rules
-          .filter(entry => entry.violations.length > 0)
-          .map(entry => ({
-            name: entry.name,
-            severity: entry.severity,
-            violationCount: entry.violations.length,
-          }));
+  const rules = !cruiseResult
+    ? []
+    : cruiseSnapshot.rules
+        .filter(entry => entry.violations.length > 0)
+        .map(entry => ({
+          name: entry.name,
+          severity: entry.severity,
+          violationCount: entry.violations.length,
+        }));
 
   const [open, setOpen] = useState(false);
 

@@ -12,7 +12,7 @@ export function LanguageSelector() {
   const { i18n, t } = useTranslation();
   const currentLanguage = i18n.language as LanguageOptionValue;
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-  const open = anchorEl != null;
+  const open = !!anchorEl;
 
   const currentOption = LANGUAGE_OPTIONS.find(option => option.value === currentLanguage);
   const currentLabel = currentOption ? t(currentOption.labelKey) : currentLanguage.toUpperCase();

@@ -30,7 +30,7 @@ export function collectFolderPaths(sources: string[]): Set<string> {
     sources.flatMap(source => {
       const folders: string[] = [];
       let current = getParentPath(source);
-      while (current != null) {
+      while (current) {
         folders.push(current);
         current = getParentPath(current);
       }
@@ -113,10 +113,10 @@ function settingsFullyCorrespond(
   if (!selectedFilesOk || !expandedOk) {
     return false;
   }
-  if (settings.dependenciesPath != null && !isPathInSources(settings.dependenciesPath, sources)) {
+  if (settings.dependenciesPath && !isPathInSources(settings.dependenciesPath, sources)) {
     return false;
   }
-  if (settings.applicableRulesPath != null && !isPathInSources(settings.applicableRulesPath, sources)) {
+  if (settings.applicableRulesPath && !isPathInSources(settings.applicableRulesPath, sources)) {
     return false;
   }
   if (!Object.keys(settings.userEdgeHighlights).every(key => dependencyKeys.has(key))) {
@@ -142,11 +142,11 @@ function filterScalarSettings(settings: ViewerWorkspaceSettings, sources: string
     selectedFiles: settings.selectedFiles.filter(path => sources.includes(path)),
     expandedKeys: settings.expandedKeys.filter(path => isPathInSources(path, sources)),
     dependenciesPath:
-      settings.dependenciesPath != null && isPathInSources(settings.dependenciesPath, sources)
+      settings.dependenciesPath && isPathInSources(settings.dependenciesPath, sources)
         ? settings.dependenciesPath
         : null,
     applicableRulesPath:
-      settings.applicableRulesPath != null && isPathInSources(settings.applicableRulesPath, sources)
+      settings.applicableRulesPath && isPathInSources(settings.applicableRulesPath, sources)
         ? settings.applicableRulesPath
         : null,
   };

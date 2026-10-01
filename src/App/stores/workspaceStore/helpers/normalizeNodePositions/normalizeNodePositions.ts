@@ -6,13 +6,13 @@ type PositionMap = Record<string, Record<string, { x: number; y: number } | unde
 export function normalizeNodePositions(
   nodePositions: PositionMap | null | undefined,
 ): WorkspaceOwnState['nodePositions'] {
-  if (nodePositions == null) {
+  if (!nodePositions) {
     return null;
   }
 
   const entries = Object.entries(nodePositions)
     .map(([groupId, children]) => {
-      const filteredChildren = Object.fromEntries(Object.entries(children).filter(([, position]) => position != null));
+      const filteredChildren = Object.fromEntries(Object.entries(children).filter(([, position]) => position));
       if (Object.keys(filteredChildren).length === 0) {
         return null;
       }

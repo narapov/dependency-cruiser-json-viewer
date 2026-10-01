@@ -54,7 +54,7 @@ export function JsonViewDialog(props: JsonViewDialogProps) {
     <AppDialog open={open} onClose={onClose} maxWidth={maxWidth} fullScreen={fullScreen}>
       <AppDialogTitle>{title}</AppDialogTitle>
       <AppDialogContent>
-        {data != null && (
+        {data && (
           <Typography component="div" sx={{ fontFamily: 'monospace', fontSize: 12 }}>
             <JsonView
               key={expandEpoch}

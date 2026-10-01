@@ -5,7 +5,7 @@ export type DependencyKeysDirection = 'dependencies' | 'dependents';
 /** Whether `filePath` equals `path` (file) or lies under `path`'s descendant files (folder). */
 function pathMatchesFile(filePath: string, path: string, snapshot: CruiseSnapshot): boolean {
   const node = snapshot.nodes.get(path);
-  if (node == null) {
+  if (!node) {
     return false;
   }
   if (!node.isFolder) {
@@ -22,7 +22,7 @@ export function getDependencyKeysBetweenPaths(
   direction: DependencyKeysDirection,
 ): string[] {
   const sourceNode = snapshot.nodes.get(sourcePath);
-  if (sourceNode == null) {
+  if (!sourceNode) {
     return [];
   }
 

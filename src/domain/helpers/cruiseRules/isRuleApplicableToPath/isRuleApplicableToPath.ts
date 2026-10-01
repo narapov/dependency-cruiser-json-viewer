@@ -14,11 +14,11 @@ function restrictionMatches(
  * Empty from/module restrictions match every module.
  */
 export function isRuleApplicableToPath(rule: IAnyRuleType, modulePath: string): boolean {
-  if ('module' in rule && rule.module != null) {
+  if ('module' in rule && rule.module) {
     return restrictionMatches(modulePath, rule.module);
   }
 
-  if ('from' in rule && rule.from != null) {
+  if ('from' in rule && rule.from) {
     return restrictionMatches(modulePath, rule.from);
   }
 

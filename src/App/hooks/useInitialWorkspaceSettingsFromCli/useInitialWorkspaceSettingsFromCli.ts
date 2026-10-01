@@ -46,10 +46,10 @@ export function useInitialWorkspaceSettingsFromCli(config: UseInitialWorkspaceSe
   });
 
   useEffect(() => {
-    if (!isSuccess || data == null) {
+    if (!isSuccess || !data) {
       return;
     }
-    if (data.settings == null) {
+    if (!data.settings) {
       applyMissing();
       return;
     }

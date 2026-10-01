@@ -19,7 +19,7 @@ export function useModuleJsonDialog(): {
   const openModuleJson = (path: string) => {
     const modules = useWorkspaceStore.getState().cruiseResult?.modules ?? [];
     const data = getModuleJsonData(path, modules);
-    if (data == null) {
+    if (!data) {
       return;
     }
     openJsonDialog({ title: t('moduleJson.title', { path }), data });

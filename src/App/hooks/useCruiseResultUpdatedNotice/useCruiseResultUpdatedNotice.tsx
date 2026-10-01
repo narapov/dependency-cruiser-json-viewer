@@ -20,7 +20,7 @@ export function useCruiseResultUpdatedNotice(config: UseCruiseResultUpdatedNotic
   const isInitialCruiseResult = useRef(true);
 
   useEffect(() => {
-    if (!cruiseWatchEnabled || data == null) {
+    if (!cruiseWatchEnabled || !data) {
       return;
     }
     if (isInitialCruiseResult.current) {

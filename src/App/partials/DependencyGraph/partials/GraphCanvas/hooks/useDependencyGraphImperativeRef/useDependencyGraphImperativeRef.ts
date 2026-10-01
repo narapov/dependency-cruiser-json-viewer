@@ -80,7 +80,7 @@ export function useDependencyGraphImperativeRef(config: UseDependencyGraphImpera
       setLayoutState: state => {
         setGraphSettings({ autoLayoutOnly: state.autoLayoutOnly, edgesType: state.edgesType });
         const layouts =
-          state.nodeLayouts != null && Object.keys(state.nodeLayouts).length > 0
+          state.nodeLayouts && Object.keys(state.nodeLayouts).length > 0
             ? state.nodeLayouts
             : legacyPositionsToLayouts(state.nodePositions);
         setNodePositions(normalizeNodePositions(layoutsToLegacyPositions(layouts)));

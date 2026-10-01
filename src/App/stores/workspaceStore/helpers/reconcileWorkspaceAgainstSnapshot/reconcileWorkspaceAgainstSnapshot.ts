@@ -24,7 +24,7 @@ function pruneNodeLayouts(
   nodeLayouts: WorkspaceOwnState['nodeLayouts'],
   sources: readonly string[],
 ): ViewerNodeLayouts | null {
-  if (nodeLayouts == null) {
+  if (!nodeLayouts) {
     return null;
   }
 
@@ -85,9 +85,9 @@ export function reconcileWorkspaceAgainstSnapshot({
   const nodePositions = pruneNodePositions(previous.nodePositions, sources);
   const nodeLayouts = pruneNodeLayouts(previous.nodeLayouts, sources);
   const hadLayouts =
-    (previous.nodeLayouts != null && Object.keys(previous.nodeLayouts).length > 0) ||
-    (previous.nodePositions != null && Object.keys(previous.nodePositions).length > 0);
-  const layoutsGone = nodeLayouts == null && nodePositions == null;
+    (previous.nodeLayouts && Object.keys(previous.nodeLayouts).length > 0) ||
+    (previous.nodePositions && Object.keys(previous.nodePositions).length > 0);
+  const layoutsGone = !nodeLayouts && !nodePositions;
   const autoLayoutOnly = hadLayouts && layoutsGone ? true : previous.graphSettings.autoLayoutOnly;
 
   return {
@@ -97,13 +97,13 @@ export function reconcileWorkspaceAgainstSnapshot({
     folderBaseColors,
     selectedFilePaths: prunePresenceRecord(previous.selectedFilePaths, path => sourceSet.has(path)),
     expandedFolderPaths: prunePresenceRecord(previous.expandedFolderPaths, isValidPath),
-    activePath: previous.activePath != null && isValidPath(previous.activePath) ? previous.activePath : null,
+    activePath: previous.activePath && isValidPath(previous.activePath) ? previous.activePath : null,
     dependenciesPanelPath:
-      previous.dependenciesPanelPath != null && isValidPath(previous.dependenciesPanelPath)
+      previous.dependenciesPanelPath && isValidPath(previous.dependenciesPanelPath)
         ? previous.dependenciesPanelPath
         : null,
     applicableRulesPanelPath:
-      previous.applicableRulesPanelPath != null && isValidPath(previous.applicableRulesPanelPath)
+      previous.applicableRulesPanelPath && isValidPath(previous.applicableRulesPanelPath)
         ? previous.applicableRulesPanelPath
         : null,
     userEdgeHighlights: new Map(

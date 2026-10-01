@@ -39,7 +39,7 @@ export async function buildGraph({
   const edges = getEdgesForVisibleTree(cruiseSnapshot, visibleTree, selectedFilePaths);
   profiler.end('edges');
 
-  const cache = layoutCache != null ? deserializeLayoutCache(layoutCache) : null;
+  const cache = layoutCache ? deserializeLayoutCache(layoutCache) : null;
 
   profiler.start('layout');
   await layoutChildren(rootNodes, cruiseSnapshot, selectedFilePaths, profiler, cache, null);

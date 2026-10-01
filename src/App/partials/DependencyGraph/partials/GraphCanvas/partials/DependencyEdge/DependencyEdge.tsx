@@ -32,7 +32,7 @@ export const DependencyEdge = memo(function DependencyEdge(props: EdgeProps) {
   const edgesType = useWorkspaceStore(state => state.graphSettings.edgesType);
   const activePathSide = useWorkspaceStore(state => {
     const { activePath } = state;
-    if (activePath == null) {
+    if (!activePath) {
       return null;
     }
     return isPathOnDependencyEdge(activePath, source, target, edgeData?.aggregated);
@@ -57,10 +57,10 @@ export const DependencyEdge = memo(function DependencyEdge(props: EdgeProps) {
   let strokeWidth = base.strokeWidth;
 
   const userHighlight = getEdgeHighlightColor(edgeData?.aggregated?.map(dep => dep.id) ?? [], userEdgeHighlights);
-  if (userHighlight != null) {
+  if (userHighlight) {
     stroke = userHighlight;
     strokeWidth = 2;
-  } else if (activePathSide != null && !protectedEdge) {
+  } else if (activePathSide && !protectedEdge) {
     if (activePathSide === 'target') {
       stroke = INCOMING_EDGE_COLOR;
       strokeWidth = 2;
@@ -78,7 +78,7 @@ export const DependencyEdge = memo(function DependencyEdge(props: EdgeProps) {
   const style = {
     stroke,
     strokeWidth,
-    ...(base.strokeDasharray != null ? { strokeDasharray: base.strokeDasharray } : {}),
+    ...(base.strokeDasharray ? { strokeDasharray: base.strokeDasharray } : {}),
   };
 
   const getOrCreateGraphMarkerUrl = useGraphMarkersStore(state => state.getOrCreateGraphMarkerUrl);

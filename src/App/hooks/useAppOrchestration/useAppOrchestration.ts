@@ -30,7 +30,7 @@ interface UseAppOrchestrationOptions {
 
 function pathHasCircularDependency(snapshot: CruiseSnapshot, path: string): boolean {
   const node = snapshot.nodes.get(path);
-  if (node == null) {
+  if (!node) {
     return false;
   }
   const maps = [node.externalDependencies, node.internalDependencies, node.externalDependents, node.internalDependents];
@@ -40,7 +40,7 @@ function pathHasCircularDependency(snapshot: CruiseSnapshot, path: string): bool
 function toGraphNodePositions(
   nodePositions: Record<string, Record<string, { x: number; y: number } | undefined>> | null,
 ): GraphLayoutState['nodePositions'] {
-  if (nodePositions == null) {
+  if (!nodePositions) {
     return {};
   }
   return Object.fromEntries(
@@ -54,7 +54,7 @@ function toGraphNodePositions(
 }
 
 function resolveActiveFolderPath(activePath: string | null, isFolder: (path: string) => boolean): string | null {
-  if (activePath == null) {
+  if (!activePath) {
     return null;
   }
   if (isFolder(activePath)) {
@@ -66,7 +66,7 @@ function resolveActiveFolderPath(activePath: string | null, isFolder: (path: str
 function getResolvedActivePath(): string | null {
   const { activePath, cruiseSnapshot } = useWorkspaceStore.getState();
   const sources = getCruiseSources(cruiseSnapshot);
-  return activePath != null && isPathInSources(activePath, sources) ? activePath : null;
+  return activePath && isPathInSources(activePath, sources) ? activePath : null;
 }
 
 /**
@@ -144,7 +144,7 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
 
   const focusActivePath = () => {
     const resolvedActivePath = getResolvedActivePath();
-    if (resolvedActivePath == null) {
+    if (!resolvedActivePath) {
       return;
     }
     activatePath(resolvedActivePath);
@@ -162,7 +162,7 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
 
   const copyActive = () => {
     const resolvedActivePath = getResolvedActivePath();
-    if (resolvedActivePath == null) {
+    if (!resolvedActivePath) {
       return;
     }
     void copyToClipboard(resolvedActivePath);
@@ -170,7 +170,7 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
 
   const viewActiveItemDependenciesPanel = () => {
     const resolvedActivePath = getResolvedActivePath();
-    if (resolvedActivePath == null) {
+    if (!resolvedActivePath) {
       return;
     }
     handleShowDependenciesPanel(resolvedActivePath);
@@ -178,7 +178,7 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
 
   const viewActiveItemApplicableRulesPanel = () => {
     const resolvedActivePath = getResolvedActivePath();
-    if (resolvedActivePath == null) {
+    if (!resolvedActivePath) {
       return;
     }
     handleShowApplicableRulesPanel(resolvedActivePath);
@@ -190,7 +190,7 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
       getResolvedActivePath(),
       path => cruiseSnapshot.nodes.get(path)?.isFolder === true,
     );
-    if (folderPath == null) {
+    if (!folderPath) {
       return;
     }
     updateExpandedKeys(keys => (keys.includes(folderPath) ? keys : [...keys, folderPath]));
@@ -202,7 +202,7 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
       getResolvedActivePath(),
       path => cruiseSnapshot.nodes.get(path)?.isFolder === true,
     );
-    if (folderPath == null) {
+    if (!folderPath) {
       return;
     }
     expandRecursive(folderPath);
@@ -214,7 +214,7 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
       getResolvedActivePath(),
       path => cruiseSnapshot.nodes.get(path)?.isFolder === true,
     );
-    if (folderPath == null) {
+    if (!folderPath) {
       return;
     }
     updateExpandedKeys(keys => (keys.includes(folderPath) ? keys.filter(key => key !== folderPath) : keys));
@@ -227,7 +227,7 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
       getResolvedActivePath(),
       path => cruiseSnapshot.nodes.get(path)?.isFolder === true,
     );
-    if (folderPath == null) {
+    if (!folderPath) {
       return;
     }
     updateExpandedKeys(keys => removeSubtreeFolderKeys(keys, folderPath, sources));
@@ -252,18 +252,18 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
   const getCurrentWorkspaceSettings = (): ViewerWorkspaceSettings | null => {
     const state = useWorkspaceStore.getState();
     const { cruiseResult, ignorePatterns, cruiseSnapshot, folderBaseColors, userEdgeHighlights, graphSettings } = state;
-    if (cruiseResult == null) {
+    if (!cruiseResult) {
       return null;
     }
     const sources = getCruiseSources(cruiseSnapshot);
     const selectedPaths = presenceRecordToPaths(state.selectedFilePaths);
     const expandedKeys = presenceRecordToPaths(state.expandedFolderPaths);
     const resolvedDependenciesPath =
-      state.dependenciesPanelPath != null && isPathInSources(state.dependenciesPanelPath, sources)
+      state.dependenciesPanelPath && isPathInSources(state.dependenciesPanelPath, sources)
         ? state.dependenciesPanelPath
         : null;
     const resolvedApplicableRulesPath =
-      state.applicableRulesPanelPath != null && isPathInSources(state.applicableRulesPanelPath, sources)
+      state.applicableRulesPanelPath && isPathInSources(state.applicableRulesPanelPath, sources)
         ? state.applicableRulesPanelPath
         : null;
     const layout = graphRef.current?.getLayoutState() ?? {
@@ -289,11 +289,11 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
 
   const saveWorkspace = () => {
     const { cruiseResult } = useWorkspaceStore.getState();
-    if (cruiseResult == null) {
+    if (!cruiseResult) {
       return;
     }
     const settings = getCurrentWorkspaceSettings();
-    if (settings == null) {
+    if (!settings) {
       return;
     }
     const payload = serializeViewerWorkspace(cruiseResult, settings);
@@ -373,7 +373,7 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
 
   const showRuleViolationsOnly = (ruleNames: readonly string[]) => {
     const { cruiseResult, cruiseSnapshot } = useWorkspaceStore.getState();
-    if (cruiseResult == null) {
+    if (!cruiseResult) {
       return;
     }
     showPathsOnly(collectViolationModulePaths(cruiseSnapshot.violations, ruleNames));
@@ -402,22 +402,20 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
     get dependenciesPath() {
       const { dependenciesPanelPath, cruiseSnapshot } = useWorkspaceStore.getState();
       const sources = getCruiseSources(cruiseSnapshot);
-      return dependenciesPanelPath != null && isPathInSources(dependenciesPanelPath, sources)
-        ? dependenciesPanelPath
-        : null;
+      return dependenciesPanelPath && isPathInSources(dependenciesPanelPath, sources) ? dependenciesPanelPath : null;
     },
     get applicableRulesPath() {
       const { applicableRulesPanelPath, cruiseSnapshot } = useWorkspaceStore.getState();
       const sources = getCruiseSources(cruiseSnapshot);
-      return applicableRulesPanelPath != null && isPathInSources(applicableRulesPanelPath, sources)
+      return applicableRulesPanelPath && isPathInSources(applicableRulesPanelPath, sources)
         ? applicableRulesPanelPath
         : null;
     },
     get dependenciesPanelOpen() {
-      return this.dependenciesPath != null;
+      return !!this.dependenciesPath;
     },
     get applicableRulesPanelOpen() {
-      return this.applicableRulesPath != null;
+      return !!this.applicableRulesPath;
     },
     get userEdgeHighlights() {
       return useWorkspaceStore.getState().userEdgeHighlights;

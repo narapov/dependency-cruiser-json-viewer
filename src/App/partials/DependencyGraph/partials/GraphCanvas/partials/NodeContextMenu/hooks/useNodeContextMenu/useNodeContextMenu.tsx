@@ -83,15 +83,15 @@ export function useNodeContextMenu(config: UseNodeContextMenuOptions) {
   }, []);
 
   const path = menuState?.path;
-  const node = path != null ? cruiseSnapshot.nodes.get(path) : undefined;
+  const node = path ? cruiseSnapshot.nodes.get(path) : undefined;
   const isFolder = node?.isFolder === true;
-  const expanded = path != null && expandedFolderPaths[path] === true;
-  const showAutoLayout = isFolder && expanded && onAutoLayoutGroup != null;
-  const showAutoLayoutRecursive = isFolder && expanded && onAutoLayoutGroupRecursive != null;
+  const expanded = path && expandedFolderPaths[path] === true;
+  const showAutoLayout = isFolder && expanded && onAutoLayoutGroup;
+  const showAutoLayoutRecursive = isFolder && expanded && onAutoLayoutGroupRecursive;
 
   const contextMenu: ReactNode = (
     <Menu
-      open={menuState !== null}
+      open={!!menuState}
       onClose={handleMenuClose}
       anchorReference={menuState?.anchor.type === 'element' ? 'anchorEl' : 'anchorPosition'}
       anchorEl={menuState?.anchor.type === 'element' ? menuState.anchor.el : undefined}
@@ -107,7 +107,7 @@ export function useNodeContextMenu(config: UseNodeContextMenuOptions) {
         },
       }}
     >
-      {path != null && (
+      {path && (
         <>
           <MenuItem onClick={handleAction(() => void copyToClipboard(path))}>{t('actions.copyPath')}</MenuItem>
           {isFolder && (

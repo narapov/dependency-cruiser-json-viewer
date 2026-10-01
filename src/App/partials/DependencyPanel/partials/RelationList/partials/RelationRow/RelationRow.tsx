@@ -108,7 +108,7 @@ export function RelationRow(props: RelationRowProps) {
               ) : (
                 <Box sx={{ width: 24, flexShrink: 0 }} />
               )}
-              {highlightEnabled && currentHighlight != null && (
+              {highlightEnabled && currentHighlight && (
                 <Box
                   aria-hidden
                   sx={{
@@ -139,7 +139,7 @@ export function RelationRow(props: RelationRowProps) {
                     sx={{ p: 0.25, position: 'relative' }}
                   >
                     <ColorizeOutlined fontSize="small" />
-                    {currentHighlight != null && (
+                    {currentHighlight && (
                       <Box
                         sx={{
                           position: 'absolute',
@@ -198,7 +198,7 @@ export function RelationRow(props: RelationRowProps) {
       {highlightEnabled && (
         <Menu
           anchorEl={highlightMenuAnchor}
-          open={highlightMenuAnchor != null}
+          open={!!highlightMenuAnchor}
           onClose={() => setHighlightMenuAnchor(null)}
           slotProps={{ list: { sx: highlightColorMenuListSx } }}
         >

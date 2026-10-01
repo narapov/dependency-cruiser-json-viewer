@@ -48,7 +48,7 @@ export const useGraphMarkersStore = create<GraphMarkersState>((set, get) => ({
   markers: createSeededMarkers(),
   getOrCreateGraphMarkerUrl(stroke) {
     const existing = get().markers[stroke];
-    if (existing != null) {
+    if (existing) {
       return toMarkerUrl(existing);
     }
 
@@ -57,7 +57,7 @@ export const useGraphMarkersStore = create<GraphMarkersState>((set, get) => ({
       pendingStrokes.add(stroke);
       queueMicrotask(() => {
         pendingStrokes.delete(stroke);
-        if (get().markers[stroke] != null) {
+        if (get().markers[stroke]) {
           return;
         }
         set(state => ({ markers: { ...state.markers, [stroke]: id } }));

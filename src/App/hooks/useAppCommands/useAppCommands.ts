@@ -90,9 +90,9 @@ export function useAppCommands(config: UseAppCommandsOptions): QuickPickCommand[
 
   const { t } = useTranslation();
   const cruiseWatchEnabled = getWindowEnvs()?.watch === true;
-  const hasCruiseResult = useWorkspaceStore(state => state.cruiseResult != null);
+  const hasCruiseResult = useWorkspaceStore(state => !!state.cruiseResult);
   const hasRuleViolations = useWorkspaceStore(state =>
-    state.cruiseResult != null ? state.cruiseSnapshot.rules.some(entry => entry.violations.length > 0) : false,
+    state.cruiseResult ? state.cruiseSnapshot.rules.some(entry => entry.violations.length > 0) : false,
   );
 
   const commands: QuickPickCommand[] = [

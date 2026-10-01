@@ -6,10 +6,7 @@ function isEditableTarget(target: EventTarget | null): boolean {
   }
   const tag = target.tagName;
   return (
-    tag === 'INPUT' ||
-    tag === 'TEXTAREA' ||
-    target.isContentEditable ||
-    target.closest('[contenteditable="true"]') != null
+    tag === 'INPUT' || tag === 'TEXTAREA' || target.isContentEditable || !!target.closest('[contenteditable="true"]')
   );
 }
 

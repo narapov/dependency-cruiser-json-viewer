@@ -32,7 +32,7 @@ export function getAncestorFolderGroupIds(
   const ancestorGroupIds: string[] = [];
   let current: string | null = parentByNode.get(nodeId) ?? null;
 
-  while (current !== null) {
+  while (current) {
     const groupNode = nodeById.get(current);
     if (groupNode?.type === 'folderGroup') {
       ancestorGroupIds.push(current);

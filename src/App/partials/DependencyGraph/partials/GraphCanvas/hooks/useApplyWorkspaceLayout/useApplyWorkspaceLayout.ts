@@ -31,9 +31,7 @@ export function useApplyWorkspaceLayout(config: UseApplyWorkspaceLayoutInput): v
     }
     lastAppliedLayoutKeyRef.current = layoutApplyKey;
     const resolvedLayouts: SerializedLayoutCache =
-      nodeLayouts != null && Object.keys(nodeLayouts).length > 0
-        ? nodeLayouts
-        : legacyPositionsToLayouts(nodePositions);
+      nodeLayouts && Object.keys(nodeLayouts).length > 0 ? nodeLayouts : legacyPositionsToLayouts(nodePositions);
     layoutCacheRef.current = deserializeLayoutCache(resolvedLayouts);
     setLayoutSnapshot({ nodeLayouts: resolvedLayouts });
     requestRebuild();

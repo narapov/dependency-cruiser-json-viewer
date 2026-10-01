@@ -5,7 +5,7 @@ export function isDescendantOf(
   parentByNode: ReadonlyMap<string, string | null>,
 ): boolean {
   let current: string | null = parentByNode.get(nodeId) ?? null;
-  while (current !== null) {
+  while (current) {
     if (current === ancestorId) {
       return true;
     }
