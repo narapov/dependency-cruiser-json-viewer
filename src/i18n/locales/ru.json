@@ -27,8 +27,8 @@
     "showRules": "Показать правила ({{shortcut}})",
     "hideCircular": "Скрыть циклы ({{shortcut}})",
     "showCircular": "Показать циклы ({{shortcut}})",
-    "hideHighlights": "Скрыть подсветки ({{shortcut}})",
-    "showHighlights": "Показать подсветки ({{shortcut}})",
+    "hideHighlights": "Скрыть подсветку ({{shortcut}})",
+    "showHighlights": "Показать подсветку ({{shortcut}})",
     "about": "О приложении"
   },
   "actions": {
@@ -69,8 +69,8 @@
     "expandActiveRecursive": "Активный элемент: Развернуть рекурсивно",
     "collapseActive": "Активный элемент: Свернуть",
     "collapseActiveRecursive": "Активный элемент: Свернуть рекурсивно",
-    "clearAllHighlights": "Подсветки: Сбросить все",
-    "highlightEdge": "Подсветки: Подсветить ребро…",
+    "clearAllHighlights": "Подсветка: Сбросить все",
+    "highlightEdge": "Подсветка: Подсветить ребро…",
     "exportGraphDot": "Граф: Экспорт DOT",
     "viewGraphDotOnline": "Граф: Открыть DOT онлайн",
     "selectEdgesType": "Граф: Выбрать тип рёбер",
@@ -87,7 +87,7 @@
     "showFileTree": "Вид: Показать дерево файлов",
     "showRulesPanel": "Вид: Показать панель правил",
     "showCircularPanel": "Вид: Показать панель циклов",
-    "showHighlightsPanel": "Вид: Показать панель подсветок",
+    "showHighlightsPanel": "Вид: Показать панель подсветки",
     "toggleSidebar": "Вид: Переключить боковую панель",
     "unselectAll": "Выделение: Снять выделение",
     "about": "Приложение: О приложении",
@@ -195,7 +195,7 @@
   "highlights": {
     "empty": "Нет подсвеченных связей.",
     "removeConnection": "Убрать подсветку связи",
-    "removeColor": "Убрать все подсветки этого цвета",
+    "removeColor": "Убрать всю подсветку этого цвета",
     "clearAll": "Сбросить все"
   },
   "about": {
