@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildCruiseSnapshot } from '@/domain';
+import { buildCruiseSnapshot, getAncestorKeys } from '@/domain';
 
 import type { QuickPickFileItem } from '../../types';
 import { buildSearchItems } from './buildSearchItems';
@@ -31,35 +31,67 @@ describe('buildSearchItems', () => {
     expect(items.find(item => item.key === 'src/components')?.isFolder).toBe(true);
     expect(items.find(item => item.key === 'src/index.ts')?.isFolder).toBe(false);
   });
+
+  it('sets parent from snapshot node topology', () => {
+    const items = buildSearchItems(snapshotFromSources(sources));
+    expect(items.find(item => item.key === 'src')?.parent).toBeNull();
+    expect(items.find(item => item.key === 'package.json')?.parent).toBeNull();
+    expect(items.find(item => item.key === 'src/components')?.parent).toBe('src');
+    expect(items.find(item => item.key === 'src/components/App.tsx')?.parent).toBe('src/components');
+  });
+
+  it('sets tier from snapshot node topology', () => {
+    const items = buildSearchItems(snapshotFromSources(sources));
+    expect(items.find(item => item.key === 'src/components/App.tsx')?.tier).toBe(PathSearchTier.Src);
+    expect(items.find(item => item.key === 'package.json')?.tier).toBe(PathSearchTier.Other);
+  });
 });
 
-function searchItem(key: string, name = key.split('/').pop() ?? key): QuickPickFileItem {
+function searchItem(
+  key: string,
+  name = key.split('/').pop() ?? key,
+  tier = getPathSearchTier(key, getAncestorKeys(key)),
+): QuickPickFileItem {
+  const lastSlash = key.lastIndexOf('/');
   return {
     key,
     name,
     isFolder: false,
+    parent: lastSlash === -1 ? null : key.slice(0, lastSlash),
+    tier,
   };
 }
 
 describe('getPathSearchTier', () => {
   it('classifies root and monorepo src paths', () => {
-    expect(getPathSearchTier('src/foo.ts')).toBe(PathSearchTier.Src);
-    expect(getPathSearchTier('packages/app/src/main.ts')).toBe(PathSearchTier.Src);
+    expect(getPathSearchTier('src/foo.ts', getAncestorKeys('src/foo.ts'))).toBe(PathSearchTier.Src);
+    expect(getPathSearchTier('packages/app/src/main.ts', getAncestorKeys('packages/app/src/main.ts'))).toBe(
+      PathSearchTier.Src,
+    );
   });
 
   it('classifies root and monorepo lib paths', () => {
-    expect(getPathSearchTier('lib/bar.ts')).toBe(PathSearchTier.Lib);
-    expect(getPathSearchTier('packages/shared/lib/util.ts')).toBe(PathSearchTier.Lib);
+    expect(getPathSearchTier('lib/bar.ts', getAncestorKeys('lib/bar.ts'))).toBe(PathSearchTier.Lib);
+    expect(getPathSearchTier('packages/shared/lib/util.ts', getAncestorKeys('packages/shared/lib/util.ts'))).toBe(
+      PathSearchTier.Lib,
+    );
   });
 
   it('classifies root and nested node_modules paths', () => {
-    expect(getPathSearchTier('node_modules/pkg/index.js')).toBe(PathSearchTier.NodeModules);
-    expect(getPathSearchTier('packages/foo/node_modules/bar/index.js')).toBe(PathSearchTier.NodeModules);
+    expect(getPathSearchTier('node_modules/pkg/index.js', getAncestorKeys('node_modules/pkg/index.js'))).toBe(
+      PathSearchTier.NodeModules,
+    );
+    expect(
+      getPathSearchTier(
+        'packages/foo/node_modules/bar/index.js',
+        getAncestorKeys('packages/foo/node_modules/bar/index.js'),
+      ),
+    ).toBe(PathSearchTier.NodeModules);
   });
 
   it('does not treat lib-like names as lib tier', () => {
-    expect(getPathSearchTier('my-lib/index.ts')).toBe(PathSearchTier.Other);
-    expect(getPathSearchTier('package.json')).toBe(PathSearchTier.Other);
+    expect(getPathSearchTier('my-lib/index.ts', getAncestorKeys('my-lib/index.ts'))).toBe(PathSearchTier.Other);
+    expect(getPathSearchTier('package.json', getAncestorKeys('package.json'))).toBe(PathSearchTier.Other);
   });
 });
 
@@ -110,10 +142,10 @@ describe('searchPaths', () => {
 
   it('ranks src above lib, other, and node_modules for similar matches', () => {
     const tierItems = [
-      searchItem('node_modules/pkg/util.ts', 'util.ts'),
-      searchItem('tools/util.ts', 'util.ts'),
-      searchItem('lib/util.ts', 'util.ts'),
-      searchItem('src/util.ts', 'util.ts'),
+      searchItem('node_modules/pkg/util.ts', 'util.ts', PathSearchTier.NodeModules),
+      searchItem('tools/util.ts', 'util.ts', PathSearchTier.Other),
+      searchItem('lib/util.ts', 'util.ts', PathSearchTier.Lib),
+      searchItem('src/util.ts', 'util.ts', PathSearchTier.Src),
     ];
 
     expect(searchPaths(tierItems, 'util').map(item => item.key)).toEqual([

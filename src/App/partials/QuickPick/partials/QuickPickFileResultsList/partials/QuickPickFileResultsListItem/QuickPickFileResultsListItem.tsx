@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 
 import Box from '@mui/material/Box';
 
-import { getParentPath } from '@/domain';
 import { HighlightedMatchText, MatchHighlight, MaterialFileSystemIcon } from '@/Shared';
 
 import { computeQuickPickHighlight } from '../../../../helpers/computeQuickPickHighlight';
@@ -20,7 +19,7 @@ interface QuickPickFileResultsListItemProps {
 export function QuickPickFileResultsListItem(props: QuickPickFileResultsListItemProps) {
   const { item, query, highlighted, onMouseEnter, onClick } = props;
 
-  const parentPath = getParentPath(item.key);
+  const parentPath = item.parent;
   const { nameIndexes, pathIndexes } = useMemo(
     () => computeQuickPickHighlight(query, item.name, item.key),
     [query, item.name, item.key],

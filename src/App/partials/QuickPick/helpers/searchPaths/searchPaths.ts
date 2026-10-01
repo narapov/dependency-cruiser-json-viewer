@@ -1,19 +1,12 @@
 import fuzzysort from 'fuzzysort';
 
 import type { QuickPickFileItem } from '../../types';
+import { PathSearchTier } from '../pathSearchTier';
 
-/** Priority tiers that boost or demote path search ranking. */
-export const PathSearchTier = {
-  Src: 0,
-  Lib: 1,
-  Other: 2,
-  NodeModules: 3,
-} as const;
+export { getPathSearchTier, PathSearchTier } from '../pathSearchTier';
+export type { PathSearchTier } from '../pathSearchTier';
 
-/** Numeric value of a path search ranking tier. */
-export type PathSearchTier = (typeof PathSearchTier)[keyof typeof PathSearchTier];
-
-const TIER_SCORE_MULTIPLIER: Record<PathSearchTier, number> = {
+const TIER_SCORE_MULTIPLIER: Record<(typeof PathSearchTier)[keyof typeof PathSearchTier], number> = {
   [PathSearchTier.Src]: 100,
   [PathSearchTier.Lib]: 10,
   [PathSearchTier.Other]: 1,
@@ -21,24 +14,6 @@ const TIER_SCORE_MULTIPLIER: Record<PathSearchTier, number> = {
 };
 
 const MAX_RESULTS = 250;
-
-function pathContainsSegment(key: string, segment: string): boolean {
-  return key.split('/').includes(segment);
-}
-
-/** Maps a path to its ranking tier from path segments. */
-export function getPathSearchTier(key: string): PathSearchTier {
-  if (pathContainsSegment(key, 'node_modules')) {
-    return PathSearchTier.NodeModules;
-  }
-  if (pathContainsSegment(key, 'src')) {
-    return PathSearchTier.Src;
-  }
-  if (pathContainsSegment(key, 'lib')) {
-    return PathSearchTier.Lib;
-  }
-  return PathSearchTier.Other;
-}
 
 /** Fuzzy-searches paths with tier-weighted scores; empty query returns none. */
 export function searchPaths(items: QuickPickFileItem[], query: string): QuickPickFileItem[] {
@@ -53,7 +28,7 @@ export function searchPaths(items: QuickPickFileItem[], query: string): QuickPic
       keys: ['name', 'key'],
       limit: MAX_RESULTS,
       scoreFn: result => {
-        const multiplier = TIER_SCORE_MULTIPLIER[getPathSearchTier(result.obj.key)];
+        const multiplier = TIER_SCORE_MULTIPLIER[result.obj.tier];
         return result.score * multiplier;
       },
     })
