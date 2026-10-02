@@ -1,5 +1,5 @@
 import type { EdgePort, EdgePorts } from '../../types';
-import { getAbsoluteNodePosition } from '../graphLayoutCache';
+import { getAbsoluteNodePosition } from '../graphLayoutCache/getAbsoluteNodePosition';
 
 /** Node geometry used when assigning build-time edge ports. */
 export interface AssignEdgePortsNode {

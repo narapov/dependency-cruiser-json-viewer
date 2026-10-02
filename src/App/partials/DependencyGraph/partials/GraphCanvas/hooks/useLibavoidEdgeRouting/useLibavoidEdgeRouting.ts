@@ -4,12 +4,8 @@ import type { Edge, Node } from '@xyflow/react';
 
 import type { GraphEdgesType } from '@/domain';
 
-import {
-  mergeAvoidRoutes,
-  runRouteEdgesInWorker,
-  type LibavoidRoutingProgress,
-  type RouteEdgesWorkerSession,
-} from '../../helpers';
+import { mergeAvoidRoutes, type LibavoidRoutingProgress } from '../../helpers';
+import { runRouteEdgesInWorker, type RouteEdgesWorkerSession } from '../../helpers/routeEdgesWorker';
 import type { AvoidRoute } from '../../types';
 
 interface UseLibavoidEdgeRoutingInput {

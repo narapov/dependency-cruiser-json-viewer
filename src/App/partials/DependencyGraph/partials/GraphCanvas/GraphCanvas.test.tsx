@@ -60,6 +60,13 @@ vi.mock('@xyflow/react', () => ({
   useReactFlow: () => ({ fitView, getNode }),
 }));
 
+vi.mock('./helpers/routeEdgesWorker', () => ({
+  runRouteEdgesInWorker: vi.fn(() => ({
+    promise: Promise.resolve(new Map()),
+    terminate: vi.fn(),
+  })),
+}));
+
 vi.mock('./hooks', async importOriginal => {
   const actual = await importOriginal<typeof import('./hooks')>();
   return {
@@ -84,6 +91,10 @@ vi.mock('./hooks', async importOriginal => {
     }),
     useAutoFitView: vi.fn(),
     useEdgeContextMenu: () => ({ onEdgeContextMenu: vi.fn(), edgeContextMenu: null }),
+    useLibavoidEdgeRouting: () => ({
+      routedEdges: [],
+      routingProgress: null,
+    }),
   };
 });
 

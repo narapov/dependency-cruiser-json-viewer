@@ -75,8 +75,10 @@ export default defineConfig(({ mode }) => {
         exclude: /\.worker\.[tj]sx?$/,
         presets: [reactCompilerPreset()],
       }),
-      libavoidWasmPlugin(),
-      ...(process.env.VITEST ? [] : [cruiseWatchPlugin(cruiseResultPath, { watchEnabled: cruiseWatchEnabled })]),
+      // Skip Vite-only middleware/copy during Vitest — avoids hanging the test server deps graph.
+      ...(process.env.VITEST
+        ? []
+        : [libavoidWasmPlugin(), cruiseWatchPlugin(cruiseResultPath, { watchEnabled: cruiseWatchEnabled })]),
     ],
     test: {
       globals: true,

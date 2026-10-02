@@ -34,3 +34,4 @@ export * from './toReactFlowGraph';
 export * from './avoidRouteToPath';
 export * from './isEdgeEmphasized';
 export * from './routeEdgesWithLibavoid';
+// Intentionally not re-exported: routeEdgesWorker (pulls libavoid worker into Vitest graph).

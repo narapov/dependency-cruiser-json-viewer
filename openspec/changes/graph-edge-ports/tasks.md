@@ -23,5 +23,5 @@
 
 ## 5. Verification
 
-- [ ] 5.1 Run `npm run lint`, `npm run format:check`, `npm run test`, and `npm run build`; fix regressions
-- [ ] 5.2 Run `npm run depcruise` if import layout changed; verify no violations
+- [x] 5.1 Run `npm run lint`, `npm run format:check`, `npm run test`, and `npm run build`; fix regressions
+- [x] 5.2 Run `npm run depcruise` if import layout changed; verify no violations

@@ -1,7 +1,6 @@
 import type { Edge, Node } from '@xyflow/react';
 
 import type { AvoidRoute } from '../../types';
-import RouteEdgesWorker from './routeEdges.worker?worker';
 import { toRouteEdgesWorkerRequest, type LibavoidRoutingProgress, type RouteEdgesWorkerResponse } from './types';
 
 export interface RouteEdgesWorkerSession {
@@ -16,7 +15,8 @@ export function runRouteEdgesInWorker(input: {
   parentByNode: ReadonlyMap<string, string | null>;
   onProgress?: (progress: LibavoidRoutingProgress) => void;
 }): RouteEdgesWorkerSession {
-  const worker = new RouteEdgesWorker();
+  // URL worker: avoids evaluating the worker graph (and libavoid WASM) when this module is imported.
+  const worker = new Worker(new URL('./routeEdges.worker.ts', import.meta.url), { type: 'module' });
   let cancelled = false;
 
   const promise = new Promise<Map<string, AvoidRoute>>((resolve, reject) => {
