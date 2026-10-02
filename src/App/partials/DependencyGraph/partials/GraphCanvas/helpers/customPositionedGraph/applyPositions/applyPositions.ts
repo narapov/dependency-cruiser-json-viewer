@@ -1,5 +1,5 @@
 import type { VisibleTreeLayoutedNode } from '../../../types';
-import type { LayoutCache } from '../../layoutCache/types';
+import type { GroupId, LayoutCache } from '../../layoutCache/types';
 import { reflowDragPushDown } from '../reflowDragPushDown';
 import type { PositionUpdate } from '../types';
 import { updateCacheFromPositions } from '../updateCacheFromPositions';
@@ -15,7 +15,7 @@ export interface ApplyPositionsOptions {
  */
 export function applyPositions(
   nodesByPath: Map<string, VisibleTreeLayoutedNode>,
-  parentByNode: ReadonlyMap<string, string | null>,
+  childrenByParent: ReadonlyMap<GroupId, readonly string[]>,
   positions: ReadonlyMap<string, PositionUpdate>,
   options: ApplyPositionsOptions,
 ): Map<string, VisibleTreeLayoutedNode> {
@@ -43,11 +43,11 @@ export function applyPositions(
   const primaryPath = positions.keys().next().value as string;
   const primaryPosition = positions.get(primaryPath)?.position;
   if (primaryPosition) {
-    nextByPath = reflowDragPushDown(nextByPath, parentByNode, primaryPath, primaryPosition);
+    nextByPath = reflowDragPushDown(nextByPath, childrenByParent, primaryPath, primaryPosition);
   }
 
   if (options.commitToCache && options.cache) {
-    updateCacheFromPositions(options.cache, nextByPath, parentByNode, primaryPath);
+    updateCacheFromPositions(options.cache, nextByPath, childrenByParent, primaryPath);
   }
 
   return nextByPath;

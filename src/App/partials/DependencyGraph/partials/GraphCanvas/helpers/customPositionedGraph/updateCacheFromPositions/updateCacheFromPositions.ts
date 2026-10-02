@@ -8,14 +8,13 @@ import type { GroupId, LayoutCache } from '../../layoutCache/types';
 export function updateCacheFromPositions(
   cache: LayoutCache,
   nodesByPath: ReadonlyMap<string, VisibleTreeLayoutedNode>,
-  parentByNode: ReadonlyMap<string, string | null>,
+  childrenByParent: ReadonlyMap<GroupId, readonly string[]>,
   startNodeId: string,
 ): void {
-  const nodeIds = new Set(nodesByPath.keys());
+  const groupsToUpdate: GroupId[] = [...(nodesByPath.get(startNodeId)?.ancestors ?? []), null];
 
-  let groupId: GroupId = parentByNode.get(startNodeId) ?? null;
-  for (;;) {
-    const childIds = getDirectChildren(groupId, nodeIds, parentByNode);
+  groupsToUpdate.forEach(groupId => {
+    const childIds = getDirectChildren(groupId, childrenByParent);
     const children = childIds
       .map(id => nodesByPath.get(id))
       .filter((node): node is VisibleTreeLayoutedNode => node != null)
@@ -35,10 +34,5 @@ export function updateCacheFromPositions(
         };
 
     cache.set(groupId, buildGroupLayoutEntry(groupId, children, groupSize));
-
-    if (groupId === null) {
-      break;
-    }
-    groupId = parentByNode.get(groupId) ?? null;
-  }
+  });
 }

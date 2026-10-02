@@ -2,16 +2,17 @@ import type { VisibleTreeLayoutedNode } from '../../../types';
 import { getDirectChildren } from '../../buildGraph/getDirectChildren';
 import { settleOverlapsTopDown } from '../../buildGraph/settleOverlapsTopDown';
 import type { GroupId } from '../../layoutCache/types';
-import { getGroupDepth } from '../getGroupDepth';
+import { normalizeGroupContentOrigin } from '../normalizeGroupContentOrigin';
 import { applyGroupSize, isExpandedFolderGroup, resolveGroupSize } from '../resolveGroupSize';
 
 /**
  * Pushes overlapping non-dragged siblings down relative to the dragged node,
- * grows ancestor folder groups, and bubbles sibling push-down up the tree.
+ * normalizes folder groups to the content origin, grows ancestors, and bubbles
+ * sibling push-down up the tree.
  */
 export function reflowDragPushDown(
   nodesByPath: Map<string, VisibleTreeLayoutedNode>,
-  parentByNode: ReadonlyMap<string, string | null>,
+  childrenByParent: ReadonlyMap<GroupId, readonly string[]>,
   draggedNodeId: string,
   draggedPosition: { x: number; y: number },
 ): Map<string, VisibleTreeLayoutedNode> {
@@ -33,9 +34,10 @@ export function reflowDragPushDown(
 
   let currentId = draggedNodeId;
   for (;;) {
-    const groupId = parentByNode.get(currentId) ?? null;
-    pushOverlappingSiblingsDown(groupId, nextByPath, parentByNode, currentId);
-    resizeAncestorGroupsDeepestFirst(nextByPath, parentByNode, currentId);
+    const current = nextByPath.get(currentId);
+    const groupId = current?.ancestors[0] ?? null;
+    pushOverlappingSiblingsDown(groupId, nextByPath, childrenByParent, currentId);
+    normalizeAndResizeAncestorGroupsDeepestFirst(nextByPath, childrenByParent, currentId);
 
     if (groupId === null) {
       break;
@@ -55,11 +57,10 @@ export function reflowDragPushDown(
 function pushOverlappingSiblingsDown(
   groupId: GroupId,
   nodesByPath: Map<string, VisibleTreeLayoutedNode>,
-  parentByNode: ReadonlyMap<string, string | null>,
+  childrenByParent: ReadonlyMap<GroupId, readonly string[]>,
   fixedNodeId: string,
 ): void {
-  const nodeIds = new Set(nodesByPath.keys());
-  const childIds = getDirectChildren(groupId, nodeIds, parentByNode);
+  const childIds = getDirectChildren(groupId, childrenByParent);
   if (!nodesByPath.get(fixedNodeId) || childIds.length <= 1) {
     return;
   }
@@ -82,25 +83,21 @@ function pushOverlappingSiblingsDown(
   });
 }
 
-function resizeAncestorGroupsDeepestFirst(
+function normalizeAndResizeAncestorGroupsDeepestFirst(
   nodesByPath: Map<string, VisibleTreeLayoutedNode>,
-  parentByNode: ReadonlyMap<string, string | null>,
+  childrenByParent: ReadonlyMap<GroupId, readonly string[]>,
   nodeId: string,
 ): void {
-  const ancestors: string[] = [];
-  let current: string | null = parentByNode.get(nodeId) ?? null;
-  while (current) {
-    const groupNode = nodesByPath.get(current);
-    if (isExpandedFolderGroup(groupNode)) {
-      ancestors.push(current);
-    }
-    current = parentByNode.get(current) ?? null;
+  const node = nodesByPath.get(nodeId);
+  if (!node) {
+    return;
   }
 
-  ancestors
-    .sort((a, b) => getGroupDepth(b, parentByNode) - getGroupDepth(a, parentByNode))
+  node.ancestors
+    .filter(groupId => isExpandedFolderGroup(nodesByPath.get(groupId)))
     .forEach(groupId => {
-      const size = resolveGroupSize(groupId, nodesByPath, parentByNode);
+      normalizeGroupContentOrigin(groupId, nodesByPath, childrenByParent);
+      const size = resolveGroupSize(groupId, nodesByPath, childrenByParent);
       const groupNode = nodesByPath.get(groupId);
       if (groupNode) {
         nodesByPath.set(groupId, applyGroupSize(groupNode, size));

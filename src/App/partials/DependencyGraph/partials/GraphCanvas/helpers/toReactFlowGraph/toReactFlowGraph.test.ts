@@ -170,7 +170,7 @@ describe('toReactFlowNodes', () => {
     expect(node?.height).toBeGreaterThan(0);
   });
 
-  it('creates file nodes with parent extent and couldNotResolve', () => {
+  it('creates file nodes with parentId and couldNotResolve without parent extent', () => {
     const modules = [moduleAt('src/foo/a.ts'), { ...moduleAt('missing-module'), couldNotResolve: true } as IModule];
     const snapshot = buildCruiseSnapshot(modules);
     const { nodes, parentByNode } = toReactFlowNodes(
@@ -213,7 +213,7 @@ describe('toReactFlowNodes', () => {
     const fileNode = nodes.find(item => item.id === 'src/foo/a.ts');
     expect(fileNode?.type).toBe('file');
     expect(fileNode?.parentId).toBe('src/foo');
-    expect(fileNode?.extent).toBe('parent');
+    expect(fileNode?.extent).toBeUndefined();
     expect(fileNode?.data).toMatchObject({
       label: 'a.ts',
       path: 'src/foo/a.ts',

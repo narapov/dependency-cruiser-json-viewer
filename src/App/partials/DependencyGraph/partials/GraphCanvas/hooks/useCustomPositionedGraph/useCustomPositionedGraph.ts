@@ -9,7 +9,7 @@ import type { SerializedLayoutCache } from '../../../../types';
 import {
   applyCacheGeometryToNodes,
   applyPositions,
-  buildParentByNode,
+  buildAncestryIndex,
   copyPositionedNodes,
   deserializeLayoutCache,
   invalidateGroupLayout,
@@ -81,7 +81,7 @@ export function useCustomPositionedGraph(config: UseCustomPositionedGraphInput):
   }
 
   const positionedTree = useMemo(() => [...graphResult.tree.values()], [graphResult.tree]);
-  const parentByNode = useMemo(() => buildParentByNode(positionedTree), [positionedTree]);
+  const { parentByNode, childrenByParent } = useMemo(() => buildAncestryIndex(graphResult.nodes), [graphResult.nodes]);
 
   const positionedNodes = useMemo(() => {
     if (autoLayoutOnly) {
@@ -118,7 +118,7 @@ export function useCustomPositionedGraph(config: UseCustomPositionedGraphInput):
       }
 
       const current = applyCacheGeometryToNodes(graphResult.nodes, layoutCacheRef.current, parentByNode);
-      const next = applyPositions(current, parentByNode, new Map([[path, { path, position }]]), {
+      const next = applyPositions(current, childrenByParent, new Map([[path, { path, position }]]), {
         commitToCache: true,
         cache: layoutCacheRef.current,
       });
@@ -129,7 +129,7 @@ export function useCustomPositionedGraph(config: UseCustomPositionedGraphInput):
 
       return next;
     },
-    [autoLayoutOnly, bumpCommitRevision, graphResult.nodes, layoutCacheRef, parentByNode],
+    [autoLayoutOnly, bumpCommitRevision, childrenByParent, graphResult.nodes, layoutCacheRef, parentByNode],
   );
 
   const getLayoutSnapshot = useCallback((): GraphLayoutSnapshot => {

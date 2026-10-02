@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { VisibleTreeLayoutedNode } from '../../../types';
 import type { LayoutCache } from '../../layoutCache/types';
-import { buildParentByNode } from '../buildParentByNode';
+import { buildAncestryIndex } from '../buildAncestryIndex';
 import { applyCacheGeometryToNodes } from './applyCacheGeometryToNodes';
 
 function makeNode(path: string, position: { x: number; y: number }): VisibleTreeLayoutedNode {
@@ -22,7 +22,7 @@ describe('applyCacheGeometryToNodes', () => {
   it('overlays cached child positions and sizes onto layouted nodes', () => {
     const roots = [makeNode('a.ts', { x: 0, y: 0 }), makeNode('b.ts', { x: 0, y: 40 })];
     const nodes = new Map(roots.map(node => [node.path, node]));
-    const parentByNode = buildParentByNode(roots);
+    const { parentByNode } = buildAncestryIndex(nodes);
     const cache: LayoutCache = new Map([
       [
         null,

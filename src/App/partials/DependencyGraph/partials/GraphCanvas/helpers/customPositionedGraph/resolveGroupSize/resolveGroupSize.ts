@@ -14,10 +14,9 @@ function isFolderGroup(node: VisibleTreeLayoutedNode): boolean {
 export function resolveGroupSize(
   groupId: GroupId,
   nodesByPath: ReadonlyMap<string, VisibleTreeLayoutedNode>,
-  parentByNode: ReadonlyMap<string, string | null>,
+  childrenByParent: ReadonlyMap<GroupId, readonly string[]>,
 ): NodeSize {
-  const nodeIds = new Set(nodesByPath.keys());
-  const childIds = getDirectChildren(groupId, nodeIds, parentByNode);
+  const childIds = getDirectChildren(groupId, childrenByParent);
 
   if (childIds.length === 0) {
     return {
@@ -53,6 +52,6 @@ export function applyGroupSize(node: VisibleTreeLayoutedNode, size: NodeSize): V
 }
 
 /** Returns true when the node represents an expanded folder group container. */
-export function isExpandedFolderGroup(node: VisibleTreeLayoutedNode | undefined): boolean {
+export function isExpandedFolderGroup(node: VisibleTreeLayoutedNode | undefined): node is VisibleTreeLayoutedNode {
   return node != null && isFolderGroup(node);
 }
