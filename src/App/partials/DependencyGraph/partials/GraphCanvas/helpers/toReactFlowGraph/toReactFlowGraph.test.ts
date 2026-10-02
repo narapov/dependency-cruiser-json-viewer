@@ -117,6 +117,8 @@ describe('toReactFlowNodes', () => {
     const { nodes } = toReactFlowNodes(
       nodesMap({
         path: 'src/foo',
+        ancestors: [],
+        descendants: [],
         valueCircular: false,
         typeOnlyCircular: false,
         children: [],
@@ -145,6 +147,8 @@ describe('toReactFlowNodes', () => {
     const { nodes } = toReactFlowNodes(
       nodesMap({
         path: 'src/foo',
+        ancestors: [],
+        descendants: [],
         valueCircular: true,
         typeOnlyCircular: false,
         position: { x: 0, y: 0 },
@@ -172,11 +176,15 @@ describe('toReactFlowNodes', () => {
     const { nodes, parentByNode } = toReactFlowNodes(
       nodesMap({
         path: 'src/foo',
+        ancestors: [],
+        descendants: ['src/foo/a.ts', 'missing-module'],
         valueCircular: false,
         typeOnlyCircular: false,
         children: [
           {
             path: 'src/foo/a.ts',
+            ancestors: ['src/foo'],
+            descendants: [],
             valueCircular: true,
             typeOnlyCircular: false,
             position: { x: 10, y: 20 },
@@ -185,6 +193,8 @@ describe('toReactFlowNodes', () => {
           },
           {
             path: 'missing-module',
+            ancestors: ['src/foo'],
+            descendants: [],
             valueCircular: false,
             typeOnlyCircular: false,
             position: { x: 30, y: 40 },

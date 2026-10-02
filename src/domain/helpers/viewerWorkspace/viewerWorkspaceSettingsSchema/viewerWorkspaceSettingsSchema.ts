@@ -74,15 +74,3 @@ export function nodePositionsToNodeLayouts(
     ]),
   );
 }
-
-/** Derive legacy position maps from group layouts (drops sizes). */
-export function nodeLayoutsToNodePositions(
-  nodeLayouts: ViewerNodeLayouts,
-): Record<string, Record<string, { x: number; y: number }>> {
-  return Object.fromEntries(
-    Object.entries(nodeLayouts).map(([groupId, entry]) => [
-      groupId,
-      Object.fromEntries(Object.entries(entry.children).map(([childId, child]) => [childId, { ...child.position }])),
-    ]),
-  );
-}

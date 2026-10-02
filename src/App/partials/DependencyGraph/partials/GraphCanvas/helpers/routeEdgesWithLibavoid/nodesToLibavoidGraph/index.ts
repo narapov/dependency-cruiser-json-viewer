@@ -1,5 +1,7 @@
 export {
+  absolutePositionFromThin,
   assignLibavoidPorts,
+  buildChildrenByParentFromThin,
   buildFlatLibavoidGraph,
   buildHierarchicalLibavoidGraph,
   libavoidPortAssignmentFromEdgeData,

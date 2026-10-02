@@ -13,7 +13,7 @@ function createEmptyGraphResult(): BuildGraphResult {
     tree: new Map(),
     edges: [],
     visibleGroupLayouts: {},
-    edgePortsById: new Map(),
+    edgesPorts: new Map(),
   };
 }
 

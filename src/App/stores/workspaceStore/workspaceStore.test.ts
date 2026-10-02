@@ -95,7 +95,7 @@ describe('useWorkspaceStore.reset', () => {
     expect(state.applicableRulesPanelPath).toBeNull();
     expect(state.userEdgeHighlights.size).toBe(0);
     expect(state.graphSettings).toEqual({ autoLayoutOnly: true, edgesType: 'bezier' });
-    expect(state.nodePositions).toBeNull();
+    expect(state.nodeLayouts).toBeNull();
     expect(state.folderBaseColors).toHaveProperty('src');
   });
 
@@ -120,7 +120,12 @@ describe('useWorkspaceStore.reset', () => {
     expect(state.activePath).toBeNull();
     expect(state.userEdgeHighlights.get(depKey)).toBe('#ff0000');
     expect(state.graphSettings).toEqual({ autoLayoutOnly: false, edgesType: 'straight' });
-    expect(state.nodePositions).toEqual({ '': { 'src/a.ts': { x: 1, y: 2 } } });
+    expect(state.nodeLayouts).toEqual({
+      '': {
+        id: '',
+        children: { 'src/a.ts': { id: 'src/a.ts', position: { x: 1, y: 2 } } },
+      },
+    });
     expect(state.folderBaseColors.src).toEqual({ hue: 10, lightnessIndex: 0 });
   });
 
@@ -146,10 +151,15 @@ describe('useWorkspaceStore.reset', () => {
       ]),
     );
     useWorkspaceStore.getState().setGraphSettings({ autoLayoutOnly: false, edgesType: 'simpleOrthogonal' });
-    useWorkspaceStore.getState().setNodePositions({
-      '': {
-        'src/a.ts': { x: 10, y: 20 },
-        'src/missing.ts': { x: 1, y: 1 },
+    useWorkspaceStore.setState({
+      nodeLayouts: {
+        '': {
+          id: '',
+          children: {
+            'src/a.ts': { id: 'src/a.ts', position: { x: 10, y: 20 } },
+            'src/missing.ts': { id: 'src/missing.ts', position: { x: 1, y: 1 } },
+          },
+        },
       },
     });
 
@@ -167,7 +177,14 @@ describe('useWorkspaceStore.reset', () => {
     expect(state.applicableRulesPanelPath).toBeNull();
     expect(state.userEdgeHighlights.size).toBe(0);
     expect(state.graphSettings.edgesType).toBe('simpleOrthogonal');
-    expect(state.nodePositions).toEqual({ '': { 'src/a.ts': { x: 10, y: 20 } } });
+    expect(state.nodeLayouts).toEqual({
+      '': {
+        id: '',
+        children: {
+          'src/a.ts': { id: 'src/a.ts', position: { x: 10, y: 20 } },
+        },
+      },
+    });
     expect(getCruiseSources(state.cruiseSnapshot).sort()).toEqual(['src/a.ts', 'src/c.test.ts'].slice().sort());
   });
 });
@@ -198,7 +215,7 @@ describe('useWorkspaceStore.syncWorkspaceSettings', () => {
     expect(state.applicableRulesPanelPath).toBe('src/b.ts');
     expect(state.activePath).toBeNull();
     expect(state.userEdgeHighlights.get(depKey)).toBe('#abcdef');
-    expect(state.nodePositions).toBeNull();
+    expect(state.nodeLayouts).toBeNull();
   });
 
   it('throws when cruiseResult is not loaded', () => {

@@ -39,6 +39,6 @@ export interface BuildGraphResult {
   edges: VisibleTreeEdge[];
   /** Group layouts collected from the visible laid-out tree (for cache merge). */
   visibleGroupLayouts: SerializedLayoutCache;
-  /** Frozen per-edge EAST/WEST ports assigned after layout (keyed by edge key). */
-  edgePortsById: Map<string, EdgePorts>;
+  /** Frozen per-edge EAST/WEST ports derived after layout (keyed by edge key). */
+  edgesPorts: Map<string, EdgePorts>;
 }

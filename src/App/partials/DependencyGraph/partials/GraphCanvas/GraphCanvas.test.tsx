@@ -72,14 +72,30 @@ vi.mock('./hooks', async importOriginal => {
   return {
     ...actual,
     useBuildGraph: () => buildGraphState,
-    useGraphLayoutNodes: () => ({
+    useLayoutCache: () => ({
+      layoutCacheRef: { current: new Map() },
+      nodeLayoutsRevision: 0,
+      commitRevision: 0,
+      getLayoutCache: vi.fn(),
+      requestRebuild: vi.fn(),
+      bumpCommitRevision: vi.fn(),
+    }),
+    useCustomPositionedGraph: () => ({
+      positionedNodes: new Map(),
+      routedEdges: [],
+      routingProgress: null,
+      hasUserLayout: false,
+      applyNodePositionToCache: vi.fn(),
+      getLayoutSnapshot: () => ({ nodeLayouts: {} }),
+      onAutoLayoutGroup: vi.fn(),
+      onAutoLayoutGroupRecursive: vi.fn(),
+      baseEdges: [],
+    }),
+    useReactFlowGraph: () => ({
       nodes: [],
       onNodesChange: vi.fn(),
       onNodeDrag: vi.fn(),
       onNodeDragStop: vi.fn(),
-      hasUserLayout: false,
-      getLayoutSnapshot: () => ({ nodeLayouts: {} }),
-      setLayoutSnapshot: vi.fn(),
     }),
     useHighlightedEdges: () => ({
       highlightedEdges: [],
@@ -91,10 +107,6 @@ vi.mock('./hooks', async importOriginal => {
     }),
     useAutoFitView: vi.fn(),
     useEdgeContextMenu: () => ({ onEdgeContextMenu: vi.fn(), edgeContextMenu: null }),
-    useLibavoidEdgeRouting: () => ({
-      routedEdges: [],
-      routingProgress: null,
-    }),
   };
 });
 

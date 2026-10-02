@@ -1,12 +1,13 @@
-import type { Edge, Node } from '@xyflow/react';
+import { indexTreeByKey } from '@/domain';
 
-import type { AvoidRoute } from '../../types';
+import type { AvoidRoute, ThinRoutingEdge, ThinRoutingNode } from '../../types';
 import { collectOverlappingEdgeIds } from './collectOverlappingEdgeIds';
 import { collectRoutingLevels, overlapGroupParentId } from './collectRoutingLevels';
 import { ensureLibavoidInit } from './ensureLibavoidInit';
 import { LIBAVOID_NEED_PROFILE } from './libavoidNeedProfile';
 import { LIBAVOID_ROUTING_OPTIONS, logLibavoidCall } from './libavoidRoutingOptions';
 import {
+  buildChildrenByParentFromThin,
   buildFlatLibavoidGraph,
   buildHierarchicalLibavoidGraph,
   resolveLibavoidPortAssignment,
@@ -19,9 +20,8 @@ import type { LibavoidRoutingProgress } from './types';
 export type { LibavoidRoutingPhase, LibavoidRoutingProgress } from './types';
 
 export interface RouteEdgesWithLibavoidInput {
-  nodes: readonly Node[];
-  edges: readonly Edge[];
-  parentByNode: ReadonlyMap<string, string | null>;
+  tree: readonly ThinRoutingNode[];
+  edges: readonly ThinRoutingEdge[];
   onProgress?: (progress: LibavoidRoutingProgress) => void;
 }
 
@@ -47,13 +47,13 @@ function createLibavoidProfiler(enabled: boolean) {
       marks.delete(label);
       totals.set(label, (totals.get(label) ?? 0) + (performance.now() - startedAt));
     },
-    log(meta: { obstacles: number; routedEdges: number; rfNodes: number; rfEdges: number; batchSize: number }) {
+    log(meta: { obstacles: number; routedEdges: number; nodes: number; edges: number; batchSize: number }) {
       if (!enabled) {
         return;
       }
       const lines = [...totals.entries()].map(([label, ms]) => `  ${label}: ${ms.toFixed(1)}ms`).join('\n');
       console.log(
-        `[libavoid] obstacles=${meta.obstacles} routedEdges=${meta.routedEdges} batchSize=${meta.batchSize} rfNodes=${meta.rfNodes} rfEdges=${meta.rfEdges}\n${lines}`,
+        `[libavoid] obstacles=${meta.obstacles} routedEdges=${meta.routedEdges} batchSize=${meta.batchSize} nodes=${meta.nodes} edges=${meta.edges}\n${lines}`,
       );
     },
   };
@@ -113,15 +113,15 @@ function reportProgress(
 
 async function routeFlatLevels(input: {
   levels: ReturnType<typeof collectRoutingLevels>;
-  nodes: readonly Node[];
-  parentByNode: ReadonlyMap<string, string | null>;
+  nodeByPath: ReadonlyMap<string, ThinRoutingNode>;
+  childrenByParent: ReadonlyMap<string | null, ThinRoutingNode[]>;
   ports: LibavoidPortAssignment;
   profiler: ReturnType<typeof createLibavoidProfiler>;
   primaryTotal: number;
   completedRef: { value: number };
   onProgress?: (progress: LibavoidRoutingProgress) => void;
 }): Promise<Map<string, AvoidRoute>> {
-  const { levels, nodes, parentByNode, ports, profiler, primaryTotal, completedRef, onProgress } = input;
+  const { levels, nodeByPath, childrenByParent, ports, profiler, primaryTotal, completedRef, onProgress } = input;
   const result = new Map<string, AvoidRoute>();
   let isFirst = true;
 
@@ -136,9 +136,9 @@ async function routeFlatLevels(input: {
 
     const graph = buildFlatLibavoidGraph({
       parentId: level.parentId,
-      nodes,
+      nodeByPath,
+      childrenByParent,
       edges: level.leafEdges,
-      parentByNode,
       ports,
     });
     const batchRoutes = await routeGraphBatch(graph, profiler, 'flatRoute');
@@ -152,15 +152,15 @@ async function routeFlatLevels(input: {
 
 async function routeHierarchicalLevels(input: {
   levels: ReturnType<typeof collectRoutingLevels>;
-  nodes: readonly Node[];
-  parentByNode: ReadonlyMap<string, string | null>;
+  nodeByPath: ReadonlyMap<string, ThinRoutingNode>;
+  childrenByParent: ReadonlyMap<string | null, ThinRoutingNode[]>;
   ports: LibavoidPortAssignment;
   profiler: ReturnType<typeof createLibavoidProfiler>;
   primaryTotal: number;
   completedRef: { value: number };
   onProgress?: (progress: LibavoidRoutingProgress) => void;
 }): Promise<Map<string, AvoidRoute>> {
-  const { levels, nodes, parentByNode, ports, profiler, primaryTotal, completedRef, onProgress } = input;
+  const { levels, nodeByPath, childrenByParent, ports, profiler, primaryTotal, completedRef, onProgress } = input;
   const result = new Map<string, AvoidRoute>();
   let isFirst = true;
 
@@ -179,9 +179,9 @@ async function routeHierarchicalLevels(input: {
       const batch = crossFolderEdges.slice(offset, offset + LIBAVOID_EDGE_BATCH_SIZE);
       const graph = buildHierarchicalLibavoidGraph({
         parentId,
-        nodes,
+        nodeByPath,
+        childrenByParent,
         edges: batch,
-        parentByNode,
         ports,
       });
       const batchRoutes = await routeGraphBatch(graph, profiler, 'hierarchicalRoute');
@@ -196,14 +196,14 @@ async function routeHierarchicalLevels(input: {
 
 async function routeOverlapGroups(input: {
   routes: Map<string, AvoidRoute>;
-  edges: readonly Edge[];
-  nodes: readonly Node[];
-  parentByNode: ReadonlyMap<string, string | null>;
+  edges: readonly ThinRoutingEdge[];
+  nodeByPath: ReadonlyMap<string, ThinRoutingNode>;
+  childrenByParent: ReadonlyMap<string | null, ThinRoutingNode[]>;
   ports: LibavoidPortAssignment;
   profiler: ReturnType<typeof createLibavoidProfiler>;
   onProgress?: (progress: LibavoidRoutingProgress) => void;
 }): Promise<void> {
-  const { routes, edges, nodes, parentByNode, ports, profiler, onProgress } = input;
+  const { routes, edges, nodeByPath, childrenByParent, ports, profiler, onProgress } = input;
   const edgeById = new Map(edges.map(edge => [edge.id, edge]));
   const groups = collectOverlappingEdgeIds(routes);
   const overlapEdges = groups.flatMap(group =>
@@ -239,12 +239,12 @@ async function routeOverlapGroups(input: {
 
       const batch = groupEdges.slice(offset, offset + LIBAVOID_EDGE_BATCH_SIZE);
       const batchIds = batch.map(edge => edge.id);
-      const parentId = overlapGroupParentId(batchIds, edgeById, parentByNode);
+      const parentId = overlapGroupParentId(batchIds, edgeById, nodeByPath);
       const graph = buildHierarchicalLibavoidGraph({
         parentId,
-        nodes,
+        nodeByPath,
+        childrenByParent,
         edges: batch,
-        parentByNode,
         ports,
       });
       const batchRoutes = await routeGraphBatch(graph, profiler, 'overlapRoute');
@@ -256,30 +256,33 @@ async function routeOverlapGroups(input: {
 }
 
 /**
- * Routes RF edges with the optimized multi-pass algorithm:
- * global ports → flat leaf edges per folder → hierarchical cross-folder per folder →
+ * Routes thin edges with the optimized multi-pass algorithm over an enriched visible tree:
+ * flatten → Map, global ports → flat leaf edges → hierarchical cross-folder →
  * overlap-group hierarchical re-route. Reports primary then overlap progress phases.
  * Returns absolute canvas routes keyed by edge id.
  */
 export async function routeEdgesWithLibavoid(input: RouteEdgesWithLibavoidInput): Promise<Map<string, AvoidRoute>> {
-  const { nodes, edges, parentByNode, onProgress } = input;
+  const { tree, edges, onProgress } = input;
   const profiler = createLibavoidProfiler(LIBAVOID_NEED_PROFILE);
   profiler.start('total');
 
-  if (nodes.length === 0 || edges.length === 0) {
+  const nodeByPath = indexTreeByKey(tree, node => node.path);
+  const nodeCount = nodeByPath.size;
+
+  if (nodeCount === 0 || edges.length === 0) {
     profiler.end('total');
     profiler.log({
       obstacles: 0,
       routedEdges: 0,
-      rfNodes: nodes.length,
-      rfEdges: edges.length,
+      nodes: nodeCount,
+      edges: edges.length,
       batchSize: LIBAVOID_EDGE_BATCH_SIZE,
     });
     return new Map();
   }
 
   profiler.start('collectLevels');
-  const levels = collectRoutingLevels(nodes, edges, parentByNode);
+  const levels = collectRoutingLevels(nodeByPath, edges);
   profiler.end('collectLevels');
 
   const primaryTotal = levels.reduce(
@@ -289,18 +292,20 @@ export async function routeEdgesWithLibavoid(input: RouteEdgesWithLibavoidInput)
   if (primaryTotal === 0) {
     profiler.end('total');
     profiler.log({
-      obstacles: nodes.length,
+      obstacles: nodeCount,
       routedEdges: 0,
-      rfNodes: nodes.length,
-      rfEdges: edges.length,
+      nodes: nodeCount,
+      edges: edges.length,
       batchSize: LIBAVOID_EDGE_BATCH_SIZE,
     });
     return new Map();
   }
 
   profiler.start('assignPorts');
-  const ports = resolveLibavoidPortAssignment(nodes, edges, parentByNode);
+  const ports = resolveLibavoidPortAssignment(nodeByPath, edges);
   profiler.end('assignPorts');
+
+  const childrenByParent = buildChildrenByParentFromThin(nodeByPath);
 
   profiler.start('init');
   await ensureLibavoidInit();
@@ -315,8 +320,8 @@ export async function routeEdgesWithLibavoid(input: RouteEdgesWithLibavoidInput)
     result,
     await routeFlatLevels({
       levels,
-      nodes,
-      parentByNode,
+      nodeByPath,
+      childrenByParent,
       ports,
       profiler,
       primaryTotal,
@@ -328,8 +333,8 @@ export async function routeEdgesWithLibavoid(input: RouteEdgesWithLibavoidInput)
     result,
     await routeHierarchicalLevels({
       levels,
-      nodes,
-      parentByNode,
+      nodeByPath,
+      childrenByParent,
       ports,
       profiler,
       primaryTotal,
@@ -339,15 +344,23 @@ export async function routeEdgesWithLibavoid(input: RouteEdgesWithLibavoidInput)
   );
 
   profiler.start('overlapPass');
-  await routeOverlapGroups({ routes: result, edges, nodes, parentByNode, ports, profiler, onProgress });
+  await routeOverlapGroups({
+    routes: result,
+    edges,
+    nodeByPath,
+    childrenByParent,
+    ports,
+    profiler,
+    onProgress,
+  });
   profiler.end('overlapPass');
 
   profiler.end('total');
   profiler.log({
-    obstacles: nodes.length,
+    obstacles: nodeCount,
     routedEdges: result.size,
-    rfNodes: nodes.length,
-    rfEdges: edges.length,
+    nodes: nodeCount,
+    edges: edges.length,
     batchSize: LIBAVOID_EDGE_BATCH_SIZE,
   });
 

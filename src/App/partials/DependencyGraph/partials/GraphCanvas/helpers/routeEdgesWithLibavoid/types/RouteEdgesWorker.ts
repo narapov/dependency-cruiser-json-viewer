@@ -1,31 +1,16 @@
-import type { Edge, Node } from '@xyflow/react';
-
-import type { AvoidRoute, EdgePort } from '../../../types';
+import type { AvoidRoute, ThinRoutingEdge, ThinRoutingNode, VisibleTreeLayoutedNode } from '../../../types';
 import type { LibavoidRoutingProgress } from './LibavoidRoutingProgress';
 
-/** Serializable node geometry for the libavoid worker. */
-export interface RouteEdgesWorkerNode {
-  id: string;
-  type?: string;
+/** Live geometry overlay applied when projecting the layouted tree for the worker. */
+export interface RoutingNodeGeometry {
   position: { x: number; y: number };
-  width?: number | null;
-  height?: number | null;
-  parentId?: string | null;
-}
-
-/** Serializable edge endpoints for the libavoid worker. */
-export interface RouteEdgesWorkerEdge {
-  id: string;
-  source: string;
-  target: string;
-  sourcePort?: EdgePort;
-  targetPort?: EdgePort;
+  width: number;
+  height: number;
 }
 
 export interface RouteEdgesWorkerRequest {
-  nodes: RouteEdgesWorkerNode[];
-  edges: RouteEdgesWorkerEdge[];
-  parentByNode: Array<[string, string | null]>;
+  tree: ThinRoutingNode[];
+  edges: ThinRoutingEdge[];
 }
 
 export type RouteEdgesWorkerResponse =
@@ -33,62 +18,41 @@ export type RouteEdgesWorkerResponse =
   | { ok: true; type: 'result'; routes: Array<[string, AvoidRoute]> }
   | { ok: false; message: string };
 
-/** Builds a structured-clone-friendly request from React Flow graph state. */
-export function toRouteEdgesWorkerRequest(input: {
-  nodes: readonly Node[];
-  edges: readonly Edge[];
-  parentByNode: ReadonlyMap<string, string | null>;
-}): RouteEdgesWorkerRequest {
-  const { nodes, edges, parentByNode } = input;
+/** Project a layouted node to a thin worker DTO, applying optional live geometry. */
+function toThinRoutingNode(
+  node: VisibleTreeLayoutedNode,
+  geometryByPath?: ReadonlyMap<string, RoutingNodeGeometry>,
+): ThinRoutingNode {
+  const geometry = geometryByPath?.get(node.path);
 
   return {
-    nodes: nodes.map(node => ({
-      id: node.id,
-      type: node.type,
-      position: { ...node.position },
-      width: node.width,
-      height: node.height,
-      parentId: node.parentId ?? null,
-    })),
-    edges: edges.map(edge => {
-      const data = edge.data as { sourcePort?: EdgePort; targetPort?: EdgePort } | undefined;
-      return {
-        id: edge.id,
-        source: edge.source,
-        target: edge.target,
-        ...(data?.sourcePort ? { sourcePort: data.sourcePort } : {}),
-        ...(data?.targetPort ? { targetPort: data.targetPort } : {}),
-      };
-    }),
-    parentByNode: [...parentByNode.entries()],
+    path: node.path,
+    ancestors: [...node.ancestors],
+    descendants: [...node.descendants],
+    position: geometry ? { x: geometry.position.x, y: geometry.position.y } : { ...node.position },
+    width: geometry?.width ?? node.width,
+    height: geometry?.height ?? node.height,
+    ...(node.children ? { children: node.children.map(child => toThinRoutingNode(child, geometryByPath)) } : {}),
   };
 }
 
-/** Reconstructs RF-like nodes/edges for `routeEdgesWithLibavoid` inside the worker. */
-export function fromRouteEdgesWorkerRequest(request: RouteEdgesWorkerRequest): {
-  nodes: Node[];
-  edges: Edge[];
-  parentByNode: Map<string, string | null>;
-} {
+/**
+ * Builds a structured-clone-friendly worker request from the layouted tree + thin edges.
+ * Narrows to {@link ThinRoutingNode} and applies live geometry in a single walk.
+ */
+export function toRouteEdgesWorkerRequest(input: {
+  tree: readonly VisibleTreeLayoutedNode[];
+  edges: readonly ThinRoutingEdge[];
+  geometryByPath?: ReadonlyMap<string, RoutingNodeGeometry>;
+}): RouteEdgesWorkerRequest {
   return {
-    nodes: request.nodes.map(node => ({
-      id: node.id,
-      type: node.type,
-      position: node.position,
-      data: {},
-      width: node.width ?? undefined,
-      height: node.height ?? undefined,
-      parentId: node.parentId ?? undefined,
-    })),
-    edges: request.edges.map(edge => ({
+    tree: input.tree.map(node => toThinRoutingNode(node, input.geometryByPath)),
+    edges: input.edges.map(edge => ({
       id: edge.id,
       source: edge.source,
       target: edge.target,
-      data: {
-        ...(edge.sourcePort ? { sourcePort: edge.sourcePort } : {}),
-        ...(edge.targetPort ? { targetPort: edge.targetPort } : {}),
-      },
+      ...(edge.sourcePort ? { sourcePort: { ...edge.sourcePort } } : {}),
+      ...(edge.targetPort ? { targetPort: { ...edge.targetPort } } : {}),
     })),
-    parentByNode: new Map(request.parentByNode),
   };
 }

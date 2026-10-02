@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent, type Ref } from 'react';
+import { useState, type MouseEvent as ReactMouseEvent, type Ref } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Alert from '@mui/material/Alert';
@@ -14,20 +14,20 @@ import '@xyflow/react/dist/style.css';
 import { useResolvedColorMode } from '@/Shared';
 
 import { useWorkspaceStore } from '../../../../stores/workspaceStore';
-import type { DependencyGraphHandle, SerializedLayoutCache } from '../../types';
-import { getMinimapNodeColor, serializeLayoutCache, toReactFlowEdges, type LayoutCache } from './helpers';
+import type { DependencyGraphHandle } from '../../types';
+import { getMinimapNodeColor } from './helpers';
 import {
-  useApplyWorkspaceLayout,
   useAutoFitView,
   useBuildGraph,
   useClearGraphMarkersOnEmptySelection,
+  useCustomPositionedGraph,
   useDependencyGraphImperativeRef,
   useEdgeContextMenu,
-  useGraphLayoutNodes,
   useGraphWorkspaceActions,
   useHighlightedEdges,
-  useLibavoidEdgeRouting,
+  useLayoutCache,
   usePendingFocusNode,
+  useReactFlowGraph,
   useThemedFolderColors,
 } from './hooks';
 import { DependencyEdge } from './partials/DependencyEdge';
@@ -73,11 +73,7 @@ export function GraphCanvas(props: GraphCanvasProps) {
   const setUserEdgeHighlights = useWorkspaceStore(state => state.setUserEdgeHighlights);
   const clearAllHighlights = useWorkspaceStore(state => state.clearAllHighlights);
   const graphSettings = useWorkspaceStore(state => state.graphSettings);
-  const setGraphSettings = useWorkspaceStore(state => state.setGraphSettings);
-  const nodePositions = useWorkspaceStore(state => state.nodePositions);
-  const setNodePositions = useWorkspaceStore(state => state.setNodePositions);
   const nodeLayouts = useWorkspaceStore(state => state.nodeLayouts);
-  const setNodeLayouts = useWorkspaceStore(state => state.setNodeLayouts);
 
   const { activatePath } = useGraphWorkspaceActions();
 
@@ -89,89 +85,59 @@ export function GraphCanvas(props: GraphCanvasProps) {
 
   const { autoLayoutOnly, edgesType } = graphSettings;
 
-  const layoutCacheRef = useRef<LayoutCache>(new Map());
-  const [layoutRevision, setLayoutRevision] = useState(0);
+  const [isNodeDragging, setIsNodeDragging] = useState(false);
 
-  const getLayoutCache = useCallback((): SerializedLayoutCache | undefined => {
-    if (autoLayoutOnly) {
-      return undefined;
-    }
-    return serializeLayoutCache(layoutCacheRef.current);
-  }, [autoLayoutOnly]);
-
-  const requestRebuild = useCallback(() => {
-    setLayoutRevision(revision => revision + 1);
-  }, []);
+  const { layoutCacheRef, nodeLayoutsRevision, commitRevision, getLayoutCache, requestRebuild, bumpCommitRevision } =
+    useLayoutCache({
+      autoLayoutOnly,
+      nodeLayouts,
+    });
 
   const { graphResult, isBuildingGraph, buildFailed, clearBuildFailed } = useBuildGraph({
     cruiseSnapshot,
     selectedFilePaths,
     visibleTree,
     getLayoutCache,
-    layoutRevision,
+    layoutRevision: nodeLayoutsRevision,
+  });
+
+  const {
+    routedEdges,
+    routingProgress,
+    hasUserLayout,
+    applyNodePositionToCache,
+    getLayoutSnapshot,
+    onAutoLayoutGroup,
+    onAutoLayoutGroupRecursive,
+    positionedNodes,
+    baseEdges,
+  } = useCustomPositionedGraph({
+    graphResult,
+    layoutCacheRef,
+    commitRevision,
+    nodeLayoutsRevision,
+    edgesType,
+    isDragging: isNodeDragging,
+    autoLayoutOnly,
+    bumpCommitRevision,
+    onRequestRebuild: requestRebuild,
   });
 
   const {
     nodes: layoutNodes,
-    parentByNode,
     onNodesChange,
     onNodeDrag,
     onNodeDragStop,
-    hasUserLayout,
-    getLayoutSnapshot,
-    setLayoutSnapshot,
-    onAutoLayoutGroup,
-    onAutoLayoutGroupRecursive,
-  } = useGraphLayoutNodes({
-    graphResult,
+  } = useReactFlowGraph({
+    positionedNodes,
     cruiseSnapshot,
     folderColors,
-    layoutCacheRef,
     autoLayoutOnly,
-    onRequestRebuild: requestRebuild,
-  });
-
-  const [isNodeDragging, setIsNodeDragging] = useState(false);
-
-  const handleNodeDrag = useCallback(
-    (...args: Parameters<typeof onNodeDrag>) => {
-      setIsNodeDragging(true);
-      onNodeDrag(...args);
-    },
-    [onNodeDrag],
-  );
-
-  const handleNodeDragStop = useCallback(
-    (...args: Parameters<typeof onNodeDragStop>) => {
-      setIsNodeDragging(false);
-      onNodeDragStop(...args);
-    },
-    [onNodeDragStop],
-  );
-
-  useApplyWorkspaceLayout({
-    autoLayoutOnly,
-    nodeLayouts,
-    nodePositions,
-    layoutCacheRef,
-    setLayoutSnapshot,
-    requestRebuild,
+    applyNodePositionToCache,
+    setIsDragging: setIsNodeDragging,
   });
 
   useClearGraphMarkersOnEmptySelection();
-
-  const baseEdges = useMemo(
-    () => toReactFlowEdges(graphResult.edges, graphResult.edgePortsById),
-    [graphResult.edges, graphResult.edgePortsById],
-  );
-
-  const { routedEdges, routingProgress } = useLibavoidEdgeRouting({
-    edgesType,
-    nodes: layoutNodes,
-    edges: baseEdges,
-    parentByNode,
-    isDragging: isNodeDragging,
-  });
 
   const { highlightedEdges, getEdgeHighlight, setUserEdgeHighlight, onEdgeClick, selectEdge, clearSelectedEdge } =
     useHighlightedEdges({
@@ -210,10 +176,6 @@ export function GraphCanvas(props: GraphCanvasProps) {
     autoLayoutOnly,
     edgesType,
     getLayoutSnapshot,
-    setLayoutSnapshot,
-    setGraphSettings,
-    setNodePositions,
-    setNodeLayouts,
     openEdgesTypePicker,
   });
 
@@ -257,8 +219,8 @@ export function GraphCanvas(props: GraphCanvasProps) {
           onNodeContextMenu={onPaneContextMenu}
           onEdgeContextMenu={onEdgeContextMenu}
           onNodesChange={onNodesChange}
-          onNodeDrag={autoLayoutOnly ? undefined : handleNodeDrag}
-          onNodeDragStop={autoLayoutOnly ? undefined : handleNodeDragStop}
+          onNodeDrag={autoLayoutOnly ? undefined : onNodeDrag}
+          onNodeDragStop={autoLayoutOnly ? undefined : onNodeDragStop}
           nodesDraggable={!autoLayoutOnly}
           minZoom={0.01}
           maxZoom={20}

@@ -21,6 +21,8 @@ function stubLayoutNode(id: string): Node {
 function stubTreeNode(path: string): VisibleTreeLayoutedNode {
   return {
     path,
+    ancestors: [],
+    descendants: [],
     valueCircular: false,
     typeOnlyCircular: false,
     position: { x: 0, y: 0 },
@@ -35,7 +37,7 @@ function emptyGraphResult(overrides: Partial<BuildGraphResult> = {}): BuildGraph
     tree: new Map(),
     edges: [],
     visibleGroupLayouts: {},
-    edgePortsById: new Map(),
+    edgesPorts: new Map(),
     ...overrides,
   };
 }
@@ -47,7 +49,7 @@ function graphResultWith(...paths: string[]): BuildGraphResult {
     tree: new Map(rootNodes.map(node => [node.path, node])),
     edges: [],
     visibleGroupLayouts: {},
-    edgePortsById: new Map(),
+    edgesPorts: new Map(),
   };
 }
 

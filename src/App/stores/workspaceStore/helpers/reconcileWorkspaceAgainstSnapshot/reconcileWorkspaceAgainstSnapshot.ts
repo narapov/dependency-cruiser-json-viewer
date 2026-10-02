@@ -10,7 +10,6 @@ import {
 
 import { defaultFolderColorsRecord } from '../../../../helpers';
 import type { WorkspaceOwnState } from '../../types';
-import { pruneNodePositions } from '../pruneNodePositions';
 import { prunePresenceRecord } from '../prunePresenceRecord';
 
 export interface ReconcileWorkspaceAgainstSnapshotInput {
@@ -82,12 +81,9 @@ export function reconcileWorkspaceAgainstSnapshot({
     }
   }
 
-  const nodePositions = pruneNodePositions(previous.nodePositions, sources);
   const nodeLayouts = pruneNodeLayouts(previous.nodeLayouts, sources);
-  const hadLayouts =
-    (previous.nodeLayouts && Object.keys(previous.nodeLayouts).length > 0) ||
-    (previous.nodePositions && Object.keys(previous.nodePositions).length > 0);
-  const layoutsGone = !nodeLayouts && !nodePositions;
+  const hadLayouts = previous.nodeLayouts && Object.keys(previous.nodeLayouts).length > 0;
+  const layoutsGone = !nodeLayouts;
   const autoLayoutOnly = hadLayouts && layoutsGone ? true : previous.graphSettings.autoLayoutOnly;
 
   return {
@@ -121,7 +117,6 @@ export function reconcileWorkspaceAgainstSnapshot({
       autoLayoutOnly,
       edgesType: previous.graphSettings.edgesType,
     },
-    nodePositions,
     nodeLayouts,
   };
 }

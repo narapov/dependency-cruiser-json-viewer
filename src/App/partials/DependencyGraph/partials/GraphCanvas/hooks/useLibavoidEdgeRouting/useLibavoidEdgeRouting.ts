@@ -1,18 +1,20 @@
 import { useEffect, useRef, useState } from 'react';
 
-import type { Edge, Node } from '@xyflow/react';
+import type { Edge } from '@xyflow/react';
 
 import type { GraphEdgesType } from '@/domain';
 
 import { mergeAvoidRoutes, type LibavoidRoutingProgress } from '../../helpers';
 import { runRouteEdgesInWorker, type RouteEdgesWorkerSession } from '../../helpers/routeEdgesWorker';
-import type { AvoidRoute } from '../../types';
+import type { AvoidRoute, DependencyEdgeData, ThinRoutingEdge, VisibleTreeLayoutedNode } from '../../types';
 
 interface UseLibavoidEdgeRoutingInput {
   edgesType: GraphEdgesType;
-  nodes: readonly Node[];
+  /** Layouted visible-tree roots from buildGraph (source of truth for routing hierarchy). */
+  layoutedTree: readonly VisibleTreeLayoutedNode[];
+  /** Live custom-positioned nodes — geometry overlay at the worker boundary. */
+  positionedNodes: ReadonlyMap<string, VisibleTreeLayoutedNode>;
   edges: readonly Edge[];
-  parentByNode: ReadonlyMap<string, string | null>;
   isDragging: boolean;
 }
 
@@ -21,12 +23,38 @@ interface UseLibavoidEdgeRoutingResult {
   routingProgress: LibavoidRoutingProgress | null;
 }
 
+/** Build thin routing edges from RF edges (ports from edge data). */
+function toThinRoutingEdges(edges: readonly Edge[]): ThinRoutingEdge[] {
+  return edges.map(edge => {
+    const data = edge.data as DependencyEdgeData | undefined;
+    return {
+      id: edge.id,
+      source: edge.source,
+      target: edge.target,
+      ...(data?.sourcePort ? { sourcePort: data.sourcePort } : {}),
+      ...(data?.targetPort ? { targetPort: data.targetPort } : {}),
+    };
+  });
+}
+
+/** Geometry overlay from live positioned nodes onto the layouted tree at the worker boundary. */
+function geometryByPathFromPositionedNodes(
+  positionedNodes: ReadonlyMap<string, VisibleTreeLayoutedNode>,
+): Map<string, { position: { x: number; y: number }; width: number; height: number }> {
+  return new Map(
+    [...positionedNodes.entries()].map(([path, node]) => [
+      path,
+      { position: { ...node.position }, width: node.width, height: node.height },
+    ]),
+  );
+}
+
 /**
  * Schedules libavoid routing in a worker when edgesType is libavoidOrthogonal.
  * Clears routes during drag / in-flight; applies routes when the generation is still current.
  */
 export function useLibavoidEdgeRouting(config: UseLibavoidEdgeRoutingInput): UseLibavoidEdgeRoutingResult {
-  const { edgesType, nodes, edges, parentByNode, isDragging } = config;
+  const { edgesType, layoutedTree, positionedNodes, edges, isDragging } = config;
 
   const [avoidRoutes, setAvoidRoutes] = useState<Map<string, AvoidRoute>>(() => new Map());
   const [routingProgress, setRoutingProgress] = useState<LibavoidRoutingProgress | null>(null);
@@ -49,7 +77,7 @@ export function useLibavoidEdgeRouting(config: UseLibavoidEdgeRoutingInput): Use
       return;
     }
 
-    if (nodes.length === 0 || edges.length === 0) {
+    if (layoutedTree.length === 0 || edges.length === 0) {
       setAvoidRoutes(new Map());
       setRoutingProgress(null);
       return;
@@ -59,10 +87,12 @@ export function useLibavoidEdgeRouting(config: UseLibavoidEdgeRoutingInput): Use
     setAvoidRoutes(new Map());
     setRoutingProgress({ phase: 'primary', completed: 0, total: Math.max(edges.length, 1) });
 
+    const thinEdges = toThinRoutingEdges(edges);
+
     const session = runRouteEdgesInWorker({
-      nodes,
-      edges,
-      parentByNode,
+      tree: layoutedTree,
+      edges: thinEdges,
+      geometryByPath: geometryByPathFromPositionedNodes(positionedNodes),
       onProgress: progress => {
         if (generation !== generationRef.current) {
           return;
@@ -94,7 +124,7 @@ export function useLibavoidEdgeRouting(config: UseLibavoidEdgeRoutingInput): Use
         sessionRef.current = null;
       }
     };
-  }, [routingActive, nodes, edges, parentByNode]);
+  }, [routingActive, layoutedTree, positionedNodes, edges]);
 
   const routedEdges: Edge[] = routingActive && avoidRoutes.size > 0 ? mergeAvoidRoutes(edges, avoidRoutes) : [...edges];
 

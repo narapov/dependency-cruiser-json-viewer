@@ -1,13 +1,14 @@
 import './elkDocumentShim';
 
 import { routeEdgesWithLibavoid } from './routeEdgesWithLibavoid';
-import { fromRouteEdgesWorkerRequest, type RouteEdgesWorkerRequest, type RouteEdgesWorkerResponse } from './types';
+import type { RouteEdgesWorkerRequest, RouteEdgesWorkerResponse } from './types';
 
 self.onmessage = (event: MessageEvent<RouteEdgesWorkerRequest>) => {
   const request = event.data;
 
   void routeEdgesWithLibavoid({
-    ...fromRouteEdgesWorkerRequest(request),
+    tree: request.tree,
+    edges: request.edges,
     onProgress: progress => {
       const response: RouteEdgesWorkerResponse = { ok: true, type: 'progress', progress };
       self.postMessage(response);

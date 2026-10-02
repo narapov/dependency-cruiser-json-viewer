@@ -1,7 +1,4 @@
-import type { Edge, Node } from '@xyflow/react';
-
-import type { DependencyEdgeData } from '../../../types';
-import { getAbsoluteNodePosition, getNodeSize } from '../../graphLayoutCache';
+import type { ThinRoutingEdge, ThinRoutingNode } from '../../../types';
 
 export interface LibavoidPort {
   id: string;
@@ -54,16 +51,30 @@ function portY(index: number, count: number, height: number): number {
   return ((index + 1) / (count + 1)) * height;
 }
 
+/** Absolute canvas position from relative geometry + ancestors (nearest → root). */
+export function absolutePositionFromThin(
+  node: ThinRoutingNode,
+  nodeByPath: ReadonlyMap<string, ThinRoutingNode>,
+): { x: number; y: number } {
+  return node.ancestors.reduce(
+    (pos, ancestorPath) => {
+      const ancestor = nodeByPath.get(ancestorPath);
+      return ancestor ? { x: pos.x + ancestor.position.x, y: pos.y + ancestor.position.y } : pos;
+    },
+    { x: node.position.x, y: node.position.y },
+  );
+}
+
 /**
  * Assigns port indices so slots run top-to-bottom by the opposite endpoint's absolute center Y.
  * Incoming (WEST) edges sort by source Y; outgoing (EAST) by target Y.
  */
 function assignPortIndicesByOppositeY(
-  routedEdges: readonly Edge[],
+  routedEdges: readonly ThinRoutingEdge[],
   centerById: ReadonlyMap<string, AbsoluteCenter>,
 ): { eastIndexByEdgeId: Map<string, number>; westIndexByEdgeId: Map<string, number> } {
-  const outgoingBySource = new Map<string, Edge[]>();
-  const incomingByTarget = new Map<string, Edge[]>();
+  const outgoingBySource = new Map<string, ThinRoutingEdge[]>();
+  const incomingByTarget = new Map<string, ThinRoutingEdge[]>();
 
   routedEdges.forEach(edge => {
     const outgoing = outgoingBySource.get(edge.source);
@@ -136,13 +147,14 @@ function buildPorts(
   ];
 }
 
-function buildChildrenByParent(
-  nodes: readonly Node[],
-  parentByNode: ReadonlyMap<string, string | null>,
-): Map<string | null, Node[]> {
-  const childrenByParent = new Map<string | null, Node[]>();
-  nodes.forEach(node => {
-    const parentId = parentByNode.get(node.id) ?? null;
+/** Build children-by-parent index from enriched ancestors (session-local). */
+export function buildChildrenByParentFromThin(
+  nodeByPath: ReadonlyMap<string, ThinRoutingNode>,
+): Map<string | null, ThinRoutingNode[]> {
+  const childrenByParent = new Map<string | null, ThinRoutingNode[]>();
+
+  nodeByPath.forEach(node => {
+    const parentId = node.ancestors[0] ?? null;
     const siblings = childrenByParent.get(parentId);
     if (siblings) {
       siblings.push(node);
@@ -150,44 +162,27 @@ function buildChildrenByParent(
       childrenByParent.set(parentId, [node]);
     }
   });
+
   childrenByParent.forEach(siblings => {
-    siblings.sort((a, b) => a.id.localeCompare(b.id));
+    siblings.sort((a, b) => a.path.localeCompare(b.path));
   });
+
   return childrenByParent;
 }
 
-function collectEdgeEndpoints(edges: readonly Edge[]): Set<string> {
+function collectEdgeEndpoints(edges: readonly ThinRoutingEdge[]): Set<string> {
   return new Set(edges.flatMap(edge => [edge.source, edge.target]));
 }
 
-/**
- * Memoized: whether `nodeId` or any descendant is an edge endpoint for the current batch.
- * Used to collapse folderGroups whose interiors are irrelevant to routing.
- */
-function createSubtreeContainsEndpoint(
-  endpoints: ReadonlySet<string>,
-  childrenByParent: ReadonlyMap<string | null, Node[]>,
-): (nodeId: string) => boolean {
-  const cache = new Map<string, boolean>();
-
-  const contains = (nodeId: string): boolean => {
-    const cached = cache.get(nodeId);
-    if (cached !== undefined) {
-      return cached;
-    }
-    if (endpoints.has(nodeId)) {
-      cache.set(nodeId, true);
-      return true;
-    }
-    const result = (childrenByParent.get(nodeId) ?? []).some(child => contains(child.id));
-    cache.set(nodeId, result);
-    return result;
-  };
-
-  return contains;
+/** Whether this folder path or any descendant is an edge endpoint (uses precomputed descendants). */
+function subtreeContainsEndpoint(node: ThinRoutingNode, endpoints: ReadonlySet<string>): boolean {
+  if (endpoints.has(node.path)) {
+    return true;
+  }
+  return node.descendants.some(path => endpoints.has(path));
 }
 
-function edgesWithAssignedPorts(edges: readonly Edge[], ports: LibavoidPortAssignment): LibavoidElkEdge[] {
+function edgesWithAssignedPorts(edges: readonly ThinRoutingEdge[], ports: LibavoidPortAssignment): LibavoidElkEdge[] {
   return edges.map(edge => ({
     id: edge.id,
     source: edge.source,
@@ -198,19 +193,18 @@ function edgesWithAssignedPorts(edges: readonly Edge[], ports: LibavoidPortAssig
 }
 
 /**
- * Builds a libavoid port assignment from build-time ports on edge data.
+ * Builds a libavoid port assignment from frozen ports on thin edges.
  * Returns `null` when any edge is missing source/target ports (caller should re-assign).
  */
-export function libavoidPortAssignmentFromEdgeData(edges: readonly Edge[]): LibavoidPortAssignment | null {
+export function libavoidPortAssignmentFromEdgeData(edges: readonly ThinRoutingEdge[]): LibavoidPortAssignment | null {
   const eastIndexByEdgeId = new Map<string, number>();
   const westIndexByEdgeId = new Map<string, number>();
   const eastPortCount = new Map<string, number>();
   const westPortCount = new Map<string, number>();
 
   for (const edge of edges) {
-    const data = edge.data as DependencyEdgeData | undefined;
-    const sourcePort = data?.sourcePort;
-    const targetPort = data?.targetPort;
+    const sourcePort = edge.sourcePort;
+    const targetPort = edge.targetPort;
     if (!sourcePort || !targetPort || sourcePort.side !== 'east' || targetPort.side !== 'west') {
       return null;
     }
@@ -229,24 +223,19 @@ export function libavoidPortAssignmentFromEdgeData(edges: readonly Edge[]): Liba
  * Port slots are ordered top-to-bottom by the opposite node's absolute center Y.
  */
 export function assignLibavoidPorts(
-  nodes: readonly Node[],
-  edges: readonly Edge[],
-  parentByNode: ReadonlyMap<string, string | null>,
+  nodeByPath: ReadonlyMap<string, ThinRoutingNode>,
+  edges: readonly ThinRoutingEdge[],
 ): LibavoidPortAssignment {
-  const nodeById = new Map(nodes.map(node => [node.id, node]));
-  const nodeIds = new Set(nodeById.keys());
-
   const centerById = new Map<string, AbsoluteCenter>();
-  nodes.forEach(node => {
-    const size = getNodeSize(node);
-    const absolute = getAbsoluteNodePosition(node.id, nodeById, parentByNode);
-    centerById.set(node.id, {
-      id: node.id,
-      centerY: absolute.y + size.height / 2,
+  nodeByPath.forEach(node => {
+    const absolute = absolutePositionFromThin(node, nodeByPath);
+    centerById.set(node.path, {
+      id: node.path,
+      centerY: absolute.y + node.height / 2,
     });
   });
 
-  const routedEdges = edges.filter(edge => nodeIds.has(edge.source) && nodeIds.has(edge.target));
+  const routedEdges = edges.filter(edge => nodeByPath.has(edge.source) && nodeByPath.has(edge.target));
   const { eastIndexByEdgeId, westIndexByEdgeId } = assignPortIndicesByOppositeY(routedEdges, centerById);
 
   const eastPortCount = new Map<string, number>();
@@ -262,44 +251,41 @@ export function assignLibavoidPorts(
 }
 
 /**
- * Prefers build-time edge ports when every edge carries them; otherwise assigns at route time.
+ * Prefers frozen thin-edge ports when every edge carries them; otherwise assigns at route time.
  */
 export function resolveLibavoidPortAssignment(
-  nodes: readonly Node[],
-  edges: readonly Edge[],
-  parentByNode: ReadonlyMap<string, string | null>,
+  nodeByPath: ReadonlyMap<string, ThinRoutingNode>,
+  edges: readonly ThinRoutingEdge[],
 ): LibavoidPortAssignment {
-  return libavoidPortAssignmentFromEdgeData(edges) ?? assignLibavoidPorts(nodes, edges, parentByNode);
+  return libavoidPortAssignmentFromEdgeData(edges) ?? assignLibavoidPorts(nodeByPath, edges);
 }
 
 /**
- * Flat one-level graph for a folder: direct children as opaque boxes (folderGroup without nested children).
+ * Flat one-level graph for a folder: direct children as opaque boxes.
  * Positions are absolute canvas coords so returned routes match RF space.
  */
 export function buildFlatLibavoidGraph(input: {
   parentId: string | null;
-  nodes: readonly Node[];
-  edges: readonly Edge[];
-  parentByNode: ReadonlyMap<string, string | null>;
+  nodeByPath: ReadonlyMap<string, ThinRoutingNode>;
+  childrenByParent: ReadonlyMap<string | null, ThinRoutingNode[]>;
+  edges: readonly ThinRoutingEdge[];
   ports: LibavoidPortAssignment;
 }): LibavoidElkGraph {
-  const { parentId, nodes, edges, parentByNode, ports } = input;
-  const nodeById = new Map(nodes.map(node => [node.id, node]));
-  const children = nodes.filter(node => (parentByNode.get(node.id) ?? null) === parentId);
+  const { parentId, nodeByPath, childrenByParent, edges, ports } = input;
+  const children = childrenByParent.get(parentId) ?? [];
 
   const elkChildren = children.map(node => {
-    const size = getNodeSize(node);
-    const absolute = getAbsoluteNodePosition(node.id, nodeById, parentByNode);
-    const eastCount = ports.eastPortCount.get(node.id) ?? 0;
-    const westCount = ports.westPortCount.get(node.id) ?? 0;
-    const nodePorts = buildPorts(node.id, size.width, size.height, eastCount, westCount);
+    const absolute = absolutePositionFromThin(node, nodeByPath);
+    const eastCount = ports.eastPortCount.get(node.path) ?? 0;
+    const westCount = ports.westPortCount.get(node.path) ?? 0;
+    const nodePorts = buildPorts(node.path, node.width, node.height, eastCount, westCount);
 
     return {
-      id: node.id,
+      id: node.path,
       x: absolute.x,
       y: absolute.y,
-      width: size.width,
-      height: size.height,
+      width: node.width,
+      height: node.height,
       ...(nodePorts.length > 0 ? { ports: nodePorts } : {}),
     };
   });
@@ -313,43 +299,37 @@ export function buildFlatLibavoidGraph(input: {
 
 /**
  * Hierarchical subgraph for a folder (or whole canvas when `parentId` is null).
- * Nested folderGroups keep RF-relative child coords; the subtree root uses absolute position.
+ * Nested folders keep relative child coords; the subtree root uses absolute position.
  *
- * FolderGroups whose subtree contains no endpoint of `edges` are emitted as opaque boxes
- * (no children) so libavoid does not search inside irrelevant expanded folders.
+ * Folders whose descendants contain no endpoint of `edges` are opaque boxes.
  */
 export function buildHierarchicalLibavoidGraph(input: {
   parentId: string | null;
-  nodes: readonly Node[];
-  edges: readonly Edge[];
-  parentByNode: ReadonlyMap<string, string | null>;
+  nodeByPath: ReadonlyMap<string, ThinRoutingNode>;
+  childrenByParent: ReadonlyMap<string | null, ThinRoutingNode[]>;
+  edges: readonly ThinRoutingEdge[];
   ports: LibavoidPortAssignment;
 }): LibavoidElkGraph {
-  const { parentId, nodes, edges, parentByNode, ports } = input;
-  const nodeById = new Map(nodes.map(node => [node.id, node]));
-  const childrenByParent = buildChildrenByParent(nodes, parentByNode);
+  const { parentId, nodeByPath, childrenByParent, edges, ports } = input;
   const endpoints = collectEdgeEndpoints(edges);
-  const subtreeContainsEndpoint = createSubtreeContainsEndpoint(endpoints, childrenByParent);
 
-  const buildElkNode = (node: Node, absoluteTopLevel: boolean): LibavoidElkNode => {
-    const size = getNodeSize(node);
-    const eastCount = ports.eastPortCount.get(node.id) ?? 0;
-    const westCount = ports.westPortCount.get(node.id) ?? 0;
-    const nodePorts = buildPorts(node.id, size.width, size.height, eastCount, westCount);
-    const childNodes = childrenByParent.get(node.id) ?? [];
-    // Expand only when a child subtree holds an endpoint; otherwise keep an opaque folder box.
-    const expandChildren = childNodes.some(child => subtreeContainsEndpoint(child.id));
+  const buildElkNode = (node: ThinRoutingNode, absoluteTopLevel: boolean): LibavoidElkNode => {
+    const eastCount = ports.eastPortCount.get(node.path) ?? 0;
+    const westCount = ports.westPortCount.get(node.path) ?? 0;
+    const nodePorts = buildPorts(node.path, node.width, node.height, eastCount, westCount);
+    const childNodes = childrenByParent.get(node.path) ?? [];
+    const expandChildren = childNodes.some(child => subtreeContainsEndpoint(child, endpoints));
     const nestedChildren = expandChildren ? childNodes.map(child => buildElkNode(child, false)) : [];
     const position = absoluteTopLevel
-      ? getAbsoluteNodePosition(node.id, nodeById, parentByNode)
+      ? absolutePositionFromThin(node, nodeByPath)
       : { x: node.position.x, y: node.position.y };
 
     return {
-      id: node.id,
+      id: node.path,
       x: position.x,
       y: position.y,
-      width: size.width,
-      height: size.height,
+      width: node.width,
+      height: node.height,
       ...(nodePorts.length > 0 ? { ports: nodePorts } : {}),
       ...(nestedChildren.length > 0 ? { children: nestedChildren } : {}),
     };
@@ -365,23 +345,20 @@ export function buildHierarchicalLibavoidGraph(input: {
 }
 
 /**
- * Builds a hierarchical ELK JSON graph for whole-graph libavoid routing.
- * Expanded `folderGroup` nodes become containers (children nested with RF-relative coords).
- * All edges hang on the root; EAST/WEST ports come from edge data when present.
+ * Builds a hierarchical ELK JSON graph for whole-graph libavoid routing from an enriched Map.
  */
 export function nodesToLibavoidGraph(
-  nodes: readonly Node[],
-  edges: readonly Edge[],
-  parentByNode: ReadonlyMap<string, string | null>,
+  nodeByPath: ReadonlyMap<string, ThinRoutingNode>,
+  edges: readonly ThinRoutingEdge[],
 ): LibavoidElkGraph {
-  const nodeIds = new Set(nodes.map(node => node.id));
-  const routedEdges = edges.filter(edge => nodeIds.has(edge.source) && nodeIds.has(edge.target));
-  const ports = resolveLibavoidPortAssignment(nodes, routedEdges, parentByNode);
+  const routedEdges = edges.filter(edge => nodeByPath.has(edge.source) && nodeByPath.has(edge.target));
+  const ports = resolveLibavoidPortAssignment(nodeByPath, routedEdges);
+  const childrenByParent = buildChildrenByParentFromThin(nodeByPath);
   return buildHierarchicalLibavoidGraph({
     parentId: null,
-    nodes,
+    nodeByPath,
+    childrenByParent,
     edges: routedEdges,
-    parentByNode,
     ports,
   });
 }

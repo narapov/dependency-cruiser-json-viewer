@@ -63,8 +63,7 @@ function createRefs() {
     clearAllHighlights: vi.fn(),
     exportDot: vi.fn(),
     openDotOnline: vi.fn(),
-    getLayoutState: vi.fn(() => ({ autoLayoutOnly: true, edgesType: 'bezier', nodePositions: {}, nodeLayouts: {} })),
-    setLayoutState: vi.fn(),
+    getLayoutState: vi.fn(() => ({ autoLayoutOnly: true, edgesType: 'bezier', nodeLayouts: {} })),
     openEdgesTypePicker: vi.fn(),
   };
   (fileTreeRef as { current: FileTreeHandle }).current = fileTree as unknown as FileTreeHandle;

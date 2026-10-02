@@ -20,6 +20,4 @@ export interface WorkspaceStateActions {
   setUserDependencyHighlight: (dependencyKeys: readonly string[], color: string | null) => void;
   clearAllHighlights: () => void;
   setGraphSettings: (graphSettings: WorkspaceOwnState['graphSettings']) => void;
-  setNodePositions: (nodePositions: WorkspaceOwnState['nodePositions']) => void;
-  setNodeLayouts: (nodeLayouts: WorkspaceOwnState['nodeLayouts']) => void;
 }

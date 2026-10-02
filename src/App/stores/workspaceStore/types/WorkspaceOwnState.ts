@@ -18,6 +18,5 @@ export interface WorkspaceOwnState {
     autoLayoutOnly: boolean;
     edgesType: GraphEdgesType;
   };
-  nodePositions: Record<string, Record<string, { x: number; y: number } | undefined>> | null;
   nodeLayouts: ViewerNodeLayouts | null;
 }

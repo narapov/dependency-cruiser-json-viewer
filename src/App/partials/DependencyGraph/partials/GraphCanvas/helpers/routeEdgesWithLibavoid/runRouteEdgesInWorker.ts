@@ -1,7 +1,10 @@
-import type { Edge, Node } from '@xyflow/react';
-
-import type { AvoidRoute } from '../../types';
-import { toRouteEdgesWorkerRequest, type LibavoidRoutingProgress, type RouteEdgesWorkerResponse } from './types';
+import type { AvoidRoute, ThinRoutingEdge, VisibleTreeLayoutedNode } from '../../types';
+import {
+  toRouteEdgesWorkerRequest,
+  type LibavoidRoutingProgress,
+  type RouteEdgesWorkerResponse,
+  type RoutingNodeGeometry,
+} from './types';
 
 export interface RouteEdgesWorkerSession {
   promise: Promise<Map<string, AvoidRoute>>;
@@ -10,9 +13,9 @@ export interface RouteEdgesWorkerSession {
 
 /** Runs libavoid routing in a dedicated worker with progress callbacks and hard cancellation. */
 export function runRouteEdgesInWorker(input: {
-  nodes: readonly Node[];
-  edges: readonly Edge[];
-  parentByNode: ReadonlyMap<string, string | null>;
+  tree: readonly VisibleTreeLayoutedNode[];
+  edges: readonly ThinRoutingEdge[];
+  geometryByPath?: ReadonlyMap<string, RoutingNodeGeometry>;
   onProgress?: (progress: LibavoidRoutingProgress) => void;
 }): RouteEdgesWorkerSession {
   // URL worker: avoids evaluating the worker graph (and libavoid WASM) when this module is imported.
@@ -50,9 +53,9 @@ export function runRouteEdgesInWorker(input: {
 
     worker.postMessage(
       toRouteEdgesWorkerRequest({
-        nodes: input.nodes,
+        tree: input.tree,
         edges: input.edges,
-        parentByNode: input.parentByNode,
+        geometryByPath: input.geometryByPath,
       }),
     );
   });

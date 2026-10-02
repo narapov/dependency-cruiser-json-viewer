@@ -19,7 +19,7 @@ import {
 } from '@/domain';
 import { APP_STORAGE_PREFIX, copyToClipboard, downloadTextFile } from '@/Shared';
 
-import type { DependencyGraphHandle, GraphLayoutState } from '../../partials/DependencyGraph';
+import type { DependencyGraphHandle } from '../../partials/DependencyGraph';
 import type { FileTreeHandle } from '../../partials/FileTree';
 import { pathsToPresenceRecord, presenceRecordToPaths, useWorkspaceStore } from '../../stores/workspaceStore';
 
@@ -35,22 +35,6 @@ function pathHasCircularDependency(snapshot: CruiseSnapshot, path: string): bool
   }
   const maps = [node.externalDependencies, node.internalDependencies, node.externalDependents, node.internalDependents];
   return maps.some(depMap => [...depMap.values()].some(aggregated => aggregated.some(dep => dep.circular)));
-}
-
-function toGraphNodePositions(
-  nodePositions: Record<string, Record<string, { x: number; y: number } | undefined>> | null,
-): GraphLayoutState['nodePositions'] {
-  if (!nodePositions) {
-    return {};
-  }
-  return Object.fromEntries(
-    Object.entries(nodePositions).map(([groupId, children]) => [
-      groupId,
-      Object.fromEntries(
-        Object.entries(children).filter((entry): entry is [string, { x: number; y: number }] => entry[1] != null),
-      ),
-    ]),
-  );
 }
 
 function resolveActiveFolderPath(activePath: string | null, isFolder: (path: string) => boolean): string | null {
@@ -269,7 +253,6 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
     const layout = graphRef.current?.getLayoutState() ?? {
       autoLayoutOnly: graphSettings.autoLayoutOnly,
       edgesType: graphSettings.edgesType,
-      nodePositions: toGraphNodePositions(state.nodePositions),
       nodeLayouts: state.nodeLayouts ?? {},
     };
     return {
@@ -282,7 +265,7 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
       folderColors: folderBaseColors,
       autoLayoutOnly: layout.autoLayoutOnly,
       edgesType: layout.edgesType,
-      nodePositions: layout.autoLayoutOnly ? {} : layout.nodePositions,
+      nodePositions: {},
       nodeLayouts: layout.autoLayoutOnly ? {} : layout.nodeLayouts,
     };
   };

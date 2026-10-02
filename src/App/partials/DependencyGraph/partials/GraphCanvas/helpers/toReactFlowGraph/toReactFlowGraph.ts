@@ -137,10 +137,10 @@ export function toReactFlowNodes(
 /** Map domain visible-tree edges to lightweight React Flow edges (data flags + ports). */
 export function toReactFlowEdges(
   visibleEdges: readonly VisibleTreeEdge[],
-  edgePortsById?: ReadonlyMap<string, EdgePorts>,
+  edgesPorts?: ReadonlyMap<string, EdgePorts>,
 ): Edge[] {
   return visibleEdges.map(edge => {
-    const ports = edgePortsById?.get(edge.key);
+    const ports = edgesPorts?.get(edge.key);
     const data: DependencyEdgeData = {
       typeOnly: edge.typeOnly,
       valueCircular: edge.valueCircular,

@@ -1,43 +1,46 @@
-import type { Edge, Node } from '@xyflow/react';
+import type { ThinRoutingEdge, ThinRoutingNode } from '../../../types';
 
 export interface RoutingLevel {
   /** Folder id whose direct children form this level; `null` is the virtual canvas root. */
   parentId: string | null;
   /** Leaf↔leaf edges among direct children of `parentId` (п2). */
-  leafEdges: Edge[];
+  leafEdges: ThinRoutingEdge[];
   /** Cross-folder edges whose LCA is `parentId` (п3). */
-  crossFolderEdges: Edge[];
+  crossFolderEdges: ThinRoutingEdge[];
 }
 
-function isLeafNode(node: Node | undefined): boolean {
-  return node !== undefined && node.type !== 'folderGroup';
+/** Expanded folder groups carry a `children` array; leaves omit it. */
+function isLeafNode(node: ThinRoutingNode | undefined): boolean {
+  return node !== undefined && !node.children;
+}
+
+/** Nearest parent from ancestors (nearest → root), or virtual root. */
+function nearestParent(node: ThinRoutingNode | undefined): string | null {
+  return node?.ancestors[0] ?? null;
 }
 
 /**
- * Lowest common ancestor in the RF parent map (`null` = virtual root).
+ * Lowest common ancestor via path ∪ ancestors (nearest → root).
  * Passing `null` for `a` keeps the result at the virtual root.
  */
 export function lowestCommonAncestor(
   a: string | null,
   b: string,
-  parentByNode: ReadonlyMap<string, string | null>,
+  nodeByPath: ReadonlyMap<string, ThinRoutingNode>,
 ): string | null {
-  const ancestors = new Set<string>();
-  let cursor: string | null | undefined = a;
-  while (cursor) {
-    ancestors.add(cursor);
-    cursor = parentByNode.has(cursor) ? (parentByNode.get(cursor) ?? null) : null;
+  if (!a) {
+    return null;
   }
 
-  cursor = b;
-  while (cursor) {
-    if (ancestors.has(cursor)) {
-      return cursor;
-    }
-    cursor = parentByNode.has(cursor) ? (parentByNode.get(cursor) ?? null) : null;
+  const setA = new Set<string>([a, ...(nodeByPath.get(a)?.ancestors ?? [])]);
+
+  if (setA.has(b)) {
+    return b;
   }
 
-  return null;
+  const ancestorsB = nodeByPath.get(b)?.ancestors ?? [];
+  const shared = ancestorsB.find(ancestor => setA.has(ancestor));
+  return shared ?? null;
 }
 
 /**
@@ -46,8 +49,8 @@ export function lowestCommonAncestor(
  */
 export function overlapGroupParentId(
   edgeIds: readonly string[],
-  edgeById: ReadonlyMap<string, Edge>,
-  parentByNode: ReadonlyMap<string, string | null>,
+  edgeById: ReadonlyMap<string, ThinRoutingEdge>,
+  nodeByPath: ReadonlyMap<string, ThinRoutingNode>,
 ): string | null {
   const endpoints = edgeIds.flatMap(edgeId => {
     const edge = edgeById.get(edgeId);
@@ -58,21 +61,17 @@ export function overlapGroupParentId(
     return null;
   }
 
-  return rest.reduce<string | null>((lca, endpoint) => lowestCommonAncestor(lca, endpoint, parentByNode), first);
+  return rest.reduce<string | null>((lca, endpoint) => lowestCommonAncestor(lca, endpoint, nodeByPath), first);
 }
 
 /**
- * Partitions visible RF edges into per-folder leaf (п2) and LCA cross-folder (п3) sets.
+ * Partitions thin edges into per-folder leaf (п2) and LCA cross-folder (п3) sets.
  * Each edge is assigned to exactly one level (the LCA of its endpoints).
  */
 export function collectRoutingLevels(
-  nodes: readonly Node[],
-  edges: readonly Edge[],
-  parentByNode: ReadonlyMap<string, string | null>,
+  nodeByPath: ReadonlyMap<string, ThinRoutingNode>,
+  edges: readonly ThinRoutingEdge[],
 ): RoutingLevel[] {
-  const nodeById = new Map(nodes.map(node => [node.id, node]));
-  const nodeIds = new Set(nodeById.keys());
-
   const levelByParent = new Map<string | null, RoutingLevel>();
 
   const ensureLevel = (parentId: string | null): RoutingLevel => {
@@ -85,25 +84,24 @@ export function collectRoutingLevels(
     return created;
   };
 
-  // Ensure every expanded folder (and root) appears even with zero edges — useful for iteration order.
   ensureLevel(null);
-  nodes.forEach(node => {
-    if (node.type === 'folderGroup') {
-      ensureLevel(node.id);
+  nodeByPath.forEach(node => {
+    if (node.children) {
+      ensureLevel(node.path);
     }
   });
 
   edges.forEach(edge => {
-    if (!nodeIds.has(edge.source) || !nodeIds.has(edge.target)) {
+    if (!nodeByPath.has(edge.source) || !nodeByPath.has(edge.target)) {
       return;
     }
 
-    const lca = lowestCommonAncestor(edge.source, edge.target, parentByNode);
+    const lca = lowestCommonAncestor(edge.source, edge.target, nodeByPath);
     const level = ensureLevel(lca);
-    const sourceParent = parentByNode.get(edge.source) ?? null;
-    const targetParent = parentByNode.get(edge.target) ?? null;
-    const bothDirectChildren = sourceParent === lca && targetParent === lca;
-    const bothLeaves = isLeafNode(nodeById.get(edge.source)) && isLeafNode(nodeById.get(edge.target));
+    const source = nodeByPath.get(edge.source);
+    const target = nodeByPath.get(edge.target);
+    const bothDirectChildren = nearestParent(source) === lca && nearestParent(target) === lca;
+    const bothLeaves = isLeafNode(source) && isLeafNode(target);
 
     if (bothDirectChildren && bothLeaves) {
       level.leafEdges.push(edge);

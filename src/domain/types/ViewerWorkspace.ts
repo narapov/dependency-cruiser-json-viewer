@@ -52,6 +52,5 @@ export interface MergedViewerWorkspaceView {
   folderColors: Record<string, FolderBaseColor>;
   autoLayoutOnly: boolean;
   edgesType: GraphEdgesType;
-  nodePositions: Record<string, Record<string, { x: number; y: number }>>;
   nodeLayouts: ViewerNodeLayouts;
 }

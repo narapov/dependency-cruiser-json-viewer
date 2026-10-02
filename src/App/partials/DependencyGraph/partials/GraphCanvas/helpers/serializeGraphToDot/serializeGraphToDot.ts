@@ -5,7 +5,14 @@ import type { Edge, Node } from '@xyflow/react';
 import { parsePastelHsl } from '../../../../../../helpers/assignFolderColors';
 import type { DependencyEdgeData, FileNodeData, FolderGroupNodeData, FolderNodeData } from '../../types';
 import { getDependencyEdgeVisualStyle } from '../getDependencyEdgeVisualStyle';
-import { getNodeSize } from '../graphLayoutCache';
+import { LEAF_NODE_HEIGHT, LEAF_NODE_MIN_WIDTH } from '../getLeafNodeSize';
+
+/** Reads a React Flow node's width and height from props or style, with leaf defaults. */
+function getNodeSize(node: Node): { width: number; height: number } {
+  const width = node.width ?? (typeof node.style?.width === 'number' ? node.style.width : LEAF_NODE_MIN_WIDTH);
+  const height = node.height ?? (typeof node.style?.height === 'number' ? node.style.height : LEAF_NODE_HEIGHT);
+  return { width, height };
+}
 
 const PX_PER_INCH = 72;
 
