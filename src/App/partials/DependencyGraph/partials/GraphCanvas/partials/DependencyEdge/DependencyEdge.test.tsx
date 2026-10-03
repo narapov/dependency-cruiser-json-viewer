@@ -8,9 +8,12 @@ import { type EdgeProps, type Position } from '@xyflow/react';
 import { CIRCULAR_EDGE_COLOR } from '@/Shared';
 import { renderWithTheme } from '@/testsUtils';
 
+import { useWorkspaceStore } from '../../../../../../stores/workspaceStore';
 import { toGraphMarkerId, useGraphMarkersStore } from '../../stores/graphMarkersStore';
 import { useSelectedDependencyEdgeStore } from '../../stores/selectedDependencyEdgeStore';
 import { DependencyEdge } from './DependencyEdge';
+
+import styles from './DependencyEdge.module.css';
 
 vi.mock('@xyflow/react', async importOriginal => {
   const actual = await importOriginal<typeof import('@xyflow/react')>();
@@ -20,15 +23,19 @@ vi.mock('@xyflow/react', async importOriginal => {
     BaseEdge: ({
       id,
       style,
+      className,
       markerEnd,
     }: {
       id: string;
-      style?: { stroke?: string };
+      style?: { stroke?: string; strokeDasharray?: string };
+      className?: string;
       markerEnd?: EdgeProps['markerEnd'];
     }) => (
       <div
         data-testid={`base-edge-${id}`}
         data-stroke={style?.stroke}
+        data-stroke-dasharray={style?.strokeDasharray}
+        data-class-name={className}
         data-marker-end={typeof markerEnd === 'string' ? markerEnd : undefined}
       />
     ),
@@ -57,10 +64,12 @@ describe('DependencyEdge', () => {
   beforeEach(() => {
     useSelectedDependencyEdgeStore.getState().setSelectedEdgeId(null);
     useGraphMarkersStore.getState().clearGraphMarkers();
+    useWorkspaceStore.getState().setGraphSettings({ autoLayoutOnly: true, edgesType: 'bezier' });
   });
 
   afterEach(() => {
     useGraphMarkersStore.getState().clearGraphMarkers();
+    useWorkspaceStore.getState().setGraphSettings({ autoLayoutOnly: true, edgesType: 'bezier' });
   });
 
   it('renders base edge and computed title from flags', () => {
@@ -99,5 +108,65 @@ describe('DependencyEdge', () => {
 
     expect(screen.getByTestId('base-edge-a->b')).toBeInTheDocument();
     expect(container.querySelector('title')?.textContent).toBe('a → b');
+  });
+
+  it('animates libavoid fallback edges without avoidPath', () => {
+    useWorkspaceStore.getState().setGraphSettings({ autoLayoutOnly: true, edgesType: 'libavoidOrthogonal' });
+
+    renderWithTheme(
+      <svg>
+        <DependencyEdge {...edgeProps({ data: { valueCircular: true } })} />
+      </svg>,
+    );
+
+    const edge = screen.getByTestId('base-edge-a->b');
+    expect(edge).toHaveAttribute('data-class-name', styles.pendingRoute);
+    expect(edge).toHaveAttribute('data-stroke-dasharray', '8 6');
+  });
+
+  it('keeps type-only dash while animating libavoid fallback', () => {
+    useWorkspaceStore.getState().setGraphSettings({ autoLayoutOnly: true, edgesType: 'libavoidOrthogonal' });
+
+    renderWithTheme(
+      <svg>
+        <DependencyEdge {...edgeProps({ data: { typeOnly: true } })} />
+      </svg>,
+    );
+
+    const edge = screen.getByTestId('base-edge-a->b');
+    expect(edge).toHaveAttribute('data-class-name', styles.pendingRoute);
+    expect(edge).toHaveAttribute('data-stroke-dasharray', '6 4');
+  });
+
+  it('does not animate when avoidPath is present', () => {
+    useWorkspaceStore.getState().setGraphSettings({ autoLayoutOnly: true, edgesType: 'libavoidOrthogonal' });
+
+    renderWithTheme(
+      <svg>
+        <DependencyEdge
+          {...edgeProps({
+            data: { avoidPath: 'M 0 0 L 10 10' },
+          })}
+        />
+      </svg>,
+    );
+
+    const edge = screen.getByTestId('base-edge-a->b');
+    expect(edge).not.toHaveAttribute('data-class-name', styles.pendingRoute);
+    expect(edge).not.toHaveAttribute('data-stroke-dasharray');
+  });
+
+  it('does not animate when edges type is not libavoid', () => {
+    useWorkspaceStore.getState().setGraphSettings({ autoLayoutOnly: true, edgesType: 'simpleOrthogonal' });
+
+    renderWithTheme(
+      <svg>
+        <DependencyEdge {...edgeProps({ data: { valueCircular: true } })} />
+      </svg>,
+    );
+
+    const edge = screen.getByTestId('base-edge-a->b');
+    expect(edge).not.toHaveAttribute('data-class-name', styles.pendingRoute);
+    expect(edge).not.toHaveAttribute('data-stroke-dasharray');
   });
 });

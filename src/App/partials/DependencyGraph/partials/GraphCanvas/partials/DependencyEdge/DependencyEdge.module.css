@@ -1,0 +1,15 @@
+@keyframes libavoidFallbackMarch {
+  to {
+    stroke-dashoffset: -14;
+  }
+}
+
+.pendingRoute {
+  animation: libavoidFallbackMarch 0.7s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pendingRoute {
+    animation: none;
+  }
+}

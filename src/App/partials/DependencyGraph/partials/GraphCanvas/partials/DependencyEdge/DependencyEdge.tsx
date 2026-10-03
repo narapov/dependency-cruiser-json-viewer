@@ -19,6 +19,11 @@ import { useSelectedDependencyEdgeStore } from '../../stores/selectedDependencyE
 import type { DependencyEdgeData, EdgePort } from '../../types';
 import { getDependencyEdgePath } from './helpers/getDependencyEdgePath';
 
+import styles from './DependencyEdge.module.css';
+
+/** Dash pattern for libavoid smooth-step fallback while routes are pending. */
+const LIBAVOID_FALLBACK_DASH = '8 6';
+
 function resolvePortAnchors(input: {
   sourcePort: EdgePort;
   targetPort: EdgePort;
@@ -122,13 +127,19 @@ export const DependencyEdge = memo(function DependencyEdge(props: EdgeProps) {
   const isSelected = useSelectedDependencyEdgeStore(state => state.selectedEdgeId === id);
 
   const base = getDependencyEdgeVisualStyle(source, target, edgeData);
-  const style = resolveEdgeStrokeStyle({
+  const strokeStyle = resolveEdgeStrokeStyle({
     base,
     edgeData,
     userEdgeHighlights,
     activePathSide,
     isSelected,
   });
+
+  const isLibavoidFallback = edgesType === 'libavoidOrthogonal' && !edgeData?.avoidPath;
+  const style = {
+    ...strokeStyle,
+    ...(isLibavoidFallback && !strokeStyle.strokeDasharray ? { strokeDasharray: LIBAVOID_FALLBACK_DASH } : {}),
+  };
 
   const portAnchors =
     edgeData?.sourcePort && edgeData.targetPort && sourceNode && targetNode
@@ -168,7 +179,14 @@ export const DependencyEdge = memo(function DependencyEdge(props: EdgeProps) {
 
   return (
     <>
-      <BaseEdge id={id} path={path} style={style} markerEnd={markerEnd} interactionWidth={interactionWidth} />
+      <BaseEdge
+        id={id}
+        path={path}
+        style={style}
+        className={isLibavoidFallback ? styles.pendingRoute : undefined}
+        markerEnd={markerEnd}
+        interactionWidth={interactionWidth}
+      />
       <path d={path} fill="none" stroke="transparent" strokeWidth={interactionWidth}>
         {!!base.title && <title>{base.title}</title>}
       </path>
