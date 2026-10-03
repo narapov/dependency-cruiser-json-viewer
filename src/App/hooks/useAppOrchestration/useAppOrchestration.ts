@@ -229,10 +229,6 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
     graphRef.current?.openDotOnline();
   };
 
-  const openEdgesTypePicker = () => {
-    graphRef.current?.openEdgesTypePicker();
-  };
-
   const getCurrentWorkspaceSettings = (): ViewerWorkspaceSettings | null => {
     const state = useWorkspaceStore.getState();
     const { cruiseResult, ignorePatterns, cruiseSnapshot, folderBaseColors, userEdgeHighlights, graphSettings } = state;
@@ -430,7 +426,6 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
     clearAllHighlights,
     exportGraphDot,
     viewGraphDotOnline,
-    openEdgesTypePicker,
     saveWorkspace,
     getCurrentWorkspaceSettings,
     expandAllRecursive,

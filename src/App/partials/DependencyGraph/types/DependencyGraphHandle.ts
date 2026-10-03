@@ -14,6 +14,5 @@ export interface DependencyGraphHandle {
   clearAllHighlights(): void;
   exportDot(): void;
   openDotOnline(): void;
-  openEdgesTypePicker(): void;
   getLayoutState(): GraphLayoutState;
 }

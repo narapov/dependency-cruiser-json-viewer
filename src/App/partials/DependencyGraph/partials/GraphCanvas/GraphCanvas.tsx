@@ -31,7 +31,6 @@ import {
   useThemedFolderColors,
 } from './hooks';
 import { DependencyEdge } from './partials/DependencyEdge';
-import { useEdgesTypePickerDialog } from './partials/EdgesTypePickerDialog';
 import { FileNode } from './partials/FileNode';
 import { FolderGroupNode } from './partials/FolderGroupNode';
 import { FolderNode } from './partials/FolderNode';
@@ -62,8 +61,6 @@ interface GraphCanvasProps {
  */
 export function GraphCanvas(props: GraphCanvasProps) {
   const { ref, onShowInFileTree, onViewModuleJson } = props;
-
-  const { openEdgesTypePicker, edgesTypePickerDialog } = useEdgesTypePickerDialog();
 
   const cruiseSnapshot = useWorkspaceStore(state => state.cruiseSnapshot);
   const selectedFilePaths = useWorkspaceStore(state => state.selectedFilePaths);
@@ -176,7 +173,6 @@ export function GraphCanvas(props: GraphCanvasProps) {
     autoLayoutOnly,
     edgesType,
     getLayoutSnapshot,
-    openEdgesTypePicker,
   });
 
   const onPaneClick = () => {
@@ -292,7 +288,6 @@ export function GraphCanvas(props: GraphCanvasProps) {
           {t('graph.buildError')}
         </Alert>
       </Snackbar>
-      {edgesTypePickerDialog}
     </Box>
   );
 }

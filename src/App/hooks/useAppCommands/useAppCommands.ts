@@ -18,7 +18,6 @@ export interface AppCommandsOrchestration {
   clearAllHighlights: () => void;
   exportGraphDot: () => void;
   viewGraphDotOnline: () => void;
-  openEdgesTypePicker: () => void;
   saveWorkspace: () => void;
   expandAllRecursive: () => void;
   collapseAllRecursive: () => void;
@@ -31,6 +30,7 @@ interface UseAppCommandsOptions {
   orch: AppCommandsOrchestration;
   openThemePicker: () => void;
   openLanguagePicker: () => void;
+  openEdgesTypePicker: () => void;
   openIgnorePatterns: () => void;
   openLoadCruiseResult: () => void;
   openLoadSettings: () => void;
@@ -62,7 +62,6 @@ export function useAppCommands(config: UseAppCommandsOptions): QuickPickCommand[
       clearAllHighlights,
       exportGraphDot,
       viewGraphDotOnline,
-      openEdgesTypePicker,
       saveWorkspace,
       expandAllRecursive,
       collapseAllRecursive,
@@ -72,6 +71,7 @@ export function useAppCommands(config: UseAppCommandsOptions): QuickPickCommand[
     },
     openThemePicker,
     openLanguagePicker,
+    openEdgesTypePicker,
     openIgnorePatterns,
     openLoadCruiseResult,
     openLoadSettings,

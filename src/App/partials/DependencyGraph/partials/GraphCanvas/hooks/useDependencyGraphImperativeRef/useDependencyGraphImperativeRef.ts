@@ -20,7 +20,6 @@ interface UseDependencyGraphImperativeRefConfig {
   autoLayoutOnly: boolean;
   edgesType: GraphEdgesType;
   getLayoutSnapshot: () => GraphLayoutSnapshot;
-  openEdgesTypePicker: () => void;
 }
 
 /**
@@ -38,7 +37,6 @@ export function useDependencyGraphImperativeRef(config: UseDependencyGraphImpera
     autoLayoutOnly,
     edgesType,
     getLayoutSnapshot,
-    openEdgesTypePicker,
   } = config;
 
   useImperativeHandle(ref, () => {
@@ -59,7 +57,6 @@ export function useDependencyGraphImperativeRef(config: UseDependencyGraphImpera
       openDotOnline: () => {
         openGraphvizOnline(buildDot());
       },
-      openEdgesTypePicker,
       getLayoutState: () => ({
         autoLayoutOnly,
         edgesType,

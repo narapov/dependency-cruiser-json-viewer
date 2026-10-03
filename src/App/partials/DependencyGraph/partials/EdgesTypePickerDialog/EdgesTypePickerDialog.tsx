@@ -7,7 +7,7 @@ import Typography from '@mui/material/Typography';
 import type { GraphEdgesType } from '@/domain';
 import { AppDialog, AppDialogContent, AppDialogTitle } from '@/Shared';
 
-import { useWorkspaceStore } from '../../../../../../stores/workspaceStore';
+import { useWorkspaceStore } from '../../../../stores/workspaceStore';
 
 const EDGES_TYPE_OPTIONS: { value: GraphEdgesType; labelKey: string }[] = [
   { value: 'bezier', labelKey: 'graph.edgesTypeBezier' },
