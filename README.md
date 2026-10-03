@@ -4,7 +4,7 @@
 
 Interactive browser viewer for [dependency-cruiser](https://github.com/sverweij/dependency-cruiser) JSON cruise results — explore file trees, dependency graphs, circular dependencies, and module relations.
 
-Built with [React](https://react.dev/), [MUI](https://mui.com/), and [@xyflow/react](https://reactflow.dev/).
+Built with [React](https://react.dev/), [MUI](https://mui.com/), [@xyflow/react](https://reactflow.dev/), [elkjs](https://github.com/kieler/elkjs), [@mr_mint/elkjs-libavoid](https://www.npmjs.com/package/@mr_mint/elkjs-libavoid), and [zustand](https://github.com/pmndrs/zustand).
 
 ## Demo
 
@@ -27,7 +27,7 @@ The usual workflow meant constantly tweaking filters, `collapsePattern`, and `ex
 - **File tree** — browse modules and folders; checkbox selection to dynamically show or hide parts of the codebase in the graph; expand/collapse, context menu.
 - **Dependency graph** — interactive graph with folder/file nodes and colored edges (incoming/outgoing/circular).
 - **Drag-and-drop layout** — rearrange graph nodes by dragging; custom positions persist when you expand or collapse folders. Turn off **Auto layout only** in the graph legend to enable dragging; use **Auto layout** in a folder's context menu to reset layout.
-- **Edges type** — choose how dependency edges are drawn (**Bezier**, **Straight**, or **Simple orthogonal**) via the control next to **Auto layout only**, or the command palette (**Graph: Select Edges Type**). The choice is saved with the workspace.
+- **Edges type** — choose how dependency edges are drawn (**Bezier**, **Straight**, **Simple orthogonal**, or **Libavoid orthogonal** — higher-quality routes that avoid nodes and reduce overlaps, at the cost of slower routing) via the control next to **Auto layout only**, or the command palette (**Graph: Select Edges Type**). The choice is saved with the workspace.
 - **Edge highlighting** — highlight dependencies via the edge context menu, the dependencies panel, or the command palette (**Highlights: Highlight Edge…**: pick source → target → color, including folder targets that cover all deps under that path); highlights are tied to the underlying import relation and persist when you expand or collapse nodes. Open the **Highlights** sidebar to browse connections by color, jump to one in the graph, or remove a single highlight, a whole color group, or all highlights.
 - **Hide others** — from a graph node context menu, keep only that file (or already-selected modules under a folder) in the selection so the rest of the graph is hidden.
 - **Dependencies panel** — inspect dependencies and dependents for a path in the right panel.
