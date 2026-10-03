@@ -5,9 +5,17 @@
     "dependency-cruiser",
     "depcruise",
     "dependency-graph",
+    "dependency-viewer",
     "visualization",
-    "dependency-visualization"
+    "dependency-visualization",
+    "architecture",
+    "dependency-analysis",
+    "circular",
+    "circular-dependencies",
+    "module-dependencies",
+    "codebase-exploration"
   ],
+  "author": "Nikolay Arapov <arapov.nv@gmail.com>",
   "license": "MIT",
   "version": "1.7.1",
   "repository": {
