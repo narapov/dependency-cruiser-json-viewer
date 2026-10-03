@@ -31,9 +31,10 @@ describe('mergeAvoidRoutes', () => {
     expect(result[0]?.data).toEqual({
       title: 'a → b',
       avoidRoute,
-      avoidPath: 'M 0 0 L 5 0 L 10 10',
-      avoidPathWithJumps: 'M 0 0 L 5 0 L 10 10',
+      avoidPath: 'M 0 0 L 2.5 0 Q 5 0 5 2.5 L 10 10',
+      avoidPathWithJumps: 'M 0 0 L 2.5 0 Q 5 0 5 2.5 L 10 10',
     });
+    expect((result[0]?.data as { avoidPath: string }).avoidPath).toContain('Q ');
     expect(result[1]?.data).toEqual({ title: 'c → d' });
     expect(edges[0]?.data).toEqual({ title: 'a → b' });
   });
@@ -68,7 +69,8 @@ describe('mergeAvoidRoutes', () => {
       crossingJumps: [{ x: 20, y: 10 }],
       avoidPath: 'M 0 10 L 40 10',
     });
-    expect((result[0]?.data as { avoidPathWithJumps: string }).avoidPathWithJumps).toContain('A ');
+    const hopped = (result[0]?.data as { avoidPathWithJumps: string }).avoidPathWithJumps;
+    expect(hopped).toContain('A 1.5 1.5 ');
     expect(result[1]?.data).toMatchObject({
       title: 'v',
       avoidRoute: vertical,

@@ -1,7 +1,5 @@
+import { CROSSING_JUMP_RADIUS, ORTHOGONAL_CORNER_RADIUS } from '../../constants';
 import type { AvoidRoute, EdgePoint } from '../../types';
-
-/** Radius of the schematic semicircle drawn at orthogonal edge crossings. */
-export const CROSSING_JUMP_RADIUS = 1.5;
 
 const COORD_EPSILON = 0.5;
 
@@ -13,10 +11,18 @@ function isNearlyEqual(a: number, b: number): boolean {
   return Math.abs(a - b) <= COORD_EPSILON;
 }
 
+function distance(a: EdgePoint, b: EdgePoint): number {
+  return Math.hypot(b.x - a.x, b.y - a.y);
+}
+
 function isStrictlyBetween(value: number, a: number, b: number): boolean {
   const min = Math.min(a, b);
   const max = Math.max(a, b);
   return value > min + COORD_EPSILON && value < max - COORD_EPSILON;
+}
+
+function isCollinear(a: EdgePoint, b: EdgePoint, c: EdgePoint): boolean {
+  return (isNearlyEqual(a.x, b.x) && isNearlyEqual(b.x, c.x)) || (isNearlyEqual(a.y, b.y) && isNearlyEqual(b.y, c.y));
 }
 
 function jumpsOnHorizontalSegment(start: EdgePoint, end: EdgePoint, crossingJumps: readonly EdgePoint[]): EdgePoint[] {
@@ -65,11 +71,57 @@ function appendHorizontalWithJumps(
   commands.push(`L ${pointToCommand(end)}`);
 }
 
+/** Draws from `from` to `to`, inserting hops when the drawable segment is horizontal. */
+function appendSegment(
+  commands: string[],
+  from: EdgePoint,
+  to: EdgePoint,
+  crossingJumps: readonly EdgePoint[],
+  jumpRadius: number,
+): void {
+  if (isNearlyEqual(from.y, to.y) && crossingJumps.length > 0) {
+    appendHorizontalWithJumps(commands, from, to, crossingJumps, jumpRadius);
+    return;
+  }
+
+  commands.push(`L ${pointToCommand(to)}`);
+}
+
+/**
+ * SmoothStep-style quadratic corner at `b` for orthogonal polyline a→b→c.
+ * Returns approach and leave points; `bendSize` is clamped to half of each adjacent segment.
+ */
+function cornerPoints(
+  a: EdgePoint,
+  b: EdgePoint,
+  c: EdgePoint,
+  radius: number,
+): { approach: EdgePoint; leave: EdgePoint } {
+  const bendSize = Math.min(distance(a, b) / 2, distance(b, c) / 2, radius);
+
+  if (isNearlyEqual(a.y, b.y)) {
+    const xDir = a.x < c.x ? -1 : 1;
+    const yDir = a.y < c.y ? 1 : -1;
+    return {
+      approach: { x: b.x + bendSize * xDir, y: b.y },
+      leave: { x: b.x, y: b.y + bendSize * yDir },
+    };
+  }
+
+  const xDir = a.x < c.x ? 1 : -1;
+  const yDir = a.y < c.y ? -1 : 1;
+  return {
+    approach: { x: b.x, y: b.y + bendSize * yDir },
+    leave: { x: b.x + bendSize * xDir, y: b.y },
+  };
+}
+
 /** Converts an absolute libavoid route into an SVG path, with optional crossing jumps. */
 export function avoidRouteToPath(
   route: AvoidRoute,
   crossingJumps: readonly EdgePoint[] = [],
   jumpRadius: number = CROSSING_JUMP_RADIUS,
+  cornerRadius: number = ORTHOGONAL_CORNER_RADIUS,
 ): string {
   const points = [route.sourcePoint, ...route.bendPoints, route.targetPoint];
   if (points.length === 0) {
@@ -77,21 +129,27 @@ export function avoidRouteToPath(
   }
 
   const commands = [`M ${pointToCommand(points[0]!)}`];
+  let cursor = points[0]!;
 
-  points.slice(0, -1).forEach((start, index) => {
-    const end = points[index + 1];
-    if (!end) {
-      return;
+  for (let i = 1; i < points.length - 1; i += 1) {
+    const a = points[i - 1]!;
+    const b = points[i]!;
+    const c = points[i + 1]!;
+
+    if (isCollinear(a, b, c)) {
+      appendSegment(commands, cursor, b, crossingJumps, jumpRadius);
+      cursor = b;
+      continue;
     }
 
-    const horizontal = isNearlyEqual(start.y, end.y);
-    if (horizontal && crossingJumps.length > 0) {
-      appendHorizontalWithJumps(commands, start, end, crossingJumps, jumpRadius);
-      return;
-    }
+    const { approach, leave } = cornerPoints(a, b, c, cornerRadius);
+    appendSegment(commands, cursor, approach, crossingJumps, jumpRadius);
+    commands.push(`Q ${b.x} ${b.y} ${leave.x} ${leave.y}`);
+    cursor = leave;
+  }
 
-    commands.push(`L ${pointToCommand(end)}`);
-  });
+  const last = points[points.length - 1]!;
+  appendSegment(commands, cursor, last, crossingJumps, jumpRadius);
 
   return commands.join(' ');
 }

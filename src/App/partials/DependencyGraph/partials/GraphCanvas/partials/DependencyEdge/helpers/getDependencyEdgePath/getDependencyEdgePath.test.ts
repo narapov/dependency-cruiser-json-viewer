@@ -67,6 +67,7 @@ describe('getDependencyEdgePath', () => {
     const result = getDependencyEdgePath({ ...reverseSameY, edgesType: 'simpleOrthogonal' });
 
     expect(getSmoothStepPath).toHaveBeenCalledOnce();
+    expect(getSmoothStepPath).toHaveBeenCalledWith(expect.objectContaining({ borderRadius: 3 }));
     expect(result[0]).toBe('M0,0 L1,0 L1,1 L2,1');
   });
 
@@ -117,5 +118,15 @@ describe('getDependencyEdgePath', () => {
     });
 
     expect(getSmoothStepPath).toHaveBeenCalledOnce();
+    expect(getSmoothStepPath).toHaveBeenCalledWith(expect.objectContaining({ borderRadius: 3 }));
+  });
+
+  it('passes borderRadius 3 for libavoidOrthogonal smooth-step fallback', () => {
+    vi.mocked(getSmoothStepPath).mockClear();
+
+    getDependencyEdgePath({ ...forwardSameY, edgesType: 'libavoidOrthogonal' });
+
+    expect(getSmoothStepPath).toHaveBeenCalledOnce();
+    expect(getSmoothStepPath).toHaveBeenCalledWith(expect.objectContaining({ borderRadius: 3 }));
   });
 });

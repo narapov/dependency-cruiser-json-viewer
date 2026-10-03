@@ -2,6 +2,8 @@ import { getBezierPath, getSmoothStepPath, getStraightPath, type Position } from
 
 import type { GraphEdgesType } from '@/domain';
 
+import { ORTHOGONAL_CORNER_RADIUS } from '../../../../constants';
+
 /** Max |sourceY - targetY| treated as the same horizontal row. */
 const SAME_Y_EPSILON = 100;
 /** Minimum vertical control-point offset for reverse edges. */
@@ -98,6 +100,7 @@ export function getDependencyEdgePath({
       targetX,
       targetY,
       targetPosition,
+      borderRadius: ORTHOGONAL_CORNER_RADIUS,
     });
   }
 
