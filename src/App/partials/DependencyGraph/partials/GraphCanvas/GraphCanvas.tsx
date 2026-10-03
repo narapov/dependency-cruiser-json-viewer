@@ -1,10 +1,12 @@
-import { useCallback, useRef, useState, type MouseEvent as ReactMouseEvent, type Ref } from 'react';
+import { useState, type MouseEvent as ReactMouseEvent, type Ref } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
+import LinearProgress from '@mui/material/LinearProgress';
 import Snackbar from '@mui/material/Snackbar';
 import { useColorScheme, useTheme } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
 import { Background, Controls, MiniMap, Panel, ReactFlow, type Node } from '@xyflow/react';
 
 import '@xyflow/react/dist/style.css';
@@ -12,23 +14,23 @@ import '@xyflow/react/dist/style.css';
 import { useResolvedColorMode } from '@/Shared';
 
 import { useWorkspaceStore } from '../../../../stores/workspaceStore';
-import type { DependencyGraphHandle, SerializedLayoutCache } from '../../types';
-import { getMinimapNodeColor, serializeLayoutCache, toReactFlowEdges, type LayoutCache } from './helpers';
+import type { DependencyGraphHandle } from '../../types';
+import { getMinimapNodeColor, toReactFlowEdges } from './helpers';
 import {
-  useApplyWorkspaceLayout,
   useAutoFitView,
   useBuildGraph,
   useClearGraphMarkersOnEmptySelection,
+  useCustomPositionedGraph,
   useDependencyGraphImperativeRef,
   useEdgeContextMenu,
-  useGraphLayoutNodes,
   useGraphWorkspaceActions,
   useHighlightedEdges,
+  useLayoutCache,
   usePendingFocusNode,
+  useReactFlowGraph,
   useThemedFolderColors,
 } from './hooks';
 import { DependencyEdge } from './partials/DependencyEdge';
-import { useEdgesTypePickerDialog } from './partials/EdgesTypePickerDialog';
 import { FileNode } from './partials/FileNode';
 import { FolderGroupNode } from './partials/FolderGroupNode';
 import { FolderNode } from './partials/FolderNode';
@@ -60,8 +62,6 @@ interface GraphCanvasProps {
 export function GraphCanvas(props: GraphCanvasProps) {
   const { ref, onShowInFileTree, onViewModuleJson } = props;
 
-  const { openEdgesTypePicker, edgesTypePickerDialog } = useEdgesTypePickerDialog();
-
   const cruiseSnapshot = useWorkspaceStore(state => state.cruiseSnapshot);
   const selectedFilePaths = useWorkspaceStore(state => state.selectedFilePaths);
   const visibleTree = useWorkspaceStore(state => state.visibleTree);
@@ -70,11 +70,7 @@ export function GraphCanvas(props: GraphCanvasProps) {
   const setUserEdgeHighlights = useWorkspaceStore(state => state.setUserEdgeHighlights);
   const clearAllHighlights = useWorkspaceStore(state => state.clearAllHighlights);
   const graphSettings = useWorkspaceStore(state => state.graphSettings);
-  const setGraphSettings = useWorkspaceStore(state => state.setGraphSettings);
-  const nodePositions = useWorkspaceStore(state => state.nodePositions);
-  const setNodePositions = useWorkspaceStore(state => state.setNodePositions);
   const nodeLayouts = useWorkspaceStore(state => state.nodeLayouts);
-  const setNodeLayouts = useWorkspaceStore(state => state.setNodeLayouts);
 
   const { activatePath } = useGraphWorkspaceActions();
 
@@ -86,63 +82,64 @@ export function GraphCanvas(props: GraphCanvasProps) {
 
   const { autoLayoutOnly, edgesType } = graphSettings;
 
-  const layoutCacheRef = useRef<LayoutCache>(new Map());
-  const [layoutRevision, setLayoutRevision] = useState(0);
+  const [isNodeDragging, setIsNodeDragging] = useState(false);
 
-  const getLayoutCache = useCallback((): SerializedLayoutCache | undefined => {
-    if (autoLayoutOnly) {
-      return undefined;
-    }
-    return serializeLayoutCache(layoutCacheRef.current);
-  }, [autoLayoutOnly]);
-
-  const requestRebuild = useCallback(() => {
-    setLayoutRevision(revision => revision + 1);
-  }, []);
+  const { layoutCacheRef, nodeLayoutsRevision, commitRevision, getLayoutCache, requestRebuild, bumpCommitRevision } =
+    useLayoutCache({
+      autoLayoutOnly,
+      nodeLayouts,
+    });
 
   const { graphResult, isBuildingGraph, buildFailed, clearBuildFailed } = useBuildGraph({
     cruiseSnapshot,
     selectedFilePaths,
     visibleTree,
     getLayoutCache,
-    layoutRevision,
+    layoutRevision: nodeLayoutsRevision,
   });
+
+  const {
+    routableEdges,
+    routingProgress,
+    hasUserLayout,
+    applyNodePositionToCache,
+    getLayoutSnapshot,
+    onAutoLayoutGroup,
+    onAutoLayoutGroupRecursive,
+    positionedNodes,
+  } = useCustomPositionedGraph({
+    graphResult,
+    layoutCacheRef,
+    commitRevision,
+    nodeLayoutsRevision,
+    edgesType,
+    isDragging: isNodeDragging,
+    autoLayoutOnly,
+    bumpCommitRevision,
+    onRequestRebuild: requestRebuild,
+  });
+
+  const rfEdges = toReactFlowEdges(routableEdges);
 
   const {
     nodes: layoutNodes,
     onNodesChange,
     onNodeDrag,
     onNodeDragStop,
-    hasUserLayout,
-    getLayoutSnapshot,
-    setLayoutSnapshot,
-    onAutoLayoutGroup,
-    onAutoLayoutGroupRecursive,
-  } = useGraphLayoutNodes({
-    graphResult,
+  } = useReactFlowGraph({
+    positionedNodes,
     cruiseSnapshot,
     folderColors,
-    layoutCacheRef,
     autoLayoutOnly,
-    onRequestRebuild: requestRebuild,
-  });
-
-  useApplyWorkspaceLayout({
-    autoLayoutOnly,
-    nodeLayouts,
-    nodePositions,
-    layoutCacheRef,
-    setLayoutSnapshot,
-    requestRebuild,
+    applyNodePositionToCache,
+    setIsDragging: setIsNodeDragging,
   });
 
   useClearGraphMarkersOnEmptySelection();
 
-  const baseEdges = toReactFlowEdges(graphResult.edges);
-
   const { highlightedEdges, getEdgeHighlight, setUserEdgeHighlight, onEdgeClick, selectEdge, clearSelectedEdge } =
     useHighlightedEdges({
-      baseEdges,
+      baseEdges: rfEdges,
       userEdgeHighlights,
       onUserEdgeHighlightsChange: setUserEdgeHighlights,
     });
@@ -172,16 +169,11 @@ export function GraphCanvas(props: GraphCanvasProps) {
     selectEdge,
     clearAllHighlights,
     layoutNodes,
-    baseEdges,
+    baseEdges: rfEdges,
     userEdgeHighlights,
     autoLayoutOnly,
     edgesType,
     getLayoutSnapshot,
-    setLayoutSnapshot,
-    setGraphSettings,
-    setNodePositions,
-    setNodeLayouts,
-    openEdgesTypePicker,
   });
 
   const onPaneClick = () => {
@@ -239,6 +231,36 @@ export function GraphCanvas(props: GraphCanvasProps) {
               <GraphLegend />
             </Box>
           </Panel>
+          {!!routingProgress && (
+            <Panel position="top-center">
+              <Box
+                sx={{
+                  minWidth: 240,
+                  maxWidth: 360,
+                  px: 1.5,
+                  py: 1,
+                  borderRadius: 1,
+                  bgcolor: 'background.paper',
+                  boxShadow: 1,
+                }}
+              >
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                  {routingProgress.phase === 'overlap'
+                    ? t('graph.libavoidOverlapProgress')
+                    : t('graph.libavoidRoutingProgress')}{' '}
+                  ({routingProgress.completed}/{routingProgress.total})
+                </Typography>
+                <LinearProgress
+                  variant="determinate"
+                  value={
+                    routingProgress.total === 0
+                      ? 0
+                      : Math.min(100, (routingProgress.completed / routingProgress.total) * 100)
+                  }
+                />
+              </Box>
+            </Panel>
+          )}
           <MiniMap
             position="bottom-left"
             pannable
@@ -267,7 +289,6 @@ export function GraphCanvas(props: GraphCanvasProps) {
           {t('graph.buildError')}
         </Alert>
       </Snackbar>
-      {edgesTypePickerDialog}
     </Box>
   );
 }

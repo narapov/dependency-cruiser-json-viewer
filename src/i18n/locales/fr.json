@@ -154,6 +154,9 @@
     "edgesTypeBezier": "Bézier",
     "edgesTypeStraight": "Droit",
     "edgesTypeSimpleOrthogonal": "Orthogonal simple",
+    "edgesTypeLibavoidOrthogonal": "Libavoid orthogonal (lent)",
+    "libavoidRoutingProgress": "Routage des arêtes",
+    "libavoidOverlapProgress": "Résolution des chevauchements",
     "selectEdgesType": "Choisir le type des arêtes",
     "edgesTypeOptions": "Options de type des arêtes",
     "edgesTypeActive": "(actif)"

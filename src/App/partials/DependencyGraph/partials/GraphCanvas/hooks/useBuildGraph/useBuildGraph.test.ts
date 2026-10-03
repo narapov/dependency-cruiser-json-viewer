@@ -26,6 +26,8 @@ const EMPTY_VISIBLE_TREE: never[] = [];
 
 const layoutedA = {
   path: 'a.ts',
+  ancestors: [] as string[],
+  descendants: [] as string[],
   valueCircular: false,
   typeOnlyCircular: false,
   position: { x: 0, y: 0 },
@@ -38,6 +40,7 @@ const graphResult: BuildGraphResult = {
   tree: new Map([['a.ts', layoutedA]]),
   edges: [],
   visibleGroupLayouts: {},
+  edgesPorts: new Map(),
 };
 
 const hookInputBase = {
@@ -170,6 +173,8 @@ describe('useBuildGraph', () => {
           'stale.ts',
           {
             path: 'stale.ts',
+            ancestors: [],
+            descendants: [],
             valueCircular: false,
             typeOnlyCircular: false,
             position: { x: 0, y: 0 },
@@ -183,6 +188,8 @@ describe('useBuildGraph', () => {
           'stale.ts',
           {
             path: 'stale.ts',
+            ancestors: [],
+            descendants: [],
             valueCircular: false,
             typeOnlyCircular: false,
             position: { x: 0, y: 0 },
@@ -193,6 +200,7 @@ describe('useBuildGraph', () => {
       ]),
       edges: [],
       visibleGroupLayouts: {},
+      edgesPorts: new Map(),
     });
 
     await act(async () => {

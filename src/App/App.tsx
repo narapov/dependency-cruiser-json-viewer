@@ -19,7 +19,7 @@ import { AppSidebar } from './partials/AppSidebar';
 import { AppStatusBar } from './partials/AppStatusBar';
 import { CruiseResultEmptyState } from './partials/CruiseResultEmptyState';
 import { CruiseResultLoading } from './partials/CruiseResultLoading';
-import { DependencyGraph, type DependencyGraphHandle } from './partials/DependencyGraph';
+import { DependencyGraph, useEdgesTypePickerDialog, type DependencyGraphHandle } from './partials/DependencyGraph';
 import { DependencyPanel } from './partials/DependencyPanel';
 import { type FileTreeHandle } from './partials/FileTree';
 import { useHighlightEdgeDialog } from './partials/HighlightEdgeDialog';
@@ -108,6 +108,7 @@ function App() {
 
   const { openThemePicker, themePickerDialog } = useThemePickerDialog();
   const { openLanguagePicker, languagePickerDialog } = useLanguagePickerDialog();
+  const { openEdgesTypePicker, edgesTypePickerDialog } = useEdgesTypePickerDialog();
   const { openAbout, aboutDialog } = useAboutDialog();
   const { openIgnorePatterns, ignorePatternsDialog } = useIgnorePatternsDialog();
   const { openRuleViolationsPicker, ruleViolationsPickerDialog } = useRuleViolationsPickerDialog({
@@ -155,6 +156,7 @@ function App() {
     orch,
     openThemePicker,
     openLanguagePicker,
+    openEdgesTypePicker,
     openIgnorePatterns,
     openLoadCruiseResult: fileLoading.openLoadCruiseResult,
     openLoadSettings: fileLoading.openLoadSettings,
@@ -262,6 +264,7 @@ function App() {
           {notice}
           {themePickerDialog}
           {languagePickerDialog}
+          {edgesTypePickerDialog}
           {ignorePatternsDialog}
           {ruleViolationsPickerDialog}
           {highlightEdgeDialog}

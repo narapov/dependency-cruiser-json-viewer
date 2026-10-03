@@ -1,17 +1,13 @@
 import type { IModule } from 'dependency-cruiser';
 import { describe, expect, it } from 'vitest';
 
-import { buildCruiseSnapshot, getEdgesForVisibleTree, getVisibleTree, makeDependencyKey } from '@/domain';
+import { buildCruiseSnapshot } from '@/domain';
 
 import type { VisibleTreeLayoutedNode } from '../../types';
 import { toReactFlowEdges, toReactFlowNodes } from './toReactFlowGraph';
 
 function moduleAt(source: string, dependencies: IModule['dependencies'] = []): IModule {
   return { source, dependencies, dependents: [], valid: true } as IModule;
-}
-
-function selected(...paths: string[]): Record<string, boolean | undefined> {
-  return Object.fromEntries(paths.map(path => [path, true]));
 }
 
 /** Flat path → layouted node index (includes nested children). */
@@ -26,50 +22,41 @@ function nodesMap(...roots: VisibleTreeLayoutedNode[]): Map<string, VisibleTreeL
 }
 
 describe('toReactFlowEdges', () => {
-  it('maps visible-tree edges to data-only React Flow edges', () => {
-    const modules = [
-      moduleAt('src/foo/a.ts', [
-        {
-          resolved: 'src/foo/b.ts',
-          circular: true,
-          typeOnly: true,
-          dependencyTypes: ['type-only'],
-          rules: [{ name: 'no-circular', severity: 'warn' }],
-        } as IModule['dependencies'][0],
-      ]),
-      moduleAt('src/foo/b.ts'),
-    ];
-    const snapshot = buildCruiseSnapshot(modules);
-    const selectedFilePaths = selected('src/foo/a.ts', 'src/foo/b.ts');
-    const visibleTree = getVisibleTree(snapshot, selectedFilePaths, {
-      src: true,
-      'src/foo': true,
-    });
-    const visibleEdges = getEdgesForVisibleTree(snapshot, visibleTree, selectedFilePaths);
-    const [edge] = toReactFlowEdges(visibleEdges);
-
-    expect(edge).toMatchObject({
-      id: makeDependencyKey('src/foo/a.ts', 'src/foo/b.ts'),
-      type: 'dependency',
-      source: 'src/foo/a.ts',
-      target: 'src/foo/b.ts',
-      data: {
+  it('projects routable edges to data-only React Flow edges', () => {
+    const [edge] = toReactFlowEdges([
+      {
+        id: 'a->b',
+        source: 'a',
+        target: 'b',
         typeOnly: true,
         valueCircular: false,
         typeOnlyCircular: true,
         severity: 'warn',
         ruleNames: ['no-circular'],
+        aggregated: [{ id: 'a->b', source: 'a', target: 'b' }],
+        sourcePort: { side: 'east', index: 0, y: 12 },
+        targetPort: { side: 'west', index: 1, y: 24 },
+        avoidPath: 'M 0 0 L 1 1',
+      },
+    ]);
+
+    expect(edge).toMatchObject({
+      id: 'a->b',
+      type: 'dependency',
+      source: 'a',
+      target: 'b',
+      data: {
+        typeOnly: true,
+        typeOnlyCircular: true,
+        severity: 'warn',
+        ruleNames: ['no-circular'],
+        sourcePort: { side: 'east', index: 0, y: 12 },
+        targetPort: { side: 'west', index: 1, y: 24 },
+        avoidPath: 'M 0 0 L 1 1',
       },
     });
     expect(edge?.markerEnd).toBeUndefined();
     expect(edge?.style).toBeUndefined();
-    expect(edge?.data?.aggregated).toEqual([
-      expect.objectContaining({
-        id: makeDependencyKey('src/foo/a.ts', 'src/foo/b.ts'),
-        source: 'src/foo/a.ts',
-        target: 'src/foo/b.ts',
-      }),
-    ]);
   });
 });
 
@@ -78,6 +65,8 @@ describe('toReactFlowNodes', () => {
     const { nodes } = toReactFlowNodes(
       nodesMap({
         path: 'src/foo',
+        ancestors: [],
+        descendants: [],
         valueCircular: false,
         typeOnlyCircular: false,
         children: [],
@@ -106,6 +95,8 @@ describe('toReactFlowNodes', () => {
     const { nodes } = toReactFlowNodes(
       nodesMap({
         path: 'src/foo',
+        ancestors: [],
+        descendants: [],
         valueCircular: true,
         typeOnlyCircular: false,
         position: { x: 0, y: 0 },
@@ -127,17 +118,21 @@ describe('toReactFlowNodes', () => {
     expect(node?.height).toBeGreaterThan(0);
   });
 
-  it('creates file nodes with parent extent and couldNotResolve', () => {
+  it('creates file nodes with parentId and couldNotResolve without parent extent', () => {
     const modules = [moduleAt('src/foo/a.ts'), { ...moduleAt('missing-module'), couldNotResolve: true } as IModule];
     const snapshot = buildCruiseSnapshot(modules);
     const { nodes, parentByNode } = toReactFlowNodes(
       nodesMap({
         path: 'src/foo',
+        ancestors: [],
+        descendants: ['src/foo/a.ts', 'missing-module'],
         valueCircular: false,
         typeOnlyCircular: false,
         children: [
           {
             path: 'src/foo/a.ts',
+            ancestors: ['src/foo'],
+            descendants: [],
             valueCircular: true,
             typeOnlyCircular: false,
             position: { x: 10, y: 20 },
@@ -146,6 +141,8 @@ describe('toReactFlowNodes', () => {
           },
           {
             path: 'missing-module',
+            ancestors: ['src/foo'],
+            descendants: [],
             valueCircular: false,
             typeOnlyCircular: false,
             position: { x: 30, y: 40 },
@@ -164,7 +161,7 @@ describe('toReactFlowNodes', () => {
     const fileNode = nodes.find(item => item.id === 'src/foo/a.ts');
     expect(fileNode?.type).toBe('file');
     expect(fileNode?.parentId).toBe('src/foo');
-    expect(fileNode?.extent).toBe('parent');
+    expect(fileNode?.extent).toBeUndefined();
     expect(fileNode?.data).toMatchObject({
       label: 'a.ts',
       path: 'src/foo/a.ts',

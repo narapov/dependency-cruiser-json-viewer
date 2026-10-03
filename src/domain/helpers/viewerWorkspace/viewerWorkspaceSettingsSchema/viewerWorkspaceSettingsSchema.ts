@@ -27,7 +27,7 @@ const groupLayoutSchema = object({
   children: record(string(), childLayoutSchema),
 });
 
-const graphEdgesTypeSchema = zodEnum(['bezier', 'straight', 'simpleOrthogonal']);
+const graphEdgesTypeSchema = zodEnum(['bezier', 'straight', 'simpleOrthogonal', 'libavoidOrthogonal']);
 
 /** Zod schema for viewer workspace settings (schemaVersion 1). */
 export const viewerWorkspaceSettingsSchema = object({
@@ -71,18 +71,6 @@ export function nodePositionsToNodeLayouts(
           Object.entries(children).map(([childId, position]) => [childId, { id: childId, position }]),
         ),
       },
-    ]),
-  );
-}
-
-/** Derive legacy position maps from group layouts (drops sizes). */
-export function nodeLayoutsToNodePositions(
-  nodeLayouts: ViewerNodeLayouts,
-): Record<string, Record<string, { x: number; y: number }>> {
-  return Object.fromEntries(
-    Object.entries(nodeLayouts).map(([groupId, entry]) => [
-      groupId,
-      Object.fromEntries(Object.entries(entry.children).map(([childId, child]) => [childId, { ...child.position }])),
     ]),
   );
 }

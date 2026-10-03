@@ -37,6 +37,8 @@ describe('getVisibleTree', () => {
     expect(tree).toEqual([
       {
         path: 'src',
+        ancestors: [],
+        descendants: [],
         valueCircular: true,
         typeOnlyCircular: false,
       },
@@ -54,35 +56,47 @@ describe('getVisibleTree', () => {
     expect(tree).toEqual([
       {
         path: 'src',
+        ancestors: [],
+        descendants: ['src/bar', 'src/bar/c.ts', 'src/foo', 'src/foo/a.ts', 'src/foo/b.ts'],
         valueCircular: true,
         typeOnlyCircular: false,
         children: [
           {
-            path: 'src/foo',
-            valueCircular: true,
-            typeOnlyCircular: false,
-            children: [
-              {
-                path: 'src/foo/b.ts',
-                valueCircular: true,
-                typeOnlyCircular: false,
-              },
-              {
-                path: 'src/foo/a.ts',
-                valueCircular: true,
-                typeOnlyCircular: false,
-              },
-            ],
-          },
-          {
             path: 'src/bar',
+            ancestors: ['src'],
+            descendants: ['src/bar/c.ts'],
             valueCircular: false,
             typeOnlyCircular: true,
             children: [
               {
                 path: 'src/bar/c.ts',
+                ancestors: ['src/bar', 'src'],
+                descendants: [],
                 valueCircular: false,
                 typeOnlyCircular: true,
+              },
+            ],
+          },
+          {
+            path: 'src/foo',
+            ancestors: ['src'],
+            descendants: ['src/foo/a.ts', 'src/foo/b.ts'],
+            valueCircular: true,
+            typeOnlyCircular: false,
+            children: [
+              {
+                path: 'src/foo/a.ts',
+                ancestors: ['src/foo', 'src'],
+                descendants: [],
+                valueCircular: true,
+                typeOnlyCircular: false,
+              },
+              {
+                path: 'src/foo/b.ts',
+                ancestors: ['src/foo', 'src'],
+                descendants: [],
+                valueCircular: true,
+                typeOnlyCircular: false,
               },
             ],
           },
@@ -98,16 +112,22 @@ describe('getVisibleTree', () => {
     expect(tree).toEqual([
       {
         path: 'src',
+        ancestors: [],
+        descendants: ['src/bar', 'src/bar/c.ts'],
         valueCircular: false,
         typeOnlyCircular: false,
         children: [
           {
             path: 'src/bar',
+            ancestors: ['src'],
+            descendants: ['src/bar/c.ts'],
             valueCircular: false,
             typeOnlyCircular: false,
             children: [
               {
                 path: 'src/bar/c.ts',
+                ancestors: ['src/bar', 'src'],
+                descendants: [],
                 valueCircular: false,
                 typeOnlyCircular: false,
               },
@@ -116,5 +136,22 @@ describe('getVisibleTree', () => {
         ],
       },
     ]);
+  });
+
+  it('indexes ancestors nearest→root and descendants for nested folders', () => {
+    const snapshot = buildCruiseSnapshot([moduleAt('src/a.ts'), moduleAt('src/util/b.ts')]);
+    const [src] = getVisibleTree(snapshot, selected('src/a.ts', 'src/util/b.ts'), {
+      src: true,
+      'src/util': true,
+    });
+
+    const util = src?.children?.find(child => child.path === 'src/util');
+    const a = src?.children?.find(child => child.path === 'src/a.ts');
+
+    expect(util?.ancestors).toEqual(['src']);
+    expect(util?.descendants).toEqual(['src/util/b.ts']);
+    expect(a?.ancestors).toEqual(['src']);
+    expect(a?.descendants).toEqual([]);
+    expect(src?.descendants).toEqual(expect.arrayContaining(['src/a.ts', 'src/util', 'src/util/b.ts']));
   });
 });

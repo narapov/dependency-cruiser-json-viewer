@@ -126,7 +126,12 @@ describe('replaceWorkspaceSettings', () => {
     });
     expect(replaced.selectedFiles).toEqual(['src/a.ts']);
     expect(replaced.autoLayoutOnly).toBe(false);
-    expect(replaced.nodePositions).toEqual({ '': { 'src/a.ts': { x: 1, y: 2 } } });
+    expect(replaced.nodeLayouts).toEqual({
+      '': {
+        id: '',
+        children: { 'src/a.ts': { id: 'src/a.ts', position: { x: 1, y: 2 } } },
+      },
+    });
     expect(replaced.userEdgeHighlights.get('src/a.ts->src/b.ts')).toBe('#ff0000');
   });
 
@@ -179,7 +184,7 @@ describe('replaceWorkspaceSettings', () => {
     expect(replaced.selectedFiles).toEqual(['src/a.ts']);
   });
 
-  it('keeps remaining positions when some groups are invalid', () => {
+  it('keeps remaining layouts when some groups are invalid', () => {
     const settings = makeSettings({
       selectedFiles: ['src/a.ts'],
       expandedKeys: [],
@@ -196,10 +201,15 @@ describe('replaceWorkspaceSettings', () => {
       defaultFolderColors,
     });
     expect(replaced.autoLayoutOnly).toBe(false);
-    expect(replaced.nodePositions).toEqual({ '': { 'src/a.ts': { x: 1, y: 2 } } });
+    expect(replaced.nodeLayouts).toEqual({
+      '': {
+        id: '',
+        children: { 'src/a.ts': { id: 'src/a.ts', position: { x: 1, y: 2 } } },
+      },
+    });
   });
 
-  it('forces autoLayoutOnly when all positions are invalid', () => {
+  it('forces autoLayoutOnly when all layouts are invalid', () => {
     const settings = makeSettings({
       selectedFiles: ['src/a.ts'],
       expandedKeys: [],
@@ -215,6 +225,6 @@ describe('replaceWorkspaceSettings', () => {
       defaultFolderColors,
     });
     expect(replaced.autoLayoutOnly).toBe(true);
-    expect(replaced.nodePositions).toEqual({});
+    expect(replaced.nodeLayouts).toEqual({});
   });
 });

@@ -1,7 +1,6 @@
 import type { MergedViewerWorkspaceView } from '@/domain';
 
 import type { WorkspaceOwnState } from '../../types';
-import { normalizeNodePositions } from '../normalizeNodePositions';
 import { pathsToPresenceRecord } from '../pathsToPresenceRecord';
 
 /** Map a merged viewer settings view onto workspace store field slices (no cruise data). */
@@ -16,7 +15,6 @@ export function mapMergedViewToWorkspaceFields(
   | 'folderBaseColors'
   | 'userEdgeHighlights'
   | 'graphSettings'
-  | 'nodePositions'
   | 'nodeLayouts'
   | 'activePath'
 > {
@@ -31,7 +29,6 @@ export function mapMergedViewToWorkspaceFields(
       autoLayoutOnly: view.autoLayoutOnly,
       edgesType: view.edgesType,
     },
-    nodePositions: normalizeNodePositions(view.nodePositions),
     nodeLayouts: Object.keys(view.nodeLayouts).length > 0 ? view.nodeLayouts : null,
     activePath: null,
   };

@@ -1,14 +1,16 @@
 import type { Edge, Node } from '@xyflow/react';
 
-import { getBaseName, type CruiseSnapshot, type VisibleTreeEdge } from '@/domain';
+import { getBaseName, type CruiseSnapshot } from '@/domain';
 
 import type {
   DependencyEdgeData,
   FileNodeData,
   FolderGroupNodeData,
   FolderNodeData,
+  RoutableEdge,
   VisibleTreeLayoutedNode,
 } from '../../types';
+import { buildAncestryIndex } from '../customPositionedGraph';
 import { sortNodesByDepth } from '../sortNodesByDepth';
 
 export interface ReactFlowGraphFromLayout {
@@ -34,7 +36,6 @@ function createReactFlowNode(
   const label = getBaseName(node.path);
   const sharedParent = {
     parentId: parentId ?? undefined,
-    extent: parentId ? ('parent' as const) : undefined,
     position: { ...node.position },
   };
 
@@ -101,62 +102,38 @@ function createReactFlowNode(
   };
 }
 
-/** Build parent map from layouted-node children links (roots stay `null`). */
-function buildParentByNode(nodes: ReadonlyMap<string, VisibleTreeLayoutedNode>): Map<string, string | null> {
-  const parentByNode = new Map<string, string | null>([...nodes.keys()].map(path => [path, null]));
-
-  nodes.forEach(node => {
-    node.children?.forEach(child => {
-      parentByNode.set(child.path, node.path);
-    });
-  });
-
-  return parentByNode;
-}
-
 /** Map a flat layouted-node index into React Flow nodes (parents before children). */
 export function toReactFlowNodes(
   nodes: ReadonlyMap<string, VisibleTreeLayoutedNode>,
   cruiseSnapshot: CruiseSnapshot,
   folderColors: ReadonlyMap<string, string>,
 ): ReactFlowGraphFromLayout {
-  const parentByNode = buildParentByNode(nodes);
+  const { parentByNode } = buildAncestryIndex(nodes);
   const visibleNodeIds = new Set(nodes.keys());
+  const depthById = new Map([...nodes.values()].map(node => [node.path, node.ancestors.length]));
   const rfNodes = [...nodes.values()].map(node =>
-    createReactFlowNode(node, parentByNode.get(node.path) ?? null, cruiseSnapshot, folderColors),
+    createReactFlowNode(node, node.ancestors[0] ?? null, cruiseSnapshot, folderColors),
   );
 
   return {
-    nodes: sortNodesByDepth(rfNodes, cruiseSnapshot),
+    nodes: sortNodesByDepth(rfNodes, depthById),
     parentByNode,
     visibleNodeIds,
   };
 }
 
-/** Map domain visible-tree edges to lightweight React Flow edges (data flags only). */
-export function toReactFlowEdges(visibleEdges: readonly VisibleTreeEdge[]): Edge[] {
-  return visibleEdges.map(edge => {
-    const data: DependencyEdgeData = {
-      typeOnly: edge.typeOnly,
-      valueCircular: edge.valueCircular,
-      typeOnlyCircular: edge.typeOnlyCircular,
-      couldNotResolve: edge.violations.couldNotResolve,
-      severity: edge.violations.severity ?? undefined,
-      ruleNames: edge.violations.ruleNames.size > 0 ? [...edge.violations.ruleNames].sort() : undefined,
-      aggregated: edge.aggregated.map(dep => ({
-        id: dep.id,
-        source: dep.source,
-        target: dep.target,
-      })),
-    };
+/** Project App routable edges to React Flow edges (late presentation adapter). */
+export function toReactFlowEdges(routableEdges: readonly RoutableEdge[]): Edge[] {
+  return routableEdges.map(edge => {
+    const { id, source, target, ...data } = edge;
 
     return {
-      id: edge.key,
+      id,
       type: 'dependency',
-      source: edge.source,
-      target: edge.target,
+      source,
+      target,
       interactionWidth: 3,
-      data,
+      data: data as DependencyEdgeData,
     };
   });
 }

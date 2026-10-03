@@ -154,6 +154,9 @@
     "edgesTypeBezier": "Bezier",
     "edgesTypeStraight": "Gerade",
     "edgesTypeSimpleOrthogonal": "Einfach orthogonal",
+    "edgesTypeLibavoidOrthogonal": "Libavoid orthogonal (langsam)",
+    "libavoidRoutingProgress": "Kanten werden geroutet",
+    "libavoidOverlapProgress": "Überlappungen werden aufgelöst",
     "selectEdgesType": "Kantentyp festlegen",
     "edgesTypeOptions": "Kantentyp-Optionen",
     "edgesTypeActive": "(aktiv)"

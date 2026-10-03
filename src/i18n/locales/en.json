@@ -154,6 +154,9 @@
     "edgesTypeBezier": "Bezier",
     "edgesTypeStraight": "Straight",
     "edgesTypeSimpleOrthogonal": "Simple orthogonal",
+    "edgesTypeLibavoidOrthogonal": "Libavoid orthogonal (slow)",
+    "libavoidRoutingProgress": "Routing edges",
+    "libavoidOverlapProgress": "Resolving overlaps",
     "selectEdgesType": "Select Edges Type",
     "edgesTypeOptions": "Edges type options",
     "edgesTypeActive": "(active)"

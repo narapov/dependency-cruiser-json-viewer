@@ -64,7 +64,9 @@ After a successful graph build, the system SHALL update cache entries for all vi
 
 ### Requirement: Drag updates cache without rebuild
 
-While the user drags a node (and auto-layout-only mode is off), the system SHALL update live node positions and the layout cache using the same cascading top-down vertical settle as the build path, except the dragged node MUST remain fixed at the drag position (it is not pushed). Overlaps among siblings MUST cascade (`A` pushes `B`, `B` pushes `C`) rather than teleporting an overlapped sibling below an unrelated lower sibling. Ancestor group bounds MUST grow as needed. The system MUST NOT trigger a graph rebuild solely because of the drag.
+While the user drags a node (and auto-layout-only mode is off), the system SHALL update live custom-positioned geometry using the same cascading top-down vertical settle as the build path, except the dragged node MUST remain fixed at the drag position through settle (it is not pushed by overlap resolution). Overlaps among siblings MUST cascade (`A` pushes `B`, `B` pushes `C`) rather than teleporting an overlapped sibling below an unrelated lower sibling. Nested graph nodes MUST NOT be constrained by a parent-only move extent that forbids parent-relative coordinates outside the parent's current box (including negative coordinates).
+
+After settle for an affected folder group, the system MUST compact that group's direct children to the same content origin the build uses for folder groups (horizontal inner padding; vertical header height plus that padding): the minimum child parent-relative position MUST equal that origin on both axes. All direct children of the group SHALL be shifted by the same signed delta (`origin - min`), and the folder group itself SHALL be shifted by the opposite delta in its parent's coordinate space so world positions of those children are unchanged. This MUST run both when children overflow left/above the origin (group grows that way) and when the leftmost or topmost child moves inward and leaves excess inset (group shrinks that inset). The group's width and height MUST then be resolved from the children's bounding box plus the usual outer padding (and empty-group minima). Ancestor groups MUST apply the same settle → compact → resize sequence as geometry bubbles upward. Durable layout cache entries MUST be updated from that settled geometry when the drag finishes (commit), not on every intermediate drag move. The system MUST NOT trigger a graph rebuild solely because of the drag.
 
 #### Scenario: Drag does not rebuild
 
@@ -80,6 +82,36 @@ While the user drags a node (and auto-layout-only mode is off), the system SHALL
 
 - **WHEN** siblings are stacked `A` above `B` above `C` and dragging (or growing via drag-driven parent resize) causes `A` to overlap `B` without enough free space before `C`
 - **THEN** `B` moves just below `A` and `C` moves just below `B`; `B` MUST NOT jump below `C` in a single non-cascading placement
+
+#### Scenario: Drag left grows the folder group
+
+- **WHEN** the user drags a child left so its parent-relative `x` would sit left of the group's content origin while other siblings remain further right
+- **THEN** after reflow the children's relative order is preserved, the minimum child `x` meets the content origin, the folder group's width has grown to fit the span, and the group's position in its parent has moved left so the dragged child's world position matches the pointer (no stuck clamp at the previous left edge)
+
+#### Scenario: Drag up clears the header and grows the folder group
+
+- **WHEN** the user drags a child upward into or above the folder group header/content inset
+- **THEN** after reflow the minimum child `y` meets the content origin below the header, the folder group's height has grown as needed, and the group's position in its parent has moved upward so world positions of the children are preserved
+
+#### Scenario: Nested left growth bubbles
+
+- **WHEN** dragging a node left expands an inner folder group into a sibling folder group at the parent level
+- **THEN** the parent-level settle pushes the overlapped sibling as needed and the outer folder group compacts and resizes so the grown inner group remains inside its content origin bounds
+
+#### Scenario: Leftmost child moving right shrinks left inset
+
+- **WHEN** the leftmost child of a folder group is dragged right so the minimum child `x` would sit past the content origin
+- **THEN** after reflow the minimum child `x` again meets the content origin, sibling relative order is preserved, the folder group's position in its parent has moved right, and the group's width reflects the compacted child span (no persistent empty strip left of the content origin)
+
+#### Scenario: Topmost child moving down shrinks top inset
+
+- **WHEN** the topmost child of a folder group is dragged down so the minimum child `y` would sit past the content origin
+- **THEN** after reflow the minimum child `y` again meets the content origin below the header, the folder group's position in its parent has moved down, and the group's height reflects the compacted child span (no persistent empty strip between the header inset and the content)
+
+#### Scenario: Intermediate drag moves do not rewrite durable cache
+
+- **WHEN** the user is mid-drag and live geometry has already settled overlapping siblings
+- **THEN** durable layout cache entries remain as they were at drag start until the drag finishes and commits
 
 ### Requirement: Auto layout invalidates folder cache
 
@@ -106,17 +138,27 @@ When auto-layout-only mode is enabled, the system SHALL NOT apply the layout cac
 
 ### Requirement: Workspace persists group layouts with sizes
 
-Workspace settings SHALL persist the group layout cache (group width/height and each child's position, width, and height). Loading a workspace MUST restore that cache before or with the graph rebuild so matching groups recover their layouts. Legacy workspaces that only store child positions without sizes MUST be accepted: positions are seeded and incomplete size data does not by itself invent sizes—the next build fills sizes (and may cold-layout groups that cannot be interactively restored).
+Workspace settings SHALL persist the group layout cache as `nodeLayouts` (group width/height and each child's position, width, and height). Loading a workspace MUST migrate any legacy position-only data into that cache shape at the workspace load boundary, then restore `nodeLayouts` before or with the graph rebuild so matching groups recover their layouts. The graph restore path and in-memory workspace state MUST consume `nodeLayouts` only—they MUST NOT re-interpret legacy position maps. Saving a workspace MUST write custom layouts via `nodeLayouts` only and MUST NOT dual-write a parallel position-only map. Legacy workspaces that only store child positions without sizes MUST still be accepted on load: positions are seeded into `nodeLayouts` and incomplete size data does not by itself invent sizes—the next build fills sizes (and may cold-layout groups that cannot be interactively restored).
 
 #### Scenario: Save and reload restores nested layout
 
 - **WHEN** the user saves a workspace after manually arranging nodes inside nested folders and later loads that workspace with the same expansions
-- **THEN** those nested child positions and group sizes are restored from the persisted layout cache
+- **THEN** those nested child positions and group sizes are restored from the persisted `nodeLayouts` cache
 
 #### Scenario: Legacy positions-only workspace
 
 - **WHEN** a workspace file contains legacy position-only node position data without sizes
-- **THEN** the system loads without error and seeds positions into the layout cache for subsequent builds
+- **THEN** the system loads without error, migrates those positions into `nodeLayouts` at load time, and seeds the layout cache for subsequent builds
+
+#### Scenario: Save does not dual-write positions
+
+- **WHEN** the user saves a workspace that has custom group layouts
+- **THEN** the saved settings include those layouts under `nodeLayouts` and do not include a parallel non-empty position-only `nodePositions` map
+
+#### Scenario: Graph restore uses layouts only
+
+- **WHEN** workspace settings have been applied to in-memory state after load
+- **THEN** the graph restores layout from `nodeLayouts` alone without reading a legacy position map from that state
 
 ### Requirement: Edge style change does not rebuild layout
 
@@ -131,3 +173,22 @@ Changing the graph edge style MUST NOT trigger a graph rebuild and MUST NOT rese
 
 - **WHEN** auto-layout-only mode is on and the user changes the graph edge style
 - **THEN** edge paths update to the new style and no graph build is started solely for that style change
+
+### Requirement: Libavoid edges type is presentation-only
+
+Selecting, clearing, or applying `libavoidOrthogonal` routes MUST NOT trigger a graph rebuild and MUST NOT reset the live layout cache from persisted workspace layouts. Node positions and group layouts MUST remain as they were (including unsaved drag updates still only in the live cache). Drag while `libavoidOrthogonal` is selected MUST continue to update the live layout cache per the existing drag requirements and MUST NOT start a graph rebuild solely because of the drag or because libavoid routing is suspended or restarted after drag stop.
+
+#### Scenario: Switch to libavoid keeps live layout
+
+- **WHEN** the user has dragged nodes (positions present in the live layout cache but not yet saved) and then sets edges type to `libavoidOrthogonal`
+- **THEN** a worker may compute edge routes, but the live layout cache and visible node positions are unchanged and no graph build is started solely for that edges-type change
+
+#### Scenario: Drag under libavoid still updates cache without rebuild
+
+- **WHEN** `edgesType` is `libavoidOrthogonal` and the user drags a node (auto-layout-only off)
+- **THEN** sibling settle and ancestor growth update the live layout cache as for other edges types, edges use smooth-step during the drag, and no graph build is started solely for that drag
+
+#### Scenario: Post-drag route does not rebuild
+
+- **WHEN** drag ends under `libavoidOrthogonal` and a worker routing pass is scheduled
+- **THEN** applying the returned routes updates edge presentation only and does not start a graph build solely for that routing result

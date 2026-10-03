@@ -1,6 +1,7 @@
 import type { CruiseSnapshot, VisibleTreeEdge, VisibleTreeNode } from '@/domain';
 
 import type { SerializedLayoutCache } from '../../../types';
+import type { EdgePorts } from './DependencyEdgeData';
 
 /** Sparse presence record (`true` when the path is present). */
 export type PresenceRecord = Record<string, boolean | undefined>;
@@ -38,4 +39,6 @@ export interface BuildGraphResult {
   edges: VisibleTreeEdge[];
   /** Group layouts collected from the visible laid-out tree (for cache merge). */
   visibleGroupLayouts: SerializedLayoutCache;
+  /** Frozen per-edge EAST/WEST ports derived after layout (keyed by edge key). */
+  edgesPorts: Map<string, EdgePorts>;
 }

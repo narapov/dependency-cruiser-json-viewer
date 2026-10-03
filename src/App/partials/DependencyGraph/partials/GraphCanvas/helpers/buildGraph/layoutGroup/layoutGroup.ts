@@ -1,14 +1,14 @@
 import ELK from 'elkjs/lib/elk.bundled.js';
 
-import { getEdgesAmongNodePaths, type CruiseSnapshot } from '@/domain';
+import { getBaseName, getEdgesAmongNodePaths, type CruiseSnapshot, type VisibleTreeNode } from '@/domain';
 
 import type { VisibleTreeLayoutedNode } from '../../../types';
-import { LEAF_NODE_HEIGHT, LEAF_NODE_MIN_WIDTH } from '../../getLeafNodeSize';
-import { groupMembershipMatches } from '../../groupLayoutCache/groupMembership';
-import { settleOverlapsTopDown } from '../../groupLayoutCache/settleOverlapsTopDown';
-import type { GroupId, LayoutCache } from '../../groupLayoutCache/types';
+import { getLeafNodeSize, LEAF_NODE_HEIGHT, LEAF_NODE_MIN_WIDTH } from '../../getLeafNodeSize';
+import { groupMembershipMatches } from '../../layoutCache/groupMembership';
+import type { GroupId, LayoutCache } from '../../layoutCache/types';
 import type { BuildGraphProfiler } from '../createBuildGraphProfiler';
 import { GROUP_HEADER, GROUP_PADDING } from '../layoutConstants';
+import { settleOverlapsTopDown } from '../settleOverlapsTopDown';
 import type { NodeSize } from '../types';
 
 const NODE_HEIGHT = LEAF_NODE_HEIGHT;
@@ -19,6 +19,11 @@ interface LayoutEdge {
   source: string;
   target: string;
   weight: number;
+}
+
+interface SiblingLayoutResult {
+  layouted: VisibleTreeLayoutedNode[];
+  groupSize: NodeSize;
 }
 
 function getLayoutSpacing(childCount: number) {
@@ -140,100 +145,174 @@ async function layoutChildrenWithElk(
   );
 }
 
+/** Size a single visible node (recurse into expanded folders; leaves get label-based size). */
+async function sizeVisibleNode(
+  node: VisibleTreeNode,
+  cruiseSnapshot: CruiseSnapshot,
+  selectedFilePaths: Record<string, boolean | undefined>,
+  profiler: BuildGraphProfiler | undefined,
+  layoutCache: LayoutCache | null,
+): Promise<VisibleTreeLayoutedNode> {
+  if (node.children) {
+    const { layouted: children, groupSize } = await layoutSiblingGroup(
+      node.children,
+      cruiseSnapshot,
+      selectedFilePaths,
+      profiler,
+      layoutCache,
+      node.path,
+    );
+
+    return {
+      path: node.path,
+      ancestors: node.ancestors,
+      descendants: node.descendants,
+      valueCircular: node.valueCircular,
+      typeOnlyCircular: node.typeOnlyCircular,
+      children,
+      position: { x: 0, y: 0 },
+      width: groupSize.width,
+      height: groupSize.height,
+    };
+  }
+
+  const isFolder = Boolean(cruiseSnapshot.nodes.get(node.path)?.isFolder);
+  const size = getLeafNodeSize(getBaseName(node.path), isFolder ? 'folder' : 'file');
+
+  return {
+    path: node.path,
+    ancestors: node.ancestors,
+    descendants: node.descendants,
+    valueCircular: node.valueCircular,
+    typeOnlyCircular: node.typeOnlyCircular,
+    position: { x: 0, y: 0 },
+    width: size.width,
+    height: size.height,
+  };
+}
+
 /**
  * Applies cached child positions when membership matches, then settles sibling overlaps
  * top-down so grown children do not leave lower siblings overlapped.
  */
 function applyCachedGroupLayout(
-  children: VisibleTreeLayoutedNode[],
+  children: readonly VisibleTreeLayoutedNode[],
   cache: LayoutCache,
   groupId: GroupId,
-): NodeSize | null {
+): SiblingLayoutResult | null {
   const entry = cache.get(groupId);
   const childIds = children.map(child => child.path);
   if (!groupMembershipMatches(entry, childIds)) {
     return null;
   }
 
-  children.forEach(child => {
+  const settleItems = children.map(child => {
     const cachedChild = entry!.children.get(child.path);
-    if (cachedChild) {
-      child.position = { ...cachedChild.position };
-    }
+    return {
+      id: child.path,
+      position: cachedChild ? { ...cachedChild.position } : { ...child.position },
+      width: child.width,
+      height: child.height,
+    };
   });
-
-  const settleItems = children.map(child => ({
-    id: child.path,
-    position: child.position,
-    width: child.width,
-    height: child.height,
-  }));
   settleOverlapsTopDown(settleItems);
-  settleItems.forEach((item, index) => {
-    children[index].position = { ...item.position };
-  });
 
-  const contentSize = sizeFromChildrenBounds(children);
+  const layouted = children.map((child, index) => ({
+    ...child,
+    position: { ...settleItems[index]!.position },
+  }));
+
+  const contentSize = sizeFromChildrenBounds(layouted);
   return {
-    width: Math.max(contentSize.width, entry!.width),
-    height: Math.max(contentSize.height, entry!.height),
+    layouted,
+    groupSize: {
+      width: Math.max(contentSize.width, entry!.width),
+      height: Math.max(contentSize.height, entry!.height),
+    },
+  };
+}
+
+/** Place already-sized siblings with cache or ELK; returns new nodes with positions. */
+async function placeSiblings(
+  sizedSiblings: readonly VisibleTreeLayoutedNode[],
+  cruiseSnapshot: CruiseSnapshot,
+  selectedFilePaths: Record<string, boolean | undefined>,
+  profiler: BuildGraphProfiler | undefined,
+  layoutCache: LayoutCache | null,
+  groupId: GroupId,
+): Promise<SiblingLayoutResult> {
+  if (layoutCache) {
+    const cached = applyCachedGroupLayout(sizedSiblings, layoutCache, groupId);
+    if (cached) {
+      return cached;
+    }
+  }
+
+  const childIds = sizedSiblings.map(child => child.path);
+  const childSizes = new Map(sizedSiblings.map(child => [child.path, { width: child.width, height: child.height }]));
+  const layoutEdges = buildLayoutEdgesForChildren(cruiseSnapshot, childIds, selectedFilePaths);
+  const positions = await layoutChildrenWithElk(childIds, childSizes, layoutEdges, profiler);
+
+  const layouted = sizedSiblings.map(child => ({
+    ...child,
+    position: positions.get(child.path)!,
+  }));
+
+  return {
+    layouted,
+    groupSize: sizeFromChildrenBounds(layouted),
   };
 }
 
 /**
- * Recursively layout sibling nodes with ELK (or cache) and write position/size onto the tree.
+ * Recursively layout sibling visible nodes into new layouted nodes (ELK or cache).
  *
  * Layout algorithm (recursive, per folder level):
  *
- * 1. Recurse into expanded children (`children` present) to compute their group sizes.
+ * 1. Recurse into expanded children to produce sized layouted children.
  * 2. If the layout cache membership matches this group, apply cached relative positions,
  *    then cascade-settle sibling overlaps (vertical push-down).
  * 3. Otherwise cold-layout siblings with ELK layered (RIGHT).
  */
-export async function layoutChildren(
-  children: VisibleTreeLayoutedNode[],
+async function layoutSiblingGroup(
+  siblings: readonly VisibleTreeNode[],
+  cruiseSnapshot: CruiseSnapshot,
+  selectedFilePaths: Record<string, boolean | undefined>,
+  profiler: BuildGraphProfiler | undefined,
+  layoutCache: LayoutCache | null,
+  groupId: GroupId,
+): Promise<SiblingLayoutResult> {
+  if (siblings.length === 0) {
+    return { layouted: [], groupSize: emptyGroupSize() };
+  }
+
+  const sizedSiblings = await siblings.reduce<Promise<VisibleTreeLayoutedNode[]>>(async (previous, sibling) => {
+    const laidOut = await previous;
+    const sized = await sizeVisibleNode(sibling, cruiseSnapshot, selectedFilePaths, profiler, layoutCache);
+    return [...laidOut, sized];
+  }, Promise.resolve([]));
+
+  return placeSiblings(sizedSiblings, cruiseSnapshot, selectedFilePaths, profiler, layoutCache, groupId);
+}
+
+/**
+ * Pure layout: visible tree in → new layouted roots with sizes and positions.
+ * Shares `ancestors` / `descendants` references from the input visible nodes.
+ */
+export async function layoutVisibleTree(
+  visibleTree: readonly VisibleTreeNode[],
   cruiseSnapshot: CruiseSnapshot,
   selectedFilePaths: Record<string, boolean | undefined>,
   profiler?: BuildGraphProfiler,
   layoutCache: LayoutCache | null = null,
-  groupId: GroupId = null,
-): Promise<NodeSize> {
-  if (children.length === 0) {
-    return emptyGroupSize();
-  }
-
-  await children.reduce<Promise<void>>(async (previous, child) => {
-    await previous;
-    if (!child.children) {
-      return;
-    }
-    const size = await layoutChildren(
-      child.children,
-      cruiseSnapshot,
-      selectedFilePaths,
-      profiler,
-      layoutCache,
-      child.path,
-    );
-    child.width = size.width;
-    child.height = size.height;
-  }, Promise.resolve());
-
-  if (layoutCache) {
-    const cachedSize = applyCachedGroupLayout(children, layoutCache, groupId);
-    if (cachedSize) {
-      return cachedSize;
-    }
-  }
-
-  const childIds = children.map(child => child.path);
-  const childSizes = new Map(children.map(child => [child.path, { width: child.width, height: child.height }]));
-  const layoutEdges = buildLayoutEdgesForChildren(cruiseSnapshot, childIds, selectedFilePaths);
-  const positions = await layoutChildrenWithElk(childIds, childSizes, layoutEdges, profiler);
-
-  children.forEach(child => {
-    child.position = positions.get(child.path)!;
-  });
-
-  return sizeFromChildrenBounds(children);
+): Promise<VisibleTreeLayoutedNode[]> {
+  const { layouted } = await layoutSiblingGroup(
+    visibleTree,
+    cruiseSnapshot,
+    selectedFilePaths,
+    profiler,
+    layoutCache,
+    null,
+  );
+  return layouted;
 }

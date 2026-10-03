@@ -9,7 +9,7 @@ import type {
 import { makeDependencyKey } from '../../dependencyKey';
 import { getParentPath } from '../../pathUtils';
 import { VIEWER_WORKSPACE_EXTENSION_KEY } from '../constants';
-import { nodeLayoutsToNodePositions, nodePositionsToNodeLayouts } from '../viewerWorkspaceSettingsSchema';
+import { nodePositionsToNodeLayouts } from '../viewerWorkspaceSettingsSchema';
 
 /** Whether a path is a folder ancestor of one or more module sources. */
 export function isFolderPath(path: string, sources: string[]): boolean {
@@ -75,29 +75,6 @@ function filterNodeLayouts(nodeLayouts: ViewerNodeLayouts, validPaths: Set<strin
         return [groupId, { ...entry, children: filteredChildren }] as const;
       })
       .filter((entry): entry is readonly [string, ViewerNodeLayouts[string]] => entry != null),
-  );
-}
-
-function filterNodePositions(
-  nodePositions: ViewerWorkspaceSettings['nodePositions'],
-  validPaths: Set<string>,
-): ViewerWorkspaceSettings['nodePositions'] {
-  return Object.fromEntries(
-    Object.entries(nodePositions)
-      .map(([groupId, children]) => {
-        const groupOk = groupId === '' || validPaths.has(groupId);
-        if (!groupOk) {
-          return null;
-        }
-        const filteredChildren = Object.fromEntries(
-          Object.entries(children).filter(([childId]) => validPaths.has(childId)),
-        );
-        if (Object.keys(filteredChildren).length === 0) {
-          return null;
-        }
-        return [groupId, filteredChildren] as const;
-      })
-      .filter((entry): entry is readonly [string, Record<string, { x: number; y: number }>] => entry != null),
   );
 }
 
@@ -173,10 +150,6 @@ export function replaceWorkspaceSettings({
   const resolvedLayouts = resolveNodeLayouts(settings);
 
   if (settingsFullyCorrespond(settings, sources, folderPaths, dependencyKeys, validPaths)) {
-    const nodePositions =
-      Object.keys(settings.nodePositions).length > 0
-        ? settings.nodePositions
-        : nodeLayoutsToNodePositions(resolvedLayouts);
     return {
       selectedFiles: settings.selectedFiles,
       expandedKeys: settings.expandedKeys,
@@ -186,7 +159,6 @@ export function replaceWorkspaceSettings({
       folderColors: settings.folderColors,
       autoLayoutOnly: settings.autoLayoutOnly,
       edgesType: settings.edgesType,
-      nodePositions,
       nodeLayouts: resolvedLayouts,
     };
   }
@@ -208,10 +180,6 @@ export function replaceWorkspaceSettings({
   }
 
   const filteredLayouts = filterNodeLayouts(resolvedLayouts, validPaths);
-  const filteredPositions =
-    Object.keys(settings.nodePositions).length > 0
-      ? filterNodePositions(settings.nodePositions, validPaths)
-      : nodeLayoutsToNodePositions(filteredLayouts);
   const fileHadLayouts = Object.keys(resolvedLayouts).length > 0;
   const autoLayoutOnly = fileHadLayouts && Object.keys(filteredLayouts).length === 0 ? true : settings.autoLayoutOnly;
 
@@ -224,7 +192,6 @@ export function replaceWorkspaceSettings({
     folderColors,
     autoLayoutOnly,
     edgesType: settings.edgesType,
-    nodePositions: filteredPositions,
     nodeLayouts: filteredLayouts,
   };
 }

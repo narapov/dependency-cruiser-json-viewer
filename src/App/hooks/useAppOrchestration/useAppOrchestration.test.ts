@@ -63,9 +63,7 @@ function createRefs() {
     clearAllHighlights: vi.fn(),
     exportDot: vi.fn(),
     openDotOnline: vi.fn(),
-    getLayoutState: vi.fn(() => ({ autoLayoutOnly: true, edgesType: 'bezier', nodePositions: {}, nodeLayouts: {} })),
-    setLayoutState: vi.fn(),
-    openEdgesTypePicker: vi.fn(),
+    getLayoutState: vi.fn(() => ({ autoLayoutOnly: true, edgesType: 'bezier', nodeLayouts: {} })),
   };
   (fileTreeRef as { current: FileTreeHandle }).current = fileTree as unknown as FileTreeHandle;
   (graphRef as { current: DependencyGraphHandle }).current = graph as unknown as DependencyGraphHandle;
@@ -641,16 +639,6 @@ describe('useAppOrchestration', () => {
     });
 
     expect(graph.openDotOnline).toHaveBeenCalled();
-  });
-
-  it('openEdgesTypePicker delegates to the graph handle', () => {
-    const { result, graph } = renderOrchestration();
-
-    act(() => {
-      result.current.openEdgesTypePicker();
-    });
-
-    expect(graph.openEdgesTypePicker).toHaveBeenCalled();
   });
 
   it('focusActivePath focuses tree and graph when path is selected', () => {

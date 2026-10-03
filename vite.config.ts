@@ -1,7 +1,9 @@
 import { execSync } from 'node:child_process';
+import { createReadStream } from 'node:fs';
+import { copyFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 
-import { loadEnv } from 'vite';
+import { loadEnv, type Plugin, type ResolvedConfig } from 'vite';
 import { defineConfig } from 'vitest/config';
 
 import babel from '@rolldown/plugin-babel';
@@ -11,6 +13,36 @@ import packageJson from './package.json' with { type: 'json' };
 import { cruiseWatchPlugin } from './vite.cruiseWatchPlugin.ts';
 
 const cruiseResultPath = path.resolve('test-data/cruise-result.json');
+const libavoidWasmPath = path.resolve('node_modules/@mr_mint/elkjs-libavoid/dist/libavoid.wasm');
+
+/** Serves and copies libavoid.wasm next to the Vite app output (no postinstall). */
+function libavoidWasmPlugin(): Plugin {
+  let resolvedConfig: ResolvedConfig;
+
+  return {
+    name: 'libavoid-wasm',
+    configResolved(config) {
+      resolvedConfig = config;
+    },
+    configureServer(server) {
+      server.middlewares.use((request, response, next) => {
+        const requestPath = request.url?.split('?')[0] ?? '';
+        if (!requestPath.endsWith('/libavoid.wasm') && requestPath !== '/libavoid.wasm') {
+          next();
+          return;
+        }
+
+        response.setHeader('Content-Type', 'application/wasm');
+        createReadStream(libavoidWasmPath).pipe(response);
+      });
+    },
+    async writeBundle() {
+      const outputDirectory = path.resolve(resolvedConfig.root, resolvedConfig.build.outDir);
+      await mkdir(outputDirectory, { recursive: true });
+      await copyFile(libavoidWasmPath, path.join(outputDirectory, 'libavoid.wasm'));
+    },
+  };
+}
 
 function getGitCommitHash(): string {
   try {
@@ -39,8 +71,14 @@ export default defineConfig(({ mode }) => {
     },
     plugins: [
       react({ exclude: /\.worker\.[tj]sx?$/ }),
-      babel({ presets: [reactCompilerPreset()] }),
-      ...(process.env.VITEST ? [] : [cruiseWatchPlugin(cruiseResultPath, { watchEnabled: cruiseWatchEnabled })]),
+      babel({
+        exclude: /\.worker\.[tj]sx?$/,
+        presets: [reactCompilerPreset()],
+      }),
+      // Skip Vite-only middleware/copy during Vitest — avoids hanging the test server deps graph.
+      ...(process.env.VITEST
+        ? []
+        : [libavoidWasmPlugin(), cruiseWatchPlugin(cruiseResultPath, { watchEnabled: cruiseWatchEnabled })]),
     ],
     test: {
       globals: true,

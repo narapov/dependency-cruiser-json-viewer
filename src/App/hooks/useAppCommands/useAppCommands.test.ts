@@ -29,7 +29,6 @@ function createOrch(): AppCommandsOrchestration {
     clearAllHighlights: vi.fn(),
     exportGraphDot: vi.fn(),
     viewGraphDotOnline: vi.fn(),
-    openEdgesTypePicker: vi.fn(),
     saveWorkspace: vi.fn(),
     expandAllRecursive: vi.fn(),
     collapseAllRecursive: vi.fn(),
@@ -44,6 +43,7 @@ function baseOptions(overrides: Partial<Parameters<typeof useAppCommands>[0]> = 
     orch: createOrch(),
     openThemePicker: vi.fn(),
     openLanguagePicker: vi.fn(),
+    openEdgesTypePicker: vi.fn(),
     openIgnorePatterns: vi.fn(),
     openLoadCruiseResult: vi.fn(),
     openLoadSettings: vi.fn(),
@@ -125,6 +125,7 @@ describe('useAppCommands', () => {
 
     const orch = createOrch();
     const openThemePicker = vi.fn();
+    const openEdgesTypePicker = vi.fn();
     const showHighlightsPanel = vi.fn();
     const openAbout = vi.fn();
     const openLoadSettings = vi.fn();
@@ -142,6 +143,7 @@ describe('useAppCommands', () => {
         baseOptions({
           orch,
           openThemePicker,
+          openEdgesTypePicker,
           openLoadSettings,
           openAbout,
           openViewCruiseResultJson,
@@ -191,7 +193,7 @@ describe('useAppCommands', () => {
     expect(orch.copyActive).toHaveBeenCalled();
     expect(orch.exportGraphDot).toHaveBeenCalled();
     expect(orch.viewGraphDotOnline).toHaveBeenCalled();
-    expect(orch.openEdgesTypePicker).toHaveBeenCalled();
+    expect(openEdgesTypePicker).toHaveBeenCalled();
     expect(orch.saveWorkspace).toHaveBeenCalled();
     expect(openLoadSettings).toHaveBeenCalled();
     expect(byId.viewCruiseResultJson.disabled).toBe(false);

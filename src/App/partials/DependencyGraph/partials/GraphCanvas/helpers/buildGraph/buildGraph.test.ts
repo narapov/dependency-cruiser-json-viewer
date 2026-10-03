@@ -118,6 +118,34 @@ describe('buildGraph half-checked folders', () => {
       nodes.get('src/foo')?.children?.find(child => child.path === 'src/foo/a.ts'),
     );
   });
+
+  it('does not mutate the input visible tree and returns new layouted nodes with geometry', async () => {
+    const cruiseSnapshot = buildCruiseSnapshot(modules);
+    const selectedFilePaths = Object.fromEntries(['src/foo/a.ts'].map(p => [p, true]));
+    const expandedFolderPaths = Object.fromEntries(['src', 'src/foo'].map(p => [p, true]));
+    const visibleTree = getVisibleTree(cruiseSnapshot, selectedFilePaths, expandedFolderPaths);
+    const snapshotBefore = structuredClone(visibleTree);
+
+    const { nodes, tree } = await buildGraphFromVisibleTree({
+      cruiseSnapshot,
+      selectedFilePaths,
+      visibleTree,
+      options: { debug: false },
+    });
+
+    expect(visibleTree).toEqual(snapshotBefore);
+    expect(tree.get('src')).not.toBe(visibleTree[0]);
+    expect(nodes.get('src/foo/a.ts')?.ancestors).toBe(visibleTree[0]?.children?.[0]?.children?.[0]?.ancestors);
+
+    [...nodes.values()].forEach(node => {
+      expect(Number.isFinite(node.width)).toBe(true);
+      expect(Number.isFinite(node.height)).toBe(true);
+      expect(Number.isFinite(node.position.x)).toBe(true);
+      expect(Number.isFinite(node.position.y)).toBe(true);
+      expect(node.width).toBeGreaterThan(0);
+      expect(node.height).toBeGreaterThan(0);
+    });
+  });
 });
 
 describe('buildGraph circular dependencies', () => {
@@ -171,6 +199,37 @@ describe('buildGraph circular dependencies', () => {
 
     const circularEdge = edges.find(edge => edge.source === 'src/foo/a.ts');
     expect(circularEdge?.valueCircular).toBe(true);
+  });
+
+  it('assigns frozen edge ports for sample edges after layout', async () => {
+    const { edges, edgesPorts } = await buildGraph({
+      cruiseSnapshot: buildCruiseSnapshot(modules),
+      selectedFilePaths: Object.fromEntries(['src/foo/a.ts', 'src/foo/b.ts'].map(p => [p, true])),
+      expandedFolderPaths: Object.fromEntries(['src', 'src/foo'].map(p => [p, true])),
+    });
+
+    expect(edges.length).toBeGreaterThan(0);
+    edges.forEach(edge => {
+      const ports = edgesPorts.get(edge.key);
+      expect(ports).toBeDefined();
+      expect(ports?.source).toMatchObject({ side: 'east', index: expect.any(Number) });
+      expect(ports?.target).toMatchObject({ side: 'west', index: expect.any(Number) });
+      expect(ports?.source.y).toBeGreaterThan(0);
+      expect(ports?.target.y).toBeGreaterThan(0);
+    });
+  });
+
+  it('keeps ancestors and descendants on layouted nodes for routing', async () => {
+    const { tree, nodes } = await buildGraph({
+      cruiseSnapshot: buildCruiseSnapshot(modules),
+      selectedFilePaths: Object.fromEntries(['src/foo/a.ts', 'src/foo/b.ts'].map(p => [p, true])),
+      expandedFolderPaths: Object.fromEntries(['src', 'src/foo'].map(p => [p, true])),
+    });
+
+    expect(tree.size).toBeGreaterThan(0);
+    const foo = nodes.get('src/foo');
+    expect(foo?.ancestors[0]).toBe('src');
+    expect(foo?.descendants).toEqual(expect.arrayContaining(['src/foo/a.ts', 'src/foo/b.ts']));
   });
 });
 

@@ -4,6 +4,10 @@ import { deriveRelationFlagsFromAggregated } from '../../dependencyUtils';
 /** One node in the selection/expansion-driven visible tree. */
 export interface VisibleTreeNode {
   path: string;
+  /** Nearest parent → … → root from {@link CruiseSnapshot.nodes} (FS ancestry). */
+  ancestors: string[];
+  /** Visible node paths strictly below this node (folders + files). */
+  descendants: string[];
   children?: VisibleTreeNode[];
   valueCircular: boolean;
   typeOnlyCircular: boolean;
@@ -36,39 +40,49 @@ function getNodeCircularFlags(
   return { valueCircular, typeOnlyCircular };
 }
 
+function buildVisibleNode(
+  cruiseSnapshot: CruiseSnapshot,
+  cruiseNode: CruisePathNode,
+  selectedFilePaths: Record<string, boolean | undefined>,
+  expandedFolderPaths: Record<string, boolean | undefined>,
+): VisibleTreeNode | null {
+  if (!isVisibleTreeNode(cruiseNode, selectedFilePaths)) {
+    return null;
+  }
+
+  const circularFlags = getNodeCircularFlags(cruiseNode, selectedFilePaths);
+  const ancestors = cruiseSnapshot.nodes.get(cruiseNode.path)!.ancestors;
+
+  if (cruiseNode.isFolder && expandedFolderPaths[cruiseNode.path]) {
+    const children = [...cruiseNode.children.values()]
+      .map(child => buildVisibleNode(cruiseSnapshot, child, selectedFilePaths, expandedFolderPaths))
+      .filter((node): node is VisibleTreeNode => node !== null);
+    const descendants = children.flatMap(child => [child.path, ...child.descendants]);
+
+    return {
+      path: cruiseNode.path,
+      ancestors,
+      descendants,
+      children,
+      ...circularFlags,
+    };
+  }
+
+  return {
+    path: cruiseNode.path,
+    ancestors,
+    descendants: [],
+    ...circularFlags,
+  };
+}
+
 /** Build the visible tree for the current selection and folder expansion. */
 export function getVisibleTree(
   cruiseSnapshot: CruiseSnapshot,
   selectedFilePaths: Record<string, boolean | undefined>,
   expandedFolderPaths: Record<string, boolean | undefined>,
 ): VisibleTreeNode[] {
-  const roots: VisibleTreeNode[] = [];
-  const stack: {
-    node: CruisePathNode;
-    parentChildren: VisibleTreeNode[];
-  }[] = cruiseSnapshot.tree
-    .values()
-    .map(node => ({
-      node,
-      parentChildren: roots,
-    }))
-    .toArray();
-
-  while (stack.length > 0) {
-    const { node, parentChildren } = stack.pop()!;
-    if (isVisibleTreeNode(node, selectedFilePaths)) {
-      const circularFlags = getNodeCircularFlags(node, selectedFilePaths);
-      if (node.isFolder && expandedFolderPaths[node.path]) {
-        const children: VisibleTreeNode[] = [];
-        parentChildren.push({ path: node.path, children, ...circularFlags });
-        node.children.forEach(child => {
-          stack.push({ node: child, parentChildren: children });
-        });
-      } else {
-        parentChildren.push({ path: node.path, ...circularFlags });
-      }
-    }
-  }
-
-  return roots;
+  return [...cruiseSnapshot.tree.values()]
+    .map(node => buildVisibleNode(cruiseSnapshot, node, selectedFilePaths, expandedFolderPaths))
+    .filter((node): node is VisibleTreeNode => node !== null);
 }

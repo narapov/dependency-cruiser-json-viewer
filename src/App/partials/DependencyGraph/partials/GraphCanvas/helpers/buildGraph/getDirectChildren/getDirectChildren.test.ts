@@ -4,47 +4,33 @@ import { getDirectChildren } from './getDirectChildren';
 
 describe('getDirectChildren', () => {
   it('returns only nodes whose parent matches folderId', () => {
-    const parentByNode = new Map<string, string | null>([
-      ['folder', null],
-      ['a', 'folder'],
-      ['b', 'folder'],
-      ['c', 'a'],
+    const childrenByParent = new Map<string | null, string[]>([
+      [null, ['folder']],
+      ['folder', ['a', 'b']],
+      ['a', ['c']],
     ]);
-    const visibleNodeIds = new Set(['folder', 'a', 'b', 'c']);
 
-    expect(getDirectChildren('folder', visibleNodeIds, parentByNode)).toEqual(['a', 'b']);
+    expect(getDirectChildren('folder', childrenByParent)).toEqual(['a', 'b']);
   });
 
   it('supports null root parent', () => {
-    const parentByNode = new Map<string, string | null>([
-      ['a', null],
-      ['b', null],
-      ['c', 'a'],
+    const childrenByParent = new Map<string | null, string[]>([
+      [null, ['a', 'b']],
+      ['a', ['c']],
     ]);
-    const visibleNodeIds = new Set(['a', 'b', 'c']);
 
-    expect(getDirectChildren(null, visibleNodeIds, parentByNode)).toEqual(['a', 'b']);
+    expect(getDirectChildren(null, childrenByParent)).toEqual(['a', 'b']);
   });
 
-  it('returns sorted ids', () => {
-    const parentByNode = new Map<string, string | null>([
-      ['z', null],
-      ['a', null],
-      ['m', null],
-    ]);
-    const visibleNodeIds = new Set(['z', 'a', 'm']);
+  it('returns sorted ids from the index as-is', () => {
+    const childrenByParent = new Map<string | null, string[]>([[null, ['a', 'm', 'z']]]);
 
-    expect(getDirectChildren(null, visibleNodeIds, parentByNode)).toEqual(['a', 'm', 'z']);
+    expect(getDirectChildren(null, childrenByParent)).toEqual(['a', 'm', 'z']);
   });
 
-  it('ignores nodes not in visibleNodeIds', () => {
-    const parentByNode = new Map<string, string | null>([
-      ['a', null],
-      ['b', null],
-      ['hidden', null],
-    ]);
-    const visibleNodeIds = new Set(['a', 'b']);
+  it('returns empty list when the parent has no children entry', () => {
+    const childrenByParent = new Map<string | null, string[]>([[null, ['a', 'b']]]);
 
-    expect(getDirectChildren(null, visibleNodeIds, parentByNode)).toEqual(['a', 'b']);
+    expect(getDirectChildren('missing', childrenByParent)).toEqual([]);
   });
 });
