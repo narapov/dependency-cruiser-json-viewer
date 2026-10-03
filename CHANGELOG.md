@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.8.0](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v1.7.1...v1.8.0) (2026-10-03)
+
+### Features
+
+- add highlight edge command ([#26](https://github.com/narapov/dependency-cruiser-json-viewer/issues/26)) ([3f5bbfd](https://github.com/narapov/dependency-cruiser-json-viewer/commit/3f5bbfd43dda8828ab3b0ea6f236142d9ef9fcf4))
+- add ports and libavoid edges ([#29](https://github.com/narapov/dependency-cruiser-json-viewer/issues/29)) ([2906b3c](https://github.com/narapov/dependency-cruiser-json-viewer/commit/2906b3c3235ef8180e1181143d234dea09088779))
+- add selectable graph edges type ([#25](https://github.com/narapov/dependency-cruiser-json-viewer/issues/25)) ([24c4307](https://github.com/narapov/dependency-cruiser-json-viewer/commit/24c4307fc9ad60822a36805e3fb81b9464c2516e))
+- new architecture for improve performance ([#27](https://github.com/narapov/dependency-cruiser-json-viewer/issues/27)) ([9544e57](https://github.com/narapov/dependency-cruiser-json-viewer/commit/9544e575fd10324694c1ae47cb074f89cf536dec))
+
+### Bug Fixes
+
+- decrease leafnode static size ([76f9d56](https://github.com/narapov/dependency-cruiser-json-viewer/commit/76f9d5698acd2402fb808bfd432bd30483a025d6))
+
 ## [1.7.1](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v1.7.0...v1.7.1) (2026-09-20)
 
 ### Bug Fixes
