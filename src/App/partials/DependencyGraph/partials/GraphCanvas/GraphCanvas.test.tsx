@@ -82,14 +82,13 @@ vi.mock('./hooks', async importOriginal => {
     }),
     useCustomPositionedGraph: () => ({
       positionedNodes: new Map(),
-      routedEdges: [],
+      routableEdges: [],
       routingProgress: null,
       hasUserLayout: false,
       applyNodePositionToCache: vi.fn(),
       getLayoutSnapshot: () => ({ nodeLayouts: {} }),
       onAutoLayoutGroup: vi.fn(),
       onAutoLayoutGroupRecursive: vi.fn(),
-      baseEdges: [],
     }),
     useReactFlowGraph: () => ({
       nodes: [],

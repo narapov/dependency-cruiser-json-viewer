@@ -1,11 +1,12 @@
-import type { Edge } from '@xyflow/react';
-
-import type { AvoidRoute, DependencyEdgeData } from '../../types';
+import type { AvoidRoute, RoutableEdge } from '../../types';
 import { avoidRouteToPath } from '../avoidRouteToPath';
 import { collectCrossingJumps } from './collectCrossingJumps';
 
-/** Returns edges with numeric avoid routes, jumps, and precomputed SVG paths (п7). */
-export function mergeAvoidRoutes(edges: readonly Edge[], avoidRoutes: ReadonlyMap<string, AvoidRoute>): Edge[] {
+/** Returns App edges with numeric avoid routes, jumps, and precomputed SVG paths. */
+export function mergeAvoidRoutes(
+  edges: readonly RoutableEdge[],
+  avoidRoutes: ReadonlyMap<string, AvoidRoute>,
+): RoutableEdge[] {
   if (avoidRoutes.size === 0) {
     return [...edges];
   }
@@ -18,7 +19,6 @@ export function mergeAvoidRoutes(edges: readonly Edge[], avoidRoutes: ReadonlyMa
       return edge;
     }
 
-    const data = edge.data as DependencyEdgeData | undefined;
     const crossingJumps = crossingJumpsByEdge.get(edge.id);
     const avoidPath = avoidRouteToPath(avoidRoute);
     const avoidPathWithJumps =
@@ -26,14 +26,10 @@ export function mergeAvoidRoutes(edges: readonly Edge[], avoidRoutes: ReadonlyMa
 
     return {
       ...edge,
-      data: {
-        ...data,
-        title: data?.title ?? edge.id,
-        avoidRoute,
-        avoidPath,
-        avoidPathWithJumps,
-        ...(crossingJumps && crossingJumps.length > 0 ? { crossingJumps } : {}),
-      },
+      avoidRoute,
+      avoidPath,
+      avoidPathWithJumps,
+      ...(crossingJumps && crossingJumps.length > 0 ? { crossingJumps } : {}),
     };
   });
 }

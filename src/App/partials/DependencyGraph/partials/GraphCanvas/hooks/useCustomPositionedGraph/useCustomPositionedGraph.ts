@@ -1,8 +1,6 @@
 import { useCallback, useMemo, type MutableRefObject } from 'react';
 import { usePrevious } from 'react-use';
 
-import type { Edge } from '@xyflow/react';
-
 import type { GraphEdgesType } from '@/domain';
 
 import type { SerializedLayoutCache } from '../../../../types';
@@ -16,10 +14,10 @@ import {
   invalidateGroupLayoutRecursive,
   mergeVisibleGroupLayouts,
   serializeLayoutCache,
-  toReactFlowEdges,
+  toRoutableEdges,
   type LayoutCache,
 } from '../../helpers';
-import type { BuildGraphResult, VisibleTreeLayoutedNode } from '../../types';
+import type { BuildGraphResult, RoutableEdge, VisibleTreeLayoutedNode } from '../../types';
 import { useLibavoidEdgeRouting } from '../useLibavoidEdgeRouting';
 
 interface UseCustomPositionedGraphInput {
@@ -42,8 +40,8 @@ interface UseCustomPositionedGraphResult {
   positionedNodes: Map<string, VisibleTreeLayoutedNode>;
   positionedTree: VisibleTreeLayoutedNode[];
   parentByNode: ReadonlyMap<string, string | null>;
-  baseEdges: Edge[];
-  routedEdges: Edge[];
+  /** App routable edges after libavoid merge (or unrouted / cleared). */
+  routableEdges: RoutableEdge[];
   routingProgress: ReturnType<typeof useLibavoidEdgeRouting>['routingProgress'];
   hasUserLayout: boolean;
   applyNodePositionToCache: (
@@ -98,16 +96,16 @@ export function useCustomPositionedGraph(config: UseCustomPositionedGraphInput):
   );
   /* eslint-enable react-hooks/refs */
 
-  const baseEdges = useMemo(
-    () => toReactFlowEdges(graphResult.edges, graphResult.edgesPorts),
+  const baseRoutableEdges = useMemo(
+    () => toRoutableEdges(graphResult.edges, graphResult.edgesPorts),
     [graphResult.edges, graphResult.edgesPorts],
   );
 
-  const { routedEdges, routingProgress } = useLibavoidEdgeRouting({
+  const { routedEdges: routableEdges, routingProgress } = useLibavoidEdgeRouting({
     edgesType,
     layoutedTree: positionedTree,
     positionedNodes,
-    edges: baseEdges,
+    edges: baseRoutableEdges,
     isDragging,
   });
 
@@ -156,8 +154,7 @@ export function useCustomPositionedGraph(config: UseCustomPositionedGraphInput):
     positionedNodes,
     positionedTree,
     parentByNode,
-    baseEdges,
-    routedEdges,
+    routableEdges,
     routingProgress,
     hasUserLayout,
     applyNodePositionToCache,

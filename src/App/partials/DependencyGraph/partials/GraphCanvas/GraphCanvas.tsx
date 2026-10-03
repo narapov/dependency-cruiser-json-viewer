@@ -15,7 +15,7 @@ import { useResolvedColorMode } from '@/Shared';
 
 import { useWorkspaceStore } from '../../../../stores/workspaceStore';
 import type { DependencyGraphHandle } from '../../types';
-import { getMinimapNodeColor } from './helpers';
+import { getMinimapNodeColor, toReactFlowEdges } from './helpers';
 import {
   useAutoFitView,
   useBuildGraph,
@@ -99,7 +99,7 @@ export function GraphCanvas(props: GraphCanvasProps) {
   });
 
   const {
-    routedEdges,
+    routableEdges,
     routingProgress,
     hasUserLayout,
     applyNodePositionToCache,
@@ -107,7 +107,6 @@ export function GraphCanvas(props: GraphCanvasProps) {
     onAutoLayoutGroup,
     onAutoLayoutGroupRecursive,
     positionedNodes,
-    baseEdges,
   } = useCustomPositionedGraph({
     graphResult,
     layoutCacheRef,
@@ -119,6 +118,8 @@ export function GraphCanvas(props: GraphCanvasProps) {
     bumpCommitRevision,
     onRequestRebuild: requestRebuild,
   });
+
+  const rfEdges = toReactFlowEdges(routableEdges);
 
   const {
     nodes: layoutNodes,
@@ -138,7 +139,7 @@ export function GraphCanvas(props: GraphCanvasProps) {
 
   const { highlightedEdges, getEdgeHighlight, setUserEdgeHighlight, onEdgeClick, selectEdge, clearSelectedEdge } =
     useHighlightedEdges({
-      baseEdges: routedEdges,
+      baseEdges: rfEdges,
       userEdgeHighlights,
       onUserEdgeHighlightsChange: setUserEdgeHighlights,
     });
@@ -168,7 +169,7 @@ export function GraphCanvas(props: GraphCanvasProps) {
     selectEdge,
     clearAllHighlights,
     layoutNodes,
-    baseEdges,
+    baseEdges: rfEdges,
     userEdgeHighlights,
     autoLayoutOnly,
     edgesType,

@@ -9,6 +9,8 @@ export * from './sortNodesByDepth';
 export * from './dependencyEdgeMembership';
 export * from './getDependencyEdgeVisualStyle';
 export * from './toReactFlowGraph';
+export * from './toRoutableEdges';
+export * from './toThinRoutingEdges';
 export * from './avoidRouteToPath';
 export * from './isEdgeEmphasized';
 export * from './routeEdgesWithLibavoid';

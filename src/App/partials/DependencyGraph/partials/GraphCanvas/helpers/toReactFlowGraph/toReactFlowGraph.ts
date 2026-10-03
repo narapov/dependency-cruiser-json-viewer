@@ -1,13 +1,13 @@
 import type { Edge, Node } from '@xyflow/react';
 
-import { getBaseName, type CruiseSnapshot, type VisibleTreeEdge } from '@/domain';
+import { getBaseName, type CruiseSnapshot } from '@/domain';
 
 import type {
   DependencyEdgeData,
-  EdgePorts,
   FileNodeData,
   FolderGroupNodeData,
   FolderNodeData,
+  RoutableEdge,
   VisibleTreeLayoutedNode,
 } from '../../types';
 import { buildAncestryIndex } from '../customPositionedGraph';
@@ -122,40 +122,18 @@ export function toReactFlowNodes(
   };
 }
 
-/** Map domain visible-tree edges to lightweight React Flow edges (data flags + ports). */
-export function toReactFlowEdges(
-  visibleEdges: readonly VisibleTreeEdge[],
-  edgesPorts?: ReadonlyMap<string, EdgePorts>,
-): Edge[] {
-  return visibleEdges.map(edge => {
-    const ports = edgesPorts?.get(edge.key);
-    const data: DependencyEdgeData = {
-      typeOnly: edge.typeOnly,
-      valueCircular: edge.valueCircular,
-      typeOnlyCircular: edge.typeOnlyCircular,
-      couldNotResolve: edge.violations.couldNotResolve,
-      severity: edge.violations.severity ?? undefined,
-      ruleNames: edge.violations.ruleNames.size > 0 ? [...edge.violations.ruleNames].sort() : undefined,
-      aggregated: edge.aggregated.map(dep => ({
-        id: dep.id,
-        source: dep.source,
-        target: dep.target,
-      })),
-      ...(ports
-        ? {
-            sourcePort: ports.source,
-            targetPort: ports.target,
-          }
-        : {}),
-    };
+/** Project App routable edges to React Flow edges (late presentation adapter). */
+export function toReactFlowEdges(routableEdges: readonly RoutableEdge[]): Edge[] {
+  return routableEdges.map(edge => {
+    const { id, source, target, ...data } = edge;
 
     return {
-      id: edge.key,
+      id,
       type: 'dependency',
-      source: edge.source,
-      target: edge.target,
+      source,
+      target,
       interactionWidth: 3,
-      data,
+      data: data as DependencyEdgeData,
     };
   });
 }

@@ -3,13 +3,15 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { act, renderHook } from '@testing-library/react';
 
+import { createDependencyViolationFlags } from '@/domain';
+
 import type { LayoutCache } from '../../helpers';
 import type { BuildGraphResult, VisibleTreeLayoutedNode } from '../../types';
 import { useCustomPositionedGraph } from './useCustomPositionedGraph';
 
 vi.mock('../useLibavoidEdgeRouting', () => ({
-  useLibavoidEdgeRouting: () => ({
-    routedEdges: [],
+  useLibavoidEdgeRouting: ({ edges }: { edges: unknown[] }) => ({
+    routedEdges: edges,
     routingProgress: null,
   }),
 }));
@@ -89,6 +91,34 @@ describe('useCustomPositionedGraph', () => {
 
     expect(result.current.positionedNodes.get('a.ts')?.position).toEqual({ x: 10, y: 20 });
     expect(result.current.positionedNodes.has('b.ts')).toBe(true);
+  });
+
+  it('exposes App routable edges (not React Flow Edge) from the build result', () => {
+    const graphResult = makeGraphResult([makeLayoutedNode('a.ts'), makeLayoutedNode('b.ts')]);
+    graphResult.edges = [
+      {
+        key: 'a.ts->b.ts',
+        source: 'a.ts',
+        target: 'b.ts',
+        aggregated: [],
+        typeOnly: false,
+        valueCircular: false,
+        typeOnlyCircular: false,
+        violations: createDependencyViolationFlags({ couldNotResolve: false, rules: [] }),
+      },
+    ];
+
+    const { result } = renderCustomPositionedHook(graphResult);
+
+    expect(result.current.routableEdges).toEqual([
+      expect.objectContaining({
+        id: 'a.ts->b.ts',
+        source: 'a.ts',
+        target: 'b.ts',
+      }),
+    ]);
+    expect(result.current.routableEdges[0]).not.toHaveProperty('type');
+    expect(result.current.routableEdges[0]).not.toHaveProperty('data');
   });
 
   it('merges visible group layouts into the cache when the tree identity changes', () => {

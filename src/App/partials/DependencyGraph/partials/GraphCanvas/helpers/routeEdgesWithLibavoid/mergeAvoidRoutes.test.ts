@@ -1,13 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import type { Edge } from '@xyflow/react';
-
-import type { AvoidRoute } from '../../types';
+import type { AvoidRoute, RoutableEdge } from '../../types';
 import { mergeAvoidRoutes } from './mergeAvoidRoutes';
 
 describe('mergeAvoidRoutes', () => {
   it('returns a shallow copy when the overlay is empty', () => {
-    const edges: Edge[] = [{ id: 'a->b', source: 'a', target: 'b', data: { title: 'a → b' } }];
+    const edges: RoutableEdge[] = [{ id: 'a->b', source: 'a', target: 'b', typeOnly: true }];
 
     const result = mergeAvoidRoutes(edges, new Map());
 
@@ -16,9 +14,9 @@ describe('mergeAvoidRoutes', () => {
   });
 
   it('adds avoidRoute and precomputed paths for matching edge ids without mutating input', () => {
-    const edges: Edge[] = [
-      { id: 'a->b', source: 'a', target: 'b', data: { title: 'a → b' } },
-      { id: 'c->d', source: 'c', target: 'd', data: { title: 'c → d' } },
+    const edges: RoutableEdge[] = [
+      { id: 'a->b', source: 'a', target: 'b' },
+      { id: 'c->d', source: 'c', target: 'd' },
     ];
     const avoidRoute: AvoidRoute = {
       sourcePoint: { x: 0, y: 0 },
@@ -28,21 +26,23 @@ describe('mergeAvoidRoutes', () => {
 
     const result = mergeAvoidRoutes(edges, new Map([['a->b', avoidRoute]]));
 
-    expect(result[0]?.data).toEqual({
-      title: 'a → b',
+    expect(result[0]).toEqual({
+      id: 'a->b',
+      source: 'a',
+      target: 'b',
       avoidRoute,
       avoidPath: 'M 0 0 L 2.5 0 Q 5 0 5 2.5 L 10 10',
       avoidPathWithJumps: 'M 0 0 L 2.5 0 Q 5 0 5 2.5 L 10 10',
     });
-    expect((result[0]?.data as { avoidPath: string }).avoidPath).toContain('Q ');
-    expect(result[1]?.data).toEqual({ title: 'c → d' });
-    expect(edges[0]?.data).toEqual({ title: 'a → b' });
+    expect(result[0]?.avoidPath).toContain('Q ');
+    expect(result[1]).toEqual({ id: 'c->d', source: 'c', target: 'd' });
+    expect(edges[0]).toEqual({ id: 'a->b', source: 'a', target: 'b' });
   });
 
   it('attaches crossingJumps and a hopped path on horizontal edges that cross vertical routes', () => {
-    const edges: Edge[] = [
-      { id: 'h', source: 'a', target: 'b', data: { title: 'h' } },
-      { id: 'v', source: 'c', target: 'd', data: { title: 'v' } },
+    const edges: RoutableEdge[] = [
+      { id: 'h', source: 'a', target: 'b' },
+      { id: 'v', source: 'c', target: 'd' },
     ];
     const horizontal: AvoidRoute = {
       sourcePoint: { x: 0, y: 10 },
@@ -63,16 +63,15 @@ describe('mergeAvoidRoutes', () => {
       ]),
     );
 
-    expect(result[0]?.data).toMatchObject({
-      title: 'h',
+    expect(result[0]).toMatchObject({
+      id: 'h',
       avoidRoute: horizontal,
       crossingJumps: [{ x: 20, y: 10 }],
       avoidPath: 'M 0 10 L 40 10',
     });
-    const hopped = (result[0]?.data as { avoidPathWithJumps: string }).avoidPathWithJumps;
-    expect(hopped).toContain('A 1.5 1.5 ');
-    expect(result[1]?.data).toMatchObject({
-      title: 'v',
+    expect(result[0]?.avoidPathWithJumps).toContain('A 1.5 1.5 ');
+    expect(result[1]).toMatchObject({
+      id: 'v',
       avoidRoute: vertical,
       avoidPath: 'M 20 0 L 20 30',
       avoidPathWithJumps: 'M 20 0 L 20 30',

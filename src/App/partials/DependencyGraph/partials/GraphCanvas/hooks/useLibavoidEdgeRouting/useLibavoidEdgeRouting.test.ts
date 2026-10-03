@@ -3,9 +3,8 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { renderHook, waitFor } from '@testing-library/react';
-import type { Edge } from '@xyflow/react';
 
-import type { VisibleTreeLayoutedNode } from '../../types';
+import type { RoutableEdge, VisibleTreeLayoutedNode } from '../../types';
 import { useLibavoidEdgeRouting } from './useLibavoidEdgeRouting';
 
 const { runRouteEdgesInWorker } = vi.hoisted(() => {
@@ -60,7 +59,7 @@ const positionedNodes = new Map<string, VisibleTreeLayoutedNode>([
   ['a', layoutedTree[0]!],
   ['b', layoutedTree[1]!],
 ]);
-const edges: Edge[] = [{ id: 'a->b', source: 'a', target: 'b' }];
+const edges: RoutableEdge[] = [{ id: 'a->b', source: 'a', target: 'b' }];
 
 describe('useLibavoidEdgeRouting', () => {
   it('schedules worker routing for libavoidOrthogonal and applies routes', async () => {
@@ -78,7 +77,7 @@ describe('useLibavoidEdgeRouting', () => {
 
     await waitFor(() => {
       expect(runRouteEdgesInWorker).toHaveBeenCalled();
-      expect(result.current.routedEdges[0]?.data).toMatchObject({
+      expect(result.current.routedEdges[0]).toMatchObject({
         avoidPath: expect.any(String),
       });
     });

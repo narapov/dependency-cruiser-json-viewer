@@ -1,12 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 
-import type { Edge } from '@xyflow/react';
-
 import type { GraphEdgesType } from '@/domain';
 
-import { mergeAvoidRoutes, type LibavoidRoutingProgress } from '../../helpers';
+import { mergeAvoidRoutes, toThinRoutingEdges, type LibavoidRoutingProgress } from '../../helpers';
 import { runRouteEdgesInWorker, type RouteEdgesWorkerSession } from '../../helpers/routeEdgesWorker';
-import type { AvoidRoute, DependencyEdgeData, ThinRoutingEdge, VisibleTreeLayoutedNode } from '../../types';
+import type { AvoidRoute, RoutableEdge, VisibleTreeLayoutedNode } from '../../types';
 
 interface UseLibavoidEdgeRoutingInput {
   edgesType: GraphEdgesType;
@@ -14,27 +12,13 @@ interface UseLibavoidEdgeRoutingInput {
   layoutedTree: readonly VisibleTreeLayoutedNode[];
   /** Live custom-positioned nodes — geometry overlay at the worker boundary. */
   positionedNodes: ReadonlyMap<string, VisibleTreeLayoutedNode>;
-  edges: readonly Edge[];
+  edges: readonly RoutableEdge[];
   isDragging: boolean;
 }
 
 interface UseLibavoidEdgeRoutingResult {
-  routedEdges: Edge[];
+  routedEdges: RoutableEdge[];
   routingProgress: LibavoidRoutingProgress | null;
-}
-
-/** Build thin routing edges from RF edges (ports from edge data). */
-function toThinRoutingEdges(edges: readonly Edge[]): ThinRoutingEdge[] {
-  return edges.map(edge => {
-    const data = edge.data as DependencyEdgeData | undefined;
-    return {
-      id: edge.id,
-      source: edge.source,
-      target: edge.target,
-      ...(data?.sourcePort ? { sourcePort: data.sourcePort } : {}),
-      ...(data?.targetPort ? { targetPort: data.targetPort } : {}),
-    };
-  });
 }
 
 /** Geometry overlay from live positioned nodes onto the layouted tree at the worker boundary. */
@@ -126,7 +110,8 @@ export function useLibavoidEdgeRouting(config: UseLibavoidEdgeRoutingInput): Use
     };
   }, [routingActive, layoutedTree, positionedNodes, edges]);
 
-  const routedEdges: Edge[] = routingActive && avoidRoutes.size > 0 ? mergeAvoidRoutes(edges, avoidRoutes) : [...edges];
+  const routedEdges: RoutableEdge[] =
+    routingActive && avoidRoutes.size > 0 ? mergeAvoidRoutes(edges, avoidRoutes) : [...edges];
 
   return {
     routedEdges,
