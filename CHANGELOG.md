@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.9.0](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v1.8.0...v1.9.0) (2026-10-04)
+
+### Features
+
+- soft expand and collapse folders to a chosen level ([#30](https://github.com/narapov/dependency-cruiser-json-viewer/issues/30)) ([3265e68](https://github.com/narapov/dependency-cruiser-json-viewer/commit/3265e687352239679177ecffd5071930e022fc92))
+
 ## [1.8.0](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v1.7.1...v1.8.0) (2026-10-03)
 
 ### Features
