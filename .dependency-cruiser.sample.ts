@@ -1,12 +1,13 @@
-/** @type {import('dependency-cruiser').IConfiguration} */
-import baseConfig from './.dependency-cruiser.mjs';
+import type { DependencyType, IConfiguration } from 'dependency-cruiser';
 
-const EXTERNAL_DEP_TYPES = ['npm', 'npm-dev', 'core'];
+import baseConfig from './.dependency-cruiser.ts';
 
-export default {
+const EXTERNAL_DEP_TYPES: DependencyType[] = ['npm', 'npm-dev', 'core'];
+
+const config: IConfiguration = {
   ...baseConfig,
   forbidden: [
-    ...baseConfig.forbidden,
+    ...(baseConfig.forbidden ?? []),
     {
       name: 'samples-no-circular',
       severity: 'error',
@@ -70,3 +71,5 @@ export default {
     },
   ],
 };
+
+export default config;

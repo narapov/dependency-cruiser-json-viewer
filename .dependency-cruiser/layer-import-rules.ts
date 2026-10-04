@@ -1,15 +1,12 @@
-/** @type {import('dependency-cruiser').IForbiddenRuleType[]} */
+import type { DependencyType, IForbiddenRuleType, IRegularForbiddenRuleType } from 'dependency-cruiser';
 
-// npm, node built-ins, and npm-dev (vitest, …) are not checked by layer rules.
-const EXTERNAL_DEP_TYPES = ['npm', 'npm-dev', 'core'];
+type FromRestriction = IRegularForbiddenRuleType['from'];
+type ToRestriction = IRegularForbiddenRuleType['to'];
 
-/**
- * @param {string} name
- * @param {import('dependency-cruiser').IFromRestrictionType} from
- * @param {import('dependency-cruiser').IToRestrictionType} to
- * @returns {import('dependency-cruiser').IForbiddenRuleType}
- */
-function forbidden(name, from, to) {
+/** npm, node built-ins, and npm-dev (vitest, …) are not checked by layer rules. */
+export const EXTERNAL_DEP_TYPES: DependencyType[] = ['npm', 'npm-dev', 'core'];
+
+function forbidden(name: string, from: FromRestriction, to: ToRestriction): IForbiddenRuleType {
   return {
     name,
     severity: 'error',
@@ -21,7 +18,8 @@ function forbidden(name, from, to) {
   };
 }
 
-function buildLayerImportRules() {
+/** Build layer-boundary forbidden rules for src/domain, Shared, and App. */
+export function buildLayerImportRules(): IRegularForbiddenRuleType[] {
   return [
     // domain-only-domain
     // Allows: imports within src/domain/.
@@ -80,7 +78,5 @@ function buildLayerImportRules() {
         path: '^src/App/partials/[^/]+/(?!index\\.ts$).+',
       },
     ),
-  ];
+  ] as IRegularForbiddenRuleType[];
 }
-
-export { EXTERNAL_DEP_TYPES, buildLayerImportRules };

@@ -1,7 +1,7 @@
 import type { IRegularForbiddenRuleType } from 'dependency-cruiser';
 import { describe, expect, it } from 'vitest';
 
-import { buildLayerImportRules } from './layer-import-rules.mjs';
+import { buildLayerImportRules } from './layer-import-rules.ts';
 
 function re(pattern: string) {
   return new RegExp(pattern);

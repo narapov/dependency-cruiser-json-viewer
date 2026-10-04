@@ -1,8 +1,9 @@
-/** @type {import('dependency-cruiser').IConfiguration} */
-import { buildFolderImportRules } from './.dependency-cruiser/folder-import-rules.mjs';
-import { buildLayerImportRules } from './.dependency-cruiser/layer-import-rules.mjs';
+import type { IConfiguration } from 'dependency-cruiser';
 
-export default {
+import { buildFolderImportRules } from './.dependency-cruiser/folder-import-rules.ts';
+import { buildLayerImportRules } from './.dependency-cruiser/layer-import-rules.ts';
+
+const config: IConfiguration = {
   forbidden: [
     ...buildLayerImportRules(),
     ...buildFolderImportRules(),
@@ -29,3 +30,5 @@ export default {
     },
   },
 };
+
+export default config;

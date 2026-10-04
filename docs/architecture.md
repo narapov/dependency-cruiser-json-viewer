@@ -17,7 +17,7 @@ domain → domain only
 - **`src/App/`** (outside `partials/`) — composition, data loading, shared UI coordination. Import partials **only** via `partials/{Name}/index.ts`.
 - **`src/App/partials/{Feature}/`** — feature modules. May import Shared, domain, and the same feature tree. No layer isolation between App partials (folder rules only).
 
-Layer boundaries are enforced by [`.dependency-cruiser/layer-import-rules.mjs`](../.dependency-cruiser/layer-import-rules.mjs) (`domain-only-domain`, `shared-only-shared-and-domain`, `shared-feature-partials-only-shared-domain-and-self`, `domain-feature-partials-only-domain-and-self`, `app-root-only-shared-domain-and-partial-barrels`).
+Layer boundaries are enforced by [`.dependency-cruiser/layer-import-rules.ts`](../.dependency-cruiser/layer-import-rules.ts) (`domain-only-domain`, `shared-only-shared-and-domain`, `shared-feature-partials-only-shared-domain-and-self`, `domain-feature-partials-only-domain-and-self`, `app-root-only-shared-domain-and-partial-barrels`).
 
 ## Data & state
 
@@ -99,7 +99,7 @@ Allowed subfolders (`subdir`): `hooks`, `partials`, `hocs`, `contexts`, `types`,
 
 ### Folder import rules (per directory)
 
-Rules are **recursive** — the same constraints apply at every folder depth. Enforced by [`.dependency-cruiser/folder-import-rules.mjs`](../.dependency-cruiser/folder-import-rules.mjs) (`npm run depcruise`). Scope: `src/**` except `src/i18n/`, `src/assets/`, and `src/testsUtils/`.
+Rules are **recursive** — the same constraints apply at every folder depth. Enforced by [`.dependency-cruiser/folder-import-rules.ts`](../.dependency-cruiser/folder-import-rules.ts) (`npm run depcruise`). Scope: `src/**` except `src/i18n/`, `src/assets/`, and `src/testsUtils/`.
 
 | Direction                                | Allowed                                                                                                                                 | Forbidden                                                                                             |
 | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
@@ -184,6 +184,6 @@ Forbidden:
 
 ## Enforcement
 
-- `dependency-cruiser` — layer rules ([`.dependency-cruiser/layer-import-rules.mjs`](../.dependency-cruiser/layer-import-rules.mjs)) and folder import rules for `src/**` ([`.dependency-cruiser/folder-import-rules.mjs`](../.dependency-cruiser/folder-import-rules.mjs), `npm run depcruise`). See [Folder import rules](#folder-import-rules-per-directory) above.
+- `dependency-cruiser` — layer rules ([`.dependency-cruiser/layer-import-rules.ts`](../.dependency-cruiser/layer-import-rules.ts)) and folder import rules for `src/**` ([`.dependency-cruiser/folder-import-rules.ts`](../.dependency-cruiser/folder-import-rules.ts), `npm run depcruise`). See [Folder import rules](#folder-import-rules-per-directory) above.
 
 React 19: `ref` is a regular prop (no `forwardRef`). Project uses React Compiler — avoid manual `useCallback`/`useMemo` in new code.

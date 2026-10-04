@@ -1,4 +1,7 @@
-/** @type {import('dependency-cruiser').IForbiddenRuleType[]} */
+import type { DependencyType, IForbiddenRuleType, IRegularForbiddenRuleType } from 'dependency-cruiser';
+
+type FromRestriction = IRegularForbiddenRuleType['from'];
+type ToRestriction = IRegularForbiddenRuleType['to'];
 
 // =============================================================================
 // Folder schema (Feature/) — rules apply recursively at any nesting depth.
@@ -43,46 +46,44 @@
 // Feature roots: App, Shared, domain (see SRC_FEATURE_ROOTS).
 // =============================================================================
 
-// Allowed subfolders for ./{subdir}/{child} and (../)+{subdir}/{child}.
-const SUBDIRS_RE = 'hooks|partials|hocs|contexts|types|constants|helpers|api|stores';
+/** Allowed subfolders for ./{subdir}/{child} and (../)+{subdir}/{child}. */
+export const SUBDIRS_RE = 'hooks|partials|hocs|contexts|types|constants|helpers|api|stores';
 
-// npm and node built-ins are not checked by folder rules.
-const EXTERNAL_DEP_TYPES = ['npm', 'core'];
+/** npm and node built-ins are not checked by folder rules. */
+export const EXTERNAL_DEP_TYPES: DependencyType[] = ['npm', 'core'];
 
-// Top-level feature roots under src/ (excludes i18n, assets, testsUtils).
-const SRC_FEATURE_ROOTS = ['App', 'Shared', 'domain'];
+/** Top-level feature roots under src/ (excludes i18n, assets, testsUtils). */
+export const SRC_FEATURE_ROOTS = ['App', 'Shared', 'domain'];
 
-// src/i18n/, src/assets/, and src/testsUtils/ are out of scope — separate import layout.
-const SRC_FOLDER_SCOPE_NOT = '^src/i18n/|^src/assets/|^src/testsUtils/';
+/** src/i18n/, src/assets/, and src/testsUtils/ are out of scope — separate import layout. */
+export const SRC_FOLDER_SCOPE_NOT = '^src/i18n/|^src/assets/|^src/testsUtils/';
 
-// Test fixtures colocated with modules — may be deep-imported from *.test.ts(x).
-const FIXTURES_PATH_NOT = '/__fixtures__/';
+/** Test fixtures colocated with modules — may be deep-imported from *.test.ts(x). */
+export const FIXTURES_PATH_NOT = '/__fixtures__/';
 
-// Max partials/…/partials/… nesting (no * — safe-regex).
-const MAX_PARTIALS_DEPTH = 10;
+/** Max partials/…/partials/… nesting (no * — safe-regex). */
+export const MAX_PARTIALS_DEPTH = 10;
 
-// Prefixes up to the first partials/ — $2 is always the branch root (partials/{name} under Feature/partials/).
-// Example: …/Feature/partials/SubFeature/partials/A/partials/B/B.tsx
-//   $1 = …/Feature/partials/SubFeature/partials/A/partials/B
-//   $2 = SubFeature
-const PARTIALS_SCOPE_PREFIXES = SRC_FEATURE_ROOTS.map(name => ({
+/**
+ * Prefixes up to the first partials/ — $2 is always the branch root (partials/{name} under Feature/partials/).
+ * Example: …/Feature/partials/SubFeature/partials/A/partials/B/B.tsx
+ *   $1 = …/Feature/partials/SubFeature/partials/A/partials/B
+ *   $2 = SubFeature
+ */
+export const PARTIALS_SCOPE_PREFIXES: ReadonlyArray<{ key: string; path: string }> = SRC_FEATURE_ROOTS.map(name => ({
   key: name.toLowerCase(),
   path: `^src/${name}`,
 }));
 
-const NON_INDEX_FROM = {
+export const NON_INDEX_FROM: FromRestriction = {
   path: '(^src/.+)/[^/]+$',
   pathNot: ['/index\\.ts$', SRC_FOLDER_SCOPE_NOT],
 };
 
-const OUTSIDE_DIR_PATH_NOT = '^$1/';
+export const OUTSIDE_DIR_PATH_NOT = '^$1/';
 
-/**
- * from for a file at depth inside partials/$2/… ($1 = directory, $2 = branch root).
- * @param {string} scopePath
- * @param {number} depth
- */
-function partialsFromAtDepth(scopePath, depth) {
+/** from for a file at depth inside partials/$2/… ($1 = directory, $2 = branch root). */
+export function partialsFromAtDepth(scopePath: string, depth: number): FromRestriction {
   const nested = depth === 0 ? '' : Array(depth).fill('/partials/[^/]+').join('');
 
   return {
@@ -92,8 +93,8 @@ function partialsFromAtDepth(scopePath, depth) {
 }
 
 /** pathNot: subdir inside own partials branch at any depth (0..MAX_PARTIALS_DEPTH). */
-function ownPartialsBranchPathNots() {
-  const result = [];
+export function ownPartialsBranchPathNots(): string[] {
+  const result: string[] = [];
 
   for (let depth = 0; depth <= MAX_PARTIALS_DEPTH; depth += 1) {
     const inner = Array(depth).fill('partials/[^/]+/').join('');
@@ -103,13 +104,7 @@ function ownPartialsBranchPathNots() {
   return result;
 }
 
-/**
- * @param {string} name
- * @param {import('dependency-cruiser').IFromRestrictionType} from
- * @param {import('dependency-cruiser').IToRestrictionType} to
- * @returns {import('dependency-cruiser').IForbiddenRuleType}
- */
-function forbidden(name, from, to) {
+function forbidden(name: string, from: FromRestriction, to: ToRestriction): IForbiddenRuleType {
   return {
     name,
     severity: 'error',
@@ -121,9 +116,9 @@ function forbidden(name, from, to) {
   };
 }
 
-function buildOutsidePartialsRules() {
+function buildOutsidePartialsRules(): IForbiddenRuleType[] {
   const ownBranchPathNots = ownPartialsBranchPathNots();
-  const rules = [];
+  const rules: IForbiddenRuleType[] = [];
 
   for (const { key, path: scopePath } of PARTIALS_SCOPE_PREFIXES) {
     for (let depth = 0; depth <= MAX_PARTIALS_DEPTH; depth += 1) {
@@ -156,7 +151,20 @@ function buildOutsidePartialsRules() {
   return rules;
 }
 
-function buildFolderImportRules() {
+function pathNotAsList(pathNot: FromRestriction['pathNot']): string[] {
+  if (Array.isArray(pathNot)) {
+    return pathNot;
+  }
+
+  if (pathNot) {
+    return [pathNot];
+  }
+
+  return [];
+}
+
+/** Build folder-schema forbidden rules for src feature roots. */
+export function buildFolderImportRules(): IRegularForbiddenRuleType[] {
   return [
     // index-no-ancestor
     // Allows: ./ only — see same-dir-no-deep.
@@ -221,10 +229,7 @@ function buildFolderImportRules() {
       'no-deep-subdir',
       {
         ...NON_INDEX_FROM,
-        pathNot: [
-          ...(Array.isArray(NON_INDEX_FROM.pathNot) ? NON_INDEX_FROM.pathNot : [NON_INDEX_FROM.pathNot]),
-          FIXTURES_PATH_NOT,
-        ],
+        pathNot: [...pathNotAsList(NON_INDEX_FROM.pathNot), FIXTURES_PATH_NOT],
       },
       {
         path: `(?:${SUBDIRS_RE})/[^/]+/[^/]+`,
@@ -243,20 +248,5 @@ function buildFolderImportRules() {
     }),
 
     ...buildOutsidePartialsRules(),
-  ];
+  ] as IRegularForbiddenRuleType[];
 }
-
-export {
-  SUBDIRS_RE,
-  EXTERNAL_DEP_TYPES,
-  SRC_FEATURE_ROOTS,
-  SRC_FOLDER_SCOPE_NOT,
-  FIXTURES_PATH_NOT,
-  MAX_PARTIALS_DEPTH,
-  PARTIALS_SCOPE_PREFIXES,
-  NON_INDEX_FROM,
-  OUTSIDE_DIR_PATH_NOT,
-  partialsFromAtDepth,
-  ownPartialsBranchPathNots,
-  buildFolderImportRules,
-};

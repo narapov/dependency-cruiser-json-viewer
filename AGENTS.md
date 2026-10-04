@@ -52,7 +52,7 @@ Shared                 →  src/Shared/, src/domain/ only
 
 ### Import rules
 
-Enforced by `.dependency-cruiser.mjs` (`npm run depcruise`):
+Enforced by `.dependency-cruiser.ts` (`npm run depcruise`):
 
 - Import **`domain`** only from `src/domain/index.ts` (e.g. `from '@/domain'`).
 - Import **`Shared`** only from `src/Shared/index.ts` (e.g. `from '@/Shared'`).
@@ -70,7 +70,7 @@ Enforced by `.dependency-cruiser.mjs` (`npm run depcruise`):
 | `domain-feature-partials-only-domain-and-self`        | `src/domain/partials/{Feature}/`   | `src/domain/`, same partials branch                         |
 | `app-root-only-shared-domain-and-partial-barrels`     | `src/App/` (not under `partials/`) | intra-`App/`, external layers; partials via `index.ts` only |
 
-Folder-level import rules (siblings, `./index`, partials branches) apply under all feature roots (`App`, `Shared`, `domain`) and live in `.dependency-cruiser/folder-import-rules.mjs`.
+Folder-level import rules (siblings, `./index`, partials branches) apply under all feature roots (`App`, `Shared`, `domain`) and live in `.dependency-cruiser/folder-import-rules.ts`.
 
 ## Where to put new code
 

@@ -27,6 +27,8 @@
     "eslint.config.ts",
     "commitlint.config.ts",
     "scripts/watchSrcAndRegenerateCruiseResultForCli.ts",
+    ".dependency-cruiser.ts",
+    ".dependency-cruiser.sample.ts",
     ".dependency-cruiser/**/*"
   ]
 }

@@ -7,7 +7,7 @@ import {
   MAX_PARTIALS_DEPTH,
   PARTIALS_SCOPE_PREFIXES,
   SUBDIRS_RE,
-} from './folder-import-rules.mjs';
+} from './folder-import-rules.ts';
 
 const BASE_RULE_COUNT = 5;
 const EXPECTED_RULE_COUNT = BASE_RULE_COUNT + PARTIALS_SCOPE_PREFIXES.length * 2 * (MAX_PARTIALS_DEPTH + 1);
