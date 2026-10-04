@@ -563,6 +563,57 @@ describe('useAppOrchestration', () => {
     expect(result.current.expandedKeys).not.toContain('src/e/f');
   });
 
+  it('expandActiveToLevel and collapseActiveToLevel are directional soft walks', () => {
+    const { result } = renderOrchestration({ expandedKeys: [] });
+
+    act(() => {
+      result.current.activatePath('src/e');
+    });
+
+    act(() => {
+      result.current.collapseActive();
+    });
+    expect(result.current.expandedKeys).not.toContain('src/e');
+
+    act(() => {
+      result.current.expandActiveToLevel(1);
+    });
+    expect(result.current.expandedKeys).toContain('src/e');
+    expect(result.current.expandedKeys).not.toContain('src/e/f');
+
+    act(() => {
+      result.current.expandActiveToLevel(2);
+    });
+    expect(result.current.expandedKeys).toEqual(expect.arrayContaining(['src/e', 'src/e/f']));
+
+    act(() => {
+      result.current.collapseActiveToLevel(1);
+    });
+    expect(result.current.expandedKeys).toContain('src/e');
+    expect(result.current.expandedKeys).not.toContain('src/e/f');
+  });
+
+  it('expandRootsToLevel and collapseRootsToLevel apply to tree roots', () => {
+    const { result } = renderOrchestration({ expandedKeys: [] });
+
+    act(() => {
+      result.current.expandRootsToLevel(1);
+    });
+    expect(result.current.expandedKeys).toContain('src');
+
+    act(() => {
+      result.current.expandRootsToLevel(2);
+    });
+    expect(result.current.expandedKeys).toEqual(expect.arrayContaining(['src', 'src/b', 'src/e']));
+
+    act(() => {
+      result.current.collapseRootsToLevel(1);
+    });
+    expect(result.current.expandedKeys).toContain('src');
+    expect(result.current.expandedKeys).not.toContain('src/b');
+    expect(result.current.expandedKeys).not.toContain('src/e');
+  });
+
   it('copyActive copies resolved active path', () => {
     const { result } = renderOrchestration();
 

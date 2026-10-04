@@ -13,6 +13,7 @@ interface AppSidebarProps {
   fileTreeRef?: Ref<FileTreeHandle>;
   onShowInGraph: (path: string) => void;
   onViewModuleJson: (path: string) => void;
+  promptFolderLevel: (paths: readonly string[]) => Promise<number | null>;
   onSelectViolationPaths: (paths: string[]) => void;
   onShowRuleViolations: (ruleName: string) => void;
   onShowCycle: (paths: string[]) => void;
@@ -46,6 +47,7 @@ export function AppSidebar(props: AppSidebarProps) {
     fileTreeRef,
     onShowInGraph,
     onViewModuleJson,
+    promptFolderLevel,
     onSelectViolationPaths,
     onShowRuleViolations,
     onShowCycle,
@@ -57,7 +59,12 @@ export function AppSidebar(props: AppSidebarProps) {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
       <ViewPanel active={view === 'files'}>
-        <FileTree ref={fileTreeRef} onShowInGraph={onShowInGraph} onViewModuleJson={onViewModuleJson} />
+        <FileTree
+          ref={fileTreeRef}
+          onShowInGraph={onShowInGraph}
+          onViewModuleJson={onViewModuleJson}
+          promptFolderLevel={promptFolderLevel}
+        />
       </ViewPanel>
       <ViewPanel active={view === 'rules'}>
         <RulesPanel onSelectViolationPaths={onSelectViolationPaths} onShowRuleViolations={onShowRuleViolations} />

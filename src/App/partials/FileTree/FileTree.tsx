@@ -21,10 +21,11 @@ interface FileTreeProps {
   ref?: Ref<FileTreeHandle>;
   onShowInGraph: (path: string) => void;
   onViewModuleJson: (path: string) => void;
+  promptFolderLevel: (paths: readonly string[]) => Promise<number | null>;
 }
 
 export function FileTree(props: FileTreeProps) {
-  const { ref, onShowInGraph, onViewModuleJson } = props;
+  const { ref, onShowInGraph, onViewModuleJson, promptFolderLevel } = props;
 
   const cruiseSnapshot = useWorkspaceStore(state => state.cruiseSnapshot);
   const selectedFilePaths = useWorkspaceStore(state => state.selectedFilePaths);
@@ -44,6 +45,7 @@ export function FileTree(props: FileTreeProps) {
   const { openContextMenu, contextMenu } = useFileTreeContextMenu({
     onShowInGraph,
     onViewModuleJson,
+    promptFolderLevel,
   });
 
   const canShowNodeInGraph = (key: string) =>

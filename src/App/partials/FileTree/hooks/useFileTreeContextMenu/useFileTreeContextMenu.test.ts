@@ -49,6 +49,7 @@ describe('useFileTreeContextMenu', () => {
       useFileTreeContextMenu({
         onShowInGraph: vi.fn(),
         onViewModuleJson: vi.fn(),
+        promptFolderLevel: vi.fn(() => Promise.resolve(null)),
       }),
     );
 
@@ -76,6 +77,7 @@ describe('useFileTreeContextMenu', () => {
       useFileTreeContextMenu({
         onShowInGraph: vi.fn(),
         onViewModuleJson: vi.fn(),
+        promptFolderLevel: vi.fn(() => Promise.resolve(null)),
       }),
     );
 
@@ -103,6 +105,7 @@ describe('useFileTreeContextMenu', () => {
       useFileTreeContextMenu({
         onShowInGraph: vi.fn(),
         onViewModuleJson: vi.fn(),
+        promptFolderLevel: vi.fn(() => Promise.resolve(null)),
       }),
     );
 

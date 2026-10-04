@@ -46,6 +46,9 @@
     "expandFolder": "Ordner erweitern",
     "collapseFolder": "Ordner einklappen",
     "expandRecursive": "Rekursiv erweitern",
+    "collapseRecursive": "Rekursiv einklappen",
+    "expandToLevel": "Bis Ebene erweitern…",
+    "collapseToLevel": "Bis Ebene einklappen…",
     "autoLayout": "Automatisches Layout",
     "autoLayoutRecursive": "Automatisches Layout rekursiv",
     "close": "Schließen",
@@ -67,8 +70,10 @@
     "viewActiveItemModuleJson": "Aktives Element: Modul-JSON anzeigen",
     "expandActive": "Aktives Element: Erweitern",
     "expandActiveRecursive": "Aktives Element: Rekursiv erweitern",
+    "expandActiveToLevel": "Aktives Element: Bis Ebene erweitern…",
     "collapseActive": "Aktives Element: Einklappen",
     "collapseActiveRecursive": "Aktives Element: Rekursiv einklappen",
+    "collapseActiveToLevel": "Aktives Element: Bis Ebene einklappen…",
     "clearAllHighlights": "Hervorhebungen: Alle löschen",
     "highlightEdge": "Hervorhebungen: Kante hervorheben…",
     "exportGraphDot": "Graph: DOT exportieren",
@@ -76,6 +81,8 @@
     "selectEdgesType": "Graph: Kantentyp festlegen",
     "expandAllRecursive": "Dateibaum: Alles rekursiv erweitern",
     "collapseAllRecursive": "Dateibaum: Alles rekursiv einklappen",
+    "expandRootsToLevel": "Dateibaum: Wurzeln bis Ebene erweitern…",
+    "collapseRootsToLevel": "Dateibaum: Wurzeln bis Ebene einklappen…",
     "selectAll": "Auswahl: Alles auswählen",
     "showCircularDependenciesOnly": "Auswahl: Nur zirkuläre Abhängigkeiten anzeigen",
     "showRuleViolationsOnly": "Auswahl: Regelverletzungen anzeigen…",
@@ -205,6 +212,11 @@
     "title": "Über",
     "version": "Version {{version}}",
     "commit": "Commit {{hash}}"
+  },
+  "folderLevel": {
+    "title": "Ordnerebene",
+    "level": "Ebene",
+    "confirm": "Anwenden"
   },
   "sidebar": {
     "files": "Dateien",

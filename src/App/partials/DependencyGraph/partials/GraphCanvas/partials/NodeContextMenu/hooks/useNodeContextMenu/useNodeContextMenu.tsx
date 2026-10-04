@@ -19,12 +19,14 @@ interface MenuState {
 export interface UseNodeContextMenuOptions {
   onShowInFileTree: (path: string) => void;
   onViewModuleJson: (path: string) => void;
+  promptFolderLevel: (paths: readonly string[]) => Promise<number | null>;
   onAutoLayoutGroup?: (groupId: string) => void;
   onAutoLayoutGroupRecursive?: (groupId: string) => void;
 }
 
 export function useNodeContextMenu(config: UseNodeContextMenuOptions) {
-  const { onShowInFileTree, onViewModuleJson, onAutoLayoutGroup, onAutoLayoutGroupRecursive } = config;
+  const { onShowInFileTree, onViewModuleJson, promptFolderLevel, onAutoLayoutGroup, onAutoLayoutGroupRecursive } =
+    config;
 
   const { t } = useTranslation();
   const [menuState, setMenuState] = useState<MenuState | null>(null);
@@ -34,6 +36,9 @@ export function useNodeContextMenu(config: UseNodeContextMenuOptions) {
   const {
     toggleFolder,
     expandRecursive,
+    collapseRecursive,
+    expandToLevel,
+    collapseToLevel,
     showDependenciesPanel,
     showApplicableRulesPanel,
     hideOthers,
@@ -111,12 +116,37 @@ export function useNodeContextMenu(config: UseNodeContextMenuOptions) {
         <>
           <MenuItem onClick={handleAction(() => void copyToClipboard(path))}>{t('actions.copyPath')}</MenuItem>
           {isFolder && (
-            <MenuItem onClick={handleAction(() => toggleFolder(path))}>
-              {expanded ? t('actions.collapse') : t('actions.expand')}
-            </MenuItem>
-          )}
-          {isFolder && (
-            <MenuItem onClick={handleAction(() => expandRecursive(path))}>{t('actions.expandRecursive')}</MenuItem>
+            <>
+              <MenuItem onClick={handleAction(() => toggleFolder(path))}>
+                {expanded ? t('actions.collapse') : t('actions.expand')}
+              </MenuItem>
+              <MenuItem onClick={handleAction(() => expandRecursive(path))}>{t('actions.expandRecursive')}</MenuItem>
+              <MenuItem onClick={handleAction(() => collapseRecursive(path))}>
+                {t('actions.collapseRecursive')}
+              </MenuItem>
+              <MenuItem
+                onClick={handleAction(() => {
+                  void promptFolderLevel([path]).then(level => {
+                    if (level != null) {
+                      expandToLevel(path, level);
+                    }
+                  });
+                })}
+              >
+                {t('actions.expandToLevel')}
+              </MenuItem>
+              <MenuItem
+                onClick={handleAction(() => {
+                  void promptFolderLevel([path]).then(level => {
+                    if (level != null) {
+                      collapseToLevel(path, level);
+                    }
+                  });
+                })}
+              >
+                {t('actions.collapseToLevel')}
+              </MenuItem>
+            </>
           )}
           {showAutoLayout && (
             <MenuItem onClick={handleAction(() => onAutoLayoutGroup(path))}>{t('actions.autoLayout')}</MenuItem>

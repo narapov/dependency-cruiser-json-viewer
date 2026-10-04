@@ -22,6 +22,7 @@ import { CruiseResultLoading } from './partials/CruiseResultLoading';
 import { DependencyGraph, useEdgesTypePickerDialog, type DependencyGraphHandle } from './partials/DependencyGraph';
 import { DependencyPanel } from './partials/DependencyPanel';
 import { type FileTreeHandle } from './partials/FileTree';
+import { useFolderLevelDialog } from './partials/FolderLevelDialog';
 import { useHighlightEdgeDialog } from './partials/HighlightEdgeDialog';
 import { useIgnorePatternsDialog } from './partials/IgnorePatternsDialog';
 import { useCruiseResultJsonDialog, useModuleJsonDialog } from './partials/JsonViewDialog';
@@ -111,6 +112,7 @@ function App() {
   const { openEdgesTypePicker, edgesTypePickerDialog } = useEdgesTypePickerDialog();
   const { openAbout, aboutDialog } = useAboutDialog();
   const { openIgnorePatterns, ignorePatternsDialog } = useIgnorePatternsDialog();
+  const { promptFolderLevel, folderLevelDialog } = useFolderLevelDialog();
   const { openRuleViolationsPicker, ruleViolationsPickerDialog } = useRuleViolationsPickerDialog({
     onConfirm: ruleNames => orch.showRuleViolationsOnly(ruleNames),
   });
@@ -154,6 +156,7 @@ function App() {
 
   const commands = useAppCommands({
     orch,
+    promptFolderLevel,
     openThemePicker,
     openLanguagePicker,
     openEdgesTypePicker,
@@ -232,6 +235,7 @@ function App() {
           fileTreeRef={fileTreeRef}
           onShowInGraph={orch.showInGraph}
           onViewModuleJson={openModuleJson}
+          promptFolderLevel={promptFolderLevel}
           onSelectViolationPaths={handleShowDependencyConnection}
           onShowRuleViolations={ruleName => orch.showRuleViolationsOnly([ruleName])}
           onShowCycle={orch.showPathsOnly}
@@ -241,7 +245,12 @@ function App() {
         />
       }
       main={
-        <DependencyGraph ref={graphRef} onShowInFileTree={handleShowInFileTree} onViewModuleJson={openModuleJson} />
+        <DependencyGraph
+          ref={graphRef}
+          onShowInFileTree={handleShowInFileTree}
+          onViewModuleJson={openModuleJson}
+          promptFolderLevel={promptFolderLevel}
+        />
       }
       dependenciesPanel={
         <DependencyPanel
@@ -266,6 +275,7 @@ function App() {
           {languagePickerDialog}
           {edgesTypePickerDialog}
           {ignorePatternsDialog}
+          {folderLevelDialog}
           {ruleViolationsPickerDialog}
           {highlightEdgeDialog}
           {aboutDialog}

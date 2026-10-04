@@ -1,9 +1,11 @@
 import {
+  collectFolderPathsToCollapse,
+  collectFolderPathsToExpand,
   collectRelatedModuleSources,
   getAncestorKeys,
   getCruiseSources,
   getCruiseSourcesUnder,
-  getSubtreeFolderKeys,
+  resolveFolderNodes,
   toggleExpandedKey,
   type RelatedModuleDirection,
 } from '@/domain';
@@ -31,9 +33,36 @@ export function useGraphWorkspaceActions() {
     replaceExpandedFolderPaths(toggleExpandedKey(previous, path));
   };
 
-  const expandRecursive = (path: string) => {
+  const expandFoldersToLevel = (paths: readonly string[], level: number) => {
+    const folderNodes = resolveFolderNodes(cruiseSnapshot.nodes, paths);
     const previous = presenceRecordToPaths(useWorkspaceStore.getState().expandedFolderPaths);
-    replaceExpandedFolderPaths([...new Set([...previous, ...getSubtreeFolderKeys(path, sources)])]);
+    replaceExpandedFolderPaths([...new Set([...previous, ...collectFolderPathsToExpand(folderNodes, level)])]);
+  };
+
+  const collapseFoldersToLevel = (paths: readonly string[], level: number) => {
+    const folderNodes = resolveFolderNodes(cruiseSnapshot.nodes, paths);
+    const toRemove = new Set(collectFolderPathsToCollapse(folderNodes, level));
+    const previous = presenceRecordToPaths(useWorkspaceStore.getState().expandedFolderPaths);
+    replaceExpandedFolderPaths(previous.filter(key => !toRemove.has(key)));
+  };
+
+  const expandRecursive = (path: string) => {
+    expandFoldersToLevel([path], Infinity);
+  };
+
+  const collapseRecursive = (path: string) => {
+    const folderNodes = resolveFolderNodes(cruiseSnapshot.nodes, [path]);
+    const toRemove = new Set([...folderNodes.map(node => node.path), ...collectFolderPathsToCollapse(folderNodes, 1)]);
+    const previous = presenceRecordToPaths(useWorkspaceStore.getState().expandedFolderPaths);
+    replaceExpandedFolderPaths(previous.filter(key => !toRemove.has(key)));
+  };
+
+  const expandToLevel = (path: string, level: number) => {
+    expandFoldersToLevel([path], level);
+  };
+
+  const collapseToLevel = (path: string, level: number) => {
+    collapseFoldersToLevel([path], level);
   };
 
   const activatePath = (path: string) => {
@@ -90,6 +119,9 @@ export function useGraphWorkspaceActions() {
   return {
     toggleFolder,
     expandRecursive,
+    collapseRecursive,
+    expandToLevel,
+    collapseToLevel,
     activatePath,
     showDependenciesPanel,
     showApplicableRulesPanel,

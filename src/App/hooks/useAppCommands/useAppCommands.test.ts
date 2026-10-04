@@ -24,14 +24,20 @@ function createOrch(): AppCommandsOrchestration {
     viewActiveItemApplicableRulesPanel: vi.fn(),
     expandActive: vi.fn(),
     expandActiveRecursive: vi.fn(),
+    expandActiveToLevel: vi.fn(),
+    getActiveFolderPath: vi.fn(() => null),
     collapseActive: vi.fn(),
     collapseActiveRecursive: vi.fn(),
+    collapseActiveToLevel: vi.fn(),
     clearAllHighlights: vi.fn(),
     exportGraphDot: vi.fn(),
     viewGraphDotOnline: vi.fn(),
     saveWorkspace: vi.fn(),
     expandAllRecursive: vi.fn(),
     collapseAllRecursive: vi.fn(),
+    getRootFolderPaths: vi.fn(() => []),
+    expandRootsToLevel: vi.fn(),
+    collapseRootsToLevel: vi.fn(),
     selectAll: vi.fn(),
     unselectAll: vi.fn(),
     showCircularDependenciesOnly: vi.fn(),
@@ -41,6 +47,7 @@ function createOrch(): AppCommandsOrchestration {
 function baseOptions(overrides: Partial<Parameters<typeof useAppCommands>[0]> = {}) {
   return {
     orch: createOrch(),
+    promptFolderLevel: vi.fn(() => Promise.resolve(null)),
     openThemePicker: vi.fn(),
     openLanguagePicker: vi.fn(),
     openEdgesTypePicker: vi.fn(),
@@ -90,6 +97,10 @@ describe('useAppCommands', () => {
     const { result } = renderHook(() => useAppCommands(baseOptions()));
 
     const ids = result.current.map(command => command.id);
+    expect(ids).toContain('expandActiveToLevel');
+    expect(ids).toContain('collapseActiveToLevel');
+    expect(ids).toContain('expandRootsToLevel');
+    expect(ids).toContain('collapseRootsToLevel');
     expect(ids).toContain('exportGraphDot');
     expect(ids).toContain('viewGraphDotOnline');
     expect(ids).toContain('selectEdgesType');

@@ -46,6 +46,9 @@
     "expandFolder": "Expandir carpeta",
     "collapseFolder": "Contraer carpeta",
     "expandRecursive": "Expandir recursivamente",
+    "collapseRecursive": "Contraer recursivamente",
+    "expandToLevel": "Expandir hasta el nivel…",
+    "collapseToLevel": "Contraer hasta el nivel…",
     "autoLayout": "Diseño automático",
     "autoLayoutRecursive": "Diseño automático recursivo",
     "close": "Cerrar",
@@ -67,8 +70,10 @@
     "viewActiveItemModuleJson": "Elemento activo: Ver JSON del módulo",
     "expandActive": "Elemento activo: Expandir",
     "expandActiveRecursive": "Elemento activo: Expandir recursivamente",
+    "expandActiveToLevel": "Elemento activo: Expandir hasta el nivel…",
     "collapseActive": "Elemento activo: Contraer",
     "collapseActiveRecursive": "Elemento activo: Contraer recursivamente",
+    "collapseActiveToLevel": "Elemento activo: Contraer hasta el nivel…",
     "clearAllHighlights": "Resaltados: Limpiar todos",
     "highlightEdge": "Resaltados: Resaltar arista…",
     "exportGraphDot": "Grafo: Exportar DOT",
@@ -76,6 +81,8 @@
     "selectEdgesType": "Grafo: Seleccionar tipo de aristas",
     "expandAllRecursive": "Árbol de archivos: Expandir todo recursivamente",
     "collapseAllRecursive": "Árbol de archivos: Contraer todo recursivamente",
+    "expandRootsToLevel": "Árbol de archivos: Expandir raíces hasta el nivel…",
+    "collapseRootsToLevel": "Árbol de archivos: Contraer raíces hasta el nivel…",
     "selectAll": "Selección: Seleccionar todo",
     "showCircularDependenciesOnly": "Selección: Mostrar solo dependencias circulares",
     "showRuleViolationsOnly": "Selección: Mostrar violaciones de reglas…",
@@ -205,6 +212,11 @@
     "title": "Acerca de",
     "version": "Versión {{version}}",
     "commit": "Commit {{hash}}"
+  },
+  "folderLevel": {
+    "title": "Nivel de carpeta",
+    "level": "Nivel",
+    "confirm": "Aplicar"
   },
   "sidebar": {
     "files": "Archivos",

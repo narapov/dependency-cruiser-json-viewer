@@ -46,6 +46,9 @@
     "expandFolder": "Expand folder",
     "collapseFolder": "Collapse folder",
     "expandRecursive": "Expand recursive",
+    "collapseRecursive": "Collapse recursive",
+    "expandToLevel": "Expand to level…",
+    "collapseToLevel": "Collapse to level…",
     "autoLayout": "Auto layout",
     "autoLayoutRecursive": "Auto layout recursive",
     "close": "Close",
@@ -67,8 +70,10 @@
     "viewActiveItemModuleJson": "Active Item: View Module JSON",
     "expandActive": "Active Item: Expand",
     "expandActiveRecursive": "Active Item: Expand Recursively",
+    "expandActiveToLevel": "Active Item: Expand to Level…",
     "collapseActive": "Active Item: Collapse",
     "collapseActiveRecursive": "Active Item: Collapse Recursively",
+    "collapseActiveToLevel": "Active Item: Collapse to Level…",
     "clearAllHighlights": "Highlights: Clear All",
     "highlightEdge": "Highlights: Highlight Edge…",
     "exportGraphDot": "Graph: Export DOT",
@@ -76,6 +81,8 @@
     "selectEdgesType": "Graph: Select Edges Type",
     "expandAllRecursive": "File Tree: Expand All Recursively",
     "collapseAllRecursive": "File Tree: Collapse All Recursively",
+    "expandRootsToLevel": "File Tree: Expand Roots to Level…",
+    "collapseRootsToLevel": "File Tree: Collapse Roots to Level…",
     "selectAll": "Selection: Select All",
     "showCircularDependenciesOnly": "Selection: Show Circular Dependencies Only",
     "showRuleViolationsOnly": "Selection: Show Rule Violations…",
@@ -205,6 +212,11 @@
     "title": "About",
     "version": "Version {{version}}",
     "commit": "Commit {{hash}}"
+  },
+  "folderLevel": {
+    "title": "Folder level",
+    "level": "Level",
+    "confirm": "Apply"
   },
   "sidebar": {
     "files": "Files",

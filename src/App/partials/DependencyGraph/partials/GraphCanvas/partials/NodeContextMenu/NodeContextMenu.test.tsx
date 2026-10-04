@@ -20,6 +20,9 @@ import { NodeContextMenuTrigger } from './partials';
 const workspaceActions = vi.hoisted(() => ({
   toggleFolder: vi.fn(),
   expandRecursive: vi.fn(),
+  collapseRecursive: vi.fn(),
+  expandToLevel: vi.fn(),
+  collapseToLevel: vi.fn(),
   activatePath: vi.fn(),
   showDependenciesPanel: vi.fn(),
   showApplicableRulesPanel: vi.fn(),
@@ -71,6 +74,7 @@ function TestHarness(props: HarnessOptions) {
   const { openContextMenu, openAtElement, contextMenu } = useNodeContextMenu({
     onShowInFileTree,
     onViewModuleJson,
+    promptFolderLevel: vi.fn(() => Promise.resolve(null)),
     onAutoLayoutGroup,
     onAutoLayoutGroupRecursive,
   });
@@ -112,6 +116,9 @@ describe('NodeContextMenu', () => {
     expect(screen.getByText(i18n.current.t('actions.copyPath'))).toBeInTheDocument();
     expect(screen.getByText(i18n.current.t('actions.collapse'))).toBeInTheDocument();
     expect(screen.getByText(i18n.current.t('actions.expandRecursive'))).toBeInTheDocument();
+    expect(screen.getByText(i18n.current.t('actions.collapseRecursive'))).toBeInTheDocument();
+    expect(screen.getByText(i18n.current.t('actions.expandToLevel'))).toBeInTheDocument();
+    expect(screen.getByText(i18n.current.t('actions.collapseToLevel'))).toBeInTheDocument();
     expect(screen.getByText(i18n.current.t('actions.showInFileTree'))).toBeInTheDocument();
   });
 

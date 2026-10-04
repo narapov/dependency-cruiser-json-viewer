@@ -19,6 +19,7 @@ const EMPTY_TREE = buildCruiseSnapshot([]);
 const baseProps = {
   onShowInFileTree: vi.fn(),
   onViewModuleJson: vi.fn(),
+  promptFolderLevel: vi.fn(() => Promise.resolve(null)),
 };
 
 function seedSelectedWorkspace() {

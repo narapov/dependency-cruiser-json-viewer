@@ -43,7 +43,13 @@ describe('FileTree', () => {
   it('debounces item click into onShowInGraph for selected paths', () => {
     const onShowInGraph = vi.fn();
 
-    renderWithTheme(<FileTree onShowInGraph={onShowInGraph} onViewModuleJson={vi.fn()} />);
+    renderWithTheme(
+      <FileTree
+        onShowInGraph={onShowInGraph}
+        onViewModuleJson={vi.fn()}
+        promptFolderLevel={vi.fn(() => Promise.resolve(null))}
+      />,
+    );
 
     fireEvent.click(screen.getByText('a.ts'));
     expect(onShowInGraph).not.toHaveBeenCalled();
@@ -59,7 +65,13 @@ describe('FileTree', () => {
     const onShowInGraph = vi.fn();
     seedWorkspace({ selectedKeys: ['src/a.ts'] });
 
-    renderWithTheme(<FileTree onShowInGraph={onShowInGraph} onViewModuleJson={vi.fn()} />);
+    renderWithTheme(
+      <FileTree
+        onShowInGraph={onShowInGraph}
+        onViewModuleJson={vi.fn()}
+        promptFolderLevel={vi.fn(() => Promise.resolve(null))}
+      />,
+    );
 
     fireEvent.click(screen.getByText('c.ts'));
     act(() => {
@@ -72,7 +84,13 @@ describe('FileTree', () => {
   it('does not show in graph when clicking the checkbox', () => {
     const onShowInGraph = vi.fn();
 
-    renderWithTheme(<FileTree onShowInGraph={onShowInGraph} onViewModuleJson={vi.fn()} />);
+    renderWithTheme(
+      <FileTree
+        onShowInGraph={onShowInGraph}
+        onViewModuleJson={vi.fn()}
+        promptFolderLevel={vi.fn(() => Promise.resolve(null))}
+      />,
+    );
 
     const treeItem = screen.getByText('a.ts').closest('[role="treeitem"]');
     expect(treeItem).toBeInTheDocument();
@@ -87,7 +105,14 @@ describe('FileTree', () => {
   it('exposes focusPath that scrolls and focuses the item', () => {
     const ref = createRef<FileTreeHandle>();
 
-    renderWithTheme(<FileTree ref={ref} onShowInGraph={vi.fn()} onViewModuleJson={vi.fn()} />);
+    renderWithTheme(
+      <FileTree
+        ref={ref}
+        onShowInGraph={vi.fn()}
+        onViewModuleJson={vi.fn()}
+        promptFolderLevel={vi.fn(() => Promise.resolve(null))}
+      />,
+    );
 
     act(() => {
       ref.current?.focusPath('src/a.ts');
@@ -101,7 +126,13 @@ describe('FileTree', () => {
   });
 
   it('toggles expand via FileTreeItem double-click on folders', () => {
-    renderWithTheme(<FileTree onShowInGraph={vi.fn()} onViewModuleJson={vi.fn()} />);
+    renderWithTheme(
+      <FileTree
+        onShowInGraph={vi.fn()}
+        onViewModuleJson={vi.fn()}
+        promptFolderLevel={vi.fn(() => Promise.resolve(null))}
+      />,
+    );
 
     fireEvent.doubleClick(screen.getByText('b'));
 
@@ -111,7 +142,13 @@ describe('FileTree', () => {
   it('shows in graph on Enter for navigable FileTreeItem', () => {
     const onShowInGraph = vi.fn();
 
-    renderWithTheme(<FileTree onShowInGraph={onShowInGraph} onViewModuleJson={vi.fn()} />);
+    renderWithTheme(
+      <FileTree
+        onShowInGraph={onShowInGraph}
+        onViewModuleJson={vi.fn()}
+        promptFolderLevel={vi.fn(() => Promise.resolve(null))}
+      />,
+    );
 
     const treeItem = screen.getByText('a.ts').closest('[role="treeitem"]');
     expect(treeItem).toBeInTheDocument();

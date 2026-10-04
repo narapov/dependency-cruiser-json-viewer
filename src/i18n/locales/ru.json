@@ -46,6 +46,9 @@
     "expandFolder": "Развернуть папку",
     "collapseFolder": "Свернуть папку",
     "expandRecursive": "Развернуть рекурсивно",
+    "collapseRecursive": "Свернуть рекурсивно",
+    "expandToLevel": "Развернуть до уровня…",
+    "collapseToLevel": "Свернуть до уровня…",
     "autoLayout": "Авторазмещение",
     "autoLayoutRecursive": "Авторазмещение рекурсивно",
     "close": "Закрыть",
@@ -67,8 +70,10 @@
     "viewActiveItemModuleJson": "Активный элемент: Показать JSON модуля",
     "expandActive": "Активный элемент: Развернуть",
     "expandActiveRecursive": "Активный элемент: Развернуть рекурсивно",
+    "expandActiveToLevel": "Активный элемент: Развернуть до уровня…",
     "collapseActive": "Активный элемент: Свернуть",
     "collapseActiveRecursive": "Активный элемент: Свернуть рекурсивно",
+    "collapseActiveToLevel": "Активный элемент: Свернуть до уровня…",
     "clearAllHighlights": "Подсветка: Сбросить все",
     "highlightEdge": "Подсветка: Подсветить ребро…",
     "exportGraphDot": "Граф: Экспорт DOT",
@@ -76,6 +81,8 @@
     "selectEdgesType": "Граф: Выбрать тип рёбер",
     "expandAllRecursive": "Файловое дерево: Развернуть всё рекурсивно",
     "collapseAllRecursive": "Файловое дерево: Свернуть всё рекурсивно",
+    "expandRootsToLevel": "Файловое дерево: Развернуть корни до уровня…",
+    "collapseRootsToLevel": "Файловое дерево: Свернуть корни до уровня…",
     "selectAll": "Выделение: Выбрать всё",
     "showCircularDependenciesOnly": "Выделение: Показать только циклические зависимости",
     "showRuleViolationsOnly": "Выделение: Показать нарушения правил…",
@@ -205,6 +212,11 @@
     "title": "О приложении",
     "version": "Версия {{version}}",
     "commit": "Коммит {{hash}}"
+  },
+  "folderLevel": {
+    "title": "Уровень папки",
+    "level": "Уровень",
+    "confirm": "Применить"
   },
   "sidebar": {
     "files": "Файлы",
