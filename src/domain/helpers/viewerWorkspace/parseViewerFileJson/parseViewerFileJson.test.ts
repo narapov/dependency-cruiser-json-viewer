@@ -31,6 +31,7 @@ const validResult = {
     warn: 0,
     info: 0,
     ignore: 0,
+    advisedExitCode: 0,
     optionsUsed: { args: '' },
     environment: {} as ISummary['environment'],
   },
