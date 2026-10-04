@@ -137,10 +137,13 @@ describe('useWorkspaceStore.reset', () => {
       'src/a.ts': true,
       'src/missing.ts': true,
     });
-    useWorkspaceStore.getState().setExpandedFolderPaths({
-      src: true,
-      gone: true,
-    });
+    useWorkspaceStore.getState().setExpandedFolderPaths(
+      {
+        src: true,
+        gone: true,
+      },
+      { replace: true },
+    );
     useWorkspaceStore.getState().setActivePath('src/a.ts');
     useWorkspaceStore.getState().setDependenciesPanelPath('src/missing.ts');
     useWorkspaceStore.getState().setApplicableRulesPanelPath('src/b.ts');
@@ -265,13 +268,31 @@ describe('useWorkspaceStore.setSelectedFilePaths', () => {
   });
 });
 
-describe('useWorkspaceStore.replaceExpandedFolderPaths', () => {
-  it('writes expanded folders and moves activePath out of collapsed subtrees', () => {
+describe('useWorkspaceStore.setExpandedFolderPaths', () => {
+  it('merges true keys without clearing peers', () => {
     useWorkspaceStore.getState().reset(cruiseResult, 'hard');
-    useWorkspaceStore.getState().setExpandedFolderPaths({ src: true });
+    useWorkspaceStore.getState().setExpandedFolderPaths({ src: true }, { replace: true });
+
+    useWorkspaceStore.getState().setExpandedFolderPaths({ 'src/extra': true });
+
+    expect(useWorkspaceStore.getState().expandedFolderPaths).toEqual({ src: true, 'src/extra': true });
+  });
+
+  it('merges false keys without clearing peers', () => {
+    useWorkspaceStore.getState().reset(cruiseResult, 'hard');
+    useWorkspaceStore.getState().setExpandedFolderPaths({ src: true, 'src/extra': true }, { replace: true });
+
+    useWorkspaceStore.getState().setExpandedFolderPaths({ 'src/extra': false });
+
+    expect(useWorkspaceStore.getState().expandedFolderPaths).toEqual({ src: true, 'src/extra': false });
+  });
+
+  it('replace clears omitted keys and moves activePath out of collapsed subtrees', () => {
+    useWorkspaceStore.getState().reset(cruiseResult, 'hard');
+    useWorkspaceStore.getState().setExpandedFolderPaths({ src: true }, { replace: true });
     useWorkspaceStore.getState().setActivePath('src/a.ts');
 
-    useWorkspaceStore.getState().replaceExpandedFolderPaths([]);
+    useWorkspaceStore.getState().setExpandedFolderPaths({}, { replace: true });
 
     expect(useWorkspaceStore.getState().expandedFolderPaths).toEqual({});
     expect(useWorkspaceStore.getState().activePath).toBe('src');
@@ -279,12 +300,22 @@ describe('useWorkspaceStore.replaceExpandedFolderPaths', () => {
 
   it('does not change activePath when nothing collapses', () => {
     useWorkspaceStore.getState().reset(cruiseResult, 'hard');
-    useWorkspaceStore.getState().setExpandedFolderPaths({ src: true });
+    useWorkspaceStore.getState().setExpandedFolderPaths({ src: true }, { replace: true });
     useWorkspaceStore.getState().setActivePath('src/a.ts');
 
-    useWorkspaceStore.getState().replaceExpandedFolderPaths(['src', 'src/extra']);
+    useWorkspaceStore.getState().setExpandedFolderPaths({ 'src/extra': true });
 
     expect(useWorkspaceStore.getState().expandedFolderPaths).toEqual({ src: true, 'src/extra': true });
     expect(useWorkspaceStore.getState().activePath).toBe('src/a.ts');
+  });
+
+  it('keeps visibleTree reference when present expanded paths are unchanged', () => {
+    useWorkspaceStore.getState().reset(cruiseResult, 'hard');
+    useWorkspaceStore.getState().setExpandedFolderPaths({ src: true }, { replace: true });
+    const before = useWorkspaceStore.getState().visibleTree;
+
+    useWorkspaceStore.getState().setExpandedFolderPaths({ src: true });
+
+    expect(useWorkspaceStore.getState().visibleTree).toBe(before);
   });
 });

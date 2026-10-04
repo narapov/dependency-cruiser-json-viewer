@@ -13,14 +13,20 @@ export interface AppCommandsOrchestration {
   viewActiveItemApplicableRulesPanel: () => void;
   expandActive: () => void;
   expandActiveRecursive: () => void;
+  expandActiveToLevel: (level: number) => void;
+  getActiveFolderPath: () => string | null;
   collapseActive: () => void;
   collapseActiveRecursive: () => void;
+  collapseActiveToLevel: (level: number) => void;
   clearAllHighlights: () => void;
   exportGraphDot: () => void;
   viewGraphDotOnline: () => void;
   saveWorkspace: () => void;
   expandAllRecursive: () => void;
   collapseAllRecursive: () => void;
+  getRootFolderPaths: () => string[];
+  expandRootsToLevel: (level: number) => void;
+  collapseRootsToLevel: (level: number) => void;
   selectAll: () => void;
   unselectAll: () => void;
   showCircularDependenciesOnly: () => void;
@@ -28,6 +34,7 @@ export interface AppCommandsOrchestration {
 
 interface UseAppCommandsOptions {
   orch: AppCommandsOrchestration;
+  promptFolderLevel: (paths: readonly string[]) => Promise<number | null>;
   openThemePicker: () => void;
   openLanguagePicker: () => void;
   openEdgesTypePicker: () => void;
@@ -57,18 +64,25 @@ export function useAppCommands(config: UseAppCommandsOptions): QuickPickCommand[
       viewActiveItemApplicableRulesPanel,
       expandActive,
       expandActiveRecursive,
+      expandActiveToLevel,
+      getActiveFolderPath,
       collapseActive,
       collapseActiveRecursive,
+      collapseActiveToLevel,
       clearAllHighlights,
       exportGraphDot,
       viewGraphDotOnline,
       saveWorkspace,
       expandAllRecursive,
       collapseAllRecursive,
+      getRootFolderPaths,
+      expandRootsToLevel,
+      collapseRootsToLevel,
       selectAll,
       unselectAll,
       showCircularDependenciesOnly,
     },
+    promptFolderLevel,
     openThemePicker,
     openLanguagePicker,
     openEdgesTypePicker,
@@ -87,6 +101,17 @@ export function useAppCommands(config: UseAppCommandsOptions): QuickPickCommand[
     toggleSidebar,
     fileLoadInProgress = false,
   } = config;
+
+  const runWithLevel = (paths: readonly string[], apply: (level: number) => void) => {
+    if (paths.length === 0) {
+      return;
+    }
+    void promptFolderLevel(paths).then(level => {
+      if (level != null) {
+        apply(level);
+      }
+    });
+  };
 
   const { t } = useTranslation();
   const cruiseWatchEnabled = getWindowEnvs()?.watch === true;
@@ -120,11 +145,31 @@ export function useAppCommands(config: UseAppCommandsOptions): QuickPickCommand[
       label: t('commands.expandActiveRecursive'),
       onExecute: expandActiveRecursive,
     },
+    {
+      id: 'expandActiveToLevel',
+      label: t('commands.expandActiveToLevel'),
+      onExecute: () => {
+        const folderPath = getActiveFolderPath();
+        if (folderPath) {
+          runWithLevel([folderPath], expandActiveToLevel);
+        }
+      },
+    },
     { id: 'collapseActive', label: t('commands.collapseActive'), onExecute: collapseActive },
     {
       id: 'collapseActiveRecursive',
       label: t('commands.collapseActiveRecursive'),
       onExecute: collapseActiveRecursive,
+    },
+    {
+      id: 'collapseActiveToLevel',
+      label: t('commands.collapseActiveToLevel'),
+      onExecute: () => {
+        const folderPath = getActiveFolderPath();
+        if (folderPath) {
+          runWithLevel([folderPath], collapseActiveToLevel);
+        }
+      },
     },
     {
       id: 'clearAllHighlights',
@@ -166,6 +211,16 @@ export function useAppCommands(config: UseAppCommandsOptions): QuickPickCommand[
       id: 'collapseAllRecursive',
       label: t('commands.collapseAllRecursive'),
       onExecute: collapseAllRecursive,
+    },
+    {
+      id: 'expandRootsToLevel',
+      label: t('commands.expandRootsToLevel'),
+      onExecute: () => runWithLevel(getRootFolderPaths(), expandRootsToLevel),
+    },
+    {
+      id: 'collapseRootsToLevel',
+      label: t('commands.collapseRootsToLevel'),
+      onExecute: () => runWithLevel(getRootFolderPaths(), collapseRootsToLevel),
     },
     { id: 'selectAll', label: t('commands.selectAll'), onExecute: selectAll },
     {

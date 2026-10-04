@@ -54,13 +54,14 @@ interface GraphCanvasProps {
   ref?: Ref<DependencyGraphHandle>;
   onShowInFileTree: (path: string) => void;
   onViewModuleJson: (path: string) => void;
+  promptFolderLevel: (paths: readonly string[]) => Promise<number | null>;
 }
 
 /**
  * React Flow canvas and graph orchestration; must render under ReactFlowProvider.
  */
 export function GraphCanvas(props: GraphCanvasProps) {
-  const { ref, onShowInFileTree, onViewModuleJson } = props;
+  const { ref, onShowInFileTree, onViewModuleJson, promptFolderLevel } = props;
 
   const cruiseSnapshot = useWorkspaceStore(state => state.cruiseSnapshot);
   const selectedFilePaths = useWorkspaceStore(state => state.selectedFilePaths);
@@ -197,6 +198,7 @@ export function GraphCanvas(props: GraphCanvasProps) {
   const { openContextMenu, openAtElement, contextMenu } = useNodeContextMenu({
     onShowInFileTree,
     onViewModuleJson,
+    promptFolderLevel,
     ...(autoLayoutOnly ? {} : { onAutoLayoutGroup, onAutoLayoutGroupRecursive }),
   });
 

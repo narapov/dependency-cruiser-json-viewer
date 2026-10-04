@@ -1,54 +1,15 @@
-import type { ICruiseResult, IModule } from 'dependency-cruiser';
+import type { ICruiseResult } from 'dependency-cruiser';
 
 import type {
+  CruiseSnapshot,
   FolderBaseColor,
   MergedViewerWorkspaceView,
   ViewerNodeLayouts,
   ViewerWorkspaceSettings,
 } from '../../../types';
-import { makeDependencyKey } from '../../dependencyKey';
-import { getParentPath } from '../../pathUtils';
+import { isFileInSnapshot } from '../../cruiseSnapshot';
 import { VIEWER_WORKSPACE_EXTENSION_KEY } from '../constants';
 import { nodePositionsToNodeLayouts } from '../viewerWorkspaceSettingsSchema';
-
-/** Whether a path is a folder ancestor of one or more module sources. */
-export function isFolderPath(path: string, sources: string[]): boolean {
-  return sources.some(source => source.startsWith(`${path}/`));
-}
-
-/** Whether a path is a module source or a folder ancestor of one. */
-export function isPathInSources(path: string, sources: string[]): boolean {
-  if (sources.includes(path)) {
-    return true;
-  }
-  return isFolderPath(path, sources);
-}
-
-/** Folder paths implied by module sources (every ancestor segment). */
-export function collectFolderPaths(sources: string[]): Set<string> {
-  return new Set(
-    sources.flatMap(source => {
-      const folders: string[] = [];
-      let current = getParentPath(source);
-      while (current) {
-        folders.push(current);
-        current = getParentPath(current);
-      }
-      return folders;
-    }),
-  );
-}
-
-/** All file-level dependency keys present in the cruise modules. */
-export function collectAllDependencyKeys(modules: IModule[]): Set<string> {
-  return new Set(
-    modules.flatMap(module =>
-      module.dependencies
-        .filter((dep): dep is typeof dep & { resolved: string } => Boolean(dep.resolved))
-        .map(dep => makeDependencyKey(module.source, dep.resolved)),
-    ),
-  );
-}
 
 /** Prefer explicit nodeLayouts; otherwise migrate legacy nodePositions. */
 export function resolveNodeLayouts(settings: ViewerWorkspaceSettings): ViewerNodeLayouts {
@@ -58,7 +19,7 @@ export function resolveNodeLayouts(settings: ViewerWorkspaceSettings): ViewerNod
   return nodePositionsToNodeLayouts(settings.nodePositions);
 }
 
-function filterNodeLayouts(nodeLayouts: ViewerNodeLayouts, validPaths: Set<string>): ViewerNodeLayouts {
+function filterNodeLayouts(nodeLayouts: ViewerNodeLayouts, validPaths: ReadonlySet<string>): ViewerNodeLayouts {
   return Object.fromEntries(
     Object.entries(nodeLayouts)
       .map(([groupId, entry]) => {
@@ -78,25 +39,34 @@ function filterNodeLayouts(nodeLayouts: ViewerNodeLayouts, validPaths: Set<strin
   );
 }
 
+function folderPathsInSnapshot(cruiseSnapshot: CruiseSnapshot): Set<string> {
+  return new Set(
+    cruiseSnapshot.nodes
+      .values()
+      .filter(node => node.isFolder)
+      .map(node => node.path)
+      .toArray(),
+  );
+}
+
 function settingsFullyCorrespond(
   settings: ViewerWorkspaceSettings,
-  sources: string[],
-  folderPaths: Set<string>,
-  dependencyKeys: Set<string>,
-  validPaths: Set<string>,
+  cruiseSnapshot: CruiseSnapshot,
+  folderPaths: ReadonlySet<string>,
+  validPaths: ReadonlySet<string>,
 ): boolean {
-  const selectedFilesOk = settings.selectedFiles.every(path => sources.includes(path));
-  const expandedOk = settings.expandedKeys.every(path => isPathInSources(path, sources));
+  const selectedFilesOk = settings.selectedFiles.every(path => isFileInSnapshot(cruiseSnapshot, path));
+  const expandedOk = settings.expandedKeys.every(path => cruiseSnapshot.nodes.has(path));
   if (!selectedFilesOk || !expandedOk) {
     return false;
   }
-  if (settings.dependenciesPath && !isPathInSources(settings.dependenciesPath, sources)) {
+  if (settings.dependenciesPath && !cruiseSnapshot.nodes.has(settings.dependenciesPath)) {
     return false;
   }
-  if (settings.applicableRulesPath && !isPathInSources(settings.applicableRulesPath, sources)) {
+  if (settings.applicableRulesPath && !cruiseSnapshot.nodes.has(settings.applicableRulesPath)) {
     return false;
   }
-  if (!Object.keys(settings.userEdgeHighlights).every(key => dependencyKeys.has(key))) {
+  if (!Object.keys(settings.userEdgeHighlights).every(key => cruiseSnapshot.dependencies.byDependencyKey.has(key))) {
     return false;
   }
   if (!Object.keys(settings.folderColors).every(path => folderPaths.has(path))) {
@@ -114,24 +84,23 @@ function settingsFullyCorrespond(
   });
 }
 
-function filterScalarSettings(settings: ViewerWorkspaceSettings, sources: string[]) {
+function filterScalarSettings(settings: ViewerWorkspaceSettings, cruiseSnapshot: CruiseSnapshot) {
   return {
-    selectedFiles: settings.selectedFiles.filter(path => sources.includes(path)),
-    expandedKeys: settings.expandedKeys.filter(path => isPathInSources(path, sources)),
+    selectedFiles: settings.selectedFiles.filter(path => isFileInSnapshot(cruiseSnapshot, path)),
+    expandedKeys: settings.expandedKeys.filter(path => cruiseSnapshot.nodes.has(path)),
     dependenciesPath:
-      settings.dependenciesPath && isPathInSources(settings.dependenciesPath, sources)
+      settings.dependenciesPath && cruiseSnapshot.nodes.has(settings.dependenciesPath)
         ? settings.dependenciesPath
         : null,
     applicableRulesPath:
-      settings.applicableRulesPath && isPathInSources(settings.applicableRulesPath, sources)
+      settings.applicableRulesPath && cruiseSnapshot.nodes.has(settings.applicableRulesPath)
         ? settings.applicableRulesPath
         : null,
   };
 }
 
 export interface ReplaceWorkspaceSettingsInput {
-  sources: string[];
-  modules: IModule[];
+  cruiseSnapshot: CruiseSnapshot;
   settings: ViewerWorkspaceSettings;
   /** Full base color map for current sources (used to fill gaps). */
   defaultFolderColors: Record<string, FolderBaseColor>;
@@ -139,17 +108,15 @@ export interface ReplaceWorkspaceSettingsInput {
 
 /** Replace view state from file settings (orphan-filter against the current graph). */
 export function replaceWorkspaceSettings({
-  sources,
-  modules,
+  cruiseSnapshot,
   settings,
   defaultFolderColors,
 }: ReplaceWorkspaceSettingsInput): MergedViewerWorkspaceView {
-  const folderPaths = collectFolderPaths(sources);
-  const dependencyKeys = collectAllDependencyKeys(modules);
-  const validPaths = new Set([...sources, ...folderPaths]);
+  const folderPaths = folderPathsInSnapshot(cruiseSnapshot);
+  const validPaths = new Set(cruiseSnapshot.nodes.keys());
   const resolvedLayouts = resolveNodeLayouts(settings);
 
-  if (settingsFullyCorrespond(settings, sources, folderPaths, dependencyKeys, validPaths)) {
+  if (settingsFullyCorrespond(settings, cruiseSnapshot, folderPaths, validPaths)) {
     return {
       selectedFiles: settings.selectedFiles,
       expandedKeys: settings.expandedKeys,
@@ -165,11 +132,11 @@ export function replaceWorkspaceSettings({
 
   const { selectedFiles, expandedKeys, dependenciesPath, applicableRulesPath } = filterScalarSettings(
     settings,
-    sources,
+    cruiseSnapshot,
   );
 
   const userEdgeHighlights = new Map(
-    Object.entries(settings.userEdgeHighlights).filter(([key]) => dependencyKeys.has(key)),
+    Object.entries(settings.userEdgeHighlights).filter(([key]) => cruiseSnapshot.dependencies.byDependencyKey.has(key)),
   );
 
   const folderColors: Record<string, FolderBaseColor> = { ...defaultFolderColors };

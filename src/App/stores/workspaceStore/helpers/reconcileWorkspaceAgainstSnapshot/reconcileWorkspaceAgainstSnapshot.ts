@@ -1,12 +1,6 @@
 import type { ICruiseResult } from 'dependency-cruiser';
 
-import {
-  getCruiseSources,
-  isPathInSources,
-  type CruiseSnapshot,
-  type FolderBaseColor,
-  type ViewerNodeLayouts,
-} from '@/domain';
+import { isFileInSnapshot, type CruiseSnapshot, type FolderBaseColor, type ViewerNodeLayouts } from '@/domain';
 
 import { defaultFolderColorsRecord } from '../../../../helpers';
 import type { WorkspaceOwnState } from '../../types';
@@ -21,26 +15,13 @@ export interface ReconcileWorkspaceAgainstSnapshotInput {
 
 function pruneNodeLayouts(
   nodeLayouts: WorkspaceOwnState['nodeLayouts'],
-  sources: readonly string[],
+  cruiseSnapshot: CruiseSnapshot,
 ): ViewerNodeLayouts | null {
   if (!nodeLayouts) {
     return null;
   }
 
-  const validPaths = new Set([
-    ...sources,
-    ...sources.flatMap(source => {
-      const folders: string[] = [];
-      let rest = source;
-      while (rest.includes('/')) {
-        rest = rest.slice(0, rest.lastIndexOf('/'));
-        if (rest) {
-          folders.push(rest);
-        }
-      }
-      return folders;
-    }),
-  ]);
+  const validPaths = new Set(cruiseSnapshot.nodes.keys());
 
   const pruned = Object.fromEntries(
     Object.entries(nodeLayouts)
@@ -69,9 +50,7 @@ export function reconcileWorkspaceAgainstSnapshot({
   ignorePatterns,
   previous,
 }: ReconcileWorkspaceAgainstSnapshotInput): WorkspaceOwnState {
-  const sources = getCruiseSources(cruiseSnapshot);
-  const isValidPath = (path: string) => isPathInSources(path, sources);
-  const sourceSet = new Set(sources);
+  const isValidPath = (path: string) => cruiseSnapshot.nodes.has(path);
 
   const defaultFolderColors = defaultFolderColorsRecord(cruiseSnapshot);
   const folderBaseColors: Record<string, FolderBaseColor> = { ...defaultFolderColors };
@@ -81,7 +60,7 @@ export function reconcileWorkspaceAgainstSnapshot({
     }
   }
 
-  const nodeLayouts = pruneNodeLayouts(previous.nodeLayouts, sources);
+  const nodeLayouts = pruneNodeLayouts(previous.nodeLayouts, cruiseSnapshot);
   const hadLayouts = previous.nodeLayouts && Object.keys(previous.nodeLayouts).length > 0;
   const layoutsGone = !nodeLayouts;
   const autoLayoutOnly = hadLayouts && layoutsGone ? true : previous.graphSettings.autoLayoutOnly;
@@ -91,7 +70,7 @@ export function reconcileWorkspaceAgainstSnapshot({
     ignorePatterns,
     cruiseSnapshot,
     folderBaseColors,
-    selectedFilePaths: prunePresenceRecord(previous.selectedFilePaths, path => sourceSet.has(path)),
+    selectedFilePaths: prunePresenceRecord(previous.selectedFilePaths, path => isFileInSnapshot(cruiseSnapshot, path)),
     expandedFolderPaths: prunePresenceRecord(previous.expandedFolderPaths, isValidPath),
     activePath: previous.activePath && isValidPath(previous.activePath) ? previous.activePath : null,
     dependenciesPanelPath:
@@ -110,7 +89,7 @@ export function reconcileWorkspaceAgainstSnapshot({
         }
         const from = key.slice(0, separator);
         const to = key.slice(separator + 2);
-        return sourceSet.has(from) && sourceSet.has(to);
+        return isFileInSnapshot(cruiseSnapshot, from) && isFileInSnapshot(cruiseSnapshot, to);
       }),
     ),
     graphSettings: {

@@ -4,14 +4,20 @@ import { useTranslation } from 'react-i18next';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 
-import { getCruiseSources, getSubtreeFolderKeys, isPathVisibleInSelectionRecord, toggleExpandedKey } from '@/domain';
+import {
+  collectFolderPathsToCollapse,
+  collectFolderPathsToExpand,
+  isPathVisibleInSelectionRecord,
+  resolveFolderNodes,
+} from '@/domain';
 import { copyToClipboard } from '@/Shared';
 
-import { presenceRecordToPaths, useWorkspaceStore } from '../../../../stores/workspaceStore';
+import { pathsToAbsenceRecord, pathsToPresenceRecord, useWorkspaceStore } from '../../../../stores/workspaceStore';
 
 export interface UseFileTreeContextMenuOptions {
   onShowInGraph: (path: string) => void;
   onViewModuleJson: (path: string) => void;
+  promptFolderLevel: (paths: readonly string[]) => Promise<number | null>;
 }
 
 interface MenuState {
@@ -20,7 +26,7 @@ interface MenuState {
 }
 
 export function useFileTreeContextMenu(config: UseFileTreeContextMenuOptions) {
-  const { onShowInGraph, onViewModuleJson } = config;
+  const { onShowInGraph, onViewModuleJson, promptFolderLevel } = config;
 
   const { t } = useTranslation();
   const [menuState, setMenuState] = useState<MenuState | null>(null);
@@ -28,7 +34,7 @@ export function useFileTreeContextMenu(config: UseFileTreeContextMenuOptions) {
   const cruiseSnapshot = useWorkspaceStore(state => state.cruiseSnapshot);
   const selectedFilePaths = useWorkspaceStore(state => state.selectedFilePaths);
   const expandedFolderPaths = useWorkspaceStore(state => state.expandedFolderPaths);
-  const replaceExpandedFolderPaths = useWorkspaceStore(state => state.replaceExpandedFolderPaths);
+  const setExpandedFolderPaths = useWorkspaceStore(state => state.setExpandedFolderPaths);
   const setDependenciesPanelPath = useWorkspaceStore(state => state.setDependenciesPanelPath);
   const setApplicableRulesPanelPath = useWorkspaceStore(state => state.setApplicableRulesPanelPath);
 
@@ -56,18 +62,49 @@ export function useFileTreeContextMenu(config: UseFileTreeContextMenuOptions) {
   const path = menuState?.path;
   const node = path ? cruiseSnapshot.nodes.get(path) : undefined;
   const isFolder = node?.isFolder === true;
-  const expandedKeys = presenceRecordToPaths(expandedFolderPaths);
   const expanded = path && expandedFolderPaths[path] === true;
   const navigable = path && isPathVisibleInSelectionRecord(path, selectedFilePaths, node?.descendantFiles ?? new Set());
 
   const toggleExpand = (folderPath: string) => {
-    replaceExpandedFolderPaths(toggleExpandedKey(expandedKeys, folderPath));
+    const { expandedFolderPaths: current } = useWorkspaceStore.getState();
+    setExpandedFolderPaths({ [folderPath]: !current[folderPath] });
   };
 
   const expandRecursive = (folderPath: string) => {
-    replaceExpandedFolderPaths([
-      ...new Set([...expandedKeys, ...getSubtreeFolderKeys(folderPath, getCruiseSources(cruiseSnapshot))]),
-    ]);
+    const folderNodes = resolveFolderNodes(cruiseSnapshot.nodes, [folderPath]);
+    setExpandedFolderPaths(pathsToPresenceRecord(collectFolderPathsToExpand(folderNodes, Infinity)));
+  };
+
+  const collapseRecursive = (folderPath: string) => {
+    const folderNodes = resolveFolderNodes(cruiseSnapshot.nodes, [folderPath]);
+    setExpandedFolderPaths(
+      pathsToAbsenceRecord([
+        ...folderNodes.map(folderNode => folderNode.path),
+        ...collectFolderPathsToCollapse(folderNodes, 1),
+      ]),
+    );
+  };
+
+  const expandToLevel = (folderPath: string) => {
+    void promptFolderLevel([folderPath]).then(level => {
+      if (level == null) {
+        return;
+      }
+      const { cruiseSnapshot: snapshot, setExpandedFolderPaths: setExpanded } = useWorkspaceStore.getState();
+      const folderNodes = resolveFolderNodes(snapshot.nodes, [folderPath]);
+      setExpanded(pathsToPresenceRecord(collectFolderPathsToExpand(folderNodes, level)));
+    });
+  };
+
+  const collapseToLevel = (folderPath: string) => {
+    void promptFolderLevel([folderPath]).then(level => {
+      if (level == null) {
+        return;
+      }
+      const { cruiseSnapshot: snapshot, setExpandedFolderPaths: setExpanded } = useWorkspaceStore.getState();
+      const folderNodes = resolveFolderNodes(snapshot.nodes, [folderPath]);
+      setExpanded(pathsToAbsenceRecord(collectFolderPathsToCollapse(folderNodes, level)));
+    });
   };
 
   const contextMenu: ReactNode = (
@@ -84,12 +121,17 @@ export function useFileTreeContextMenu(config: UseFileTreeContextMenuOptions) {
             <MenuItem onClick={handleAction(() => onShowInGraph(path))}>{t('actions.showInGraph')}</MenuItem>
           )}
           {isFolder && (
-            <MenuItem onClick={handleAction(() => toggleExpand(path))}>
-              {expanded ? t('actions.collapse') : t('actions.expand')}
-            </MenuItem>
-          )}
-          {isFolder && (
-            <MenuItem onClick={handleAction(() => expandRecursive(path))}>{t('actions.expandRecursive')}</MenuItem>
+            <>
+              <MenuItem onClick={handleAction(() => toggleExpand(path))}>
+                {expanded ? t('actions.collapse') : t('actions.expand')}
+              </MenuItem>
+              <MenuItem onClick={handleAction(() => expandRecursive(path))}>{t('actions.expandRecursive')}</MenuItem>
+              <MenuItem onClick={handleAction(() => collapseRecursive(path))}>
+                {t('actions.collapseRecursive')}
+              </MenuItem>
+              <MenuItem onClick={handleAction(() => expandToLevel(path))}>{t('actions.expandToLevel')}</MenuItem>
+              <MenuItem onClick={handleAction(() => collapseToLevel(path))}>{t('actions.collapseToLevel')}</MenuItem>
+            </>
           )}
           {navigable && (
             <MenuItem onClick={handleAction(() => setDependenciesPanelPath(path))}>

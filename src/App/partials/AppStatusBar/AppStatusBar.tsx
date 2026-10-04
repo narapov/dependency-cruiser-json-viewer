@@ -12,7 +12,6 @@ import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 
-import { getCruiseSources, isPathInSources } from '@/domain';
 import { copyToClipboard } from '@/Shared';
 
 import { useWorkspaceStore } from '../../stores/workspaceStore';
@@ -28,10 +27,9 @@ export function AppStatusBar(props: AppStatusBarProps) {
   const { onFocusActivePath, onShowDependenciesPanel, onShowApplicableRulesPanel, onViewModuleJson } = props;
 
   const { t } = useTranslation();
-  const activePath = useWorkspaceStore(state => {
-    const sources = getCruiseSources(state.cruiseSnapshot);
-    return state.activePath && isPathInSources(state.activePath, sources) ? state.activePath : null;
-  });
+  const activePath = useWorkspaceStore(state =>
+    state.activePath && state.cruiseSnapshot.nodes.has(state.activePath) ? state.activePath : null,
+  );
   const hasSelection = !!activePath;
   const label = activePath ?? t('statusBar.noSelection');
 

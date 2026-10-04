@@ -1,4 +1,4 @@
-import { getAncestorKeys, type CruiseSnapshot } from '@/domain';
+import type { CruiseSnapshot } from '@/domain';
 
 /**
  * Union of the given paths with each path's ancestor folders (for PathSearch `allowedPaths`).
@@ -7,7 +7,7 @@ export function expandPathsWithAncestors(paths: readonly string[], cruiseSnapsho
   return [
     ...new Set(
       paths.flatMap(path => {
-        const ancestors = cruiseSnapshot.nodes.get(path)?.ancestors ?? getAncestorKeys(path);
+        const ancestors = cruiseSnapshot.nodes.get(path)?.ancestors ?? [];
         return [path, ...ancestors];
       }),
     ),

@@ -46,6 +46,9 @@
     "expandFolder": "Développer le dossier",
     "collapseFolder": "Réduire le dossier",
     "expandRecursive": "Développer récursivement",
+    "collapseRecursive": "Réduire récursivement",
+    "expandToLevel": "Développer jusqu'au niveau…",
+    "collapseToLevel": "Réduire jusqu'au niveau…",
     "autoLayout": "Disposition automatique",
     "autoLayoutRecursive": "Disposition automatique récursive",
     "close": "Fermer",
@@ -67,8 +70,10 @@
     "viewActiveItemModuleJson": "Élément actif : Voir le JSON du module",
     "expandActive": "Élément actif : Développer",
     "expandActiveRecursive": "Élément actif : Développer récursivement",
+    "expandActiveToLevel": "Élément actif : Développer jusqu'au niveau…",
     "collapseActive": "Élément actif : Réduire",
     "collapseActiveRecursive": "Élément actif : Réduire récursivement",
+    "collapseActiveToLevel": "Élément actif : Réduire jusqu'au niveau…",
     "clearAllHighlights": "Surlignages : Tout effacer",
     "highlightEdge": "Surlignages : Surligner une arête…",
     "exportGraphDot": "Graphe : Exporter DOT",
@@ -76,6 +81,8 @@
     "selectEdgesType": "Graphe : Choisir le type des arêtes",
     "expandAllRecursive": "Arborescence : Tout développer récursivement",
     "collapseAllRecursive": "Arborescence : Tout réduire récursivement",
+    "expandRootsToLevel": "Arborescence : Développer les racines jusqu'au niveau…",
+    "collapseRootsToLevel": "Arborescence : Réduire les racines jusqu'au niveau…",
     "selectAll": "Sélection : Tout sélectionner",
     "showCircularDependenciesOnly": "Sélection : Afficher uniquement les dépendances circulaires",
     "showRuleViolationsOnly": "Sélection : Afficher les violations de règles…",
@@ -205,6 +212,11 @@
     "title": "À propos",
     "version": "Version {{version}}",
     "commit": "Commit {{hash}}"
+  },
+  "folderLevel": {
+    "title": "Niveau de dossier",
+    "level": "Niveau",
+    "confirm": "Appliquer"
   },
   "sidebar": {
     "files": "Fichiers",

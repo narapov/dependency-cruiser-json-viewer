@@ -21,17 +21,18 @@ interface FileTreeProps {
   ref?: Ref<FileTreeHandle>;
   onShowInGraph: (path: string) => void;
   onViewModuleJson: (path: string) => void;
+  promptFolderLevel: (paths: readonly string[]) => Promise<number | null>;
 }
 
 export function FileTree(props: FileTreeProps) {
-  const { ref, onShowInGraph, onViewModuleJson } = props;
+  const { ref, onShowInGraph, onViewModuleJson, promptFolderLevel } = props;
 
   const cruiseSnapshot = useWorkspaceStore(state => state.cruiseSnapshot);
   const selectedFilePaths = useWorkspaceStore(state => state.selectedFilePaths);
   const expandedFolderPaths = useWorkspaceStore(state => state.expandedFolderPaths);
   const activePath = useWorkspaceStore(state => state.activePath);
   const setSelectedFilePaths = useWorkspaceStore(state => state.setSelectedFilePaths);
-  const replaceExpandedFolderPaths = useWorkspaceStore(state => state.replaceExpandedFolderPaths);
+  const setExpandedFolderPaths = useWorkspaceStore(state => state.setExpandedFolderPaths);
 
   const selectedKeys = expandSelectionWithSelectedAncestors(presenceRecordToPaths(selectedFilePaths), cruiseSnapshot);
   const expandedKeys = presenceRecordToPaths(expandedFolderPaths);
@@ -44,6 +45,7 @@ export function FileTree(props: FileTreeProps) {
   const { openContextMenu, contextMenu } = useFileTreeContextMenu({
     onShowInGraph,
     onViewModuleJson,
+    promptFolderLevel,
   });
 
   const canShowNodeInGraph = (key: string) =>
@@ -68,7 +70,7 @@ export function FileTree(props: FileTreeProps) {
   const handleExpandedItemsChange = (_event: unknown, itemIds?: string[]) => {
     const keys = Array.isArray(_event) ? _event : itemIds;
     if (keys) {
-      replaceExpandedFolderPaths(keys);
+      setExpandedFolderPaths(pathsToPresenceRecord(keys), { replace: true });
     }
   };
 

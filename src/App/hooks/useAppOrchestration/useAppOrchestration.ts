@@ -1,18 +1,16 @@
 import { type RefObject } from 'react';
 
 import {
+  collectFolderPathsToCollapse,
+  collectFolderPathsToExpand,
   collectRelatedModuleSources,
   collectViolationModulePaths,
-  getAncestorKeys,
   getCruiseSources,
   getCruiseSourcesUnder,
-  getParentPath,
-  getSubtreeFolderKeys,
-  isPathInSources,
-  isPathVisibleInSelection,
-  removeSubtreeFolderKeys,
+  isFileInSnapshot,
+  isPathVisibleInSelectionRecord,
+  resolveFolderNodes,
   serializeViewerWorkspace,
-  toggleExpandedKey,
   type CruiseSnapshot,
   type RelatedModuleDirection,
   type ViewerWorkspaceSettings,
@@ -21,7 +19,12 @@ import { APP_STORAGE_PREFIX, copyToClipboard, downloadTextFile } from '@/Shared'
 
 import type { DependencyGraphHandle } from '../../partials/DependencyGraph';
 import type { FileTreeHandle } from '../../partials/FileTree';
-import { pathsToPresenceRecord, presenceRecordToPaths, useWorkspaceStore } from '../../stores/workspaceStore';
+import {
+  pathsToAbsenceRecord,
+  pathsToPresenceRecord,
+  presenceRecordToPaths,
+  useWorkspaceStore,
+} from '../../stores/workspaceStore';
 
 interface UseAppOrchestrationOptions {
   fileTreeRef: RefObject<FileTreeHandle | null>;
@@ -37,20 +40,23 @@ function pathHasCircularDependency(snapshot: CruiseSnapshot, path: string): bool
   return maps.some(depMap => [...depMap.values()].some(aggregated => aggregated.some(dep => dep.circular)));
 }
 
-function resolveActiveFolderPath(activePath: string | null, isFolder: (path: string) => boolean): string | null {
+function resolveActiveFolderPath(activePath: string | null, cruiseSnapshot: CruiseSnapshot): string | null {
   if (!activePath) {
     return null;
   }
-  if (isFolder(activePath)) {
+  const node = cruiseSnapshot.nodes.get(activePath);
+  if (!node) {
+    return null;
+  }
+  if (node.isFolder) {
     return activePath;
   }
-  return getParentPath(activePath);
+  return node.parent;
 }
 
 function getResolvedActivePath(): string | null {
   const { activePath, cruiseSnapshot } = useWorkspaceStore.getState();
-  const sources = getCruiseSources(cruiseSnapshot);
-  return activePath && isPathInSources(activePath, sources) ? activePath : null;
+  return activePath && cruiseSnapshot.nodes.has(activePath) ? activePath : null;
 }
 
 /**
@@ -60,20 +66,25 @@ function getResolvedActivePath(): string | null {
 export function useAppOrchestration(config: UseAppOrchestrationOptions) {
   const { fileTreeRef, graphRef } = config;
 
-  const updateExpandedKeys = (updater: string[] | ((prev: string[]) => string[])) => {
-    const { expandedFolderPaths, replaceExpandedFolderPaths } = useWorkspaceStore.getState();
-    const previous = presenceRecordToPaths(expandedFolderPaths);
-    const next = typeof updater === 'function' ? updater(previous) : updater;
-    replaceExpandedFolderPaths(next);
+  const expandFolderPaths = (paths: readonly string[]) => {
+    if (paths.length === 0) {
+      return;
+    }
+    useWorkspaceStore.getState().setExpandedFolderPaths(pathsToPresenceRecord(paths));
+  };
+
+  const collapseFolderPaths = (paths: readonly string[]) => {
+    if (paths.length === 0) {
+      return;
+    }
+    useWorkspaceStore.getState().setExpandedFolderPaths(pathsToAbsenceRecord(paths));
   };
 
   const activatePath = (path: string) => {
-    const { expandedFolderPaths, setExpandedFolderPaths, setActivePath } = useWorkspaceStore.getState();
-    const ancestors = getAncestorKeys(path);
-    const previous = presenceRecordToPaths(expandedFolderPaths);
-    const next = [...new Set([...previous, ...ancestors])];
-    if (next.length !== previous.length) {
-      setExpandedFolderPaths(pathsToPresenceRecord(next));
+    const { setExpandedFolderPaths, setActivePath, cruiseSnapshot } = useWorkspaceStore.getState();
+    const ancestors = cruiseSnapshot.nodes.get(path)?.ancestors ?? [];
+    if (ancestors.length > 0) {
+      setExpandedFolderPaths(pathsToPresenceRecord(ancestors));
     }
     setActivePath(path);
   };
@@ -89,12 +100,34 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
   };
 
   const toggleFolder = (path: string) => {
-    updateExpandedKeys(keys => toggleExpandedKey(keys, path));
+    const { expandedFolderPaths, setExpandedFolderPaths } = useWorkspaceStore.getState();
+    setExpandedFolderPaths({ [path]: !expandedFolderPaths[path] });
+  };
+
+  const expandFoldersToLevel = (paths: readonly string[], level: number) => {
+    const { cruiseSnapshot } = useWorkspaceStore.getState();
+    const folderNodes = resolveFolderNodes(cruiseSnapshot.nodes, paths);
+    expandFolderPaths(collectFolderPathsToExpand(folderNodes, level));
+  };
+
+  const collapseFoldersToLevel = (paths: readonly string[], level: number) => {
+    const { cruiseSnapshot } = useWorkspaceStore.getState();
+    const folderNodes = resolveFolderNodes(cruiseSnapshot.nodes, paths);
+    collapseFolderPaths(collectFolderPathsToCollapse(folderNodes, level));
+  };
+
+  const collapseFoldersRecursive = (paths: readonly string[]) => {
+    const { cruiseSnapshot } = useWorkspaceStore.getState();
+    const folderNodes = resolveFolderNodes(cruiseSnapshot.nodes, paths);
+    collapseFolderPaths([...folderNodes.map(node => node.path), ...collectFolderPathsToCollapse(folderNodes, 1)]);
   };
 
   const expandRecursive = (path: string) => {
-    const sources = getCruiseSources(useWorkspaceStore.getState().cruiseSnapshot);
-    updateExpandedKeys(keys => [...new Set([...keys, ...getSubtreeFolderKeys(path, sources)])]);
+    expandFoldersToLevel([path], Infinity);
+  };
+
+  const collapseRecursive = (path: string) => {
+    collapseFoldersRecursive([path]);
   };
 
   const handleShowDependenciesPanel = (path: string) => {
@@ -114,8 +147,14 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
   };
 
   const focusPath = (path: string) => {
-    const selectedPaths = presenceRecordToPaths(useWorkspaceStore.getState().selectedFilePaths);
-    if (isPathVisibleInSelection(path, selectedPaths)) {
+    const { selectedFilePaths, cruiseSnapshot } = useWorkspaceStore.getState();
+    if (
+      isPathVisibleInSelectionRecord(
+        path,
+        selectedFilePaths,
+        cruiseSnapshot.nodes.get(path)?.descendantFiles ?? new Set(),
+      )
+    ) {
       graphRef.current?.focusNode(path);
     }
     fileTreeRef.current?.focusPath(path);
@@ -168,53 +207,74 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
     handleShowApplicableRulesPanel(resolvedActivePath);
   };
 
-  const expandActive = () => {
+  const getActiveFolderPath = (): string | null => {
     const { cruiseSnapshot } = useWorkspaceStore.getState();
-    const folderPath = resolveActiveFolderPath(
-      getResolvedActivePath(),
-      path => cruiseSnapshot.nodes.get(path)?.isFolder === true,
-    );
+    return resolveActiveFolderPath(getResolvedActivePath(), cruiseSnapshot);
+  };
+
+  const expandActive = () => {
+    const folderPath = getActiveFolderPath();
     if (!folderPath) {
       return;
     }
-    updateExpandedKeys(keys => (keys.includes(folderPath) ? keys : [...keys, folderPath]));
+    expandFoldersToLevel([folderPath], 1);
   };
 
   const expandActiveRecursive = () => {
-    const { cruiseSnapshot } = useWorkspaceStore.getState();
-    const folderPath = resolveActiveFolderPath(
-      getResolvedActivePath(),
-      path => cruiseSnapshot.nodes.get(path)?.isFolder === true,
-    );
+    const folderPath = getActiveFolderPath();
     if (!folderPath) {
       return;
     }
     expandRecursive(folderPath);
   };
 
-  const collapseActive = () => {
-    const { cruiseSnapshot } = useWorkspaceStore.getState();
-    const folderPath = resolveActiveFolderPath(
-      getResolvedActivePath(),
-      path => cruiseSnapshot.nodes.get(path)?.isFolder === true,
-    );
+  const expandActiveToLevel = (level: number) => {
+    const folderPath = getActiveFolderPath();
     if (!folderPath) {
       return;
     }
-    updateExpandedKeys(keys => (keys.includes(folderPath) ? keys.filter(key => key !== folderPath) : keys));
+    expandFoldersToLevel([folderPath], level);
+  };
+
+  const collapseActive = () => {
+    const folderPath = getActiveFolderPath();
+    if (!folderPath) {
+      return;
+    }
+    collapseFolderPaths([folderPath]);
   };
 
   const collapseActiveRecursive = () => {
-    const { cruiseSnapshot } = useWorkspaceStore.getState();
-    const sources = getCruiseSources(cruiseSnapshot);
-    const folderPath = resolveActiveFolderPath(
-      getResolvedActivePath(),
-      path => cruiseSnapshot.nodes.get(path)?.isFolder === true,
-    );
+    const folderPath = getActiveFolderPath();
     if (!folderPath) {
       return;
     }
-    updateExpandedKeys(keys => removeSubtreeFolderKeys(keys, folderPath, sources));
+    collapseRecursive(folderPath);
+  };
+
+  const collapseActiveToLevel = (level: number) => {
+    const folderPath = getActiveFolderPath();
+    if (!folderPath) {
+      return;
+    }
+    collapseFoldersToLevel([folderPath], level);
+  };
+
+  const getRootFolderPaths = (): string[] => {
+    const { cruiseSnapshot } = useWorkspaceStore.getState();
+    return cruiseSnapshot.tree
+      .values()
+      .filter(node => node.isFolder)
+      .map(node => node.path)
+      .toArray();
+  };
+
+  const expandRootsToLevel = (level: number) => {
+    expandFoldersToLevel(getRootFolderPaths(), level);
+  };
+
+  const collapseRootsToLevel = (level: number) => {
+    collapseFoldersToLevel(getRootFolderPaths(), level);
   };
 
   const clearAllHighlights = () => {
@@ -235,15 +295,14 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
     if (!cruiseResult) {
       return null;
     }
-    const sources = getCruiseSources(cruiseSnapshot);
     const selectedPaths = presenceRecordToPaths(state.selectedFilePaths);
     const expandedKeys = presenceRecordToPaths(state.expandedFolderPaths);
     const resolvedDependenciesPath =
-      state.dependenciesPanelPath && isPathInSources(state.dependenciesPanelPath, sources)
+      state.dependenciesPanelPath && cruiseSnapshot.nodes.has(state.dependenciesPanelPath)
         ? state.dependenciesPanelPath
         : null;
     const resolvedApplicableRulesPath =
-      state.applicableRulesPanelPath && isPathInSources(state.applicableRulesPanelPath, sources)
+      state.applicableRulesPanelPath && cruiseSnapshot.nodes.has(state.applicableRulesPanelPath)
         ? state.applicableRulesPanelPath
         : null;
     const layout = graphRef.current?.getLayoutState() ?? {
@@ -253,7 +312,7 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
     };
     return {
       ignorePatterns,
-      selectedFiles: selectedPaths.filter(key => cruiseResult.modules.some(module => module.source === key)),
+      selectedFiles: selectedPaths.filter(key => isFileInSnapshot(cruiseSnapshot, key)),
       expandedKeys,
       dependenciesPath: resolvedDependenciesPath,
       applicableRulesPath: resolvedApplicableRulesPath,
@@ -280,14 +339,11 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
   };
 
   const expandAllRecursive = () => {
-    const folderKeys = [...useWorkspaceStore.getState().cruiseSnapshot.nodes.values()]
-      .filter(node => node.isFolder)
-      .map(node => node.path);
-    updateExpandedKeys(folderKeys);
+    expandFoldersToLevel(getRootFolderPaths(), Infinity);
   };
 
   const collapseAllRecursive = () => {
-    updateExpandedKeys([]);
+    useWorkspaceStore.getState().setExpandedFolderPaths({}, { replace: true });
   };
 
   const setSelectedPaths = (paths: string[]) => {
@@ -303,12 +359,11 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
   };
 
   const showPathsOnly = (paths: string[]) => {
-    const sources = getCruiseSources(useWorkspaceStore.getState().cruiseSnapshot);
-    const sourceSet = new Set(sources);
-    const filtered = paths.filter(path => sourceSet.has(path));
+    const { cruiseSnapshot } = useWorkspaceStore.getState();
+    const filtered = paths.filter(path => isFileInSnapshot(cruiseSnapshot, path));
     setSelectedPaths(filtered);
     if (filtered.length > 0) {
-      updateExpandedKeys([...new Set(filtered.flatMap(getAncestorKeys))]);
+      expandFolderPaths([...new Set(filtered.flatMap(path => cruiseSnapshot.nodes.get(path)?.ancestors ?? []))]);
     }
   };
 
@@ -322,17 +377,16 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
   };
 
   const showRelatedModules = (path: string, direction: RelatedModuleDirection) => {
-    const { cruiseSnapshot, selectedFilePaths, expandedFolderPaths } = useWorkspaceStore.getState();
-    const sources = getCruiseSources(cruiseSnapshot);
+    const { cruiseSnapshot, selectedFilePaths } = useWorkspaceStore.getState();
     const selectedPaths = presenceRecordToPaths(selectedFilePaths);
-    const expandedKeys = presenceRecordToPaths(expandedFolderPaths);
     const related = collectRelatedModuleSources(cruiseSnapshot, path, direction);
-    const sourceSet = new Set(sources);
-    const currentModuleSources = selectedPaths.filter(selected => sourceSet.has(selected));
+    const currentModuleSources = selectedPaths.filter(selected => isFileInSnapshot(cruiseSnapshot, selected));
     const nextSources = [...new Set([...currentModuleSources, ...sourcesForPath(path), ...related])];
     setSelectedPaths(nextSources);
     if (related.length > 0) {
-      updateExpandedKeys([...new Set([...expandedKeys, ...related.flatMap(getAncestorKeys)])]);
+      expandFolderPaths([
+        ...new Set(related.flatMap(relatedPath => cruiseSnapshot.nodes.get(relatedPath)?.ancestors ?? [])),
+      ]);
     }
   };
 
@@ -346,8 +400,7 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
 
   const showCircularDependenciesOnly = () => {
     const { cruiseSnapshot } = useWorkspaceStore.getState();
-    const sources = getCruiseSources(cruiseSnapshot);
-    showPathsOnly(sources.filter(path => pathHasCircularDependency(cruiseSnapshot, path)));
+    showPathsOnly(getCruiseSources(cruiseSnapshot).filter(path => pathHasCircularDependency(cruiseSnapshot, path)));
   };
 
   const showRuleViolationsOnly = (ruleNames: readonly string[]) => {
@@ -380,13 +433,11 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
     },
     get dependenciesPath() {
       const { dependenciesPanelPath, cruiseSnapshot } = useWorkspaceStore.getState();
-      const sources = getCruiseSources(cruiseSnapshot);
-      return dependenciesPanelPath && isPathInSources(dependenciesPanelPath, sources) ? dependenciesPanelPath : null;
+      return dependenciesPanelPath && cruiseSnapshot.nodes.has(dependenciesPanelPath) ? dependenciesPanelPath : null;
     },
     get applicableRulesPath() {
       const { applicableRulesPanelPath, cruiseSnapshot } = useWorkspaceStore.getState();
-      const sources = getCruiseSources(cruiseSnapshot);
-      return applicableRulesPanelPath && isPathInSources(applicableRulesPanelPath, sources)
+      return applicableRulesPanelPath && cruiseSnapshot.nodes.has(applicableRulesPanelPath)
         ? applicableRulesPanelPath
         : null;
     },
@@ -403,7 +454,6 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
       return useWorkspaceStore.getState().folderBaseColors;
     },
     setSelectedPaths,
-    updateExpandedKeys,
     activatePath,
     showInGraph,
     showInFileTree,
@@ -421,8 +471,12 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
     viewActiveItemApplicableRulesPanel,
     expandActive,
     expandActiveRecursive,
+    expandActiveToLevel,
+    getActiveFolderPath,
     collapseActive,
     collapseActiveRecursive,
+    collapseActiveToLevel,
+    collapseRecursive,
     clearAllHighlights,
     exportGraphDot,
     viewGraphDotOnline,
@@ -430,6 +484,9 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
     getCurrentWorkspaceSettings,
     expandAllRecursive,
     collapseAllRecursive,
+    getRootFolderPaths,
+    expandRootsToLevel,
+    collapseRootsToLevel,
     selectAll,
     unselectAll,
     showPathsOnly,

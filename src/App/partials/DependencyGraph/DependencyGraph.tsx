@@ -18,10 +18,11 @@ interface DependencyGraphProps {
   ref?: Ref<DependencyGraphHandle>;
   onShowInFileTree: (path: string) => void;
   onViewModuleJson: (path: string) => void;
+  promptFolderLevel: (paths: readonly string[]) => Promise<number | null>;
 }
 
 export const DependencyGraph = memo(function DependencyGraph(props: DependencyGraphProps) {
-  const { ref, onShowInFileTree, onViewModuleJson } = props;
+  const { ref, onShowInFileTree, onViewModuleJson, promptFolderLevel } = props;
 
   const autoLayoutOnly = useWorkspaceStore(state => state.graphSettings.autoLayoutOnly);
   const selectedFilePaths = useWorkspaceStore(state => state.selectedFilePaths);
@@ -32,7 +33,12 @@ export const DependencyGraph = memo(function DependencyGraph(props: DependencyGr
     <div className={clsx(styles.container, autoLayoutOnly && styles.layoutLocked)}>
       {hasSelection ? (
         <ReactFlowProvider>
-          <GraphCanvas ref={ref} onShowInFileTree={onShowInFileTree} onViewModuleJson={onViewModuleJson} />
+          <GraphCanvas
+            ref={ref}
+            onShowInFileTree={onShowInFileTree}
+            onViewModuleJson={onViewModuleJson}
+            promptFolderLevel={promptFolderLevel}
+          />
         </ReactFlowProvider>
       ) : (
         <GraphEmptySelection />
