@@ -5,10 +5,10 @@ import { useTreeItemModel } from '@mui/x-tree-view/hooks';
 import type { TreeViewCancellableEvent } from '@mui/x-tree-view/models';
 import { TreeItem, type TreeItemProps } from '@mui/x-tree-view/TreeItem';
 
-import { getBaseName, isPathVisibleInSelectionRecord, toggleExpandedKey } from '@/domain';
+import { getBaseName, isPathVisibleInSelectionRecord } from '@/domain';
 import { MaterialFileSystemIcon } from '@/Shared';
 
-import { presenceRecordToPaths, useWorkspaceStore } from '../../../../stores/workspaceStore';
+import { useWorkspaceStore } from '../../../../stores/workspaceStore';
 import { useFileTreeActions } from '../../contexts';
 import { isTreeLeaf } from '../../helpers';
 import type { TreeNodeData } from '../../types';
@@ -29,13 +29,13 @@ export const FileTreeItem = memo(function FileTreeItem(props: TreeItemProps & { 
       state.cruiseSnapshot.nodes.get(itemId)?.descendantFiles ?? new Set(),
     ),
   );
-  const replaceExpandedFolderPaths = useWorkspaceStore(state => state.replaceExpandedFolderPaths);
+  const setExpandedFolderPaths = useWorkspaceStore(state => state.setExpandedFolderPaths);
 
   const isFolder = !!item && !isTreeLeaf(item);
 
   const toggleExpand = () => {
-    const expandedKeys = presenceRecordToPaths(useWorkspaceStore.getState().expandedFolderPaths);
-    replaceExpandedFolderPaths(toggleExpandedKey(expandedKeys, itemId));
+    const { expandedFolderPaths } = useWorkspaceStore.getState();
+    setExpandedFolderPaths({ [itemId]: !expandedFolderPaths[itemId] });
   };
 
   return (

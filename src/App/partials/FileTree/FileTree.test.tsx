@@ -136,7 +136,7 @@ describe('FileTree', () => {
 
     fireEvent.doubleClick(screen.getByText('b'));
 
-    expect(useWorkspaceStore.getState().expandedFolderPaths).toEqual({ src: true });
+    expect(useWorkspaceStore.getState().expandedFolderPaths).toEqual({ src: true, 'src/b': false });
   });
 
   it('shows in graph on Enter for navigable FileTreeItem', () => {

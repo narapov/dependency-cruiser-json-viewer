@@ -32,7 +32,7 @@ export function FileTree(props: FileTreeProps) {
   const expandedFolderPaths = useWorkspaceStore(state => state.expandedFolderPaths);
   const activePath = useWorkspaceStore(state => state.activePath);
   const setSelectedFilePaths = useWorkspaceStore(state => state.setSelectedFilePaths);
-  const replaceExpandedFolderPaths = useWorkspaceStore(state => state.replaceExpandedFolderPaths);
+  const setExpandedFolderPaths = useWorkspaceStore(state => state.setExpandedFolderPaths);
 
   const selectedKeys = expandSelectionWithSelectedAncestors(presenceRecordToPaths(selectedFilePaths), cruiseSnapshot);
   const expandedKeys = presenceRecordToPaths(expandedFolderPaths);
@@ -70,7 +70,7 @@ export function FileTree(props: FileTreeProps) {
   const handleExpandedItemsChange = (_event: unknown, itemIds?: string[]) => {
     const keys = Array.isArray(_event) ? _event : itemIds;
     if (keys) {
-      replaceExpandedFolderPaths(keys);
+      setExpandedFolderPaths(pathsToPresenceRecord(keys), { replace: true });
     }
   };
 

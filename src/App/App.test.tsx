@@ -48,7 +48,6 @@ vi.mock('./hooks', async importOriginal => {
       userEdgeHighlights: new Map(),
       folderBaseColors: {},
       setSelectedPaths: vi.fn(),
-      updateExpandedKeys: vi.fn(),
       activatePath: vi.fn(),
       showInGraph: vi.fn(),
       showInFileTree: vi.fn(),

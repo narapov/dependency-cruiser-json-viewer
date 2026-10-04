@@ -9,11 +9,10 @@ import {
   collectFolderPathsToExpand,
   isPathVisibleInSelectionRecord,
   resolveFolderNodes,
-  toggleExpandedKey,
 } from '@/domain';
 import { copyToClipboard } from '@/Shared';
 
-import { presenceRecordToPaths, useWorkspaceStore } from '../../../../stores/workspaceStore';
+import { pathsToAbsenceRecord, pathsToPresenceRecord, useWorkspaceStore } from '../../../../stores/workspaceStore';
 
 export interface UseFileTreeContextMenuOptions {
   onShowInGraph: (path: string) => void;
@@ -35,7 +34,7 @@ export function useFileTreeContextMenu(config: UseFileTreeContextMenuOptions) {
   const cruiseSnapshot = useWorkspaceStore(state => state.cruiseSnapshot);
   const selectedFilePaths = useWorkspaceStore(state => state.selectedFilePaths);
   const expandedFolderPaths = useWorkspaceStore(state => state.expandedFolderPaths);
-  const replaceExpandedFolderPaths = useWorkspaceStore(state => state.replaceExpandedFolderPaths);
+  const setExpandedFolderPaths = useWorkspaceStore(state => state.setExpandedFolderPaths);
   const setDependenciesPanelPath = useWorkspaceStore(state => state.setDependenciesPanelPath);
   const setApplicableRulesPanelPath = useWorkspaceStore(state => state.setApplicableRulesPanelPath);
 
@@ -63,26 +62,27 @@ export function useFileTreeContextMenu(config: UseFileTreeContextMenuOptions) {
   const path = menuState?.path;
   const node = path ? cruiseSnapshot.nodes.get(path) : undefined;
   const isFolder = node?.isFolder === true;
-  const expandedKeys = presenceRecordToPaths(expandedFolderPaths);
   const expanded = path && expandedFolderPaths[path] === true;
   const navigable = path && isPathVisibleInSelectionRecord(path, selectedFilePaths, node?.descendantFiles ?? new Set());
 
   const toggleExpand = (folderPath: string) => {
-    replaceExpandedFolderPaths(toggleExpandedKey(expandedKeys, folderPath));
+    const { expandedFolderPaths: current } = useWorkspaceStore.getState();
+    setExpandedFolderPaths({ [folderPath]: !current[folderPath] });
   };
 
   const expandRecursive = (folderPath: string) => {
     const folderNodes = resolveFolderNodes(cruiseSnapshot.nodes, [folderPath]);
-    replaceExpandedFolderPaths([...new Set([...expandedKeys, ...collectFolderPathsToExpand(folderNodes, Infinity)])]);
+    setExpandedFolderPaths(pathsToPresenceRecord(collectFolderPathsToExpand(folderNodes, Infinity)));
   };
 
   const collapseRecursive = (folderPath: string) => {
     const folderNodes = resolveFolderNodes(cruiseSnapshot.nodes, [folderPath]);
-    const toRemove = new Set([
-      ...folderNodes.map(folderNode => folderNode.path),
-      ...collectFolderPathsToCollapse(folderNodes, 1),
-    ]);
-    replaceExpandedFolderPaths(expandedKeys.filter(key => !toRemove.has(key)));
+    setExpandedFolderPaths(
+      pathsToAbsenceRecord([
+        ...folderNodes.map(folderNode => folderNode.path),
+        ...collectFolderPathsToCollapse(folderNodes, 1),
+      ]),
+    );
   };
 
   const expandToLevel = (folderPath: string) => {
@@ -90,10 +90,9 @@ export function useFileTreeContextMenu(config: UseFileTreeContextMenuOptions) {
       if (level == null) {
         return;
       }
-      const { cruiseSnapshot: snapshot, expandedFolderPaths: currentExpanded } = useWorkspaceStore.getState();
+      const { cruiseSnapshot: snapshot, setExpandedFolderPaths: setExpanded } = useWorkspaceStore.getState();
       const folderNodes = resolveFolderNodes(snapshot.nodes, [folderPath]);
-      const previous = presenceRecordToPaths(currentExpanded);
-      replaceExpandedFolderPaths([...new Set([...previous, ...collectFolderPathsToExpand(folderNodes, level)])]);
+      setExpanded(pathsToPresenceRecord(collectFolderPathsToExpand(folderNodes, level)));
     });
   };
 
@@ -102,11 +101,9 @@ export function useFileTreeContextMenu(config: UseFileTreeContextMenuOptions) {
       if (level == null) {
         return;
       }
-      const { cruiseSnapshot: snapshot, expandedFolderPaths: currentExpanded } = useWorkspaceStore.getState();
+      const { cruiseSnapshot: snapshot, setExpandedFolderPaths: setExpanded } = useWorkspaceStore.getState();
       const folderNodes = resolveFolderNodes(snapshot.nodes, [folderPath]);
-      const toRemove = new Set(collectFolderPathsToCollapse(folderNodes, level));
-      const previous = presenceRecordToPaths(currentExpanded);
-      replaceExpandedFolderPaths(previous.filter(key => !toRemove.has(key)));
+      setExpanded(pathsToAbsenceRecord(collectFolderPathsToCollapse(folderNodes, level)));
     });
   };
 

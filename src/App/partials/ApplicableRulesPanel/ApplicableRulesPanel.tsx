@@ -4,8 +4,6 @@ import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
 
-import { getCruiseSources, isPathInSources } from '@/domain';
-
 import { useWorkspaceStore } from '../../stores/workspaceStore';
 import { ApplicableRulesList } from './partials/ApplicableRulesList';
 import { ApplicableRulesPanelHeader } from './partials/ApplicableRulesPanelHeader';
@@ -21,12 +19,11 @@ export function ApplicableRulesPanel(props: ApplicableRulesPanelProps) {
 
   const { t } = useTranslation();
   const cruiseSnapshot = useWorkspaceStore(state => state.cruiseSnapshot);
-  const path = useWorkspaceStore(state => {
-    const sources = getCruiseSources(state.cruiseSnapshot);
-    return state.applicableRulesPanelPath && isPathInSources(state.applicableRulesPanelPath, sources)
+  const path = useWorkspaceStore(state =>
+    state.applicableRulesPanelPath && state.cruiseSnapshot.nodes.has(state.applicableRulesPanelPath)
       ? state.applicableRulesPanelPath
-      : null;
-  });
+      : null,
+  );
   const rules = path ? (cruiseSnapshot.nodes.get(path)?.applicableRules ?? []) : [];
 
   if (!path) {

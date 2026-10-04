@@ -1,8 +1,9 @@
-import type { ICruiseResult, IModule, ISummary } from 'dependency-cruiser';
+import type { ICruiseResult, ISummary } from 'dependency-cruiser';
 import { describe, expect, it } from 'vitest';
 
 import type { ViewerWorkspaceSettings } from '../../../types';
 import { CruiseResultParseError } from '../../cruiseResult';
+import { buildCruiseSnapshotFromResult } from '../../cruiseSnapshot';
 import { VIEWER_WORKSPACE_EXTENSION_KEY, VIEWER_WORKSPACE_SCHEMA_VERSION } from '../constants';
 import { replaceWorkspaceSettings } from '../replaceWorkspaceSettings';
 import { serializeViewerWorkspace } from '../serializeViewerWorkspace';
@@ -108,8 +109,7 @@ describe('serializeViewerWorkspace', () => {
 });
 
 describe('replaceWorkspaceSettings', () => {
-  const sources = ['src/a.ts', 'src/b.ts'];
-  const modules = validResult.modules as IModule[];
+  const cruiseSnapshot = buildCruiseSnapshotFromResult(validResult);
 
   it('accepts settings wholesale on full correspondence', () => {
     const settings = makeSettings({
@@ -119,8 +119,7 @@ describe('replaceWorkspaceSettings', () => {
       nodePositions: { '': { 'src/a.ts': { x: 1, y: 2 } } },
     });
     const replaced = replaceWorkspaceSettings({
-      sources,
-      modules,
+      cruiseSnapshot,
       settings,
       defaultFolderColors,
     });
@@ -143,8 +142,7 @@ describe('replaceWorkspaceSettings', () => {
       userEdgeHighlights: { 'src/a.ts->src/b.ts': '#00ff00', 'x->y': '#000' },
     });
     const replaced = replaceWorkspaceSettings({
-      sources,
-      modules,
+      cruiseSnapshot,
       settings,
       defaultFolderColors,
     });
@@ -162,8 +160,7 @@ describe('replaceWorkspaceSettings', () => {
       expandedKeys: ['src'],
     });
     const replaced = replaceWorkspaceSettings({
-      sources,
-      modules,
+      cruiseSnapshot,
       settings,
       defaultFolderColors,
     });
@@ -176,8 +173,7 @@ describe('replaceWorkspaceSettings', () => {
       selectedFiles: ['src', 'src/a.ts'],
     });
     const replaced = replaceWorkspaceSettings({
-      sources,
-      modules,
+      cruiseSnapshot,
       settings,
       defaultFolderColors,
     });
@@ -195,8 +191,7 @@ describe('replaceWorkspaceSettings', () => {
       },
     });
     const replaced = replaceWorkspaceSettings({
-      sources,
-      modules,
+      cruiseSnapshot,
       settings,
       defaultFolderColors,
     });
@@ -219,8 +214,7 @@ describe('replaceWorkspaceSettings', () => {
       },
     });
     const replaced = replaceWorkspaceSettings({
-      sources,
-      modules,
+      cruiseSnapshot,
       settings,
       defaultFolderColors,
     });

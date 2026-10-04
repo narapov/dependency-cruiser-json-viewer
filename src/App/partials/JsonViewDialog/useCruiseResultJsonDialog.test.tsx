@@ -12,22 +12,30 @@ import { initialWorkspaceState, useWorkspaceStore } from '../../stores/workspace
 import { useCruiseResultJsonDialog } from './useCruiseResultJsonDialog';
 import { useModuleJsonDialog } from './useModuleJsonDialog';
 
+function moduleAt(source: string): IModule {
+  return { source, dependencies: [], dependents: [], valid: true } as IModule;
+}
+
+function cruiseSummary(totalCruised: number): ICruiseResult['summary'] {
+  return {
+    totalCruised,
+    violations: [],
+    error: 0,
+    warn: 0,
+    info: 0,
+    ignore: 0,
+    optionsUsed: { args: '' },
+    environment: {} as ICruiseResult['summary']['environment'],
+  };
+}
+
 describe('cruise / module JSON dialogs from store', () => {
   beforeEach(() => {
     useWorkspaceStore.setState({ ...initialWorkspaceState });
     useWorkspaceStore.getState().reset(
       {
-        modules: [{ source: 'src/a.ts', dependencies: [], dependents: [], valid: true }] as IModule[],
-        summary: {
-          totalCruised: 1,
-          violations: [],
-          error: 0,
-          warn: 0,
-          info: 0,
-          ignore: 0,
-          optionsUsed: { args: '' },
-          environment: {} as ICruiseResult['summary']['environment'],
-        },
+        modules: [moduleAt('src/a.ts'), moduleAt('src/b/c.ts')],
+        summary: cruiseSummary(2),
       } as ICruiseResult,
       'hard',
     );
@@ -57,7 +65,7 @@ describe('cruise / module JSON dialogs from store', () => {
     });
   });
 
-  it('opens module JSON from the workspace store modules', () => {
+  it('opens module JSON for a file path from the cruise snapshot', () => {
     const { result: i18n } = renderHook(() => useTranslation());
     const { result } = renderHook(() => useModuleJsonDialog());
 
@@ -70,6 +78,34 @@ describe('cruise / module JSON dialogs from store', () => {
 
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     expect(screen.getByText(i18n.current.t('moduleJson.title', { path: 'src/a.ts' }))).toBeInTheDocument();
+  });
+
+  it('opens module JSON for a folder path from snapshot descendant modules', () => {
+    const { result: i18n } = renderHook(() => useTranslation());
+    const { result } = renderHook(() => useModuleJsonDialog());
+
+    const { rerender } = renderWithTheme(<>{result.current.moduleJsonDialog}</>);
+
+    act(() => {
+      result.current.openModuleJson('src/b');
+    });
+    rerender(<>{result.current.moduleJsonDialog}</>);
+
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByText(i18n.current.t('moduleJson.title', { path: 'src/b' }))).toBeInTheDocument();
+  });
+
+  it('does not open module JSON for a path absent from the cruise snapshot', () => {
+    const { result } = renderHook(() => useModuleJsonDialog());
+
+    const { rerender } = renderWithTheme(<>{result.current.moduleJsonDialog}</>);
+
+    act(() => {
+      result.current.openModuleJson('src/missing.ts');
+    });
+    rerender(<>{result.current.moduleJsonDialog}</>);
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('does not open cruise JSON when the store has no cruise result', () => {

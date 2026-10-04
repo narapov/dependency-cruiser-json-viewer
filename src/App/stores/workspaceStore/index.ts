@@ -1,5 +1,5 @@
 export { EMPTY_CRUISE_SNAPSHOT, initialWorkspaceState, useWorkspaceStore } from './workspaceStore';
-export { pathsToPresenceRecord, presenceRecordToPaths } from './helpers';
+export { pathsToAbsenceRecord, pathsToPresenceRecord, presenceRecordToPaths } from './helpers';
 export type {
   WorkspaceComputedState,
   WorkspaceOwnState,

@@ -6,12 +6,9 @@ import { combine } from 'zustand/middleware';
 import {
   applyHighlightKeys,
   buildCruiseSnapshotFromResult,
-  getCruiseModules,
-  getCruiseSources,
   getInitialDependencyCruiserState,
   getVisibleTree,
   replaceWorkspaceSettings,
-  resolveActivePathAfterCollapse,
   stripViewerWorkspaceExtension,
   toSelectedFilePaths,
   type CruiseSnapshot,
@@ -21,10 +18,12 @@ import {
 import { defaultFolderColorsRecord } from '../../helpers';
 import {
   extractEmbeddedWorkspaceSettings,
+  haveSamePresentPaths,
   mapMergedViewToWorkspaceFields,
   pathsToPresenceRecord,
   presenceRecordToPaths,
   reconcileWorkspaceAgainstSnapshot,
+  resolveActivePathAfterCollapse,
 } from './helpers';
 import type { WorkspaceComputedState, WorkspaceOwnState, WorkspaceState, WorkspaceStateActions } from './types';
 
@@ -70,8 +69,7 @@ function applySettingsToCruiseResult(
   const stripped = stripViewerWorkspaceExtension(cruiseResult);
   const cruiseSnapshot = buildCruiseSnapshotFromResult(stripped, settings.ignorePatterns);
   const view = replaceWorkspaceSettings({
-    sources: getCruiseSources(cruiseSnapshot),
-    modules: getCruiseModules(cruiseSnapshot),
+    cruiseSnapshot,
     settings,
     defaultFolderColors: defaultFolderColorsRecord(cruiseSnapshot),
   });
@@ -137,7 +135,14 @@ const computeVisibleTree = createComputed(
   (state: WorkspaceOwnState & WorkspaceStateActions): WorkspaceComputedState => ({
     visibleTree: getVisibleTree(state.cruiseSnapshot, state.selectedFilePaths, state.expandedFolderPaths),
   }),
-  { keys: ['cruiseSnapshot', 'selectedFilePaths', 'expandedFolderPaths'] },
+  {
+    // `next` is the set() patch (partial), not a full store snapshot.
+    shouldRecompute: (prev, next) =>
+      ('cruiseSnapshot' in next && prev.cruiseSnapshot !== next.cruiseSnapshot) ||
+      ('selectedFilePaths' in next && !haveSamePresentPaths(prev.selectedFilePaths, next.selectedFilePaths ?? {})) ||
+      ('expandedFolderPaths' in next &&
+        !haveSamePresentPaths(prev.expandedFolderPaths, next.expandedFolderPaths ?? {})),
+  },
 );
 
 export const useWorkspaceStore = create<WorkspaceState>()(
@@ -198,20 +203,18 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         });
       },
 
-      setExpandedFolderPaths(expandedFolderPaths) {
-        set({ expandedFolderPaths });
-      },
-
-      /** Replace expanded folders; when folders collapse, move activePath out of collapsed subtrees. */
-      replaceExpandedFolderPaths(paths) {
-        const previous = presenceRecordToPaths(get().expandedFolderPaths);
-        const next = [...paths];
-        const collapsed = previous.filter(key => !next.includes(key));
+      /** Merge (default) or replace expanded folders; on collapse, move activePath out of collapsed subtrees. */
+      setExpandedFolderPaths(next, options) {
+        const previous = get().expandedFolderPaths;
+        const expandedFolderPaths = options?.replace ? next : { ...previous, ...next };
+        const collapsed = Object.keys(previous).filter(key => previous[key] === true && !expandedFolderPaths[key]);
         const patch: Pick<WorkspaceOwnState, 'expandedFolderPaths'> & Partial<Pick<WorkspaceOwnState, 'activePath'>> = {
-          expandedFolderPaths: pathsToPresenceRecord(next),
+          expandedFolderPaths,
         };
         if (collapsed.length > 0) {
-          patch.activePath = resolveActivePathAfterCollapse(get().activePath, collapsed);
+          const { activePath, cruiseSnapshot } = get();
+          const ancestors = activePath ? (cruiseSnapshot.nodes.get(activePath)?.ancestors ?? []) : [];
+          patch.activePath = resolveActivePathAfterCollapse(activePath, collapsed, ancestors);
         }
         set(patch);
       },

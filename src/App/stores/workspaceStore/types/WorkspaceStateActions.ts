@@ -11,8 +11,7 @@ export interface WorkspaceStateActions {
   syncWorkspaceSettings: (workspaceSettings: ViewerWorkspaceSettings) => WorkspaceOwnState;
   setIgnorePatterns: (ignorePatterns: string[]) => void;
   setSelectedFilePaths: (selectedFilePaths: WorkspaceOwnState['selectedFilePaths']) => void;
-  setExpandedFolderPaths: (expandedFolderPaths: WorkspaceOwnState['expandedFolderPaths']) => void;
-  replaceExpandedFolderPaths: (paths: readonly string[]) => void;
+  setExpandedFolderPaths: (next: WorkspaceOwnState['expandedFolderPaths'], options?: { replace?: boolean }) => void;
   setActivePath: (activePath: string | null) => void;
   setDependenciesPanelPath: (dependenciesPanelPath: string | null) => void;
   setApplicableRulesPanelPath: (applicableRulesPanelPath: string | null) => void;

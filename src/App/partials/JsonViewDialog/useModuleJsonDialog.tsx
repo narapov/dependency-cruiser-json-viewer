@@ -1,13 +1,13 @@
 import { type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { getModuleJsonData } from '@/domain';
+import { getCruiseModules } from '@/domain';
 
 import { useWorkspaceStore } from '../../stores/workspaceStore';
 import { useJsonDialog } from './useJsonDialog';
 
 /**
- * Opens module JSON via `useJsonDialog`, resolving path → data from the workspace cruise result.
+ * Opens module JSON via `useJsonDialog`, resolving path → data from the workspace cruise snapshot.
  */
 export function useModuleJsonDialog(): {
   openModuleJson: (path: string) => void;
@@ -17,11 +17,17 @@ export function useModuleJsonDialog(): {
   const { openJsonDialog, jsonDialog } = useJsonDialog({ maxWidth: 'md' });
 
   const openModuleJson = (path: string) => {
-    const modules = useWorkspaceStore.getState().cruiseResult?.modules ?? [];
-    const data = getModuleJsonData(path, modules);
-    if (!data) {
+    const { cruiseSnapshot } = useWorkspaceStore.getState();
+    const node = cruiseSnapshot.nodes.get(path);
+    if (!node) {
       return;
     }
+
+    const data = node.isFolder ? getCruiseModules(cruiseSnapshot, [...node.descendantFiles]) : node.originModule;
+    if (!data || (Array.isArray(data) && data.length === 0)) {
+      return;
+    }
+
     openJsonDialog({ title: t('moduleJson.title', { path }), data });
   };
 

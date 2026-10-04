@@ -51,7 +51,7 @@ describe('FolderGroupNode', () => {
     expect(screen.getByText('src')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: i18n.current.t('actions.collapseFolder') }));
-    expect(useWorkspaceStore.getState().expandedFolderPaths.src).toBeUndefined();
+    expect(useWorkspaceStore.getState().expandedFolderPaths.src).toBe(false);
   });
 
   it('opens context menu for folder path', () => {

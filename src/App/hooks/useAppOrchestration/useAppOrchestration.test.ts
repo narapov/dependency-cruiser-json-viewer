@@ -84,7 +84,9 @@ function seedWorkspace(
     useWorkspaceStore.getState().setSelectedFilePaths(pathsToPresenceRecord(overrides.selectedKeys));
   }
   if (overrides.expandedKeys) {
-    useWorkspaceStore.getState().setExpandedFolderPaths(pathsToPresenceRecord(overrides.expandedKeys));
+    useWorkspaceStore.getState().setExpandedFolderPaths(pathsToPresenceRecord(overrides.expandedKeys), {
+      replace: true,
+    });
   }
 }
 
@@ -744,7 +746,7 @@ describe('useAppOrchestration', () => {
     expect(result.current.activePath).toBe('src/b/c.ts');
 
     act(() => {
-      result.current.updateExpandedKeys(keys => keys.filter(key => key !== 'src/b'));
+      useWorkspaceStore.getState().setExpandedFolderPaths({ 'src/b': false });
     });
 
     expect(result.current.activePath).toBe('src/b');

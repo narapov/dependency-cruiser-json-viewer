@@ -2,15 +2,14 @@ import {
   collectFolderPathsToCollapse,
   collectFolderPathsToExpand,
   collectRelatedModuleSources,
-  getAncestorKeys,
-  getCruiseSources,
   getCruiseSourcesUnder,
+  isFileInSnapshot,
   resolveFolderNodes,
-  toggleExpandedKey,
   type RelatedModuleDirection,
 } from '@/domain';
 
 import {
+  pathsToAbsenceRecord,
   pathsToPresenceRecord,
   presenceRecordToPaths,
   useWorkspaceStore,
@@ -20,30 +19,30 @@ import {
 export function useGraphWorkspaceActions() {
   const cruiseSnapshot = useWorkspaceStore(state => state.cruiseSnapshot);
   const setSelectedFilePaths = useWorkspaceStore(state => state.setSelectedFilePaths);
-  const replaceExpandedFolderPaths = useWorkspaceStore(state => state.replaceExpandedFolderPaths);
   const setExpandedFolderPaths = useWorkspaceStore(state => state.setExpandedFolderPaths);
   const setActivePath = useWorkspaceStore(state => state.setActivePath);
   const setDependenciesPanelPath = useWorkspaceStore(state => state.setDependenciesPanelPath);
   const setApplicableRulesPanelPath = useWorkspaceStore(state => state.setApplicableRulesPanelPath);
 
-  const sources = getCruiseSources(cruiseSnapshot);
-
   const toggleFolder = (path: string) => {
-    const previous = presenceRecordToPaths(useWorkspaceStore.getState().expandedFolderPaths);
-    replaceExpandedFolderPaths(toggleExpandedKey(previous, path));
+    const { expandedFolderPaths } = useWorkspaceStore.getState();
+    setExpandedFolderPaths({ [path]: !expandedFolderPaths[path] });
   };
 
   const expandFoldersToLevel = (paths: readonly string[], level: number) => {
     const folderNodes = resolveFolderNodes(cruiseSnapshot.nodes, paths);
-    const previous = presenceRecordToPaths(useWorkspaceStore.getState().expandedFolderPaths);
-    replaceExpandedFolderPaths([...new Set([...previous, ...collectFolderPathsToExpand(folderNodes, level)])]);
+    const toExpand = collectFolderPathsToExpand(folderNodes, level);
+    if (toExpand.length > 0) {
+      setExpandedFolderPaths(pathsToPresenceRecord(toExpand));
+    }
   };
 
   const collapseFoldersToLevel = (paths: readonly string[], level: number) => {
     const folderNodes = resolveFolderNodes(cruiseSnapshot.nodes, paths);
-    const toRemove = new Set(collectFolderPathsToCollapse(folderNodes, level));
-    const previous = presenceRecordToPaths(useWorkspaceStore.getState().expandedFolderPaths);
-    replaceExpandedFolderPaths(previous.filter(key => !toRemove.has(key)));
+    const toCollapse = collectFolderPathsToCollapse(folderNodes, level);
+    if (toCollapse.length > 0) {
+      setExpandedFolderPaths(pathsToAbsenceRecord(toCollapse));
+    }
   };
 
   const expandRecursive = (path: string) => {
@@ -52,9 +51,10 @@ export function useGraphWorkspaceActions() {
 
   const collapseRecursive = (path: string) => {
     const folderNodes = resolveFolderNodes(cruiseSnapshot.nodes, [path]);
-    const toRemove = new Set([...folderNodes.map(node => node.path), ...collectFolderPathsToCollapse(folderNodes, 1)]);
-    const previous = presenceRecordToPaths(useWorkspaceStore.getState().expandedFolderPaths);
-    replaceExpandedFolderPaths(previous.filter(key => !toRemove.has(key)));
+    const toCollapse = [...folderNodes.map(node => node.path), ...collectFolderPathsToCollapse(folderNodes, 1)];
+    if (toCollapse.length > 0) {
+      setExpandedFolderPaths(pathsToAbsenceRecord(toCollapse));
+    }
   };
 
   const expandToLevel = (path: string, level: number) => {
@@ -66,11 +66,9 @@ export function useGraphWorkspaceActions() {
   };
 
   const activatePath = (path: string) => {
-    const ancestors = getAncestorKeys(path);
-    const previous = presenceRecordToPaths(useWorkspaceStore.getState().expandedFolderPaths);
-    const next = [...new Set([...previous, ...ancestors])];
-    if (next.length !== previous.length) {
-      setExpandedFolderPaths(pathsToPresenceRecord(next));
+    const ancestors = cruiseSnapshot.nodes.get(path)?.ancestors ?? [];
+    if (ancestors.length > 0) {
+      setExpandedFolderPaths(pathsToPresenceRecord(ancestors));
     }
     setActivePath(path);
   };
@@ -97,14 +95,16 @@ export function useGraphWorkspaceActions() {
 
   const showRelatedModules = (path: string, direction: RelatedModuleDirection) => {
     const selectedPaths = presenceRecordToPaths(useWorkspaceStore.getState().selectedFilePaths);
-    const expandedKeys = presenceRecordToPaths(useWorkspaceStore.getState().expandedFolderPaths);
     const related = collectRelatedModuleSources(cruiseSnapshot, path, direction);
-    const sourceSet = new Set(sources);
-    const currentModuleSources = selectedPaths.filter(selected => sourceSet.has(selected));
+    const currentModuleSources = selectedPaths.filter(selected => isFileInSnapshot(cruiseSnapshot, selected));
     const nextSources = [...new Set([...currentModuleSources, ...sourcesForPath(path), ...related])];
     setSelectedPaths(nextSources);
     if (related.length > 0) {
-      replaceExpandedFolderPaths([...new Set([...expandedKeys, ...related.flatMap(getAncestorKeys)])]);
+      setExpandedFolderPaths(
+        pathsToPresenceRecord([
+          ...new Set(related.flatMap(relatedPath => cruiseSnapshot.nodes.get(relatedPath)?.ancestors ?? [])),
+        ]),
+      );
     }
   };
 
