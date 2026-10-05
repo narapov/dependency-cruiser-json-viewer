@@ -41,6 +41,8 @@ Interactive browser viewer for [dependency-cruiser](https://github.com/sverweij/
 
 ## Architecture
 
+See [docs/architecture.md](docs/architecture.md) for layers, state, and graph pipeline. Graph algorithms ([buildGraph](docs/algorithms/build-graph.md), [libavoid](docs/algorithms/libavoid-edge-routing.md)): [docs/algorithms/](docs/algorithms/).
+
 ```
 Feature roots: src/App, src/Shared, src/domain (excludes src/i18n, src/assets, src/testsUtils)
 

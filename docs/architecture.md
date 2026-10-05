@@ -1,5 +1,40 @@
 # Architecture
 
+## Files structure
+
+```mermaid
+flowchart TB
+  subgraph layers [Layers]
+    App["App - composition"]
+    Shared["Shared - reusable UI"]
+    Domain["domain - pure logic"]
+  end
+  subgraph App/partials [App/partials - main feature examples]
+    FileTree[FileTree]
+    DependencyGraph[DependencyGraph]
+    QuickPick[QuickPick]
+    OtherFeatures["Other features<br/>(panels, dialogs, …)"]
+  end
+  App --> Shared
+  App --> Domain
+  App --> FileTree
+  App --> DependencyGraph
+  App --> QuickPick
+  App --> OtherFeatures
+  FileTree --> Shared
+  FileTree --> Domain
+  DependencyGraph --> Shared
+  DependencyGraph --> Domain
+  QuickPick --> Shared
+  QuickPick --> Domain
+  OtherFeatures --> Shared
+  OtherFeatures --> Domain
+```
+
+FileTree, DependencyGraph, and QuickPick are representative main features; the remaining App partials (panels, dialogs, layout chrome, cruise-result UI, …) follow the same module layout.
+
+`Shared → domain` is allowed by layer rules but unused today.
+
 ## Layers
 
 ```
@@ -8,12 +43,12 @@ Feature roots: src/App, src/Shared, src/domain (excludes src/i18n, src/assets, s
 main → App → App/partials/{Feature}
          ↘ domain
          ↘ Shared
-Shared → Shared, domain
+Shared → Shared, domain (domain allowed; unused today)
 domain → domain only
 ```
 
 - **`src/domain/`** — pure cruise-data logic (no React, no xyflow, no Shared). Import via `from '@/domain'` only. May import **only** `src/domain/`.
-- **`src/Shared/`** — reusable code without app logic. Import via `from '@/Shared'` only. May import **`src/Shared/`** and **`src/domain/`**.
+- **`src/Shared/`** — reusable code without app logic. Import via `from '@/Shared'` only. May import **`src/Shared/`** and **`src/domain/`** (domain import is allowed but unused today).
 - **`src/App/`** (outside `partials/`) — composition, data loading, shared UI coordination. Import partials **only** via `partials/{Name}/index.ts`.
 - **`src/App/partials/{Feature}/`** — feature modules. May import Shared, domain, and the same feature tree. No layer isolation between App partials (folder rules only).
 
@@ -21,10 +56,31 @@ Layer boundaries are enforced by [`.dependency-cruiser/layer-import-rules.ts`](.
 
 ## Data & state
 
+### Bootstrap — load into workspace
+
+TanStack Query holds the raw cruise JSON cache; Zustand `workspaceStore` holds the indexed snapshot and UI fields. They stay in sync manually on first load, file pick, and watch reload.
+
+```mermaid
+sequenceDiagram
+  participant Query as TanStack Query
+  participant App as App.tsx
+  participant WS as workspaceStore
+  participant Domain as buildCruiseSnapshotFromResult
+
+  Query->>App: useCruiseResult data
+  App->>WS: reset hard if store empty
+  WS->>Domain: filter + build snapshot
+  Domain-->>WS: CruiseSnapshot + UI fields
+  Note over Query,WS: File load / watch also call reset and setQueryData
+```
+
+- Initial fetch: [`useCruiseResult`](../src/App/hooks/useCruiseResult/) → [`App.tsx`](../src/App/App.tsx) calls `reset(data, 'hard')` once the store is empty.
+- File load / CLI watch: update Query cache via `setQueryData`, then `reset` (`hard` or `soft` + reconcile).
+
 ### State management — Zustand
 
-- App UI and workspace state live in Zustand stores (e.g. [`src/App/stores/workspaceStore/`](../src/App/stores/workspaceStore/), feature stores such as graph markers).
-- Stores hold the loaded cruise result, settings, and derived UI fields. Heavy indexing of cruise data does not belong in React context or ad-hoc component logic.
+- App UI and workspace state live in Zustand stores: [`src/App/stores/workspaceStore/`](../src/App/stores/workspaceStore/) and graph-local stores under [`GraphCanvas/stores/`](../src/App/partials/DependencyGraph/partials/GraphCanvas/stores/) (`graphMarkersStore`, `selectedDependencyEdgeStore`).
+- Stores hold the loaded cruise result, settings, and derived UI fields (`visibleTree` is a computed field on the workspace store). Heavy indexing of cruise data does not belong in React context or ad-hoc component logic.
 
 ### CruiseSnapshot — precompute on load
 
@@ -44,6 +100,65 @@ Layer boundaries are enforced by [`.dependency-cruiser/layer-import-rules.ts`](.
 - When selecting by key (path, dependency key, id), prefer a `Map` (or a `Set` for membership) over arrays plus `find` / `includes` / linear `filter`.
 - The snapshot already follows this (`nodes`, dependency indexes, `violations`, edge maps on `CruisePathNode`); new index code should do the same.
 - Keep arrays when order matters for UI or when lookup is not needed.
+
+## DependencyGraph
+
+### Heavy work in Web Workers
+
+All expensive graph work (ELK layout in `buildGraph`, libavoid edge routing) runs in **dedicated Web Workers**, not on the main thread. Workers are one-shot: one job → one Worker instance.
+
+When inputs become stale (visible tree, selection, snapshot, layout revision, live geometry, edges type, unmount, or drag suspending libavoid) while a worker is still running: **terminate** it and start a new job. There is no soft cancel inside ELK/libavoid — only hard `worker.terminate()` plus ignore of stale results (`cancelled` / generation guard).
+
+Implementation: [`runBuildGraphInWorker.ts`](../src/App/partials/DependencyGraph/partials/GraphCanvas/helpers/buildGraph/runBuildGraphInWorker.ts), [`runRouteEdgesInWorker.ts`](../src/App/partials/DependencyGraph/partials/GraphCanvas/helpers/routeEdgesWithLibavoid/runRouteEdgesInWorker.ts), hooks [`useBuildGraph`](../src/App/partials/DependencyGraph/partials/GraphCanvas/hooks/useBuildGraph/useBuildGraph.ts), [`useLibavoidEdgeRouting`](../src/App/partials/DependencyGraph/partials/GraphCanvas/hooks/useLibavoidEdgeRouting/useLibavoidEdgeRouting.ts).
+
+```mermaid
+sequenceDiagram
+  participant Main
+  participant WorkerA
+  participant WorkerB
+  Main->>WorkerA: postMessage job1
+  Note over Main: inputs change / stale
+  Main->>WorkerA: terminate
+  Main->>WorkerB: postMessage job2
+  WorkerB-->>Main: result applied
+```
+
+### Pipeline
+
+Orchestration in [`GraphCanvas.tsx`](../src/App/partials/DependencyGraph/partials/GraphCanvas/GraphCanvas.tsx): the canvas calls the hooks and wires their outputs. `useLayoutCache` does not call `useBuildGraph` — GraphCanvas passes `getLayoutCache` / `layoutRevision` into the build hook and `layoutCacheRef` into `useCustomPositionedGraph`. That hook merges custom positions and calls `useLibavoidEdgeRouting` when `edgesType` is `libavoidOrthogonal` and the user is not dragging. Then `toReactFlowEdges` / `useReactFlowGraph` project edges and nodes; `useHighlightedEdges` applies user highlights before React Flow render. During drag or in-flight routing, edges fall back to smooth-step. Edge ports are frozen at build time.
+
+```mermaid
+flowchart TB
+  WS[workspaceStore]
+  GC[GraphCanvas]
+  LC[useLayoutCache]
+  BG[useBuildGraph worker]
+  CP[useCustomPositionedGraph]
+  LA[useLibavoidEdgeRouting worker]
+  TFE[toReactFlowEdges]
+  RF[useReactFlowGraph]
+  HE[useHighlightedEdges]
+  UI[ReactFlow]
+
+  WS --> GC
+  GC --> LC
+  GC --> BG
+  GC --> CP
+  LC -.->|getLayoutCache + revision| BG
+  LC -.->|layoutCacheRef| CP
+  BG -->|graphResult| CP
+  CP --> LA
+  LA -->|routedEdges| CP
+  CP --> TFE --> RF --> HE --> UI
+```
+
+`visibleTree` is a computed field on `workspaceStore` (not a separate store). Libavoid runs inside `useCustomPositionedGraph`, not as a sibling of it.
+
+### Algorithms
+
+**buildGraph** — collect visible edges → recursive per-folder layout (cache hit or ELK layered RIGHT) → index nodes and freeze EAST/WEST ports. Runs in a worker via [`useBuildGraph`](../src/App/partials/DependencyGraph/partials/GraphCanvas/hooks/useBuildGraph/useBuildGraph.ts). [Detailed flowchart](algorithms/build-graph.md).
+
+**libavoid** — LCA + lift edges → assign ports → flat pass over all levels → hierarchical pass (batched, expand-or-opaque) → overlap re-route. Runs in a worker when `edgesType` is `libavoidOrthogonal`; main thread merges routes to SVG paths. [Detailed flowchart](algorithms/libavoid-edge-routing.md).
 
 ## Module structure
 

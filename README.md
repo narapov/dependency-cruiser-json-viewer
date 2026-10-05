@@ -106,6 +106,10 @@ npx dependency-cruiser-json-viewer cruise-result.json -w
 
 With `CRUISE_WATCH=false` (the default in `.env.development`) or any value other than `true`, `npm run dev` runs without cruise watch — you can load a JSON file from the command palette as usual.
 
+## Architecture
+
+See [docs/architecture.md](docs/architecture.md) for layers, import rules, and project conventions. Graph algorithms: [docs/algorithms/](docs/algorithms/) ([buildGraph](docs/algorithms/build-graph.md), [libavoid](docs/algorithms/libavoid-edge-routing.md)).
+
 ## Scripts
 
 | Command                               | Description                                                                                                          |
