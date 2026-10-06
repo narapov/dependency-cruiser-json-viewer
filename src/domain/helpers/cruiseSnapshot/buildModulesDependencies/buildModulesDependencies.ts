@@ -2,7 +2,7 @@ import type { IModule } from 'dependency-cruiser';
 
 import type { ModuleDependency } from '../../../types';
 import { makeDependencyKey } from '../../dependencyKey';
-import { getAncestorKeys } from '../../pathUtils';
+import { getAncestorKeys, toBuiltInSnapshotPath } from '../../pathUtils';
 
 type ResolvedDep = IModule['dependencies'][number] & { resolved: string };
 
@@ -22,6 +22,7 @@ function pushOrCreateToModuleDependencyMap(
 /**
  * Build a map of direct module dependencies keyed by `makeDependencyKey(source, target)`.
  * Includes external / unresolved-to-cruise targets when `resolved` is set.
+ * Core-module endpoints are indexed under `:buildIn:` (protocol prefixes the leaf when set).
  */
 export function buildModulesDependencies(modules: readonly IModule[]): {
   modulesDependenciesByDependencyKey: ReadonlyMap<string, ModuleDependency[]>;
@@ -37,27 +38,31 @@ export function buildModulesDependencies(modules: readonly IModule[]): {
       return;
     }
 
+    const source = module.coreModule ? toBuiltInSnapshotPath(module.source) : module.source;
+
     module.dependencies
       .filter((dep): dep is ResolvedDep => Boolean(dep.resolved))
       .forEach(dep => {
-        const key = makeDependencyKey(module.source, dep.resolved);
-        const sourceAncestors = getAncestorKeys(module.source);
-        const targetAncestors = getAncestorKeys(dep.resolved);
+        const target = dep.coreModule ? toBuiltInSnapshotPath(dep.resolved, dep.protocol) : dep.resolved;
+        const key = makeDependencyKey(source, target);
+        const sourceAncestors = getAncestorKeys(source);
+        const targetAncestors = getAncestorKeys(target);
 
         const moduleDependency: ModuleDependency = {
           id: key,
-          source: module.source,
+          source,
           sourceAncestors,
-          target: dep.resolved,
+          target,
           targetAncestors,
           ...dep,
+          resolved: target,
         };
 
         pushOrCreateToModuleDependencyMap(modulesDependenciesByDependencyKey, key, moduleDependency);
-        [...sourceAncestors, module.source].forEach(s =>
+        [...sourceAncestors, source].forEach(s =>
           pushOrCreateToModuleDependencyMap(modulesDependenciesBySource, s, moduleDependency),
         );
-        [...targetAncestors, dep.resolved].forEach(t =>
+        [...targetAncestors, target].forEach(t =>
           pushOrCreateToModuleDependencyMap(modulesDependenciesByTarget, t, moduleDependency),
         );
       });

@@ -10,4 +10,10 @@ describe('getAncestorKeys', () => {
   it('returns an empty array for a root key', () => {
     expect(getAncestorKeys('src')).toEqual([]);
   });
+
+  it('returns only :buildIn: for built-in snapshot paths', () => {
+    expect(getAncestorKeys(':buildIn:')).toEqual([]);
+    expect(getAncestorKeys(':buildIn:/crypto')).toEqual([':buildIn:']);
+    expect(getAncestorKeys(':buildIn:/node:path/posix')).toEqual([':buildIn:']);
+  });
 });
