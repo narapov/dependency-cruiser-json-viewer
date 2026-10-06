@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.9.1](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v1.9.0...v1.9.1) (2026-10-06)
+
+### Bug Fixes
+
+- move built-in modules under :buildIn: folder from tree root ([#31](https://github.com/narapov/dependency-cruiser-json-viewer/issues/31)) ([61b22eb](https://github.com/narapov/dependency-cruiser-json-viewer/commit/61b22ebc37c31a36e5414ce2f10512760fd4bd73))
+
 ## [1.9.0](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v1.8.0...v1.9.0) (2026-10-04)
 
 ### Features
