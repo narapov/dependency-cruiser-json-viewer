@@ -2,11 +2,16 @@ import type { IFlattenedRuleSet, IModule, IViolation } from 'dependency-cruiser'
 import { describe, expect, it } from 'vitest';
 
 import { makeDependencyKey } from '../../dependencyKey';
+import { getBaseName } from '../../pathUtils';
 import { getCruiseSources } from '../getCruiseSources';
 import { buildCruiseSnapshot } from './buildCruiseSnapshot';
 
 function moduleAt(source: string, dependencies: IModule['dependencies'] = []): IModule {
   return { source, dependencies, dependents: [], valid: true } as IModule;
+}
+
+function coreModuleAt(source: string, dependencies: IModule['dependencies'] = []): IModule {
+  return { ...moduleAt(source, dependencies), coreModule: true } as IModule;
 }
 
 describe('buildCruiseSnapshot', () => {
@@ -190,5 +195,80 @@ describe('buildCruiseSnapshot', () => {
     expect(snapshot.rules).toEqual([]);
     expect(snapshot.ruleSetUsed).toBeUndefined();
     expect(snapshot.violations.size).toBe(0);
+  });
+
+  it('places orphan core modules under synthetic :buildIn: root', () => {
+    const crypto = coreModuleAt('crypto');
+    const snapshot = buildCruiseSnapshot([moduleAt('src/a.ts'), crypto]);
+
+    const node = snapshot.nodes.get(':buildIn:/crypto');
+    expect(node).toMatchObject({
+      path: ':buildIn:/crypto',
+      parent: ':buildIn:',
+      ancestors: [':buildIn:'],
+      isFolder: false,
+      originModule: crypto,
+    });
+    expect(snapshot.tree.has('crypto')).toBe(false);
+    expect(snapshot.tree.get(':buildIn:')?.children.has(':buildIn:/crypto')).toBe(true);
+    expect(getCruiseSources(snapshot).sort()).toEqual([':buildIn:/crypto', 'src/a.ts']);
+  });
+
+  it('emits distinct :buildIn: leaves for bare and protocol-prefixed core deps', () => {
+    const fsModule = coreModuleAt('fs');
+    const snapshot = buildCruiseSnapshot([
+      moduleAt('src/a.ts', [
+        { resolved: 'fs', coreModule: true } as IModule['dependencies'][0],
+        { resolved: 'fs', coreModule: true, protocol: 'node:' } as IModule['dependencies'][0],
+      ]),
+      fsModule,
+    ]);
+
+    expect(snapshot.nodes.get(':buildIn:/fs')).toMatchObject({
+      parent: ':buildIn:',
+      originModule: fsModule,
+    });
+    expect(snapshot.nodes.get(':buildIn:/node:fs')).toMatchObject({
+      parent: ':buildIn:',
+      originModule: fsModule,
+    });
+    expect([...snapshot.tree.get(':buildIn:')!.children.keys()].sort()).toEqual([':buildIn:/fs', ':buildIn:/node:fs']);
+  });
+
+  it('keeps protocol-prefixed nested core ids as one flat leaf under :buildIn:', () => {
+    const snapshot = buildCruiseSnapshot([
+      moduleAt('src/a.ts', [
+        { resolved: 'path/posix', coreModule: true, protocol: 'node:' } as IModule['dependencies'][0],
+      ]),
+      coreModuleAt('path/posix'),
+    ]);
+
+    expect(snapshot.nodes.get(':buildIn:/node:path/posix')).toMatchObject({
+      parent: ':buildIn:',
+      ancestors: [':buildIn:'],
+      isFolder: false,
+    });
+    expect(snapshot.nodes.has(':buildIn:/node:path')).toBe(false);
+    expect(getBaseName(':buildIn:/node:path/posix')).toBe('node:path/posix');
+  });
+
+  it('rewrites core module paths in attached cycles to bare :buildIn: leaves', () => {
+    const snapshot = buildCruiseSnapshot([moduleAt('src/a.ts'), coreModuleAt('fs')], undefined, undefined, [
+      {
+        members: [
+          { path: 'src/a.ts', ignored: false },
+          { path: 'fs', ignored: false },
+        ],
+      },
+    ]);
+
+    expect(snapshot.cycles).toEqual([
+      {
+        members: [
+          { path: 'src/a.ts', ignored: false },
+          { path: ':buildIn:/fs', ignored: false },
+        ],
+      },
+    ]);
   });
 });

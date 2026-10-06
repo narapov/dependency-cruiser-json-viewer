@@ -42,4 +42,51 @@ describe('buildModulesDependencies', () => {
 
     expect(map.get(makeDependencyKey('src/a.ts', 'pkg'))).toHaveLength(2);
   });
+
+  it('rewrites coreModule targets under :buildIn: with protocol leaf names', () => {
+    const { modulesDependenciesByDependencyKey: byKey, modulesDependenciesByTarget: byTarget } =
+      buildModulesDependencies([
+        moduleAt('src/a.ts', [
+          {
+            resolved: 'fs',
+            coreModule: true,
+            dependencyTypes: ['core', 'import'],
+          } as IModule['dependencies'][number],
+          {
+            resolved: 'fs',
+            coreModule: true,
+            protocol: 'node:',
+            dependencyTypes: ['core', 'import'],
+          } as IModule['dependencies'][number],
+          {
+            resolved: 'fs',
+            coreModule: true,
+            protocol: 'bun:',
+            dependencyTypes: ['core', 'import'],
+          } as IModule['dependencies'][number],
+        ]),
+        { ...moduleAt('fs'), coreModule: true } as IModule,
+      ]);
+
+    const bareKey = makeDependencyKey('src/a.ts', ':buildIn:/fs');
+    const nodeKey = makeDependencyKey('src/a.ts', ':buildIn:/node:fs');
+    const bunKey = makeDependencyKey('src/a.ts', ':buildIn:/bun:fs');
+
+    expect(byKey.get(bareKey)?.[0]).toEqual(
+      expect.objectContaining({ target: ':buildIn:/fs', resolved: ':buildIn:/fs' }),
+    );
+    expect(byKey.get(nodeKey)?.[0]).toEqual(
+      expect.objectContaining({ target: ':buildIn:/node:fs', resolved: ':buildIn:/node:fs' }),
+    );
+    expect(byKey.get(bunKey)?.[0]).toEqual(
+      expect.objectContaining({ target: ':buildIn:/bun:fs', resolved: ':buildIn:/bun:fs' }),
+    );
+    expect(
+      byTarget
+        .get(':buildIn:')
+        ?.map(dep => dep.target)
+        .sort(),
+    ).toEqual([':buildIn:/bun:fs', ':buildIn:/fs', ':buildIn:/node:fs']);
+    expect(byTarget.has('fs')).toBe(false);
+  });
 });

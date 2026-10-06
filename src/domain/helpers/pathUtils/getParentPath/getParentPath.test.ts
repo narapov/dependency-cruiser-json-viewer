@@ -12,4 +12,11 @@ describe('getParentPath', () => {
     expect(getParentPath('src')).toBeNull();
     expect(getParentPath('index.ts')).toBeNull();
   });
+
+  it('returns :buildIn: for built-in leaves without nesting folders', () => {
+    expect(getParentPath(':buildIn:')).toBeNull();
+    expect(getParentPath(':buildIn:/crypto')).toBe(':buildIn:');
+    expect(getParentPath(':buildIn:/node:path/posix')).toBe(':buildIn:');
+    expect(getParentPath(':buildIn:/bun:fs')).toBe(':buildIn:');
+  });
 });

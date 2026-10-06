@@ -11,4 +11,11 @@ describe('getBaseName', () => {
   it('returns the whole string when there is no slash', () => {
     expect(getBaseName('index.ts')).toBe('index.ts');
   });
+
+  it('returns the full leaf name under :buildIn:', () => {
+    expect(getBaseName(':buildIn:')).toBe(':buildIn:');
+    expect(getBaseName(':buildIn:/crypto')).toBe('crypto');
+    expect(getBaseName(':buildIn:/node:path/posix')).toBe('node:path/posix');
+    expect(getBaseName(':buildIn:/bun:fs')).toBe('bun:fs');
+  });
 });

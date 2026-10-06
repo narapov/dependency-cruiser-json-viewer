@@ -45,4 +45,26 @@ describe('getDefaultSelectedKeys', () => {
     expect(selected).not.toContain('packages');
     expect(selected).not.toContain('packages/app/node_modules/bar/index.js');
   });
+
+  it('excludes synthetic :buildIn: core modules from default selection', () => {
+    const selected = getDefaultSelectedKeys(
+      buildCruiseSnapshot([
+        { source: 'src/a.ts', dependencies: [], dependents: [], valid: true },
+        {
+          source: 'src/b.ts',
+          dependencies: [{ resolved: 'fs', coreModule: true, protocol: 'node:' }],
+          dependents: [],
+          valid: true,
+        },
+        { source: 'fs', coreModule: true, dependencies: [], dependents: [], valid: true },
+        { source: 'crypto', coreModule: true, dependencies: [], dependents: [], valid: true },
+        { source: 'node_modules/pkg/index.js', dependencies: [], dependents: [], valid: true },
+      ]),
+    );
+
+    expect(selected.sort()).toEqual(['src/a.ts', 'src/b.ts']);
+    expect(selected).not.toContain(':buildIn:/crypto');
+    expect(selected).not.toContain(':buildIn:/node:fs');
+    expect(selected).not.toContain('node_modules/pkg/index.js');
+  });
 });

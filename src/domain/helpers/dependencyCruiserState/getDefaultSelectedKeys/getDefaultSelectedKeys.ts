@@ -1,9 +1,14 @@
 import type { CruiseSnapshot } from '../../../types';
-import { isNodeModulesPath } from '../../pathUtils';
+import { isBuiltInPath, isNodeModulesPath } from '../../pathUtils';
 
-/** Default selection: all files whose ancestors are not under `node_modules`. */
+/** Default selection: all files outside `node_modules` and the synthetic `:buildIn:` namespace. */
 export function getDefaultSelectedKeys(cruiseSnapshot: CruiseSnapshot): string[] {
-  return [...cruiseSnapshot.nodes.values()]
-    .filter(node => !node.isFolder && !node.ancestors.some(isNodeModulesPath))
-    .map(node => node.path);
+  return cruiseSnapshot.nodes
+    .values()
+    .filter(
+      node =>
+        !node.isFolder && !node.ancestors.some(ancestor => isNodeModulesPath(ancestor) || isBuiltInPath(ancestor)),
+    )
+    .map(node => node.path)
+    .toArray();
 }
