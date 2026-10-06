@@ -1,3 +1,4 @@
+import type { IModule } from 'dependency-cruiser';
 import { describe, expect, it } from 'vitest';
 
 import { buildCruiseSnapshot } from '../../cruiseSnapshot';
@@ -52,7 +53,7 @@ describe('getDefaultSelectedKeys', () => {
         { source: 'src/a.ts', dependencies: [], dependents: [], valid: true },
         {
           source: 'src/b.ts',
-          dependencies: [{ resolved: 'fs', coreModule: true, protocol: 'node:' }],
+          dependencies: [{ resolved: 'fs', coreModule: true, protocol: 'node:' } as IModule['dependencies'][0]],
           dependents: [],
           valid: true,
         },
