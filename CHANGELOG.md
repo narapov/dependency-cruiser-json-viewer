@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.10.0](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v1.9.1...v1.10.0) (2026-10-07)
+
+### Features
+
+- use next free port when default CLI port is busy ([#32](https://github.com/narapov/dependency-cruiser-json-viewer/issues/32)) ([2ee098d](https://github.com/narapov/dependency-cruiser-json-viewer/commit/2ee098dae7878f793bd06f5b38739657d81e4e8e))
+
 ## [1.9.1](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v1.9.0...v1.9.1) (2026-10-06)
 
 ### Bug Fixes
