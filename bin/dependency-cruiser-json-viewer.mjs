@@ -200,19 +200,21 @@ function onListening() {
 }
 
 /**
- * @param {number} candidate
+ * @param {number} candidatePort
  */
-function listenOn(candidate) {
-  listenPort = candidate;
-  server.listen(candidate, host, onListening);
+function listenOn(candidatePort) {
+  listenPort = candidatePort;
+  server.listen(candidatePort, host, onListening);
 }
 
 function listenOnNextCandidate() {
-  const candidate = listenPort + 1;
-  if (candidate > MAX_PORT) {
+  const candidatePort = listenPort + 1;
+  if (candidatePort > MAX_PORT) {
     exitNoFreePort();
   }
-  listenOn(candidate);
+  // listen(..., cb) registers once('listening'); a failed bind leaves it attached.
+  server.removeListener('listening', onListening);
+  listenOn(candidatePort);
 }
 
 /**
