@@ -2,6 +2,7 @@
 import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
+import readline from 'node:readline';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
@@ -10,7 +11,8 @@ import handler from 'serve-handler';
 import { Server as SocketIoServer } from 'socket.io';
 
 const DEFAULT_PORT = 7347;
-const DEFAULT_HOST = '127.0.0.1';
+const MAX_PORT = 65535;
+const DEFAULT_HOST = 'localhost';
 const CRUISE_RESULT_CHANGED_EVENT = 'cruise-result:changed';
 const CRUISE_RESULT_SOCKET_PATH = '/api/cruise-result-socket.io';
 
@@ -77,13 +79,22 @@ if (workspaceSettingsPath != null) {
   assertJsonFile(workspaceSettingsPath, 'workspace settings');
 }
 
-const port = values.port ? Number(values.port) : DEFAULT_PORT;
-if (!Number.isInteger(port) || port < 1 || port > 65535) {
+const portExplicit = values.port !== undefined;
+const port = portExplicit ? Number(values.port) : DEFAULT_PORT;
+if (!Number.isInteger(port) || port < 1 || port > MAX_PORT) {
   console.error(`Error: invalid port: ${values.port ?? ''}`);
   process.exit(1);
 }
 
 const host = values.host ?? DEFAULT_HOST;
+/** @type {number} */
+let listenPort = port;
+
+/** URL for the bound listen address (IPv6 host wrapped in brackets). */
+function listenUrl() {
+  const hostForUrl = host.includes(':') ? `[${host}]` : host;
+  return `http://${hostForUrl}:${listenPort}`;
+}
 
 const distDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '../dist');
 
@@ -93,7 +104,7 @@ if (!fs.existsSync(distDir)) {
 }
 
 const server = http.createServer(async (req, res) => {
-  const { pathname } = new URL(req.url ?? '/', `http://localhost:${port}`);
+  const { pathname } = new URL(req.url ?? '/', listenUrl());
 
   if (pathname === '/envs.js') {
     res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
@@ -144,16 +155,99 @@ if (watchMode) {
   });
 }
 
-server.on('error', err => {
-  if (err.code === 'EADDRINUSE') {
-    console.error(`Error: port ${port} is already in use`);
-  } else {
-    console.error(`Error: ${err.message}`);
-  }
+/**
+ * @param {number} busyPort
+ * @returns {never}
+ */
+function exitPortInUse(busyPort) {
+  console.error(`Error: port ${busyPort} is already in use`);
   process.exit(1);
+}
+
+/**
+ * @returns {never}
+ */
+function exitNoFreePort() {
+  console.error(`Error: no free port found between ${DEFAULT_PORT + 1} and ${MAX_PORT}`);
+  process.exit(1);
+}
+
+/**
+ * @returns {Promise<boolean>}
+ */
+function askUseNextFreePort() {
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  return new Promise(resolve => {
+    const finish = accepted => {
+      rl.close();
+      resolve(accepted);
+    };
+
+    rl.once('SIGINT', () => {
+      finish(false);
+    });
+
+    rl.question(`Port ${DEFAULT_PORT} is in use. Use next free port? [Y/n] `, answer => {
+      const normalized = answer.trim().toLowerCase();
+      finish(normalized === '' || normalized === 'y' || normalized === 'yes');
+    });
+  });
+}
+
+function onListening() {
+  const watchSuffix = watchMode ? ' (watch)' : '';
+  console.log(`dependency-cruiser-json-viewer is running at ${listenUrl()}${watchSuffix}`);
+}
+
+/**
+ * @param {number} candidate
+ */
+function listenOn(candidate) {
+  listenPort = candidate;
+  server.listen(candidate, host, onListening);
+}
+
+function listenOnNextCandidate() {
+  const candidate = listenPort + 1;
+  if (candidate > MAX_PORT) {
+    exitNoFreePort();
+  }
+  listenOn(candidate);
+}
+
+/**
+ * @param {NodeJS.ErrnoException} err
+ */
+async function handleServerError(err) {
+  if (err.code !== 'EADDRINUSE') {
+    console.error(`Error: ${err.message}`);
+    process.exit(1);
+  }
+
+  if (portExplicit) {
+    exitPortInUse(listenPort);
+  }
+
+  // Already recovering past the default: keep scanning without prompting again.
+  if (listenPort !== DEFAULT_PORT) {
+    listenOnNextCandidate();
+    return;
+  }
+
+  if (!process.stdin.isTTY) {
+    exitPortInUse(listenPort);
+  }
+
+  const accepted = await askUseNextFreePort();
+  if (!accepted) {
+    exitPortInUse(DEFAULT_PORT);
+  }
+
+  listenOnNextCandidate();
+}
+
+server.on('error', err => {
+  void handleServerError(err);
 });
 
-server.listen(port, host, () => {
-  const watchSuffix = watchMode ? ' (watch)' : '';
-  console.log(`dependency-cruiser-json-viewer is running at http://localhost:${port}${watchSuffix}`);
-});
+listenOn(port);
