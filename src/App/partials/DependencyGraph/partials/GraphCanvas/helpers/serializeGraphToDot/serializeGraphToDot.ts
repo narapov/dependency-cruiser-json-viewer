@@ -2,6 +2,8 @@ import { hsl } from 'd3-color';
 
 import type { Edge, Node } from '@xyflow/react';
 
+import type { GraphEdgesType } from '@/domain';
+
 import { parsePastelHsl } from '../../../../../../helpers/assignFolderColors';
 import type { DependencyEdgeData, FileNodeData, FolderGroupNodeData, FolderNodeData } from '../../types';
 import { getDependencyEdgeVisualStyle } from '../getDependencyEdgeVisualStyle';
@@ -35,6 +37,24 @@ export interface SerializeGraphToDotInput {
   nodes: readonly Node[];
   edges: readonly Edge[];
   userEdgeHighlights: ReadonlyMap<string, string>;
+  edgesType: GraphEdgesType;
+}
+
+/** Maps workspace edges type to a Graphviz graph-level `splines` value. */
+export function toDotSplines(edgesType: GraphEdgesType): string {
+  switch (edgesType) {
+    case 'straight':
+      return 'line';
+    case 'simpleOrthogonal':
+    case 'libavoidOrthogonal':
+      return 'ortho';
+    case 'bezier':
+      return 'curved';
+    default: {
+      const _exhaustive: never = edgesType;
+      return _exhaustive;
+    }
+  }
 }
 
 interface AbsoluteRect {
@@ -269,7 +289,7 @@ function emitEdge(edge: Edge, userEdgeHighlights: ReadonlyMap<string, string>, i
 }
 
 /** Serializes the visible React Flow graph to Graphviz DOT with clusters, sizes, positions, and user edge highlights. */
-export function serializeGraphToDot({ nodes, edges, userEdgeHighlights }: SerializeGraphToDotInput): string {
+export function serializeGraphToDot({ nodes, edges, userEdgeHighlights, edgesType }: SerializeGraphToDotInput): string {
   const nodeById = new Map(nodes.map(node => [node.id, node]));
   const childrenByParent = new Map<string | null, Node[]>();
 
@@ -286,13 +306,14 @@ export function serializeGraphToDot({ nodes, edges, userEdgeHighlights }: Serial
   const absRects = nodes.map(node => getAbsoluteRect(node, nodeById));
   const graphWidth = absRects.reduce((max, rect) => Math.max(max, rect.x + rect.width), 0);
   const graphHeight = absRects.reduce((max, rect) => Math.max(max, rect.y + rect.height), 0);
+  const splines = toDotSplines(edgesType);
 
   const lines = [
     '// Must use the nop2 engine — it respects precomputed node positions (pos).',
     '// Render with: neato -n2 -Tsvg graph.dot',
     '//        or:   dot -Knop2 -Tsvg graph.dot',
     'digraph {',
-    `  graph [bb="0,0,${formatPoint(graphWidth)},${formatPoint(graphHeight)}", bgcolor=${quoteDot('#ffffff')}];`,
+    `  graph [bb="0,0,${formatPoint(graphWidth)},${formatPoint(graphHeight)}", bgcolor=${quoteDot('#ffffff')}, splines=${splines}];`,
   ];
 
   const roots = childrenByParent.get(null) ?? [];

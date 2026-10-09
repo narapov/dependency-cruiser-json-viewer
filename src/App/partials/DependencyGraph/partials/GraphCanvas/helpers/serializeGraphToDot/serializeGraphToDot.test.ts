@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import type { Edge, Node } from '@xyflow/react';
 
+import type { GraphEdgesType } from '@/domain';
+
 import {
   escapeDotString,
   hslToHex,
@@ -9,7 +11,10 @@ import {
   serializeGraphToDot,
   toClusterId,
   toDotColor,
+  toDotSplines,
 } from './serializeGraphToDot';
+
+const DEFAULT_EDGES_TYPE: GraphEdgesType = 'bezier';
 
 function fileNode(id: string, overrides: Partial<Node> = {}): Node {
   return {
@@ -75,7 +80,7 @@ describe('escapeDotString / quoteDot', () => {
   });
 });
 
-describe('toClusterId / toDotColor / hslToHex', () => {
+describe('toClusterId / toDotColor / hslToHex / toDotSplines', () => {
   it('prefixes path without collapsing slash vs underscore', () => {
     expect(toClusterId('src/App')).toBe('cluster_src/App');
     expect(toClusterId('src/foo')).not.toBe(toClusterId('src_foo'));
@@ -86,6 +91,13 @@ describe('toClusterId / toDotColor / hslToHex', () => {
     expect(toDotColor('hsl(200, 48%, 26%)')).toMatch(/^#[0-9a-f]{6}$/);
     // Dark UI pastel is lightened for export readability
     expect(toDotColor('hsl(0, 48%, 26%)')).toBe(hslToHex(0, 48, 85));
+  });
+
+  it('maps GraphEdgesType to Graphviz splines values', () => {
+    expect(toDotSplines('bezier')).toBe('curved');
+    expect(toDotSplines('straight')).toBe('line');
+    expect(toDotSplines('simpleOrthogonal')).toBe('ortho');
+    expect(toDotSplines('libavoidOrthogonal')).toBe('ortho');
   });
 });
 
@@ -118,6 +130,7 @@ describe('serializeGraphToDot', () => {
       nodes,
       edges: [],
       userEdgeHighlights: new Map(),
+      edgesType: DEFAULT_EDGES_TYPE,
     });
 
     expect(dot).toContain('// Must use the nop2 engine — it respects precomputed node positions (pos).');
@@ -153,6 +166,7 @@ describe('serializeGraphToDot', () => {
       nodes,
       edges: [],
       userEdgeHighlights: new Map(),
+      edgesType: DEFAULT_EDGES_TYPE,
     });
 
     expect(dot).toContain('"src/App" [label="App"');
@@ -178,6 +192,7 @@ describe('serializeGraphToDot', () => {
       nodes,
       edges,
       userEdgeHighlights: new Map([[depKey, '#e6194b']]),
+      edgesType: DEFAULT_EDGES_TYPE,
     });
 
     expect(dot).toContain('"a.ts" -> "b.ts" [color="#e6194b", penwidth=3, tooltip="a.ts → b.ts (circular)"]');
@@ -203,6 +218,7 @@ describe('serializeGraphToDot', () => {
       nodes,
       edges,
       userEdgeHighlights: new Map(),
+      edgesType: DEFAULT_EDGES_TYPE,
     });
 
     expect(dot).toContain('"a.ts" -> "b.ts" [color="#ff4d4f", penwidth=2, tooltip="a.ts → b.ts (circular)"]');
@@ -230,6 +246,7 @@ describe('serializeGraphToDot', () => {
       nodes,
       edges,
       userEdgeHighlights: new Map(),
+      edgesType: DEFAULT_EDGES_TYPE,
     });
 
     expect(dot).toContain('"a.ts" -> "b.ts" [color="#ff4d4f", penwidth=2, tooltip="a.ts → b.ts"]');
@@ -252,6 +269,7 @@ describe('serializeGraphToDot', () => {
       nodes,
       edges,
       userEdgeHighlights: new Map([[depKey, '#e6194b']]),
+      edgesType: DEFAULT_EDGES_TYPE,
     });
 
     expect(dot).toContain('"a.ts" -> "b.ts" [color="#e6194b", penwidth=3, tooltip="a.ts → b.ts"]');
@@ -268,6 +286,7 @@ describe('serializeGraphToDot', () => {
       nodes,
       edges: [],
       userEdgeHighlights: new Map(),
+      edgesType: DEFAULT_EDGES_TYPE,
     });
 
     expect(dot).toContain('fillcolor="#ff0000"');
@@ -283,6 +302,7 @@ describe('serializeGraphToDot', () => {
       ],
       edges: [],
       userEdgeHighlights: new Map(),
+      edgesType: DEFAULT_EDGES_TYPE,
     });
 
     expect(circularOnly).toContain('fillcolor="#fff1f0"');
@@ -296,6 +316,7 @@ describe('serializeGraphToDot', () => {
       ],
       edges: [],
       userEdgeHighlights: new Map(),
+      edgesType: DEFAULT_EDGES_TYPE,
     });
 
     expect(both).toContain('fillcolor="#ff0000"');
@@ -310,6 +331,7 @@ describe('serializeGraphToDot', () => {
       nodes,
       edges,
       userEdgeHighlights: new Map(),
+      edgesType: DEFAULT_EDGES_TYPE,
     });
 
     expect(dot).toContain('color="#b1b1b7"');
@@ -331,6 +353,7 @@ describe('serializeGraphToDot', () => {
       nodes,
       edges,
       userEdgeHighlights: new Map(),
+      edgesType: DEFAULT_EDGES_TYPE,
     });
 
     expect(dot).toContain(`tooltip=${quoteDot(title)}`);
@@ -350,6 +373,7 @@ describe('serializeGraphToDot', () => {
       nodes,
       edges: [],
       userEdgeHighlights: new Map(),
+      edgesType: DEFAULT_EDGES_TYPE,
     });
 
     expect(dot).toContain('"src/\\"weird\\".ts"');
@@ -363,10 +387,29 @@ describe('serializeGraphToDot', () => {
       nodes,
       edges: [],
       userEdgeHighlights: new Map(),
+      edgesType: DEFAULT_EDGES_TYPE,
     });
 
     // Center at (50, 25) in RF → flipY(25, 50) = 25
     expect(dot).toContain('pos="50,25!"');
-    expect(dot).toContain('graph [bb="0,0,100,50", bgcolor="#ffffff"]');
+    expect(dot).toContain('graph [bb="0,0,100,50", bgcolor="#ffffff", splines=curved]');
+  });
+
+  it.each([
+    ['bezier', 'curved'],
+    ['straight', 'line'],
+    ['simpleOrthogonal', 'ortho'],
+    ['libavoidOrthogonal', 'ortho'],
+  ] as const)('maps edgesType %s to graph-level splines=%s', (edgesType, splines) => {
+    const nodes = [fileNode('a.ts', { position: { x: 0, y: 0 }, width: 100, height: 50 })];
+
+    const dot = serializeGraphToDot({
+      nodes,
+      edges: [],
+      userEdgeHighlights: new Map(),
+      edgesType,
+    });
+
+    expect(dot).toContain(`splines=${splines}`);
   });
 });
