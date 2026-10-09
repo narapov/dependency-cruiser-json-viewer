@@ -45,6 +45,7 @@ export function useDependencyGraphImperativeRef(config: UseDependencyGraphImpera
         nodes: layoutNodes,
         edges: baseEdges,
         userEdgeHighlights,
+        edgesType,
       });
 
     return {
