@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.10.1](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v1.10.0...v1.10.1) (2026-10-14)
+
+### Bug Fixes
+
+- add edge type splines to DOT export ([#33](https://github.com/narapov/dependency-cruiser-json-viewer/issues/33)) ([886c41a](https://github.com/narapov/dependency-cruiser-json-viewer/commit/886c41a568fd51ec8e882e3c6962d3328cc68dc5))
+
 ## [1.10.0](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v1.9.1...v1.10.0) (2026-10-07)
 
 ### Features
