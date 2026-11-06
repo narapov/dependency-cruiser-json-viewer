@@ -15,5 +15,5 @@ export function searchCommands(
     return sortCommandsByRecentUsage(commands, recentIds);
   }
 
-  return fuzzysort.go(trimmed, commands, { key: 'label' }).map(result => result.obj);
+  return fuzzysort.go(trimmed, commands, { key: 'label', threshold: 0, limit: 0 }).map(result => result.obj);
 }

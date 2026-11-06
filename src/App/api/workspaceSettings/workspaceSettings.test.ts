@@ -43,7 +43,7 @@ const server = setupServer(
 
 describe('fetchWorkspaceSettingsFile', () => {
   beforeAll(() => {
-    server.listen({ onUnhandledRequest: 'error' });
+    server.listen({ onUnhandledFrame: 'error' });
   });
 
   afterEach(() => {
