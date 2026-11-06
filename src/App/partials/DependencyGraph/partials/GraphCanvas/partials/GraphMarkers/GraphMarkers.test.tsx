@@ -10,6 +10,9 @@ import { renderWithTheme } from '@/testsUtils';
 import { toGraphMarkerId, useGraphMarkersStore } from '../../stores/graphMarkersStore';
 import { GraphMarkers } from './GraphMarkers';
 
+// Matches --graph-circular in src/Shared/styles/graphTheme.css
+const CIRCULAR = '#ff4d4f';
+
 describe('GraphMarkers', () => {
   beforeEach(() => {
     useGraphMarkersStore.getState().clearGraphMarkers();
@@ -20,6 +23,8 @@ describe('GraphMarkers', () => {
   });
 
   it('renders one closed-arrow marker per registered stroke', () => {
+    document.documentElement.style.setProperty('--graph-circular', CIRCULAR);
+
     const { container } = renderWithTheme(<GraphMarkers />);
 
     const circularId = toGraphMarkerId(CIRCULAR_EDGE_COLOR);
@@ -27,7 +32,7 @@ describe('GraphMarkers', () => {
     const arrow = marker?.querySelector('polyline.arrowclosed');
 
     expect(marker).not.toBeNull();
-    expect(arrow).toHaveStyle({ fill: CIRCULAR_EDGE_COLOR, stroke: CIRCULAR_EDGE_COLOR });
+    expect(arrow).toHaveStyle({ fill: CIRCULAR, stroke: CIRCULAR });
   });
 
   it('adds a marker when a new stroke is registered', async () => {
