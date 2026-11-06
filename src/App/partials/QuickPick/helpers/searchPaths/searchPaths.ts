@@ -26,6 +26,7 @@ export function searchPaths(items: QuickPickFileItem[], query: string): QuickPic
     .go(trimmed, items, {
       keys: ['name', 'key'],
       limit: MAX_RESULTS,
+      threshold: 0,
       scoreFn: result => {
         const multiplier = TIER_SCORE_MULTIPLIER[result.obj.tier];
         return result.score * multiplier;
