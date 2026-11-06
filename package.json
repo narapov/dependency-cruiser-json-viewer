@@ -110,7 +110,7 @@
     "i18next": "^26.7.2",
     "jsdom": "^30.0.1",
     "lint-staged": "^17.6.0",
-    "msw": "^2.15.0",
+    "msw": "^3.0.4",
     "picomatch": "^4.0.7",
     "prettier": "^3.9.10",
     "prettier-plugin-ember-template-tag": "^2.1.8",
@@ -140,5 +140,10 @@
     "*.{json,md,css,yml,yaml}": [
       "prettier --write"
     ]
+  },
+  "overrides": {
+    "@vitest/mocker": {
+      "msw": "$msw"
+    }
   }
 }
