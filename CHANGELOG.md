@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.11.0](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v1.10.1...v1.11.0) (2026-11-08)
+
+### Features
+
+- add export to mermaid ([#35](https://github.com/narapov/dependency-cruiser-json-viewer/issues/35)) ([35950ca](https://github.com/narapov/dependency-cruiser-json-viewer/commit/35950caa6c0507b745f9422bf1f36d2ef5478a8e))
+
 ## [1.10.1](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v1.10.0...v1.10.1) (2026-10-14)
 
 ### Bug Fixes
