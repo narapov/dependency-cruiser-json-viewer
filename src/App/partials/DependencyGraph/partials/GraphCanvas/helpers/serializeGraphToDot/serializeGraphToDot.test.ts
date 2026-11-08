@@ -4,15 +4,8 @@ import type { Edge, Node } from '@xyflow/react';
 
 import type { GraphEdgesType } from '@/domain';
 
-import {
-  escapeDotString,
-  hslToHex,
-  quoteDot,
-  serializeGraphToDot,
-  toClusterId,
-  toDotColor,
-  toDotSplines,
-} from './serializeGraphToDot';
+import { DEFAULT_EXPORT_NODE_BORDER_WIDTH, toExportColor } from '../toExportColor';
+import { escapeDotString, quoteDot, serializeGraphToDot, toClusterId, toDotSplines } from './serializeGraphToDot';
 
 const DEFAULT_EDGES_TYPE: GraphEdgesType = 'bezier';
 
@@ -80,17 +73,10 @@ describe('escapeDotString / quoteDot', () => {
   });
 });
 
-describe('toClusterId / toDotColor / hslToHex / toDotSplines', () => {
+describe('toClusterId / toDotSplines', () => {
   it('prefixes path without collapsing slash vs underscore', () => {
     expect(toClusterId('src/App')).toBe('cluster_src/App');
     expect(toClusterId('src/foo')).not.toBe(toClusterId('src_foo'));
-  });
-
-  it('converts hsl pastels to light hex for Graphviz', () => {
-    expect(toDotColor('hsl(200, 70%, 90%)')).toMatch(/^#[0-9a-f]{6}$/);
-    expect(toDotColor('hsl(200, 48%, 26%)')).toMatch(/^#[0-9a-f]{6}$/);
-    // Dark UI pastel is lightened for export readability
-    expect(toDotColor('hsl(0, 48%, 26%)')).toBe(hslToHex(0, 48, 85));
   });
 
   it('maps GraphEdgesType to Graphviz splines values', () => {
@@ -138,7 +124,9 @@ describe('serializeGraphToDot', () => {
     expect(dot).toContain('//        or:   dot -Knop2 -Tsvg graph.dot');
     expect(dot).toContain('subgraph "cluster_src"');
     expect(dot).toContain('subgraph "cluster_src/app"');
-    expect(dot).toContain(`bgcolor="${toDotColor('hsl(120, 70%, 90%)')}"`);
+    expect(dot).toContain(`bgcolor="${toExportColor('hsl(120, 70%, 90%)')}"`);
+    expect(dot).toContain(`penwidth=${DEFAULT_EXPORT_NODE_BORDER_WIDTH};`);
+    expect(dot).toContain(`penwidth=${DEFAULT_EXPORT_NODE_BORDER_WIDTH},`);
     expect(dot).not.toContain('hsl(');
     expect(dot).toContain('"src/app/a.ts"');
     expect(dot).toContain('width=2');
@@ -170,7 +158,8 @@ describe('serializeGraphToDot', () => {
     });
 
     expect(dot).toContain('"src/App" [label="App"');
-    expect(dot).toContain(`fillcolor="${toDotColor('hsl(40, 42%, 24%)')}"`);
+    expect(dot).toContain(`fillcolor="${toExportColor('hsl(40, 42%, 24%)')}"`);
+    expect(dot).toContain(`penwidth=${DEFAULT_EXPORT_NODE_BORDER_WIDTH}`);
     expect(dot).toContain('fontcolor="#000000"');
     expect(dot).not.toContain('hsl(');
   });
@@ -291,6 +280,7 @@ describe('serializeGraphToDot', () => {
 
     expect(dot).toContain('fillcolor="#ff0000"');
     expect(dot).toContain('color="#ff4d4f"');
+    expect(dot).toContain(`penwidth=${DEFAULT_EXPORT_NODE_BORDER_WIDTH}`);
   });
 
   it('exports circular file nodes with pink fill and prefers unresolved when both flags set', () => {

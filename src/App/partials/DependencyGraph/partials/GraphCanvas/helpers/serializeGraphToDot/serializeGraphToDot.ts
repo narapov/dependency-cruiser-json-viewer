@@ -1,13 +1,20 @@
-import { hsl } from 'd3-color';
-
 import type { Edge, Node } from '@xyflow/react';
 
 import type { GraphEdgesType } from '@/domain';
 
-import { parsePastelHsl } from '../../../../../../helpers/assignFolderColors';
 import type { DependencyEdgeData, FileNodeData, FolderGroupNodeData, FolderNodeData } from '../../types';
 import { getDependencyEdgeVisualStyle } from '../getDependencyEdgeVisualStyle';
 import { LEAF_NODE_HEIGHT, LEAF_NODE_MIN_WIDTH } from '../getLeafNodeSize';
+import {
+  DEFAULT_EXPORT_FILE_FILL,
+  DEFAULT_EXPORT_FONT_COLOR,
+  DEFAULT_EXPORT_NODE_BORDER,
+  DEFAULT_EXPORT_NODE_BORDER_WIDTH,
+  resolveExportEdgeStyle,
+  resolveExportFileNodeColors,
+  resolveExportFolderFill,
+  toExportColor,
+} from '../toExportColor';
 
 /** Reads a React Flow node's width and height from props or style, with leaf defaults. */
 function getNodeSize(node: Node): { width: number; height: number } {
@@ -17,21 +24,6 @@ function getNodeSize(node: Node): { width: number; height: number } {
 }
 
 const PX_PER_INCH = 72;
-
-/** Light-theme hex fallbacks — DOT cannot use CSS variables. */
-const DEFAULT_EDGE_HEX = '#b1b1b7';
-const CIRCULAR_EDGE_HEX = '#ff4d4f';
-const TYPE_ONLY_CIRCULAR_EDGE_HEX = '#ffa39e';
-const ERROR_EDGE_HEX = '#ff4d4f';
-const WARNING_EDGE_HEX = '#faad14';
-const DEFAULT_FILE_FILL = '#ffffff';
-const DEFAULT_NODE_BORDER = '#666666';
-const CIRCULAR_NODE_FILL = '#fff1f0';
-const UNRESOLVED_NODE_FILL = '#ff0000';
-const ERROR_NODE_BORDER = '#ff4d4f';
-const DEFAULT_FONT_COLOR = '#000000';
-/** Minimum lightness for exported fills so nodes stay readable on dark viewers. */
-const MIN_EXPORT_FILL_LIGHTNESS = 85;
 
 export interface SerializeGraphToDotInput {
   nodes: readonly Node[];
@@ -79,30 +71,6 @@ export function toClusterId(path: string): string {
   return `cluster_${path}`;
 }
 
-/** Converts HSL components to a `#rrggbb` hex color. */
-export function hslToHex(hue: number, saturation: number, lightness: number): string {
-  return hsl(hue, saturation / 100, lightness / 100).formatHex();
-}
-
-/**
- * Normalizes a UI color to a Graphviz-safe hex string.
- * HSL pastels are converted; dark fills are lightened for readability.
- */
-export function toDotColor(color: string): string {
-  if (color.startsWith('#') && /^#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/.test(color)) {
-    return color.length === 4
-      ? `#${color[1]}${color[1]}${color[2]}${color[2]}${color[3]}${color[3]}`
-      : color.toLowerCase();
-  }
-
-  const parsed = parsePastelHsl(color);
-  if (!parsed) {
-    return DEFAULT_FILE_FILL;
-  }
-
-  return hslToHex(parsed.hue, parsed.saturation, Math.max(parsed.lightness, MIN_EXPORT_FILL_LIGHTNESS));
-}
-
 function formatInches(px: number): string {
   const inches = px / PX_PER_INCH;
   return String(Math.round(inches * 10000) / 10000);
@@ -110,14 +78,6 @@ function formatInches(px: number): string {
 
 function formatPoint(value: number): string {
   return String(Math.round(value * 100) / 100);
-}
-
-function resolveEdgePenWidth(edge: Edge, highlighted: boolean): number {
-  if (highlighted) {
-    return 3;
-  }
-  const visual = getDependencyEdgeVisualStyle(edge.source, edge.target, edge.data as DependencyEdgeData | undefined);
-  return visual.strokeWidth;
 }
 
 function getAbsoluteOrigin(node: Node, nodeById: ReadonlyMap<string, Node>): { x: number; y: number } {
@@ -148,29 +108,6 @@ function flipY(y: number, graphHeight: number): number {
   return graphHeight - y;
 }
 
-function resolveUserHighlightColor(edge: Edge, userEdgeHighlights: ReadonlyMap<string, string>): string | undefined {
-  const data = edge.data as DependencyEdgeData | undefined;
-  const dependencyKeys = data?.aggregated?.map(dep => dep.id) ?? [];
-  return dependencyKeys.map(key => userEdgeHighlights.get(key)).find((color): color is string => color != null);
-}
-
-function resolveBaseEdgeColor(edge: Edge): string {
-  const data = edge.data as DependencyEdgeData | undefined;
-  if (data?.couldNotResolve === true || data?.severity === 'error') {
-    return ERROR_EDGE_HEX;
-  }
-  if (data?.valueCircular === true) {
-    return CIRCULAR_EDGE_HEX;
-  }
-  if (data?.typeOnlyCircular === true) {
-    return TYPE_ONLY_CIRCULAR_EDGE_HEX;
-  }
-  if (data?.severity === 'warn') {
-    return WARNING_EDGE_HEX;
-  }
-  return DEFAULT_EDGE_HEX;
-}
-
 function getNodeLabel(node: Node): string {
   const data = node.data as FileNodeData | FolderNodeData | FolderGroupNodeData | undefined;
   if (data && typeof data.label === 'string' && data.label.length > 0) {
@@ -189,28 +126,17 @@ function getFolderFillColor(node: Node): string | undefined {
   return undefined;
 }
 
-function getFileNodeColors(data: FileNodeData | undefined): { fill: string; border: string } {
-  if (data?.couldNotResolve === true) {
-    return { fill: UNRESOLVED_NODE_FILL, border: ERROR_NODE_BORDER };
-  }
-  if (data?.circular === true) {
-    return { fill: CIRCULAR_NODE_FILL, border: ERROR_NODE_BORDER };
-  }
-  return { fill: DEFAULT_FILE_FILL, border: DEFAULT_NODE_BORDER };
-}
-
 function emitLeafNode(node: Node, rect: AbsoluteRect, graphHeight: number, indent: string): string[] {
   const centerX = rect.x + rect.width / 2;
   const centerY = flipY(rect.y + rect.height / 2, graphHeight);
   const posValue = `${formatPoint(centerX)},${formatPoint(centerY)}!`;
 
-  let fill = DEFAULT_FILE_FILL;
-  let border = DEFAULT_NODE_BORDER;
+  let fill = DEFAULT_EXPORT_FILE_FILL;
+  let border = DEFAULT_EXPORT_NODE_BORDER;
   if (node.type === 'folder') {
-    const rawFill = getFolderFillColor(node);
-    fill = rawFill ? toDotColor(rawFill) : DEFAULT_FILE_FILL;
+    fill = resolveExportFolderFill(getFolderFillColor(node));
   } else if (node.type === 'file') {
-    const colors = getFileNodeColors(node.data as FileNodeData | undefined);
+    const colors = resolveExportFileNodeColors(node.data as FileNodeData | undefined);
     fill = colors.fill;
     border = colors.border;
   }
@@ -225,7 +151,8 @@ function emitLeafNode(node: Node, rect: AbsoluteRect, graphHeight: number, inden
     'style=filled',
     `fillcolor=${quoteDot(fill)}`,
     `color=${quoteDot(border)}`,
-    `fontcolor=${quoteDot(DEFAULT_FONT_COLOR)}`,
+    `penwidth=${DEFAULT_EXPORT_NODE_BORDER_WIDTH}`,
+    `fontcolor=${quoteDot(DEFAULT_EXPORT_FONT_COLOR)}`,
   ];
 
   return [`${indent}${quoteDot(node.id)} [${attrs.join(', ')}];`];
@@ -248,13 +175,14 @@ function emitCluster(
   const lines = [
     `${indent}subgraph ${quoteDot(clusterId)} {`,
     `${indent}  label=${quoteDot(getNodeLabel(groupNode))};`,
-    `${indent}  fontcolor=${quoteDot(DEFAULT_FONT_COLOR)};`,
-    `${indent}  color=${quoteDot(DEFAULT_NODE_BORDER)};`,
+    `${indent}  fontcolor=${quoteDot(DEFAULT_EXPORT_FONT_COLOR)};`,
+    `${indent}  color=${quoteDot(DEFAULT_EXPORT_NODE_BORDER)};`,
+    `${indent}  penwidth=${DEFAULT_EXPORT_NODE_BORDER_WIDTH};`,
     `${indent}  graph [bb="${llx},${lly},${urx},${ury}"];`,
   ];
 
   if (rawFill) {
-    lines.push(`${indent}  bgcolor=${quoteDot(toDotColor(rawFill))};`);
+    lines.push(`${indent}  bgcolor=${quoteDot(toExportColor(rawFill))};`);
   }
 
   const children = childrenByParent.get(groupNode.id) ?? [];
@@ -271,16 +199,17 @@ function emitCluster(
 }
 
 function emitEdge(edge: Edge, userEdgeHighlights: ReadonlyMap<string, string>, indent: string): string {
-  const highlightColor = resolveUserHighlightColor(edge, userEdgeHighlights);
-  const color = highlightColor ?? resolveBaseEdgeColor(edge);
-  const strokeWidth = resolveEdgePenWidth(edge, !!highlightColor);
-  const attrs = [`color=${quoteDot(color)}`, `penwidth=${strokeWidth}`];
+  const style = resolveExportEdgeStyle(edge, userEdgeHighlights);
+  const attrs = [`color=${quoteDot(style.stroke)}`, `penwidth=${style.strokeWidth}`];
 
-  const data = edge.data as DependencyEdgeData | undefined;
-  if (data?.typeOnly === true) {
+  if (style.dashed) {
     attrs.push('style=dashed');
   }
-  const title = getDependencyEdgeVisualStyle(edge.source, edge.target, data).title;
+  const title = getDependencyEdgeVisualStyle(
+    edge.source,
+    edge.target,
+    edge.data as DependencyEdgeData | undefined,
+  ).title;
   if (title.length > 0) {
     attrs.push(`tooltip=${quoteDot(title)}`);
   }

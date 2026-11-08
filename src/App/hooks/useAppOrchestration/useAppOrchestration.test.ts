@@ -63,6 +63,7 @@ function createRefs() {
     focusNode: vi.fn(),
     clearAllHighlights: vi.fn(),
     exportDot: vi.fn(),
+    exportMermaid: vi.fn(),
     openDotOnline: vi.fn(),
     getLayoutState: vi.fn(() => ({ autoLayoutOnly: true, edgesType: 'bezier', nodeLayouts: {} })),
   };
@@ -683,6 +684,16 @@ describe('useAppOrchestration', () => {
     });
 
     expect(graph.exportDot).toHaveBeenCalled();
+  });
+
+  it('exportGraphMermaid delegates to the graph handle', () => {
+    const { result, graph } = renderOrchestration();
+
+    act(() => {
+      result.current.exportGraphMermaid();
+    });
+
+    expect(graph.exportMermaid).toHaveBeenCalled();
   });
 
   it('viewGraphDotOnline delegates to the graph handle', () => {

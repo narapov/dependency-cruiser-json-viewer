@@ -31,6 +31,7 @@ function createOrch(): AppCommandsOrchestration {
     collapseActiveToLevel: vi.fn(),
     clearAllHighlights: vi.fn(),
     exportGraphDot: vi.fn(),
+    exportGraphMermaid: vi.fn(),
     viewGraphDotOnline: vi.fn(),
     saveWorkspace: vi.fn(),
     expandAllRecursive: vi.fn(),
@@ -103,6 +104,7 @@ describe('useAppCommands', () => {
     expect(ids).toContain('expandRootsToLevel');
     expect(ids).toContain('collapseRootsToLevel');
     expect(ids).toContain('exportGraphDot');
+    expect(ids).toContain('exportGraphMermaid');
     expect(ids).toContain('viewGraphDotOnline');
     expect(ids).toContain('selectEdgesType');
     expect(ids).toContain('saveWorkspace');
@@ -186,6 +188,7 @@ describe('useAppCommands', () => {
     byId.toggleSidebar.onExecute();
     byId.copyActive.onExecute();
     byId.exportGraphDot.onExecute();
+    byId.exportGraphMermaid.onExecute();
     byId.viewGraphDotOnline.onExecute();
     byId.selectEdgesType.onExecute();
     byId.saveWorkspace.onExecute();
@@ -204,6 +207,7 @@ describe('useAppCommands', () => {
     expect(toggleSidebar).toHaveBeenCalled();
     expect(orch.copyActive).toHaveBeenCalled();
     expect(orch.exportGraphDot).toHaveBeenCalled();
+    expect(orch.exportGraphMermaid).toHaveBeenCalled();
     expect(orch.viewGraphDotOnline).toHaveBeenCalled();
     expect(openEdgesTypePicker).toHaveBeenCalled();
     expect(orch.saveWorkspace).toHaveBeenCalled();

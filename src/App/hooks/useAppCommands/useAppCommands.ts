@@ -20,6 +20,7 @@ export interface AppCommandsOrchestration {
   collapseActiveToLevel: (level: number) => void;
   clearAllHighlights: () => void;
   exportGraphDot: () => void;
+  exportGraphMermaid: () => void;
   viewGraphDotOnline: () => void;
   saveWorkspace: () => void;
   expandAllRecursive: () => void;
@@ -71,6 +72,7 @@ export function useAppCommands(config: UseAppCommandsOptions): QuickPickCommand[
       collapseActiveToLevel,
       clearAllHighlights,
       exportGraphDot,
+      exportGraphMermaid,
       viewGraphDotOnline,
       saveWorkspace,
       expandAllRecursive,
@@ -186,6 +188,11 @@ export function useAppCommands(config: UseAppCommandsOptions): QuickPickCommand[
       id: 'exportGraphDot',
       label: t('commands.exportGraphDot'),
       onExecute: exportGraphDot,
+    },
+    {
+      id: 'exportGraphMermaid',
+      label: t('commands.exportGraphMermaid'),
+      onExecute: exportGraphMermaid,
     },
     {
       id: 'viewGraphDotOnline',

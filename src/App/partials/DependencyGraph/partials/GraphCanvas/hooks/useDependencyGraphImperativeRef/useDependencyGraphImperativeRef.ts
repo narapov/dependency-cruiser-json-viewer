@@ -6,7 +6,7 @@ import type { GraphEdgesType } from '@/domain';
 import { downloadTextFile, openGraphvizOnline } from '@/Shared';
 
 import type { DependencyGraphHandle } from '../../../../types';
-import { serializeGraphToDot } from '../../helpers';
+import { serializeGraphToDot, serializeGraphToMermaid } from '../../helpers';
 import type { GraphLayoutSnapshot } from '../useCustomPositionedGraph';
 
 interface UseDependencyGraphImperativeRefConfig {
@@ -48,12 +48,23 @@ export function useDependencyGraphImperativeRef(config: UseDependencyGraphImpera
         edgesType,
       });
 
+    const buildMermaid = () =>
+      serializeGraphToMermaid({
+        nodes: layoutNodes,
+        edges: baseEdges,
+        userEdgeHighlights,
+        edgesType,
+      });
+
     return {
       focusNode,
       selectEdge,
       clearAllHighlights,
       exportDot: () => {
         downloadTextFile('graph.dot', buildDot(), 'text/vnd.graphviz');
+      },
+      exportMermaid: () => {
+        downloadTextFile('graph.mmd', buildMermaid(), 'text/plain');
       },
       openDotOnline: () => {
         openGraphvizOnline(buildDot());
