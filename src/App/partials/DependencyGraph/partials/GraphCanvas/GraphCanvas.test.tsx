@@ -28,6 +28,17 @@ const buildGraphState = {
   clearBuildFailed,
 };
 
+const reactFlowGraphState: {
+  nodes: Array<{
+    id: string;
+    type: string;
+    position: { x: number; y: number };
+    data: Record<string, unknown>;
+  }>;
+} = {
+  nodes: [],
+};
+
 vi.mock('@/Shared', async importOriginal => {
   const actual = await importOriginal<typeof import('@/Shared')>();
   return {
@@ -91,7 +102,7 @@ vi.mock('./hooks', async importOriginal => {
       onAutoLayoutGroupRecursive: vi.fn(),
     }),
     useReactFlowGraph: () => ({
-      nodes: [],
+      nodes: reactFlowGraphState.nodes,
       onNodesChange: vi.fn(),
       onNodeDrag: vi.fn(),
       onNodeDragStop: vi.fn(),
@@ -137,6 +148,7 @@ describe('GraphCanvas', () => {
 
   afterEach(() => {
     buildGraphState.buildFailed = false;
+    reactFlowGraphState.nodes = [];
     useWorkspaceStore.setState(initialWorkspaceState);
     vi.clearAllMocks();
   });
@@ -182,6 +194,30 @@ describe('GraphCanvas', () => {
       'graph.dot',
       expect.stringContaining('digraph {'),
       'text/vnd.graphviz',
+    );
+  });
+
+  it('exportMermaid downloads serialized graph.mmd with node style classes', () => {
+    const ref = createRef<DependencyGraphHandle>();
+    reactFlowGraphState.nodes = [
+      {
+        id: 'src/a.ts',
+        type: 'file',
+        position: { x: 0, y: 0 },
+        data: { label: 'a.ts', path: 'src/a.ts', circular: true },
+      },
+    ];
+
+    renderGraphCanvas(<GraphCanvas ref={ref} {...baseProps} />);
+
+    ref.current?.exportMermaid();
+
+    expect(downloadTextFile).toHaveBeenCalledWith(
+      'graph.mmd',
+      expect.stringMatching(
+        /%%\{init: \{'flowchart': \{'curve': 'basis'\}\}\}%%\nflowchart LR[\s\S]*classDef fileCircular/,
+      ),
+      'text/plain',
     );
   });
 

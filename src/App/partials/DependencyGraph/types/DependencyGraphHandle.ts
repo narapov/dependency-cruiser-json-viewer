@@ -13,6 +13,7 @@ export interface DependencyGraphHandle {
   selectEdge(edgeId: string): void;
   clearAllHighlights(): void;
   exportDot(): void;
+  exportMermaid(): void;
   openDotOnline(): void;
   getLayoutState(): GraphLayoutState;
 }

@@ -285,6 +285,10 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
     graphRef.current?.exportDot();
   };
 
+  const exportGraphMermaid = () => {
+    graphRef.current?.exportMermaid();
+  };
+
   const viewGraphDotOnline = () => {
     graphRef.current?.openDotOnline();
   };
@@ -479,6 +483,7 @@ export function useAppOrchestration(config: UseAppOrchestrationOptions) {
     collapseRecursive,
     clearAllHighlights,
     exportGraphDot,
+    exportGraphMermaid,
     viewGraphDotOnline,
     saveWorkspace,
     getCurrentWorkspaceSettings,

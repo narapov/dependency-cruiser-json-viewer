@@ -77,6 +77,7 @@
     "clearAllHighlights": "Hervorhebungen: Alle löschen",
     "highlightEdge": "Hervorhebungen: Kante hervorheben…",
     "exportGraphDot": "Graph: DOT exportieren",
+    "exportGraphMermaid": "Graph: Mermaid exportieren",
     "viewGraphDotOnline": "Graph: DOT online anzeigen",
     "selectEdgesType": "Graph: Kantentyp festlegen",
     "expandAllRecursive": "Dateibaum: Alles rekursiv erweitern",
