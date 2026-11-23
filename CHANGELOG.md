@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.12.0](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v1.11.0...v1.12.0) (2026-11-23)
+
+### Features
+
+- **cli:** automatically open browser when cli starting ([#36](https://github.com/narapov/dependency-cruiser-json-viewer/issues/36)) ([76316ae](https://github.com/narapov/dependency-cruiser-json-viewer/commit/76316aea2395cc7a80c93ef4d559ca026901e534))
+
+### Bug Fixes
+
+- npm audit security fixes ([262f32d](https://github.com/narapov/dependency-cruiser-json-viewer/commit/262f32d9a796b5e0ce9ce49074ea0976df32de00))
+
 ## [1.11.0](https://github.com/narapov/dependency-cruiser-json-viewer/compare/v1.10.1...v1.11.0) (2026-11-08)
 
 ### Features
