@@ -68,6 +68,7 @@ npm install -D dependency-cruiser-json-viewer
 npx depcruise src -T json -f cruise-result.json
 npx dependency-cruiser-json-viewer cruise-result.json
 # dependency-cruiser-json-viewer is running at http://localhost:7347
+# (opens the default browser unless --no-open or BROWSER=none)
 ```
 
 Optional flags:
@@ -78,6 +79,9 @@ npx dependency-cruiser-json-viewer cruise-result.json --port 9000
 
 npx dependency-cruiser-json-viewer cruise-result.json --watch
 # or -w — reload the UI when the cruise JSON file changes
+
+npx dependency-cruiser-json-viewer cruise-result.json --no-open
+# serve without opening a browser
 
 npx dependency-cruiser-json-viewer cruise-result.json --workspace-settings workspace.json
 # apply a previously saved workspace once on startup (same as Workspace: Load Settings)

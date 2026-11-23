@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
 import chokidar from 'chokidar';
+import open from 'open';
 import handler from 'serve-handler';
 import { Server as SocketIoServer } from 'socket.io';
 
@@ -22,6 +23,7 @@ const { values, positionals } = parseArgs({
     port: { type: 'string', short: 'p' },
     host: { type: 'string', short: 'h' },
     watch: { type: 'boolean', short: 'w' },
+    'no-open': { type: 'boolean' },
     'workspace-settings': { type: 'string' },
     help: { type: 'boolean' },
   },
@@ -30,12 +32,13 @@ const { values, positionals } = parseArgs({
 
 function printUsage() {
   console.error(
-    `Usage: dependency-cruiser-json-viewer <path-to-cruise-result.json> [--port <number>] [--host <host>] [--watch] [--workspace-settings <path>]
+    `Usage: dependency-cruiser-json-viewer <path-to-cruise-result.json> [--port <number>] [--host <host>] [--watch] [--no-open] [--workspace-settings <path>]
 
 Options:
   --port, -p              HTTP port (default: ${DEFAULT_PORT})
   --host, -h              Bind host (default: ${DEFAULT_HOST})
   --watch, -w             Watch cruise JSON and notify the UI to reload
+  --no-open               Do not open the viewer in the default browser
   --workspace-settings    Path to a saved workspace JSON applied once on startup (not watched)
 `,
   );
@@ -70,6 +73,7 @@ if (values.help || positionals.length === 0) {
 
 const cruiseJsonPath = path.resolve(positionals[0]);
 const watchMode = values.watch === true;
+const shouldOpenBrowser = !values['no-open'] && process.env.BROWSER !== 'none';
 const workspaceSettingsPath = values['workspace-settings'] != null ? path.resolve(values['workspace-settings']) : null;
 const initialWorkspaceSettings = workspaceSettingsPath != null;
 
@@ -195,8 +199,14 @@ function askUseNextFreePort() {
 }
 
 function onListening() {
+  const url = listenUrl();
   const watchSuffix = watchMode ? ' (watch)' : '';
-  console.log(`dependency-cruiser-json-viewer is running at ${listenUrl()}${watchSuffix}`);
+  console.log(`dependency-cruiser-json-viewer is running at ${url}${watchSuffix}`);
+
+  if (shouldOpenBrowser) {
+    // Failures are ignored so the server keeps running; URL is already printed above.
+    void open(url).catch(() => {});
+  }
 }
 
 /**
