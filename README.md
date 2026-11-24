@@ -105,34 +105,15 @@ npx dependency-cruiser-json-viewer cruise-result.json -w
 
 ### Local development (this repository)
 
-1. Set `CRUISE_WATCH=true` in [`.env.development`](.env.development) (only the literal value `true` enables watch).
-2. Refresh the sample cruise JSON if needed: `npm run depcruise:json-for-cli` (or `npm run watch-src-and-regenerate-cruise-result-for-cli` to regenerate it when `src/` changes).
-3. Start the Vite dev server: `npm run dev`.
-
-With `CRUISE_WATCH=false` (the default in `.env.development`) or any value other than `true`, `npm run dev` runs without cruise watch — you can load a JSON file from the command palette as usual.
+For cruise watch while developing this repository (`CRUISE_WATCH`, sample JSON refresh, and related scripts), see [CONTRIBUTING.md](CONTRIBUTING.md#watch-mode-local-development).
 
 ## Architecture
 
 See [docs/architecture.md](docs/architecture.md) for layers, import rules, and project conventions. Graph algorithms: [docs/algorithms/](docs/algorithms/) ([buildGraph](docs/algorithms/build-graph.md), [libavoid](docs/algorithms/libavoid-edge-routing.md)).
 
-## Scripts
+## Contributing
 
-| Command                               | Description                                                                                                          |
-| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `npm run dev`                         | Start Vite dev server (serves `test-data/cruise-result.json`; cruise watch via `CRUISE_WATCH` in `.env.development`) |
-| `npm run build`                       | Type-check (`tsc`) and build for production                                                                          |
-| `npm run build:gh-pages`              | Production build with GitHub Pages base path + embed cruise result in `dist/`                                        |
-| `npm run preview`                     | Preview production build                                                                                             |
-| `npm run test`                        | Run Vitest suite                                                                                                     |
-| `npm run lint`                        | Run ESLint                                                                                                           |
-| `npm run lint:fix`                    | Run ESLint with autofix                                                                                              |
-| `npm run format`                      | Format all files with Prettier                                                                                       |
-| `npm run format:check`                | Check formatting (CI-friendly)                                                                                       |
-| `npm run depcruise`                   | Run dependency-cruiser on `src` (validate layer rules)                                                               |
-| `npm run depcruise:json`              | Export cruise result to `./cruise-result.json`                                                                       |
-| `npm run depcruise:json-for-cli`      | Export cruise result (`src` + `invalid_samples`, sample config) to `test-data/cruise-result.json`                    |
-| `npm run depcruise:json-for-gh-pages` | Export cruise result (`src` + `invalid_samples`, sample config) to `dist/cruise-result.json`                         |
-| `npm run cli:verify`                  | Build, refresh `test-data/cruise-result.json`, start CLI server                                                      |
+Contributions are welcome via fork and pull request. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, scripts, and guidelines.
 
 ## License
 
